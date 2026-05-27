@@ -18,7 +18,7 @@ router.get('/overview', (req, res) => {
   const uniqueToday = db.prepare("SELECT COUNT(DISTINCT visitor_hash) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND date(created_at) = date('now') AND visitor_hash IS NOT NULL").get(projectId);
 
   // Top páginas
-  const topPages = db.prepare('SELECT page, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND page != "" GROUP BY page ORDER BY count DESC LIMIT 10').all(projectId);
+  const topPages = db.prepare("SELECT page, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND page != '' GROUP BY page ORDER BY count DESC LIMIT 10").all(projectId);
 
   res.json({
     total: total.count,
@@ -62,8 +62,8 @@ router.get('/devices', (req, res) => {
   const projectId = getProjectId(project);
   const db = getDb();
 
-  const browsers = db.prepare('SELECT browser, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND browser != "Unknown" GROUP BY browser ORDER BY count DESC').all(projectId);
-  const os = db.prepare('SELECT os, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND os != "Unknown" GROUP BY os ORDER BY count DESC').all(projectId);
+  const browsers = db.prepare("SELECT browser, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND browser != 'Unknown' GROUP BY browser ORDER BY count DESC").all(projectId);
+  const os = db.prepare("SELECT os, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 AND os != 'Unknown' GROUP BY os ORDER BY count DESC").all(projectId);
   const devices = db.prepare('SELECT device, COUNT(*) as count FROM visits WHERE project_id = ? AND is_bot = 0 GROUP BY device ORDER BY count DESC').all(projectId);
 
   res.json({ browsers, os, devices });
