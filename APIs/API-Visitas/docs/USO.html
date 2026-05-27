@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API-Visitas · Documentación de uso</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #38bdf8; }
+    h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; color: #f1f5f9; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: #94a3b8; }
+    p { margin-bottom: 1rem; color: #cbd5e1; }
+    code { background: #1e293b; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; color: #38bdf8; }
+    pre {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
+    pre code { background: none; padding: 0; color: #e2e8f0; }
+    .endpoint { background: #1e293b; border-left: 3px solid #38bdf8; padding: 0.75rem 1rem; margin-bottom: 0.75rem; border-radius: 0 0.5rem 0.5rem 0; }
+    .endpoint .method { display: inline-block; background: #38bdf8; color: #0f172a; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-weight: 600; font-size: 0.8rem; margin-right: 0.5rem; }
+    .endpoint .path { font-family: monospace; color: #e2e8f0; }
+    .endpoint .desc { color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.85rem; }
+    th { text-align: left; padding: 0.5rem; color: #94a3b8; border-bottom: 1px solid #334155; font-weight: 500; }
+    td { padding: 0.5rem; border-bottom: 1px solid #1e293b; }
+    .tag { display: inline-block; background: #334155; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    .footer { text-align: center; padding: 2rem; color: #475569; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 API-Visitas</h1>
+    <p>API de estadísticas de visitas web con geolocalización IP, mapa mundial interactivo y dashboard en tiempo real.</p>
+
+    <h2>🚀 Inicio rápido</h2>
+
+    <h3>1. Instalar e iniciar</h3>
+    <pre><code>cd APIs/API-Visitas
+npm install
+npm start</code></pre>
+
+    <h3>2. Integrar en tu proyecto</h3>
+    <p>Agrega este script en el <code>&lt;head&gt;</code> o <code>&lt;body&gt;</code> de tu HTML:</p>
+    <pre><code>&lt;script src="http://localhost:3000/track?project=TU_PROYECTO&page=inicio"
+        async&gt;&lt;/script&gt;</code></pre>
+    <p>O vía fetch:</p>
+    <pre><code>fetch('http://localhost:3000/track?project=calificaciones&page=home')
+  .then(r => r.json())
+  .then(data => {
+    console.log('Visitante desde:', data.visitor.city, data.visitor.country);
+    console.log('Navegador:', data.visitor.browser);
+  });</code></pre>
+
+    <h3>3. Ver dashboard</h3>
+    <p>Abre <code>http://localhost:3000/</code> en tu navegador.</p>
+
+    <h2>📡 Endpoints</h2>
+
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/track?project=NOMBRE&page=URL</span>
+      <div class="desc">Registra una visita. Usar como script o fetch. Retorna datos del visitante (país, ciudad, navegador, SO, dispositivo). Soporta JSONP con <code>&amp;callback=func</code>.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/stats/overview?project=NOMBRE</span>
+      <div class="desc">Total visitas, visitantes únicos, visitas hoy, únicos hoy, esta semana, top páginas.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/stats/timeline?project=NOMBRE&amp;days=30</span>
+      <div class="desc">Visitas por día (últimos N días).</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/stats/devices?project=NOMBRE</span>
+      <div class="desc">Desglose por navegador, SO, tipo de dispositivo.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/stats/locations?project=NOMBRE</span>
+      <div class="desc">Datos geográficos (países + ciudades con coordenadas) para el mapa.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/stats/recent?project=NOMBRE&amp;limit=20</span>
+      <div class="desc">Últimas visitas con detalle.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/projects</span>
+      <div class="desc">Lista todos los proyectos registrados con estadísticas.</div>
+    </div>
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/api/health</span>
+      <div class="desc">Health check del servidor.</div>
+    </div>
+
+    <h2>🔌 Integración con otros proyectos</h2>
+
+    <h3>SIGPRO</h3>
+    <p>Agregar en <code>public/index.html</code> o en el template principal:</p>
+    <pre><code>&lt;script src="/track?project=SIGPRO&page=index" async&gt;&lt;/script&gt;</code></pre>
+
+    <h3>PRODOCENTE</h3>
+    <pre><code>&lt;script src="/track?project=PRODOCENTE&page=concurso" async&gt;&lt;/script&gt;</code></pre>
+
+    <h3>API-Calificaciones</h3>
+    <pre><code>&lt;script src="/track?project=calificaciones&page=escala" async&gt;&lt;/script&gt;</code></pre>
+
+    <h2>⚙️ Parámetros de /track</h2>
+    <table>
+      <tr><th>Parámetro</th><th>Obligatorio</th><th>Descripción</th></tr>
+      <tr><td>project</td><td>Sí</td><td>Nombre del proyecto (se crea automáticamente si no existe)</td></tr>
+      <tr><td>page</td><td>No</td><td>Página o sección dentro del proyecto</td></tr>
+      <tr><td>callback</td><td>No</td><td>Nombre de función para JSONP</td></tr>
+    </table>
+
+    <h2>🔧 Configuración</h2>
+    <table>
+      <tr><th>Variable</th><th>Default</th><th>Descripción</th></tr>
+      <tr><td>PORT</td><td>3000</td><td>Puerto del servidor</td></tr>
+      <tr><td>DB_PATH</td><td>./db/visits.db</td><td>Ruta de la base de datos SQLite</td></tr>
+    </table>
+
+    <h2>⚡ Precisión y limitaciones</h2>
+    <p><strong>Geolocalización:</strong> Usa ip-api.com (gratis, 45 req/min, sin key). ~80% precisión de ciudad, ~95% país. Localhost/IPs privadas se marcan como "Local".</p>
+    <p><strong>Filtro de bots:</strong> Detecta crawlers (Googlebot, GPTBot, etc.), herramientas (curl, wget) y tráfico de datacenters (AWS, GCP, Azure, DO, OVH).</p>
+    <p><strong>Visitantes únicos:</strong> Por hash MD5 de IP + User-Agent. No usa cookies.</p>
+
+    <h2>📊 Dashboard</h2>
+    <p>El dashboard incluye:</p>
+    <ul style="margin-bottom:1rem;padding-left:1.5rem;color:#cbd5e1;">
+      <li>Mapa mundial Leaflet con marcadores por ciudad</li>
+      <li>Cards de estadísticas (totales, hoy, semana, únicos)</li>
+      <li>Gráfico timeline (visitas + únicos por día)</li>
+      <li>Gráfico de navegadores (doughnut)</li>
+      <li>Top páginas más visitadas</li>
+      <li>Tabla de últimas visitas con detalle</li>
+      <li>Selector de proyectos</li>
+      <li>Auto-refresh cada 30 segundos</li>
+    </ul>
+  </div>
+  <div class="footer">
+    API-Visitas v1.0 · Documentación de integración
+  </div>
+</body>
+</html>
