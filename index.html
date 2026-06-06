@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECCIONAL 40 - Sistema de Control Electoral</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .animate-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50">
+  
+  <!-- Header -->
+  <header class="gradient-bg text-white">
+    <div class="max-w-6xl mx-auto px-6 py-12 text-center">
+      <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+        <i class="fas fa-shield-alt text-3xl"></i>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tighter italic mb-4">SECCIONAL 40</h1>
+      <p class="text-lg text-indigo-200 font-medium max-w-2xl mx-auto">Sistema de Control Electoral - Gestión de Mesas y Participación Ciudadana</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    
+    <!-- Descripción -->
+    <div class="text-center mb-12 animate-in">
+      <h2 class="text-3xl font-black text-slate-900 mb-4">Panel de Control Electoral</h2>
+      <p class="text-slate-600 max-w-2xl mx-auto">
+        Sistema integral para el control y seguimiento de la participación electoral en la Seccional 40. 
+        Gestione mesas de votación, consulte padrones en tiempo real y monitoree el nivel de cumplimiento.
+      </p>
+    </div>
+
+    <!-- Tarjetas de Acceso -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      
+      <!-- Tarjeta 1: Sistema de Votación -->
+      <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 card-hover animate-in">
+        <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4">
+          <i class="fas fa-vote-yea text-2xl text-indigo-600"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 mb-2">Sistema de Votación</h3>
+        <p class="text-slate-500 text-sm mb-4">Acceda al panel principal para registrar votos, gestionar mesas y consultar el padrón electoral.</p>
+        <div class="flex gap-2">
+          <a href="./DIA_Mesas/public/index.html" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-center transition-all text-sm">
+            <i class="fas fa-external-link-alt mr-2"></i>Acceder
+          </a>
+        </div>
+        <div class="mt-3 text-xs text-slate-400">
+          <i class="fas fa-lock mr-1"></i>Requiere contraseña
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Panel de Control -->
+      <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 card-hover animate-in">
+        <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4">
+          <i class="fas fa-chart-line text-2xl text-emerald-600"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 mb-2">Panel de Control</h3>
+        <p class="text-slate-500 text-sm mb-4">Visualice estadísticas de participación, mesas activas y nivel de cumplimiento en tiempo real.</p>
+        <div class="flex gap-2">
+          <a href="./DIA_Mesas/public/asistencia.html" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-center transition-all text-sm">
+            <i class="fas fa-external-link-alt mr-2"></i>Acceder
+          </a>
+        </div>
+      </div>
+
+      <!-- Tarjeta 3: Documentación -->
+      <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 card-hover animate-in">
+        <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mb-4">
+          <i class="fas fa-book text-2xl text-amber-600"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900 mb-2">Documentación</h3>
+        <p class="text-slate-500 text-sm mb-4">Consulte la lógica del sistema, arquitectura y guía de uso completa del proyecto.</p>
+        <div class="flex gap-2">
+          <a href="./DIA_Mesas/LOGICA.md" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-center transition-all text-sm">
+            <i class="fas fa-file-alt mr-2"></i>Ver Docs
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Características -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 mb-12">
+      <h3 class="text-2xl font-black text-slate-900 mb-6 text-center">Características Principales</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="text-center">
+          <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-users text-indigo-600"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Padrón Electoral</h4>
+          <p class="text-xs text-slate-500 mt-1">Carga automática desde Google Sheets</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-check-double text-emerald-600"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Registro de Votos</h4>
+          <p class="text-xs text-slate-500 mt-1">Marcado rápido Votó/Ausente</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-chart-pie text-amber-600"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Estadísticas</h4>
+          <p class="text-xs text-slate-500 mt-1">Participación y cumplimiento en vivo</p>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <i class="fas fa-exclamation-triangle text-rose-600"></i>
+          </div>
+          <h4 class="font-bold text-slate-900 text-sm">Controversias</h4>
+          <p class="text-xs text-slate-500 mt-1">Detección automática de inconsistencias</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Técnica -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <h3 class="text-xl font-black text-slate-900 mb-2">Información del Proyecto</h3>
+          <p class="text-slate-500 text-sm">Versión 1.0 | Desplegado en GitHub Pages</p>
+        </div>
+        <div class="flex gap-3">
+          <a href="https://github.com/wmlumen/seccional40" target="_blank" class="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all text-sm">
+            <i class="fab fa-github mr-2"></i>GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-white py-8 mt-12">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <p class="text-slate-400 text-sm">SECCIONAL 40 - Sistema de Control Electoral</p>
+      <p class="text-slate-600 text-xs mt-2">Desarrollado para gestión democrática transparente</p>
+    </div>
+  </footer>
+
+</body>
+</html>
