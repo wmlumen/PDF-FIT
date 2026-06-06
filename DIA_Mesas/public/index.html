@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA - Consulta Electoral</title>
+  <title>SECCIONAL 40 - Control de Votación</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
@@ -22,587 +22,485 @@
     body { font-family: 'Inter', sans-serif; }
     .animate-in { animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
-    .pulse-ring::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid currentColor; animation: pulse-ring 1.5s infinite; }
+    .grid-mesa { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+    @media (max-width: 640px) { .grid-mesa { grid-template-columns: repeat(5, 1fr); } }
+    .btn-mesa { aspect-ratio: 1; font-size: 11px; font-weight: 700; border-radius: 6px; transition: all 0.2s; }
+    .btn-mesa:hover { transform: scale(1.05); }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50">
   <div id="app"></div>
 
   <script>
-    const TOTAL_NUMBERS = 200;
-    const IDS_EQUIPO_INICIAL = [1, 5, 10, 15, 20, 33, 42, 50, 75, 88, 100, 125, 150, 175, 199, 200];
+    // ==================== CONFIGURACION ====================
+    const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+    const MAX_VOTOS = 350;
+    const PASSWORD = 'Paraguay40';
     
-    // Configuracion para registro de consultas en Google Sheets
-    // URL del Web App de Google Apps Script vinculado a la hoja de registros electorales
-    const DDIA_API_URL = 'https://script.google.com/macros/s/AKfycbwXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/exec'; // <- Reemplazar con URL real del Web App
-    const DDIA_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1tDtXxCqV5L70-w5wAXBkb73e3ZKtTu7ni8lJ_AUg73I/edit?resourcekey=&gid=449732679#gid=449732679';
-    
+    // ==================== ESTADO ====================
     let state = {
-      view: 'grid',
+      autenticado: false,
+      cargando: false,
+      mensaje: '',
+      padron: [],
+      mesaSeleccionada: null,
+      mesaBloqueada: false,
       votos: {},
+      consultaCedula: '',
+      consultaResultado: null,
       transferLog: [],
-      selectedElector: null,
       showQR: false,
-      currentUserData: {
-        nombre: "Veedor Actual",
-        cedula: "1.234.567",
-        telefono: "0981-000-000",
-        rol: "veedor"
-      },
-      consultaResult: null,
-      searching: false
+      veedor: 'Veedor Actual'
     };
 
-    const padronData = [
-      { cedula: "1000001", nombre: "María Elena Rodríguez", departamento: "Central", distrito: "Asunción 1", seccional: "Seccional 1", local: "Escuela San Martín", mesa: 1, orden: 1 },
-      { cedula: "1000002", nombre: "Carlos Alberto Martínez", departamento: "Central", distrito: "Asunción 1", seccional: "Seccional 1", local: "Escuela San Martín", mesa: 1, orden: 2 },
-      { cedula: "1000003", nombre: "Ana Lucía Fernández", departamento: "Central", distrito: "Asunción 1", seccional: "Seccional 1", local: "Escuela San Martín", mesa: 1, orden: 3 },
-      { cedula: "2000001", nombre: "Juan Pedro González", departamento: "Alto Paraná", distrito: "Ciudad del Este", seccional: "Seccional 5", local: "Colegio San José", mesa: 3, orden: 15 },
-      { cedula: "2000002", nombre: "Sofia Beatriz Ruíz", departamento: "Alto Paraná", distrito: "Ciudad del Este", seccional: "Seccional 5", local: "Colegio San José", mesa: 3, orden: 16 },
-      { cedula: "3000001", nombre: "Pedro Miguel Sánchez", departamento: "Itapúa", distrito: "Encarnación", seccional: "Seccional 8", local: "Instituto San Roque", mesa: 5, orden: 45 },
-      { cedula: "4000001", nombre: "Laura Beatriz Ojeda", departamento: "Caaguazú", distrito: "Coronel Oviedo", seccional: "Seccional 12", local: "Escuela Libertad", mesa: 8, orden: 78 },
-      { cedula: "5000001", nombre: "Roberto Carlos López", departamento: "Concepción", distrito: "Concepción", seccional: "Seccional 3", local: "Colegio Nacional", mesa: 2, orden: 12 },
-      { cedula: "1234567", nombre: "Roberto Carlos López", departamento: "Central", distrito: "Asunción 2", seccional: "Seccional 4", local: "Escuela Centro", mesa: 10, orden: 95 },
-      { cedula: "7654321", nombre: "María Fernanda Torres", departamento: "Central", distrito: "Asunción 2", seccional: "Seccional 4", local: "Escuela Centro", mesa: 10, orden: 96 },
-      { cedula: "1122334", nombre: "Diego Armando Paredes", departamento: "Central", distrito: "Asunción 1", seccional: "Seccional 2", local: "Colegio Central", mesa: 4, orden: 33 },
-      { cedula: "5566778", nombre: "Carmen Rosa Amarilla", departamento: "Alto Paraguay", distrito: "Fuerte Olimpo", seccional: "Seccional 1", local: "Escuela Municipal", mesa: 1, orden: 5 },
-      { cedula: "9988776", nombre: "Fernando José Irala", departamento: "Boquerón", distrito: "Mariscal Estigarribia", seccional: "Seccional 6", local: "Instituto Boquerón", mesa: 7, orden: 62 },
-    ];
-
-    function formatDate(timestamp) {
-      return new Date(timestamp).toLocaleString('es-PY', {
-        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
+    // ==================== LOGIN ====================
+    function login() {
+      const input = document.getElementById('passwordInput');
+      if (input && input.value === PASSWORD) {
+        state.autenticado = true;
+        cargarPadron();
+      } else {
+        alert('Contraseña incorrecta. Intenta nuevamente.');
+      }
     }
 
-    function normalizeCedula(cedula) {
-      return cedula.toString().replace(/\D/g, '');
-    }
-
-    function calculateStats() {
-      const vals = Object.values(state.votos);
-      const totalVotaron = vals.length;
-      const equipoAsistio = vals.filter(v => v.tipo === 'equipo').length;
-      const controversias = vals.filter(v => v.controversia).length;
-      return { totalVotaron, equipoAsistio, controversias };
-    }
-
-    async function registrarConsulta(cedula, mesa, orden, nombre) {
-      const payload = {
-        cedula: cedula,
-        mesa: mesa,
-        orden: orden,
-        nombre: nombre,
-        timestamp: new Date().toLocaleString('es-PY'),
-        origen: 'DDIA-Consulta',
-        veedor: state.currentUserData.nombre,
-        veedorCedula: state.currentUserData.cedula
-      };
-
+    // ==================== CARGAR PADRON DESDE CSV ====================
+    async function cargarPadron() {
+      state.cargando = true;
+      state.mensaje = 'Cargando padrón electoral...';
+      render();
+      
       try {
-        // Intento 1: Enviar a Google Apps Script Web App
-        if (DDIA_API_URL && !DDIA_API_URL.includes('XXXXXXXX')) {
-          const response = await fetch(DDIA_API_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-          if (response.ok) {
-            console.log('Registro electoral enviado a Sheets:', payload);
-            return { ok: true, source: 'api' };
+        const response = await fetch(PADRON_CSV_URL);
+        const csvText = await response.text();
+        const lineas = csvText.split('\n').filter(l => l.trim());
+        
+        // Parsear CSV
+        const registros = [];
+        for (let i = 1; i < lineas.length; i++) {
+          const partes = lineas[i].split(',');
+          if (partes.length >= 8) {
+            const cedula = partes[5].replace(/\./g, '').trim();
+            const mesa = parseInt(partes[3].trim()) || 0;
+            const orden = parseInt(partes[4].trim()) || 0;
+            
+            registros.push({
+              secc: partes[0].trim(),
+              num: partes[1].trim(),
+              local: partes[2].trim(),
+              mesa: mesa,
+              orden: orden,
+              cedula: cedula,
+              apellido: partes[6].trim(),
+              nombre: partes[7].trim(),
+              nombreCompleto: (partes[6].trim() + ' ' + partes[7].trim()).trim()
+            });
           }
         }
         
-        // Intento 2: Guardar en localStorage para sincronizacion posterior
-        const localKey = 'ddia_registros_consulta';
-        const existing = JSON.parse(localStorage.getItem(localKey) || '[]');
-        existing.push(payload);
-        localStorage.setItem(localKey, JSON.stringify(existing));
-        console.log('Registro electoral guardado localmente:', payload);
-        return { ok: true, source: 'local' };
+        state.padron = registros;
+        state.cargando = false;
+        state.mensaje = `Padrón cargado: ${registros.length} electores`;
+        
+        // Sugerir mesa 1 por defecto
+        if (!state.mesaSeleccionada) {
+          state.mesaSeleccionada = 1;
+        }
       } catch (error) {
-        console.error('Error al registrar consulta:', error);
-        // Fallback: localStorage
-        const localKey = 'ddia_registros_consulta';
-        const existing = JSON.parse(localStorage.getItem(localKey) || '[]');
-        existing.push(payload);
-        localStorage.setItem(localKey, JSON.stringify(existing));
-        return { ok: true, source: 'local', error: error.message };
+        console.error('Error cargando padron:', error);
+        state.cargando = false;
+        state.mensaje = 'Error cargando padrón. Reintentando...';
+        // Fallback: reintentar en 3 segundos
+        setTimeout(cargarPadron, 3000);
+      }
+      render();
+    }
+
+    // ==================== BUSCAR POR CEDULA ====================
+    function buscarCedula() {
+      const input = document.getElementById('cedulaInput');
+      const cedula = input ? input.value.replace(/\D/g, '').trim() : '';
+      
+      if (!cedula) {
+        state.consultaResultado = null;
+        render();
+        return;
+      }
+      
+      const encontrado = state.padron.find(p => p.cedula === cedula);
+      
+      if (encontrado) {
+        state.consultaResultado = {
+          encontrado: true,
+          cedula: encontrado.cedula,
+          nombre: encontrado.nombreCompleto,
+          mesa: encontrado.mesa,
+          orden: encontrado.orden,
+          local: encontrado.local
+        };
+        
+        // Si la mesa coincide con la seleccionada, mostrar alerta
+        if (encontrado.mesa === state.mesaSeleccionada) {
+          // Marcar el botón correspondiente automáticamente
+          setTimeout(() => {
+            const btn = document.getElementById(`btn-orden-${encontrado.orden}`);
+            if (btn) {
+              btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              btn.style.ring = '4px';
+              btn.style.ringColor = 'amber';
+            }
+          }, 300);
+        }
+      } else {
+        state.consultaResultado = {
+          encontrado: false,
+          cedula: cedula
+        };
+      }
+      render();
+    }
+
+    // ==================== SELECCIONAR MESA ====================
+    function seleccionarMesa() {
+      const input = document.getElementById('mesaInput');
+      const mesa = parseInt(input ? input.value : 0);
+      if (mesa > 0) {
+        state.mesaSeleccionada = mesa;
+        state.consultaResultado = null;
+        render();
       }
     }
 
-    function consultarVotante(cedula) {
-      state.searching = true;
-      render();
-      
-      setTimeout(async () => {
-        const cedulaNorm = normalizeCedula(cedula);
-        const result = padronData.find(v => normalizeCedula(v.cedula).includes(cedulaNorm) || cedulaNorm.includes(normalizeCedula(v.cedula)));
-        
-        if (result) {
-          state.consultaResult = { ...result, encontrado: true, registroStatus: 'registrando' };
-          // Registrar en hoja de forma asincrona
-          const registro = await registrarConsulta(result.cedula, result.mesa, result.orden, result.nombre);
-          state.consultaResult.registroStatus = registro.source === 'api' ? 'registrado' : 'pendiente';
-          state.consultaResult.registroSource = registro.source;
-        } else {
-          state.consultaResult = { encontrado: false, cedula: cedula };
-        }
-        
-        state.searching = false;
+    function bloquearMesa() {
+      if (state.mesaSeleccionada) {
+        state.mesaBloqueada = true;
         render();
-      }, 500);
+      }
     }
 
-    function handleMarcar(id, tipo) {
-      const votoActual = state.votos[id];
-      let nuevoEstado = {
-        tipo,
-        marcadoPor: state.currentUserData.nombre,
-        timestamp: Date.now(),
-        controversia: false
-      };
+    function desbloquearMesa() {
+      state.mesaBloqueada = false;
+      render();
+    }
 
-      if (votoActual && votoActual.marcadoPor !== state.currentUserData.nombre && votoActual.tipo !== tipo) {
+    // ==================== MARCAR VOTO ====================
+    function marcarVoto(orden, tipo) {
+      const votoActual = state.votos[orden];
+      let nuevoEstado = {
+        tipo: tipo,
+        timestamp: Date.now()
+      };
+      
+      if (votoActual && votoActual.tipo !== tipo) {
         nuevoEstado.controversia = true;
       }
-
-      state.votos[id] = nuevoEstado;
-      state.selectedElector = null;
+      
+      state.votos[orden] = nuevoEstado;
+      
+      // Actualizar elector consultado si coincide
+      if (state.consultaResultado && state.consultaResultado.orden === orden) {
+        state.consultaResultado.marcado = true;
+      }
       render();
     }
 
+    // ==================== TRANSFERIR POSTA ====================
     function handleTransferir() {
       state.transferLog.unshift({
-        de: state.currentUserData.nombre,
-        cedula: state.currentUserData.cedula,
         timestamp: Date.now(),
         accion: "Transferencia de Mando Generada",
-        mesa: "042"
+        mesa: state.mesaSeleccionada
       });
       state.showQR = true;
       render();
     }
 
+    // ==================== ESTADISTICAS ====================
+    function calcularStats() {
+      const vals = Object.values(state.votos);
+      const totalVotos = vals.length;
+      const controversias = vals.filter(v => v.controversia).length;
+      const electoresEnMesa = state.padron.filter(p => p.mesa === state.mesaSeleccionada).length;
+      return { totalVotos, controversias, electoresEnMesa };
+    }
+
+    // ==================== RENDER LOGIN ====================
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+            <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">SECCIONAL 40</h1>
+            <p class="text-slate-500 text-sm mb-8">Sistema de Control Electoral</p>
+            
+            <div class="space-y-4">
+              <div class="relative">
+                <input type="password" id="passwordInput" placeholder="Ingrese contraseña" 
+                  class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-indigo-500 focus:outline-none transition-all text-center"
+                  onkeypress="if(event.key === 'Enter') login()">
+              </div>
+              <button onclick="login()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                ACCEDER
+              </button>
+            </div>
+            
+            <p class="text-xs text-slate-400 mt-6">Sistema Privado - Uso Autorizado</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== RENDER MAIN ====================
     function render() {
-      const stats = calculateStats();
       const app = document.getElementById('app');
+      
+      if (!state.autenticado) {
+        app.innerHTML = renderLogin();
+        return;
+      }
+      
+      const stats = calcularStats();
+      const electoresMesa = state.padron.filter(p => p.mesa === state.mesaSeleccionada);
+      const cantidadBotones = electoresMesa.length || MAX_VOTOS;
       
       app.innerHTML = `
         <header class="bg-indigo-900 text-white sticky top-0 z-40 shadow-lg">
-          <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-              <div class="p-3 bg-indigo-500 rounded-xl shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+          <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-indigo-500 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
               <div>
-                <h1 class="text-2xl font-black uppercase tracking-tighter italic leading-none">DDIA</h1>
-                <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-widest opacity-80">Sistema de Control Electoral</p>
+                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">SECC. 40</h1>
+                <p class="text-[10px] text-indigo-200 font-bold uppercase tracking-widest opacity-80">Control Electoral</p>
               </div>
             </div>
-
-            <div class="flex gap-2 bg-indigo-950/50 p-1.5 rounded-2xl border border-indigo-800">
-              <button onclick="setView('grid')" class="px-5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 tracking-widest ${state.view === 'grid' ? 'bg-white text-indigo-900 shadow-xl' : 'text-indigo-300 hover:bg-indigo-800'}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                PANEL
-              </button>
-              <button onclick="handleTransferir()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 rounded-xl text-xs font-black transition-all flex items-center gap-2 text-indigo-950 shadow-lg tracking-widest">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="16" y="16" rx="1"/><path d="m16 8 3-3"/><path d="M20 3 16 8"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/></svg>
+            
+            <div class="flex items-center gap-2 bg-indigo-950/50 p-1.5 rounded-2xl border border-indigo-800">
+              <div class="flex items-center gap-2 px-3">
+                <span class="text-xs text-indigo-300 font-bold">MESA:</span>
+                ${state.mesaBloqueada 
+                  ? `<span class="text-lg font-black text-white">${state.mesaSeleccionada}</span>` 
+                  : `<input type="number" id="mesaInput" value="${state.mesaSeleccionada || 1}" min="1" class="w-16 py-1 px-2 rounded-lg text-center font-black text-indigo-900 text-sm border-0 focus:ring-2 focus:ring-indigo-400">`
+                }
+                ${!state.mesaBloqueada 
+                  ? `<button onclick="seleccionarMesa()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-bold text-white transition-all">CARGAR</button>
+                     <button onclick="bloquearMesa()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold text-white transition-all">BLOQUEAR</button>`
+                  : `<button onclick="desbloquearMesa()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs font-bold text-white transition-all">DESBLOQUEAR</button>`
+                }
+              </div>
+              
+              <button onclick="handleTransferir()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-xl text-xs font-black transition-all text-indigo-950 tracking-widest">
                 POSTA
               </button>
             </div>
           </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-8">
-          ${renderContent()}
+        <main class="max-w-7xl mx-auto p-3 md:p-6">
+          ${state.cargando ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">${state.mensaje}</p>
+            </div>
+          ` : `
+            <div class="animate-in fade-in">
+              <!-- BARRA DE CONSULTA -->
+              <div class="bg-white rounded-[2rem] p-4 shadow-xl border border-slate-100 mb-4">
+                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                  <div class="flex-1 relative w-full">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <input type="text" id="cedulaInput" placeholder="Ingresá cédula del elector" 
+                      class="w-full pl-12 pr-4 py-3 text-lg font-bold border-2 border-slate-100 rounded-xl focus:border-indigo-500 focus:outline-none transition-all"
+                      onkeypress="if(event.key === 'Enter') buscarCedula()">
+                  </div>
+                  <button onclick="buscarCedula()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all shadow-lg flex items-center gap-2 whitespace-nowrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    BUSCAR
+                  </button>
+                </div>
+                
+                ${state.consultaResultado ? renderConsultaResultado() : ''}
+              </div>
+
+              <!-- ESTADISTICAS -->
+              <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="bg-white p-4 rounded-[1.5rem] shadow-lg border border-slate-100 text-center">
+                  <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Electores</p>
+                  <span class="text-2xl font-black text-slate-900">${cantidadBotones}</span>
+                </div>
+                <div class="bg-indigo-600 p-4 rounded-[1.5rem] shadow-lg text-white text-center">
+                  <p class="text-[10px] uppercase font-black text-indigo-200 tracking-widest">Votos</p>
+                  <span class="text-2xl font-black">${stats.totalVotos}</span>
+                </div>
+                <div class="${stats.controversias > 0 ? 'bg-rose-600 text-white' : 'bg-white text-slate-900'} p-4 rounded-[1.5rem] shadow-lg border ${stats.controversias > 0 ? 'border-rose-500' : 'border-slate-100'} text-center">
+                  <p class="text-[10px] uppercase font-black ${stats.controversias > 0 ? 'text-rose-200' : 'text-slate-400'} tracking-widest">Controversias</p>
+                  <span class="text-2xl font-black">${stats.controversias}</span>
+                </div>
+              </div>
+
+              <!-- GRID DE BOTONES -->
+              <div class="bg-white p-4 rounded-[2rem] shadow-2xl border border-slate-100">
+                <div class="grid-mesa">
+                  ${Array.from({ length: cantidadBotones }, (_, i) => {
+                    const orden = i + 1;
+                    const voto = state.votos[orden];
+                    const elector = electoresMesa.find(e => e.orden === orden);
+                    
+                    let btnClass = "bg-white text-slate-400 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600";
+                    
+                    if (voto?.controversia) {
+                      btnClass = "bg-rose-600 text-white font-black border-rose-700";
+                    } else if (voto?.tipo === 'voto') {
+                      btnClass = "bg-emerald-500 text-white font-bold border-emerald-600";
+                    } else if (voto?.tipo === 'ausente') {
+                      btnClass = "bg-slate-200 text-slate-500 font-bold border-slate-300";
+                    } else if (elector) {
+                      btnClass = "bg-indigo-50 text-indigo-400 border border-indigo-200 font-bold";
+                    }
+                    
+                    const tooltip = elector ? `title="${elector.nombreCompleto}"` : '';
+                    
+                    return `
+                      <div class="relative group">
+                        <button id="btn-orden-${orden}" onclick="mostrarOpcionesVoto(${orden})" 
+                          class="btn-mesa w-full ${btnClass}" ${tooltip}>
+                          ${orden}
+                        </button>
+                        ${elector ? `
+                          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-slate-900 text-white text-[9px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                            ${elector.nombreCompleto}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+                
+                <div class="mt-4 flex flex-wrap gap-3 justify-center text-xs">
+                  <div class="flex items-center gap-1"><div class="w-4 h-4 bg-white border border-slate-200 rounded"></div><span>Sin marcar</span></div>
+                  <div class="flex items-center gap-1"><div class="w-4 h-4 bg-indigo-50 border border-indigo-200 rounded"></div><span>En padrón</span></div>
+                  <div class="flex items-center gap-1"><div class="w-4 h-4 bg-emerald-500 rounded"></div><span>Votó</span></div>
+                  <div class="flex items-center gap-1"><div class="w-4 h-4 bg-slate-200 rounded"></div><span>Ausente</span></div>
+                  <div class="flex items-center gap-1"><div class="w-4 h-4 bg-rose-600 rounded"></div><span>Controversia</span></div>
+                </div>
+              </div>
+            </div>
+          `}
         </main>
 
         ${state.showQR ? renderQRModal() : ''}
-        ${state.selectedElector ? renderElectorModal() : ''}
+        ${state.mostrarOpciones ? renderOpcionesModal() : ''}
       `;
-
+      
       lucide.createIcons();
     }
 
-    function setView(view) {
-      state.view = view;
-      render();
-    }
-
-    function renderContent() {
-      switch(state.view) {
-        case 'consulta': return renderConsulta();
-        case 'grid': return renderGrid();
-        case 'history': return renderHistory();
-        default: return renderConsulta();
-      }
-    }
-
-    function renderConsulta() {
-      return `
-        <div class="animate-in fade-in">
-          <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl font-black text-slate-900 uppercase tracking-tighter italic mb-4">Consulta tu Mesa de Votación</h2>
-            <p class="text-slate-500 text-lg max-w-2xl mx-auto">Ingresá tu número de cédula para conocer dónde te corresponde votar</p>
-          </div>
-
-          <div class="max-w-2xl mx-auto mb-16">
-            <div class="bg-white rounded-[2rem] p-4 shadow-2xl border border-slate-100">
-              <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1 relative">
-                  <svg class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                  <input type="text" id="consultaInput" placeholder="Ingresá tu número de cédula" 
-                    class="w-full pl-16 pr-6 py-5 text-xl font-bold border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:outline-none transition-all"
-                    onkeypress="if(event.key === 'Enter') buscarCedula()">
-                </div>
-                <button onclick="buscarCedula()" class="px-10 py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  BUSCAR
-                </button>
-              </div>
-            </div>
-          </div>
-
-          ${state.searching ? `
-            <div class="max-w-md mx-auto text-center py-16">
-              <div class="inline-block w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-6"></div>
-              <p class="text-slate-500 font-bold uppercase tracking-widest">Buscando en el padrón...</p>
-            </div>
-          ` : state.consultaResult ? renderResultado() : renderInfoCards()}
-        </div>
-      `;
-    }
-
-    function buscarCedula() {
-      const input = document.getElementById('consultaInput');
-      const cedula = input.value.trim();
-      if (cedula) consultarVotante(cedula);
-    }
-
-    function renderResultado() {
-      if (!state.consultaResult.encontrado) {
+    // ==================== RESULTADO DE CONSULTA ====================
+    function renderConsultaResultado() {
+      const r = state.consultaResultado;
+      if (!r.encontrado) {
         return `
-          <div class="max-w-md mx-auto bg-white rounded-[2rem] p-10 shadow-xl border border-rose-100 text-center">
-            <div class="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+          <div class="mt-3 bg-rose-50 border-2 border-rose-100 rounded-xl p-4 flex items-center gap-3 animate-in">
+            <div class="p-2 bg-rose-100 rounded-full text-rose-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
             </div>
-            <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight mb-3">Elector No Encontrado</h3>
-            <p class="text-slate-500 font-medium">La cédula <span class="font-black text-indigo-600">${state.consultaResult.cedula}</span> no fue hallada en el padrón electoral.</p>
-            <button onclick="state.consultaResult=null;render()" class="mt-8 px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all">
-              Realizar Nueva Búsqueda
-            </button>
+            <div>
+              <p class="font-black text-rose-800 text-sm">Cédula no encontrada</p>
+              <p class="text-xs text-rose-600">${r.cedula} no está en el padrón</p>
+            </div>
           </div>
         `;
       }
-
-      const r = state.consultaResult;
-      return `
-        <div class="max-w-2xl mx-auto">
-          <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2.5rem] p-8 text-white text-center mb-8 shadow-2xl">
-            <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <h3 class="text-3xl font-black uppercase tracking-tight mb-2">${r.nombre}</h3>
-            <p class="text-indigo-200 font-bold text-lg">Cédula: ${r.cedula}</p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100">
-              <div class="flex items-center gap-4 mb-6">
-                <div class="p-4 bg-indigo-100 rounded-2xl">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                </div>
-                <div>
-                  <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Local Electoral</p>
-                  <p class="text-xl font-black text-slate-900">${r.local}</p>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                  <span class="text-sm font-bold text-slate-500">Departamento</span>
-                  <span class="font-black text-slate-900">${r.departamento}</span>
-                </div>
-                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                  <span class="text-sm font-bold text-slate-500">Distrito</span>
-                  <span class="font-black text-slate-900">${r.distrito}</span>
-                </div>
-                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                  <span class="text-sm font-bold text-slate-500">Seccional</span>
-                  <span class="font-black text-slate-900">${r.seccional}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-[2rem] p-8 text-white shadow-xl">
-              <div class="text-center">
-                <p class="text-xs font-black uppercase tracking-widest opacity-80 mb-4">Tu Mesa de Votación</p>
-                <div class="w-32 h-32 bg-white/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
-                  <span class="text-6xl font-black">${r.mesa}</span>
-                </div>
-                <p class="text-sm font-bold opacity-80">Orden de Inscripción: ${r.orden}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-8 bg-emerald-50 border-2 border-emerald-100 rounded-[2rem] p-6 flex items-center gap-4">
-            <div class="p-3 bg-emerald-500 rounded-full text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-            </div>
-            <div>
-              <p class="font-black text-emerald-800 uppercase tracking-tight">Confirmado en Padrón</p>
-              <p class="text-sm text-emerald-600 font-medium">Tu voto está asegurado. Presentá este resultado al momento de votar.</p>
-            </div>
-          </div>
-
-          ${r.registroStatus ? `
-          <div class="mt-4 ${r.registroStatus === 'registrado' ? 'bg-blue-50 border-blue-100' : 'bg-amber-50 border-amber-100'} border-2 rounded-[2rem] p-6 flex items-center gap-4">
-            <div class="p-3 ${r.registroStatus === 'registrado' ? 'bg-blue-500' : 'bg-amber-500'} rounded-full text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            </div>
-            <div>
-              <p class="font-black ${r.registroStatus === 'registrado' ? 'text-blue-800' : 'text-amber-800'} uppercase tracking-tight">
-                ${r.registroStatus === 'registrado' ? 'Registro Guardado en Hoja' : 'Registro Pendiente de Sincronización'}
-              </p>
-              <p class="text-sm ${r.registroStatus === 'registrado' ? 'text-blue-600' : 'text-amber-600'} font-medium">
-                ${r.registroStatus === 'registrado' 
-                  ? 'La consulta fue registrada exitosamente en la planilla de control.' 
-                  : 'La consulta se guardó localmente y se sincronizará cuando haya conexión.'}
-              </p>
-            </div>
-          </div>
-          ` : ''}
-
-          <div class="text-center mt-8">
-            <button onclick="state.consultaResult=null;render()" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-lg">
-              Nueva Consulta
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderInfoCards() {
-      return `
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center hover:shadow-2xl transition-all">
-            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-            </div>
-            <h3 class="text-lg font-black text-slate-900 mb-2">Día de Elecciones</h3>
-            <p class="text-slate-500 text-sm">8 de diciembre de 2025</p>
-          </div>
-          <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center hover:shadow-2xl transition-all">
-            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-            </div>
-            <h3 class="text-lg font-black text-slate-900 mb-2">Inscripción Abierta</h3>
-            <p class="text-slate-500 text-sm">Verificá tus datos ahora</p>
-          </div>
-          <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center hover:shadow-2xl transition-all">
-            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            </div>
-            <h3 class="text-lg font-black text-slate-900 mb-2">Centro de Ayuda</h3>
-            <p class="text-slate-500 text-sm">0810-123-456</p>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderGrid() {
-      const stats = calculateStats();
-      return `
-        <div class="animate-in fade-in">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-[2rem] shadow-xl border border-slate-100">
-              <p class="text-xs uppercase font-black text-slate-400 mb-2 tracking-widest">Participación</p>
-              <div class="flex items-baseline gap-3">
-                <span class="text-4xl font-black text-slate-900">${((stats.totalVotaron / TOTAL_NUMBERS) * 100).toFixed(1)}%</span>
-                <span class="text-sm font-bold text-slate-400 uppercase">Mesa</span>
-              </div>
-            </div>
-            <div class="bg-indigo-600 p-6 rounded-[2rem] shadow-xl text-white">
-              <p class="text-xs uppercase font-black text-indigo-200 mb-2 tracking-widest">Equipo Local</p>
-              <div class="flex items-baseline gap-3">
-                <span class="text-4xl font-black">${((stats.equipoAsistio / IDS_EQUIPO_INICIAL.length) * 100).toFixed(1)}%</span>
-                <span class="text-sm font-bold text-indigo-200 uppercase">Presentes</span>
-              </div>
-            </div>
-            <div class="p-6 rounded-[2rem] shadow-xl border transition-all ${stats.controversias > 0 ? 'bg-rose-600 border-rose-500 text-white' : 'bg-white border-slate-100 text-slate-300'}">
-              <p class="text-xs uppercase font-black mb-2 tracking-widest">Controversias</p>
-              <div class="flex items-center gap-4">
-                <span class="text-4xl font-black">${stats.controversias}</span>
-                ${stats.controversias > 0 ? '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>' : ''}
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100">
-            <div class="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-20 gap-2">
-              ${Array.from({ length: TOTAL_NUMBERS }, (_, i) => i + 1).map(num => {
-                const voto = state.votos[num];
-                const esEquipo = IDS_EQUIPO_INICIAL.includes(num);
-                
-                let btnStyle = "bg-white text-slate-400 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600";
-                
-                if (voto?.controversia) {
-                  btnStyle = "bg-rose-600 text-white font-black border-rose-700 ring-4 ring-rose-200";
-                } else if (voto?.tipo === 'equipo') {
-                  btnStyle = "bg-indigo-600 text-white font-black border-indigo-700";
-                } else if (voto?.tipo === 'voto') {
-                  btnStyle = "bg-emerald-500 text-white font-bold border-emerald-600";
-                } else if (esEquipo) {
-                  btnStyle = "bg-slate-50 text-indigo-400 border-2 border-indigo-200 italic font-bold";
-                }
-
-                return `
-                  <button onclick="openElector(${num}, ${esEquipo})" class="aspect-square border rounded-xl transition-all duration-300 hover:scale-105 text-xs font-bold ${btnStyle}">
-                    ${num}
-                  </button>
-                `;
-              }).join('')}
-            </div>
-            <div class="mt-8 flex flex-wrap gap-4 justify-center">
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-white border border-slate-200 rounded"></div>
-                <span class="text-xs text-slate-500">Sin marcar</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-emerald-500 rounded"></div>
-                <span class="text-xs text-slate-500">Votó</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-indigo-600 rounded"></div>
-                <span class="text-xs text-slate-500">Equipo</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-rose-600 rounded"></div>
-                <span class="text-xs text-slate-500">Controversia</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderHistory() {
-      return `
-        <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in">
-          <div class="p-8 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <h2 class="font-black uppercase text-xl tracking-tight">Auditoría de Posta</h2>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest bg-white px-4 py-2 rounded-full border">Tiempo Real</span>
-          </div>
-          <div class="divide-y divide-slate-100">
-            ${state.transferLog.length === 0 ? `
-              <div class="p-24 text-center text-slate-300 italic font-bold text-lg">Sin transferencias aún...</div>
-            ` : state.transferLog.map((log, i) => `
-              <div class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                <div class="flex items-center gap-6">
-                  <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
-                  </div>
-                  <div>
-                    <p class="font-black text-slate-900 uppercase tracking-tight text-lg leading-none mb-2">${log.accion}</p>
-                    <p class="text-sm font-bold text-indigo-600">${log.de}</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-xs font-black text-slate-500 bg-slate-100 px-4 py-2 rounded-lg">${formatDate(log.timestamp)}</p>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderQRModal() {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('https://electoral-control.app/transfer?mesa=042&from=veedor-001')}`;
-      return `
-        <div class="fixed inset-0 bg-slate-900/90 backdrop-blur-2xl z-[100] flex items-center justify-center p-6">
-          <div class="bg-white rounded-[3rem] p-12 max-w-md w-full text-center shadow-2xl animate-in zoom-in">
-            <h2 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tighter italic">Pasar Posta</h2>
-            <div class="bg-slate-50 p-10 rounded-[3rem] inline-block mb-10 border-2 border-dashed border-slate-300">
-              <img src="${qrUrl}" alt="QR" class="w-56 h-56 mx-auto">
-            </div>
-            <button onclick="state.showQR=false;render()" class="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl uppercase text-sm tracking-widest shadow-xl">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function openElector(id, esEquipo) {
-      state.selectedElector = { id, esEquipo };
-      render();
-    }
-
-    function renderElectorModal() {
-      const { id, esEquipo } = state.selectedElector;
-      const voto = state.votos[id];
+      
+      const esMesaActual = r.mesa === state.mesaSeleccionada;
       
       return `
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-6">
-          <div class="bg-white rounded-[3rem] w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in">
-            <div class="p-10 text-white flex justify-between items-center ${esEquipo ? 'bg-indigo-600' : 'bg-emerald-600'}">
-              <div class="flex items-center gap-6">
-                <span class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center font-black text-3xl shadow-inner border border-white/30">
-                  ${id}
-                </span>
-                <div>
-                  <h3 class="font-black uppercase tracking-tighter text-2xl leading-none">Confirmar</h3>
-                  <p class="text-xs font-bold opacity-80 mt-2 uppercase tracking-widest">${esEquipo ? 'Nómina de Equipo' : 'Nómina General'}</p>
-                </div>
-              </div>
-              <button onclick="state.selectedElector=null;render()" class="p-2 hover:bg-white/10 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              </button>
+        <div class="mt-3 ${esMesaActual ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'} border-2 rounded-xl p-4 flex items-center gap-3 animate-in">
+          <div class="p-2 ${esMesaActual ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'} rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          </div>
+          <div class="flex-1">
+            <p class="font-black ${esMesaActual ? 'text-emerald-800' : 'text-amber-800'} text-sm">${r.nombre}</p>
+            <div class="flex gap-3 text-xs mt-1">
+              <span class="${esMesaActual ? 'text-emerald-600' : 'text-amber-600'} font-bold">Cédula: ${r.cedula}</span>
+              <span class="font-bold text-slate-500">Mesa: ${r.mesa}</span>
+              <span class="font-bold text-slate-500">Orden: ${r.orden}</span>
+            </div>
+            ${!esMesaActual ? `<p class="text-xs text-amber-700 mt-1 font-bold">⚠️ Esta persona vota en la MESA ${r.mesa}, no en esta mesa</p>` : ''}
+          </div>
+          ${esMesaActual ? `
+            <button onclick="marcarVoto(${r.orden}, 'voto'); state.consultaResultado=null; render();" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-all">
+              MARCAR VOTO
+            </button>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // ==================== MODAL DE OPCIONES ====================
+    function mostrarOpcionesVoto(orden) {
+      state.mostrarOpciones = { orden };
+      render();
+    }
+    
+    function renderOpcionesModal() {
+      const { orden } = state.mostrarOpciones;
+      const elector = state.padron.find(p => p.mesa === state.mesaSeleccionada && p.orden === orden);
+      
+      return `
+        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="state.mostrarOpciones=null; render();">
+          <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl animate-in" onclick="event.stopPropagation()">
+            <div class="text-center mb-6">
+              <span class="text-4xl font-black text-indigo-900">${orden}</span>
+              ${elector ? `<p class="text-sm font-bold text-slate-600 mt-1">${elector.nombreCompleto}</p>` : ''}
             </div>
             
-            <div class="p-10 space-y-6">
-              ${voto?.controversia ? `
-                <div class="bg-rose-50 border-2 border-rose-100 p-6 rounded-[2rem] flex gap-4 text-rose-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                  <p class="text-xs font-bold leading-tight">Otro veedor registró una opción distinta. Verifique el dato físico.</p>
-                </div>
-              ` : ''}
-
-              <div class="flex flex-col gap-4">
-                ${esEquipo ? `
-                  <button onclick="handleMarcar(${id}, 'equipo')" class="w-full flex items-center justify-between p-8 bg-indigo-50 hover:bg-indigo-100 border-2 border-indigo-200 rounded-[2rem] transition-all group shadow-sm">
-                    <div class="flex items-center gap-4">
-                      <div class="p-4 bg-white rounded-2xl shadow-sm text-indigo-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                      </div>
-                      <span class="text-sm font-black uppercase tracking-widest text-indigo-800">Presente Equipo</span>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-                  </button>
-                ` : `
-                  <button onclick="handleMarcar(${id}, 'voto')" class="w-full flex items-center justify-between p-8 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 rounded-[2rem] transition-all group shadow-sm">
-                    <div class="flex items-center gap-4">
-                      <div class="p-4 bg-white rounded-2xl shadow-sm text-emerald-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-                      </div>
-                      <span class="text-sm font-black uppercase tracking-widest text-emerald-800">Marcar Voto</span>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-                  </button>
-                `}
-              </div>
-
-              <div class="pt-6 border-t border-slate-100 flex justify-between items-center text-xs font-black tracking-widest text-slate-300">
-                <span class="italic uppercase">Mesa 042</span>
-                <span class="uppercase text-indigo-400">Verificación Biométrica</span>
-              </div>
+            <div class="space-y-3">
+              <button onclick="marcarVoto(${orden}, 'voto'); state.mostrarOpciones=null; render();" 
+                class="w-full flex items-center justify-center gap-3 p-4 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 rounded-[1.5rem] transition-all font-black text-emerald-800">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                VOTÓ
+              </button>
+              
+              <button onclick="marcarVoto(${orden}, 'ausente'); state.mostrarOpciones=null; render();" 
+                class="w-full flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 rounded-[1.5rem] transition-all font-black text-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                AUSENTE
+              </button>
+              
+              <button onclick="state.mostrarOpciones=null; render();" 
+                class="w-full py-3 text-slate-400 hover:text-slate-600 font-bold text-sm transition-all">
+                CANCELAR
+              </button>
             </div>
           </div>
         </div>
       `;
     }
 
+    // ==================== QR MODAL ====================
+    function renderQRModal() {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent('https://seccional40.web.app/transfer?mesa=' + state.mesaSeleccionada)}`;
+      return `
+        <div class="fixed inset-0 bg-slate-900/90 backdrop-blur-2xl z-[100] flex items-center justify-center p-6">
+          <div class="bg-white rounded-[3rem] p-8 max-w-md w-full text-center shadow-2xl animate-in">
+            <h2 class="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tighter">Pasar Posta</h2>
+            <p class="text-sm text-slate-500 mb-6">Mesa ${state.mesaSeleccionada}</p>
+            <div class="bg-slate-50 p-8 rounded-[2rem] inline-block mb-6 border-2 border-dashed border-slate-300">
+              <img src="${qrUrl}" alt="QR" class="w-48 h-48 mx-auto">
+            </div>
+            <button onclick="state.showQR=false; render()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl text-sm tracking-widest shadow-xl">
+              CERRAR
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== INICIALIZAR ====================
     render();
   </script>
 </body>
