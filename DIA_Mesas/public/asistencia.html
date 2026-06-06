@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js?v=2"></script>
+    <style>
+        /* ============================================
+           CSS PREMIUM 5X - Instituto Superior Centuria
+           ============================================ */
+
+        /* === Reset & Base === */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #0366d6;
+            --primary-dark: #0255a3;
+            --primary-light: #e8f0fe;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* === Animaciones === */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        .animate-in-delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .animate-in-delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .animate-in-delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+        /* === Layout Principal === */
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            gap: 24px;
+            padding: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+            height: 100vh;
+            align-items: start;
+            position: relative;
+        }
+
+        /* === Panel Izquierdo === */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: calc(100vh - 32px);
+            overflow: hidden;
+        }
+
+        /* === Header Card === */
+        .header-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header-card h1 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-card h1 i {
+            background: rgba(255,255,255,0.2);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-card p {
+            font-size: 12px;
+            opacity: 0.9;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.4;
+        }
+
+        .institution-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.15);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* === Link Box === */
+        .link-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .link-box:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--primary-light);
+        }
+
+        .link-box .link-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 2px;
+        }
+
+        .link-box a {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .link-box a:hover {
+            color: var(--primary-dark);
+        }
+
+        .link-box button {
+            margin: 0;
+            padding: 6px 10px;
+            font-size: 11px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary-light);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .link-box button:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(3,102,214,0.3);
+        }
+
+        /* === Form Card === */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            flex: 1;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-card h2 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+        }
+
+        .form-card h2 i {
+            color: var(--primary);
+            background: var(--primary-light);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* === Form Groups === */
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .career-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+            font-size: 9px;
+        }
+
+        input, select, textarea {
+            font-family: inherit;
+            padding: 6px 10px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            width: 100%;
+            background: var(--card-bg);
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23718096'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 14px;
+            padding-right: 28px;
+        }
+
+        textarea {
+            resize: none;
+            min-height: 32px;
+        }
+
+        .career-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 11px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .career-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .career-btn.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary-light) 0%, #dbeafe 100%);
+            box-shadow: 0 0 0 3px rgba(3,102,214,0.15);
+        }
+
+        .career-btn .icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .career-btn:hover .icon-box {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .career-btn.selected .icon-box {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .career-btn .check {
+            margin-left: auto;
+            color: var(--primary);
+            opacity: 0;
+            transform: scale(0) rotate(-180deg);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .career-btn.selected .check {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .career-btn .sub {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 0px;
+        }
+
+        /* === Submit Button === */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(3,102,214,0.3);
+            margin-top: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(3,102,214,0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit i {
+            font-size: 14px;
+        }
+
+        /* === Status Messages === */
+        .status-msg {
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .status-msg.info {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .status-msg.success {
+            background: linear-gradient(135deg, var(--success-light) 0%, #c3e6cb 100%);
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status-msg.error {
+            background: linear-gradient(135deg, var(--danger-light) 0%, #f5c6cb 100%);
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-msg i {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        /* === Top Row (Header + QR) === */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 110px;
+            gap: 12px;
+            align-items: stretch;
+            position: relative;
+        }
+
+        /* === QR Top Card === */
+        .qr-top-card {
+            background: var(--card-bg);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 8px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .qr-top-card:hover, .qr-top-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--primary-light) 100%);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .qr-top-card.active {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 260px;
+            z-index: 10;
+            border-radius: var(--radius-lg);
+            padding: 12px;
+        }
+
+        .qr-top-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .qr-top-wrap {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }
+
+        .qr-top-card.active .qr-top-wrap {
+            height: 200px;
+        }
+
+        .qr-top-wrap img, .qr-top-wrap canvas {
+            max-height: 40px;
+            max-width: 100%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .qr-top-card.active .qr-top-wrap img,
+        .qr-top-card.active .qr-top-wrap canvas {
+            max-height: 180px;
+        }
+
+        .qr-top-hint {
+            font-size: 8px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+
+        .sync-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius);
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sync-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(3,102,214,0.05) 0%, transparent 70%);
+        }
+
+        .sync-box h3 {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .sync-box h3 i {
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        .sync-box p {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: 0;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(3,102,214,0.1);
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        .link-box:hover {
+            box-shadow: var(--shadow);
+            border-color: var(--primary-light);
+        }
+
+        .link-box .link-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+
+        .link-box a {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .link-box a:hover {
+            color: var(--primary-dark);
+        }
+
+        .link-box button {
+            margin: 0;
+            padding: 8px 14px;
+            font-size: 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary-light);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .link-box button:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(3,102,214,0.3);
+        }
+
+        /* === Form Card === */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+
+        .form-card h2 i {
+            color: var(--primary);
+            background: var(--primary-light);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* === Form Groups === */
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .career-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+            font-size: 10px;
+        }
+
+        input, select, textarea {
+            font-family: inherit;
+            padding: 8px 12px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            width: 100%;
+            background: var(--card-bg);
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23718096'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            padding-right: 32px;
+        }
+
+        textarea {
+            resize: none;
+            min-height: 40px;
+        }
+
+        /* === Career Buttons === */
+
+        .career-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 12px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .career-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .career-btn.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary-light) 0%, #dbeafe 100%);
+            box-shadow: 0 0 0 3px rgba(3,102,214,0.15);
+        }
+
+        .career-btn .icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .career-btn:hover .icon-box {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.08);
+        }
+
+        .career-btn.selected .icon-box {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.08);
+        }
+
+        .career-btn .check {
+            margin-left: auto;
+            color: var(--primary);
+            opacity: 0;
+            transform: scale(0) rotate(-180deg);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 12px;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .career-btn.selected .check {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .career-btn .sub {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        /* === Submit Button === */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(3,102,214,0.3);
+            margin-top: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(3,102,214,0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit i {
+            font-size: 16px;
+        }
+
+        /* === Status Messages === */
+        .status-msg {
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .status-msg.info {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .status-msg.success {
+            background: linear-gradient(135deg, var(--success-light) 0%, #c3e6cb 100%);
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status-msg.error {
+            background: linear-gradient(135deg, var(--danger-light) 0%, #f5c6cb 100%);
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-msg i {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* === Top Row (Header + QR) === */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 130px;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        /* === QR Top Card === */
+        .qr-top-card {
+            background: var(--card-bg);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .qr-top-card:hover, .qr-top-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--primary-light) 100%);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .qr-top-card.active {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 280px;
+            z-index: 200;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .qr-top-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 6px;
+        }
+
+        .qr-top-wrap {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }
+
+        .qr-top-card.active .qr-top-wrap {
+            height: 220px;
+        }
+
+        .qr-top-wrap img, .qr-top-wrap canvas {
+            max-height: 50px;
+            max-width: 100%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .qr-top-card.active .qr-top-wrap img,
+        .qr-top-card.active .qr-top-wrap canvas {
+            max-height: 200px;
+        }
+
+        .qr-top-hint {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+
+        .sync-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius);
+            padding: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sync-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(3,102,214,0.05) 0%, transparent 70%);
+        }
+
+        .sync-box h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .sync-box h3 i {
+            color: var(--primary);
+        }
+
+        .sync-box p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+            position: relative;
+        }
+
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: 600;
+            background: rgba(3,102,214,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* === Side Panel (Recent Attendances) === */
+        .side-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 48px);
+            box-shadow: var(--shadow);
+            animation: slideInRight 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .side-panel-header {
+            padding: 14px 16px;
+            border-bottom: 2px solid var(--border-light);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .side-panel-header .panel-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2px;
+        }
+
+        .side-panel-header h2 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .registros-count {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            min-width: 60px;
+        }
+
+        .registros-count .number {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1;
+            display: block;
+        }
+
+        .registros-count .label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            margin-top: 2px;
+            display: block;
+        }
+
+        /* === Table === */
+        .table-wrap {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .table-wrap::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .table-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .table-wrap::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 11px;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 2px solid var(--border);
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+        tbody td {
+            border-bottom: 1px solid var(--border-light);
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        tbody td:first-child { max-width: 80px; }
+        tbody td:nth-child(2) { max-width: 180px; }
+        tbody td:nth-child(3) { max-width: 60px; }
+        tbody td:nth-child(4) { max-width: 100px; }
+
+        tbody tr {
+            transition: var(--transition);
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transform: scale(1.01);
+            box-shadow: var(--shadow-sm);
+            z-index: 1;
+            position: relative;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* === Fecha header en tabla === */
+        .fecha-header {
+            background: linear-gradient(135deg, #e8f0fe 0%, #d1e3fc 100%) !important;
+        }
+
+        .fecha-header td {
+            padding: 6px 10px !important;
+            border-bottom: 2px solid #aecbfa;
+        }
+
+        .fecha-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #174ea6;
+        }
+
+        .fecha-badge i {
+            font-size: 12px;
+        }
+
+        .fecha-texto {
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .fecha-count {
+            margin-left: auto;
+            background: #174ea6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+
+        .registro-row td {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .registro-row:hover {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .hora-cell {
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Segoe UI', monospace;
+            font-size: 11px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 12px;
+            color: #d1d5da;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* === Estado indicators in table === */
+        .estado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .estado-presente {
+            background: var(--success-light);
+            color: #155724;
+        }
+
+        .estado-tarde {
+            background: var(--warning-light);
+            color: #856404;
+        }
+
+        /* === Responsive === */
+        @media (max-width: 1200px) {
+            body { overflow: auto; height: auto; }
+            .main-wrapper {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 16px;
+                gap: 16px;
+            }
+            .left-panel { height: auto; overflow: visible; }
+            .side-panel { height: auto; max-height: 500px; margin-top: 16px; }
+        }
+
+        @media (max-width: 640px) {
+            .main-wrapper { padding: 12px; gap: 12px; }
+            .header-card { padding: 16px 18px; }
+            .header-card h1 { font-size: 18px; }
+            .header-card h1 i { width: 32px; height: 32px; font-size: 14px; }
+            .form-card { padding: 14px; }
+            .career-btn { padding: 10px 12px; font-size: 12px; }
+            .career-btn .icon-box { width: 28px; height: 28px; font-size: 12px; }
+            .btn-submit { padding: 10px 16px; font-size: 13px; }
+        }
+
+        /* === Loading State === */
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        /* === Pulse animation for live indicator === */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .live-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Panel izquierdo: Header, Link, Formulario, QR, Sync -->
+        <div class="left-panel">
+            <div class="top-row">
+                <div class="header-card animate-in">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                        <div class="institution-badge">
+                            <i class="fas fa-university"></i> Instituto Superior Centuria
+                        </div>
+                        <a href="index.html" style="color:white;font-size:11px;text-decoration:none;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;backdrop-filter:blur(10px);transition:all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)';" onmouseout="this.style.background='rgba(255,255,255,0.15)';">
+                            <i class="fas fa-home" style="font-size:10px;"></i> Volver al inicio
+                        </a>
+                    </div>
+                    <h1><i class="fas fa-graduation-cap"></i> Registro de Asistencia</h1>
+                    <p>Complete el formulario para registrar su asistencia. También puede escanear el QR para acceder desde su celular.</p>
+                </div>
+
+                <div class="qr-top-card" onclick="this.classList.toggle('active')">
+                    <div class="qr-top-label">QR de acceso rápido</div>
+                    <div class="qr-top-wrap"><div id="attendance-qr"></div></div>
+                    <div class="qr-top-hint">Escanee para registrar desde el celular</div>
+                </div>
+            </div>
+
+            <div class="link-box animate-in animate-in-delay-1">
+                <div style="min-width:0">
+                    <div class="link-label">Enlace de acceso</div>
+                    <a id="attendance-page-link" href="#"></a>
+                </div>
+                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('attendance-page-link').href).then(()=>alert('Enlace copiado al portapapeles!'))">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+            </div>
+
+            <div class="form-card animate-in animate-in-delay-2">
+                <h2><i class="fas fa-clipboard-check"></i> Registrar Asistencia</h2>
+                <form id="attendance-registration-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-id-card"></i> Cédula o matrícula</label>
+                            <input id="attendance-id" type="text" required placeholder="Ej: 1234567">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nombre y apellido</label>
+                            <input id="attendance-name" type="text" required placeholder="Ej: Juan Pérez">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Seleccione su Carrera</label>
+                        <div class="career-list" id="career-buttons-container">
+                            <button type="button" data-career="ADMINISTRACION DE EMPRESAS" onclick="selectCareer(this)" class="career-btn">
+                                <div class="icon-box"><i class="fas fa-building"></i></div>
+                                <div>
+                                    ADMINISTRACIÓN DE EMPRESAS
+                                    <span class="sub">Carrera empresarial</span>
+                                </div>
+                                <div class="check"><i class="fas fa-check"></i></div>
+                            </button>
+                            <button type="button" data-career="ADMINISTRACION Y GESTION" onclick="selectCareer(this)" class="career-btn">
+                                <div class="icon-box"><i class="fas fa-tasks"></i></div>
+                                <div>
+                                    ADMINISTRACIÓN Y GESTIÓN
+                                    <span class="sub">Gestión organizacional</span>
+                                </div>
+                                <div class="check"><i class="fas fa-check"></i></div>
+                            </button>
+                        </div>
+                        <input type="hidden" id="attendance-career" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Estado</label>
+                            <select id="attendance-state" required>
+                                <option value="Presente">Presente</option>
+                                <option value="Tarde">Tarde</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-sticky-note" style="color:var(--text-muted)"></i> Observación <span style="font-weight:normal;color:var(--text-muted)">(Opcional)</span></label>
+                            <textarea id="attendance-notes" rows="1" placeholder="Ej: Llegada tardía, clase virtual, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check-circle"></i> Registrar Asistencia
+                    </button>
+
+                    <div id="attendance-form-status" class="status-msg info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Complete todos los campos para registrar su asistencia.</span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sync-box animate-in animate-in-delay-2">
+                <h3><i class="fas fa-sync-alt"></i> Sincronización</h3>
+                <p>Las asistencias se guardan automáticamente en la planilla del docente y se reflejan en el panel de seguimiento.</p>
+                <div class="sync-badge">
+                    <i class="fas fa-shield-alt"></i> Datos protegidos y respaldados
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Panel de Control Electoral -->
+        <div class="side-panel">
+            <div class="side-panel-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
+                <div>
+                    <div class="panel-title" style="color: #94a3b8;">Panel de Control</div>
+                    <h2 style="color: white;"><i class="fas fa-chart-bar" style="color: #60a5fa;"></i> Participación Electoral</h2>
+                </div>
+                <div class="registros-count" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);">
+                    <span class="number" id="votos-total-count">0</span>
+                    <span class="label">votos</span>
+                </div>
+            </div>
+            <div class="table-wrap" id="panel-electoral-content">
+                <div style="padding: 20px;">
+                    <!-- Estadísticas generales -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); border-radius: 16px; padding: 16px; text-align: center; color: white; box-shadow: 0 4px 12px rgba(30,58,87,0.3);">
+                            <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Mesas Activas</div>
+                            <div style="font-size: 28px; font-weight: 800; color: white;" id="mesas-activas-count">-</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #064e3b 0%, #059669 100%); border-radius: 16px; padding: 16px; text-align: center; color: white; box-shadow: 0 4px 12px rgba(5,150,105,0.3);">
+                            <div style="font-size: 10px; font-weight: 700; color: #a7f3d0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Participación</div>
+                            <div style="font-size: 28px; font-weight: 800; color: white;" id="participacion-porcentaje">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Barra de progreso general -->
+                    <div style="background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Progreso General</span>
+                            <span style="font-size: 13px; font-weight: 700; color: #0366d6;" id="progreso-texto">0 / 0</span>
+                        </div>
+                        <div style="width: 100%; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden;">
+                            <div id="barra-progreso" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0366d6, #059669); border-radius: 5px; transition: width 0.5s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #64748b;">
+                            <span id="resumen-votos"><i class="fas fa-check-circle" style="color: #059669;"></i> 0 votos</span>
+                            <span id="resumen-ausentes"><i class="fas fa-times-circle" style="color: #94a3b8;"></i> 0 ausentes</span>
+                            <span id="resumen-controversias"><i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i> 0 controversias</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Mesas -->
+                    <div style="background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <div style="font-size: 12px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+                            <i class="fas fa-table" style="margin-right: 4px; color: #0366d6;"></i>Reporte por Mesa
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 8px; text-align: left; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;">Mesa</th>
+                                        <th style="padding: 8px; text-align: center; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;">Total</th>
+                                        <th style="padding: 8px; text-align: center; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;">Votos</th>
+                                        <th style="padding: 8px; text-align: center; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;">%</th>
+                                        <th style="padding: 8px; text-align: center; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0;">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-mesas">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">
+                                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Cargando datos...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Lista de mesas con barras -->
+                    <div style="font-size: 12px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+                        <i class="fas fa-chart-bar" style="margin-right: 4px; color: #0366d6;"></i>Progreso por Mesa
+                    </div>
+                    <div id="lista-mesas" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 12px;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                            Cargando datos...
+                        </div>
+                    </div>
+
+                    <!-- Leyenda -->
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #f1f5f9; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569; font-weight: 600;">
+                            <div style="width: 12px; height: 12px; background: #059669; border-radius: 3px;"></div> Votó
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569; font-weight: 600;">
+                            <div style="width: 12px; height: 12px; background: #94a3b8; border-radius: 3px;"></div> Ausente
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569; font-weight: 600;">
+                            <div style="width: 12px; height: 12px; background: #dc2626; border-radius: 3px;"></div> Controversia
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Asistencias recientes (con scroll propio) -->
+        <div class="side-panel" style="margin-top: 16px;">
+            <div class="side-panel-header">
+                <div>
+                    <div class="panel-title">Panel rápido</div>
+                    <h2>Asistencias recientes</h2>
+                </div>
+                <div class="registros-count">
+                    <span class="number" id="public-attendance-count">0</span>
+                    <span class="label">asistentes</span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Alumno</th>
+                            <th>Doc.</th>
+                            <th>Carrera</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-attendance-body">
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <div class="empty-state-text">Aún no hay registros</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Override renderPublicAttendancePreview para usar estilos personalizados de esta pagina
+        window.renderPublicAttendancePreview = function(records) {
+            const tbody = document.getElementById('public-attendance-body');
+            const counter = document.getElementById('public-attendance-count');
+            if (!tbody) return;
+
+            const safeRecords = Array.isArray(records) ? records : [];
+
+            // Extraer fecha y hora de cada registro
+            const registrosConFecha = safeRecords.map(r => {
+                const marcaTemporal = r.marcaTemporal || r['Marca Temporal'] || r['Timestamp'] || r.timestamp || r.Fecha || '';
+                const nombre = r.nombre || r['Nombre'] || r.studentName || r.Nombre || '';
+                const cedula = (r.cedula || r['Cédula'] || r['Cedula'] || r.studentId || r.Cedula || '').toString().replace(/\./g, '').trim();
+                const carrera = r.carrera || r['Carrera'] || r.career || r.Carrera || '';
+
+                let fecha = '';
+                let hora = '';
+                const str = String(marcaTemporal).trim();
+                
+                // Intentar parsear como Date para convertir zona horaria correctamente
+                const d = new Date(str);
+                if (!isNaN(d.getTime())) {
+                    // Formatear fecha como dd/mm/yyyy
+                    const dia = String(d.getDate()).padStart(2, '0');
+                    const mes = String(d.getMonth() + 1).padStart(2, '0');
+                    const anio = d.getFullYear();
+                    fecha = dia + '/' + mes + '/' + anio;
+                    // Formatear hora local (Paraguay)
+                    const horas = String(d.getHours()).padStart(2, '0');
+                    const minutos = String(d.getMinutes()).padStart(2, '0');
+                    hora = horas + ':' + minutos;
+                } else if (str.includes(' ')) {
+                    // formato: "06/06/2026 02:35"
+                    const partes = str.split(' ');
+                    fecha = partes[0];
+                    hora = partes[1] ? partes[1].substring(0, 5) : '';
+                } else if (str.includes('/')) {
+                    // formato: "06/06/2026"
+                    fecha = str;
+                } else if (str.includes('-') && str.length <= 10) {
+                    // formato: "2026-06-06" (solo fecha)
+                    fecha = str;
+                } else {
+                    fecha = str;
+                }
+
+                return { fecha, hora, nombre: (nombre || '').toUpperCase().trim(), cedula, carrera };
+            }).filter(r => r.nombre || r.cedula);
+
+            // Contar asistentes unicos totales
+            const cedulasUnicas = new Set(registrosConFecha.map(r => r.cedula).filter(Boolean)).size;
+            if (counter) counter.textContent = String(cedulasUnicas);
+
+            if (!registrosConFecha.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-inbox"></i><div class="empty-state-text">Aún no hay registros</div></td></tr>';
+                return;
+            }
+
+            // Funcion para formatear fecha corta
+            function formatearFechaCorta(fechaStr) {
+                if (!fechaStr || fechaStr === 'Sin fecha') return 'Sin fecha';
+                try {
+                    const dias = ['DOM','LUN','MAR','MIE','JUE','VIE','SAB'];
+                    let d;
+                    if (fechaStr.includes('/')) {
+                        // dd/mm/yyyy
+                        const partes = fechaStr.split('/');
+                        if (partes[2] && partes[2].length === 4) {
+                            d = new Date(parseInt(partes[2]), parseInt(partes[1])-1, parseInt(partes[0]));
+                        } else {
+                            d = new Date(parseInt(partes[2])+2000, parseInt(partes[1])-1, parseInt(partes[0]));
+                        }
+                    } else if (fechaStr.includes('-') && fechaStr.length === 10) {
+                        // yyyy-mm-dd
+                        const partes = fechaStr.split('-');
+                        d = new Date(parseInt(partes[0]), parseInt(partes[1])-1, parseInt(partes[2]));
+                    } else {
+                        return fechaStr;
+                    }
+                    if (isNaN(d.getTime())) return fechaStr;
+                    const diaSemana = dias[d.getDay()];
+                    const dia = String(d.getDate()).padStart(2, '0');
+                    const mes = String(d.getMonth()+1).padStart(2, '0');
+                    const anio = d.getFullYear();
+                    return diaSemana + ' ' + dia + '/' + mes + '/' + anio;
+                } catch(e) {
+                    return fechaStr;
+                }
+            }
+
+            // Agrupar por fecha
+            const porFecha = {};
+            registrosConFecha.forEach(r => {
+                const key = r.fecha || 'Sin fecha';
+                if (!porFecha[key]) porFecha[key] = [];
+                porFecha[key].push(r);
+            });
+
+            // Ordenar fechas (mas reciente primero)
+            const fechasOrdenadas = Object.keys(porFecha).sort().reverse();
+
+            const showDetails = (typeof isTeacherSessionActive === 'function') ? isTeacherSessionActive() : false;
+
+            let html = '';
+            fechasOrdenadas.forEach(fecha => {
+                const lista = porFecha[fecha];
+                const unicosDia = new Set(lista.map(r => r.cedula).filter(Boolean)).size;
+                const fechaCorta = formatearFechaCorta(fecha);
+
+                // Fila de fecha (header del dia)
+                html += `<tr class="fecha-header">
+                    <td colspan="4">
+                        <div class="fecha-badge">
+                            <i class="fas fa-calendar-day"></i>
+                            <span class="fecha-texto">${fechaCorta}</span>
+                            <span class="fecha-count">${unicosDia} asistentes</span>
+                        </div>
+                    </td>
+                </tr>`;
+
+                if (showDetails) {
+                    // Filas de cada registro (hora + datos) solo en modo docente
+                    lista.forEach(r => {
+                        html += `<tr class="registro-row">
+                            <td class="hora-cell">${r.hora || '--:--'}</td>
+                            <td>${r.nombre}</td>
+                            <td>${r.cedula}</td>
+                            <td>${r.carrera}</td>
+                        </tr>`;
+                    });
+                } else {
+                    // Modo publico: solo mensaje de privacidad
+                    html += `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);font-size:11px;padding:8px;">
+                        <i class="fas fa-shield-alt" style="margin-right:4px;"></i>Datos protegidos. Inicie sesión como docente para ver detalles.
+                    </td></tr>`;
+                }
+            });
+
+            tbody.innerHTML = html;
+        };
+
+        // Asegurar que refreshAttendanceData consulte la API correctamente
+        const _origRefresh = window.refreshAttendanceData;
+        window.refreshAttendanceData = async function() {
+            try {
+                const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                const apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+                const csvUrl = (typeof getAttendanceCsvUrl === 'function') ? getAttendanceCsvUrl() : '';
+                let records = [];
+
+                // 1. Intentar API primero (Registro sheet)
+                if (apiUrl) {
+                    try {
+                        const url = apiKey ? (apiUrl + (apiUrl.includes('?') ? '&' : '?') + 'apiKey=' + encodeURIComponent(apiKey)) : apiUrl;
+                        const resp = await fetch(url, { method: 'GET' });
+                        if (resp.ok) {
+                            const payload = await resp.json();
+                            const source = Array.isArray(payload) ? payload : (Array.isArray(payload?.records) ? payload.records : (Array.isArray(payload?.registros) ? payload.registros : []));
+                            if (source && source.length) {
+                                records = source.map(function(r) {
+                                    return {
+                                        marcaTemporal: r.marcaTemporal || r.MarcaTemporal || r['Marca Temporal'] || r.Fecha || '',
+                                        nombre: r.nombre || r.Nombre || r.studentName || '',
+                                        cedula: (r.cedula || r.Cedula || r.studentId || '').toString().replace(/\./g, '').trim(),
+                                        carrera: r.carrera || r.Carrera || r.career || ''
+                                    };
+                                }).filter(function(r) { return r.nombre || r.cedula; });
+                            }
+                        }
+                    } catch(e) { console.warn('API error:', e); }
+                }
+
+                // 2. Si API vacia, intentar CSV
+                if (!records.length && csvUrl) {
+                    try {
+                        const resp = await fetch(csvUrl);
+                        if (resp.ok) {
+                            const text = await resp.text();
+                            if (typeof parseCSVToAttendance === 'function') {
+                                records = parseCSVToAttendance(text);
+                            }
+                        }
+                    } catch(e) { console.warn('CSV error:', e); }
+                }
+
+                // 3. Si aun vacia, fallback localStorage
+                if (!records.length && typeof loadAttendanceRecords === 'function') {
+                    records = loadAttendanceRecords();
+                }
+
+                renderPublicAttendancePreview(records);
+                if (typeof renderAttendance === 'function') renderAttendance();
+                return records;
+            } catch (err) {
+                console.error('refreshAttendanceData error:', err);
+                if (typeof loadAttendanceRecords === 'function') {
+                    const recs = loadAttendanceRecords();
+                    renderPublicAttendancePreview(recs);
+                    return recs;
+                }
+                return [];
+            }
+        };
+
+        // ==================== PANEL DE CONTROL ELECTORAL ====================
+        function cargarPanelElectoral() {
+            try {
+                // Leer datos del sistema de votación (del localStorage de index.html)
+                const datosGuardados = localStorage.getItem('seccional40_votos');
+                const datosVotos = datosGuardados ? JSON.parse(datosGuardados) : {};
+                
+                // Leer datos del padrón
+                const padronGuardado = localStorage.getItem('seccional40_padron');
+                const padron = padronGuardado ? JSON.parse(padronGuardado) : [];
+                
+                // Si no hay datos, mostrar mensaje
+                if (!padron || padron.length === 0) {
+                    const mensajeHTML = `
+                        <div style="text-align: center; color: #94a3b8; padding: 30px;">
+                            <i class="fas fa-info-circle" style="font-size: 32px; margin-bottom: 12px; display: block; color: #cbd5e1;"></i>
+                            <p style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">No hay datos de mesas cargados</p>
+                            <p style="font-size: 12px;">Acceda al sistema de votación para cargar el padrón electoral</p>
+                        </div>
+                    `;
+                    document.getElementById('lista-mesas').innerHTML = mensajeHTML;
+                    document.getElementById('tabla-mesas').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">Sin datos disponibles</td></tr>`;
+                    return;
+                }
+                
+                // Agrupar por mesa
+                const mesas = {};
+                padron.forEach(p => {
+                    if (!mesas[p.mesa]) {
+                        mesas[p.mesa] = { total: 0, votos: 0, ausentes: 0, controversias: 0 };
+                    }
+                    mesas[p.mesa].total++;
+                });
+                
+                // Contar votos por mesa
+                Object.keys(datosVotos).forEach(orden => {
+                    const voto = datosVotos[orden];
+                    const elector = padron.find(p => p.orden === parseInt(orden));
+                    if (elector) {
+                        if (voto.tipo === 'voto') {
+                            mesas[elector.mesa].votos++;
+                        } else if (voto.tipo === 'ausente') {
+                            mesas[elector.mesa].ausentes++;
+                        }
+                        if (voto.controversia) {
+                            mesas[elector.mesa].controversias++;
+                        }
+                    }
+                });
+                
+                // Calcular estadísticas
+                const totalMesas = Object.keys(mesas).length;
+                const totalElectores = padron.length;
+                const totalVotos = Object.values(mesas).reduce((sum, m) => sum + m.votos, 0);
+                const totalAusentes = Object.values(mesas).reduce((sum, m) => sum + m.ausentes, 0);
+                const totalControversias = Object.values(mesas).reduce((sum, m) => sum + m.controversias, 0);
+                const participacion = totalElectores > 0 ? ((totalVotos / totalElectores) * 100).toFixed(1) : 0;
+                
+                // Actualizar contadores superiores
+                document.getElementById('votos-total-count').textContent = totalVotos;
+                document.getElementById('mesas-activas-count').textContent = totalMesas;
+                document.getElementById('participacion-porcentaje').textContent = participacion + '%';
+                document.getElementById('progreso-texto').textContent = `${totalVotos} / ${totalElectores}`;
+                document.getElementById('barra-progreso').style.width = participacion + '%';
+                
+                // Actualizar resumen
+                document.getElementById('resumen-votos').innerHTML = `<i class="fas fa-check-circle" style="color: #059669;"></i> ${totalVotos} votos`;
+                document.getElementById('resumen-ausentes').innerHTML = `<i class="fas fa-times-circle" style="color: #94a3b8;"></i> ${totalAusentes} ausentes`;
+                document.getElementById('resumen-controversias').innerHTML = `<i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i> ${totalControversias} controversias`;
+                
+                // Generar tabla de mesas
+                const tablaMesas = document.getElementById('tabla-mesas');
+                let tablaHTML = '';
+                
+                Object.keys(mesas).sort((a, b) => a - b).forEach(mesa => {
+                    const m = mesas[mesa];
+                    const porcentaje = m.total > 0 ? ((m.votos / m.total) * 100).toFixed(1) : 0;
+                    const color = porcentaje >= 80 ? '#059669' : porcentaje >= 50 ? '#0366d6' : porcentaje >= 30 ? '#d97706' : '#dc2626';
+                    const bgColor = porcentaje >= 80 ? '#ecfdf5' : porcentaje >= 50 ? '#eff6ff' : porcentaje >= 30 ? '#fffbeb' : '#fef2f2';
+                    const estadoTexto = porcentaje >= 80 ? 'Excelente' : porcentaje >= 50 ? 'Bueno' : porcentaje >= 30 ? 'Regular' : 'Bajo';
+                    
+                    tablaHTML += `
+                        <tr style="border-bottom: 1px solid #f1f5f9; transition: all 0.2s;">
+                            <td style="padding: 10px 8px; font-weight: 700; color: #1e293b;">
+                                <i class="fas fa-hashtag" style="color: #94a3b8; margin-right: 4px;"></i>${mesa}
+                                ${m.controversias > 0 ? `<span style="background: #fee2e2; color: #dc2626; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 4px;"><i class="fas fa-exclamation-triangle"></i> ${m.controversias}</span>` : ''}
+                            </td>
+                            <td style="padding: 10px 8px; text-align: center; color: #475569; font-weight: 600;">${m.total}</td>
+                            <td style="padding: 10px 8px; text-align: center; color: #059669; font-weight: 700;">${m.votos}</td>
+                            <td style="padding: 10px 8px; text-align: center; font-weight: 800; color: ${color};">${porcentaje}%</td>
+                            <td style="padding: 10px 8px; text-align: center;">
+                                <span style="background: ${bgColor}; color: ${color}; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">${estadoTexto}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tablaMesas.innerHTML = tablaHTML;
+                
+                // Generar lista de mesas con barras
+                const listaMesas = document.getElementById('lista-mesas');
+                let html = '';
+                
+                Object.keys(mesas).sort((a, b) => a - b).forEach(mesa => {
+                    const m = mesas[mesa];
+                    const porcentaje = m.total > 0 ? ((m.votos / m.total) * 100).toFixed(1) : 0;
+                    const color = porcentaje >= 80 ? '#059669' : porcentaje >= 50 ? '#0366d6' : porcentaje >= 30 ? '#d97706' : '#dc2626';
+                    
+                    html += `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 15px; font-weight: 800; color: #1e293b;">Mesa ${mesa}</span>
+                                    ${m.controversias > 0 ? `<span style="background: #fef2f2; color: #dc2626; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #fee2e2;"><i class="fas fa-exclamation-triangle"></i> ${m.controversias} problema${m.controversias > 1 ? 's' : ''}</span>` : ''}
+                                </div>
+                                <span style="font-size: 16px; font-weight: 800; color: ${color};">${porcentaje}%</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                                <div style="width: ${porcentaje}%; height: 100%; background: linear-gradient(90deg, ${color}, ${color}dd); border-radius: 4px; transition: width 0.5s ease;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 500;">
+                                <span><i class="fas fa-check-circle" style="color: #059669;"></i> ${m.votos} votos</span>
+                                <span><i class="fas fa-times-circle" style="color: #94a3b8;"></i> ${m.ausentes} ausentes</span>
+                                <span style="font-weight: 700;">${m.total} electores</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                listaMesas.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error cargando panel electoral:', error);
+                const errorHTML = `
+                    <div style="text-align: center; color: #dc2626; padding: 30px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+                        <p style="font-size: 14px; font-weight: 600;">Error cargando datos del panel</p>
+                        <p style="font-size: 12px; color: #94a3b8;">Intente recargar la página</p>
+                    </div>
+                `;
+                document.getElementById('lista-mesas').innerHTML = errorHTML;
+                document.getElementById('tabla-mesas').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #dc2626;">Error al cargar datos</td></tr>`;
+            }
+        }
+
+        // Cargar panel electoral al inicio y cada 5 segundos
+        setTimeout(cargarPanelElectoral, 1000);
+        setInterval(cargarPanelElectoral, 5000);
+    </script>
+</body>
+</html>
