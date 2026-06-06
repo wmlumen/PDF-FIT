@@ -39,7 +39,7 @@
     const DDIA_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1tDtXxCqV5L70-w5wAXBkb73e3ZKtTu7ni8lJ_AUg73I/edit?resourcekey=&gid=449732679#gid=449732679';
     
     let state = {
-      view: 'consulta',
+      view: 'grid',
       votos: {},
       transferLog: [],
       selectedElector: null,
@@ -202,17 +202,9 @@
             </div>
 
             <div class="flex gap-2 bg-indigo-950/50 p-1.5 rounded-2xl border border-indigo-800">
-              <button onclick="setView('consulta')" class="px-5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 tracking-widest ${state.view === 'consulta' ? 'bg-white text-indigo-900 shadow-xl' : 'text-indigo-300 hover:bg-indigo-800'}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                CONSULTA
-              </button>
               <button onclick="setView('grid')" class="px-5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 tracking-widest ${state.view === 'grid' ? 'bg-white text-indigo-900 shadow-xl' : 'text-indigo-300 hover:bg-indigo-800'}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                 PANEL
-              </button>
-              <button onclick="setView('history')" class="px-5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 tracking-widest ${state.view === 'history' ? 'bg-white text-indigo-900 shadow-xl' : 'text-indigo-300 hover:bg-indigo-800'}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-                LOGS
               </button>
               <button onclick="handleTransferir()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 rounded-xl text-xs font-black transition-all flex items-center gap-2 text-indigo-950 shadow-lg tracking-widest">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="16" y="16" rx="1"/><path d="m16 8 3-3"/><path d="M20 3 16 8"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/></svg>
