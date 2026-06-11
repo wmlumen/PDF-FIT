@@ -6,6 +6,20 @@ Aplicación web para trabajar con PDFs desde el navegador. Extrae imágenes, edi
 
 **📁 Repositorio:** [https://github.com/wmlumen/PDF-FIT](https://github.com/wmlumen/PDF-FIT)
 
+## 🚀 Deploy Online (GRATIS)
+
+### Opción rápida: Render.com
+1. Crea cuenta en [render.com](https://render.com) con GitHub
+2. Click **"New +"** → **"Web Service"**
+3. Conecta `wmlumen/PDF-FIT`
+4. Render detecta automáticamente la configuración
+5. Click **"Create Web Service"** y espera 2-3 minutos
+6. ¡Listo! Tu app estará en `https://pdf-fit.onrender.com`
+
+📖 **Guía detallada:** Ver [DEPLOY.md](DEPLOY.md)
+
+---
+
 ## ✨ Funcionalidades
 
 - 📄 **Extraer imágenes** de PDF y descargar ZIP
