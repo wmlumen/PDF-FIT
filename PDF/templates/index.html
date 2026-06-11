@@ -370,6 +370,35 @@ body {
             <div class="tool-card-title">Marca de agua</div>
             <div class="tool-card-desc">Texto en PDF</div>
           </div>
+          <div class="tool-card" data-tool="compress">
+            <div class="tool-card-icon" style="background: var(--accent-red-light); color: var(--accent-red);">🗜</div>
+            <div class="tool-card-title">Comprimir</div>
+            <div class="tool-card-desc">Reducir tamaño</div>
+          </div>
+          <div class="tool-card" data-tool="convert">
+            <div class="tool-card-icon" style="background: var(--accent-yellow-light); color: var(--accent-yellow);">📄</div>
+            <div class="tool-card-title">Convertir</div>
+            <div class="tool-card-desc">Word/Excel/PPT</div>
+          </div>
+          <div class="tool-card" data-tool="foliar">
+            <div class="tool-card-icon" style="background: var(--accent-blue-light); color: var(--accent-blue);">🔢</div>
+            <div class="tool-card-title">Foliar</div>
+            <div class="tool-card-desc">Numerar páginas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Convert Panel -->
+    <div class="card hidden" id="convertPanel">
+      <div class="card-header">
+        <div class="card-title">📄 Convertir a Office</div>
+      </div>
+      <div class="card-body">
+        <div class="tool-grid" style="grid-template-columns: repeat(1, 1fr); gap: 8px;">
+          <button class="btn btn-primary btn-lg btn-block" id="btnConvertWord"><span>📄 Convertir a Word (.docx)</span></button>
+          <button class="btn btn-primary btn-lg btn-block" id="btnConvertExcel"><span>📊 Convertir a Excel (.xlsx)</span></button>
+          <button class="btn btn-primary btn-lg btn-block" id="btnConvertPptx"><span>📽 Convertir a PowerPoint (.pptx)</span></button>
         </div>
       </div>
     </div>
@@ -915,9 +944,13 @@ document.querySelectorAll('.tool-card').forEach(card => {
     if (currentTool === 'extract') {
       show(els.extractAction);
       hide(els.toolAction);
+      hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
     } else if (currentTool === 'merge') {
       hide(els.extractAction);
       show(els.toolAction);
+      hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
       els.toolAction.innerHTML = `
         <div class="upload-zone" style="padding:16px; margin-bottom:12px;">
           <div class="upload-title" style="font-size:0.85rem;">Selecciona 2 o más PDFs</div>
@@ -931,10 +964,13 @@ document.querySelectorAll('.tool-card').forEach(card => {
       hide(els.toolAction);
       hide(els.watermarkPanel);
       hide(els.galleryGrid);
+      hide(document.getElementById('convertPanel'));
       loadPageThumbnails();
     } else if (currentTool === 'add-page') {
       hide(els.extractAction);
       show(els.toolAction);
+      hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
       els.toolAction.innerHTML = `
         <button class="btn btn-primary btn-lg btn-block" id="btnAddPage"><span>➕ Agregar páginas</span></button>
       `;
@@ -943,10 +979,29 @@ document.querySelectorAll('.tool-card').forEach(card => {
       hide(els.extractAction);
       hide(els.toolAction);
       show(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
+    } else if (currentTool === 'compress') {
+      hide(els.extractAction);
+      hide(els.toolAction);
+      hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
+      compressPDF();
+    } else if (currentTool === 'convert') {
+      hide(els.extractAction);
+      hide(els.toolAction);
+      hide(els.watermarkPanel);
+      show(document.getElementById('convertPanel'));
+    } else if (currentTool === 'foliar') {
+      hide(els.extractAction);
+      hide(els.toolAction);
+      hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
+      foliarPDF();
     } else {
       show(els.extractAction);
       hide(els.toolAction);
       hide(els.watermarkPanel);
+      hide(document.getElementById('convertPanel'));
     }
   });
 });
@@ -1671,6 +1726,104 @@ els.btnApplyWatermark.addEventListener('click', async () => {
 // ── Compress Button ──────────────────────────────────────────────────────────
 els.btnCompressPdf.addEventListener('click', compressPDF);
 
+// ── Convert Functions ──────────────────────────────────────────────────────────
+async function convertToWord() {
+  const f = els.pdfInput.files[0]; if (!f) { toast('Selecciona un PDF', 'error'); return; }
+  setLoading('btnConvertWord', true);
+  setProgress(40, true);
+  const fd = new FormData();
+  fd.append('pdf', f);
+  try {
+    const res = await fetch('/api/convert-word', { method: 'POST', body: fd });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { toast('Error: respuesta inesperada', 'error'); setLoading('btnConvertWord', false); setProgress(null); return; }
+    if (!res.ok || data.error) { toast(data.error || `Error ${res.status}`, 'error'); setLoading('btnConvertWord', false); setProgress(null); return; }
+    showPreview(data.download_url);
+    setText(els.resultDesc, 'PDF convertido a Word');
+    addHistory('convert', f.name, 'ok', 0, 'Word');
+    toast('PDF convertido a Word correctamente', 'success');
+    setLoading('btnConvertWord', false); setProgress(null);
+  } catch (e) {
+    toast('Error de conexión', 'error'); setLoading('btnConvertWord', false); setProgress(null);
+  }
+}
+
+async function convertToExcel() {
+  const f = els.pdfInput.files[0]; if (!f) { toast('Selecciona un PDF', 'error'); return; }
+  setLoading('btnConvertExcel', true);
+  setProgress(40, true);
+  const fd = new FormData();
+  fd.append('pdf', f);
+  try {
+    const res = await fetch('/api/convert-excel', { method: 'POST', body: fd });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { toast('Error: respuesta inesperada', 'error'); setLoading('btnConvertExcel', false); setProgress(null); return; }
+    if (!res.ok || data.error) { toast(data.error || `Error ${res.status}`, 'error'); setLoading('btnConvertExcel', false); setProgress(null); return; }
+    showPreview(data.download_url);
+    setText(els.resultDesc, 'PDF convertido a Excel');
+    addHistory('convert', f.name, 'ok', 0, 'Excel');
+    toast('PDF convertido a Excel correctamente', 'success');
+    setLoading('btnConvertExcel', false); setProgress(null);
+  } catch (e) {
+    toast('Error de conexión', 'error'); setLoading('btnConvertExcel', false); setProgress(null);
+  }
+}
+
+async function convertToPptx() {
+  const f = els.pdfInput.files[0]; if (!f) { toast('Selecciona un PDF', 'error'); return; }
+  setLoading('btnConvertPptx', true);
+  setProgress(40, true);
+  const fd = new FormData();
+  fd.append('pdf', f);
+  try {
+    const res = await fetch('/api/convert-pptx', { method: 'POST', body: fd });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { toast('Error: respuesta inesperada', 'error'); setLoading('btnConvertPptx', false); setProgress(null); return; }
+    if (!res.ok || data.error) { toast(data.error || `Error ${res.status}`, 'error'); setLoading('btnConvertPptx', false); setProgress(null); return; }
+    showPreview(data.download_url);
+    setText(els.resultDesc, 'PDF convertido a PowerPoint');
+    addHistory('convert', f.name, 'ok', 0, 'PowerPoint');
+    toast('PDF convertido a PowerPoint correctamente', 'success');
+    setLoading('btnConvertPptx', false); setProgress(null);
+  } catch (e) {
+    toast('Error de conexión', 'error'); setLoading('btnConvertPptx', false); setProgress(null);
+  }
+}
+
+// ── Foliar PDF ────────────────────────────────────────────────────────────
+async function foliarPDF() {
+  const f = els.pdfInput.files[0]; if (!f) { toast('Selecciona un PDF', 'error'); return; }
+  const start = prompt('Número inicial:', '1');
+  if (!start) return;
+  const position = prompt('Posición: bottom, top, center, right, left', 'bottom');
+  if (!position) return;
+  const prefix = prompt('Prefijo (opcional):', '');
+  setLoading('btnExtract', true);
+  setProgress(40, true);
+  const fd = new FormData();
+  fd.append('pdf', f);
+  fd.append('start', start);
+  fd.append('position', position);
+  fd.append('prefix', prefix || '');
+  try {
+    const res = await fetch('/api/foliar', { method: 'POST', body: fd });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { toast('Error: respuesta inesperada', 'error'); setLoading('btnExtract', false); setProgress(null); return; }
+    if (!res.ok || data.error) { toast(data.error || `Error ${res.status}`, 'error'); setLoading('btnExtract', false); setProgress(null); return; }
+    showPreview(data.download_url);
+    setText(els.resultDesc, `${data.pages} páginas foliadas`);
+    addHistory('foliar', f.name, 'ok', data.pages, 'Foliar');
+    toast('PDF foliado correctamente', 'success');
+    setLoading('btnExtract', false); setProgress(null);
+  } catch (e) {
+    toast('Error de conexión', 'error'); setLoading('btnExtract', false); setProgress(null);
+  }
+}
+
 // ── Nav Menu ───────────────────────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1683,6 +1836,16 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 });
 
 setupAddPageModal();
+
+// Setup convert buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const btnConvertWord = document.getElementById('btnConvertWord');
+  const btnConvertExcel = document.getElementById('btnConvertExcel');
+  const btnConvertPptx = document.getElementById('btnConvertPptx');
+  if (btnConvertWord) btnConvertWord.addEventListener('click', convertToWord);
+  if (btnConvertExcel) btnConvertExcel.addEventListener('click', convertToExcel);
+  if (btnConvertPptx) btnConvertPptx.addEventListener('click', convertToPptx);
+});
 
 toast('PDF-FIT listo. Carga un PDF para comenzar.', 'info');
 </script>
