@@ -338,6 +338,17 @@ body {
             <button class="btn btn-ghost" id="btnClearFile" title="Quitar">✕</button>
           </div>
         </div>
+        <div id="pdfInfo" class="hidden mt-2" style="padding: 12px; background: var(--surface-hover); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">📊 Datos reales del PDF</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem;">
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Páginas:</span> <span id="pdfPages" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Imágenes:</span> <span id="pdfImages" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Tamaño página:</span> <span id="pdfPageSize" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Título:</span> <span id="pdfTitle" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Autor:</span> <span id="pdfAuthor" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Creado:</span> <span id="pdfCreated" style="font-weight: 600;">-</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -878,7 +889,7 @@ function setupDropzone(dz, inp, onChange) {
   inp.addEventListener('change', onChange);
 }
 
-setupDropzone(els.uploadZone, els.pdfInput, () => {
+setupDropzone(els.uploadZone, els.pdfInput, async () => {
   const f = els.pdfInput.files[0]; if (!f) return;
   setText(els.fileName, f.name);
   setText(els.fileSize, formatSize(f.size));
@@ -888,6 +899,27 @@ setupDropzone(els.uploadZone, els.pdfInput, () => {
   setStep(1, 'completed');
   setStep(2, 'active');
   toast('PDF cargado: ' + f.name, 'success');
+
+  // Cargar datos reales del PDF
+  const fd = new FormData();
+  fd.append('pdf', f);
+  try {
+    const res = await fetch('/api/pdf-info', { method: 'POST', body: fd });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { return; }
+    if (!res.ok || data.error) return;
+
+    document.getElementById('pdfPages').textContent = data.pages || '-';
+    document.getElementById('pdfImages').textContent = data.images || '-';
+    document.getElementById('pdfPageSize').textContent = data.page_size || '-';
+    document.getElementById('pdfTitle').textContent = data.title || 'Sin título';
+    document.getElementById('pdfAuthor').textContent = data.author || 'Sin autor';
+    document.getElementById('pdfCreated').textContent = data.created ? data.created.substring(2, 10) : '-';
+    show(document.getElementById('pdfInfo'));
+  } catch (e) {
+    console.error('Error cargando info del PDF:', e);
+  }
 });
 
 els.btnClearFile.addEventListener('click', resetAll);
@@ -900,6 +932,7 @@ function resetAll() {
   pageThumbnails = [];
   pageOrder = [];
   hide(els.fileInfo);
+  hide(document.getElementById('pdfInfo'));
   show(els.emptyState);
   hide(els.extractAction);
   hide(els.galleryGrid);

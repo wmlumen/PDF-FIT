@@ -748,6 +748,53 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/api/pdf-info", methods=["POST"])
+def api_pdf_info():
+    ensure_upload_dir()
+    session_id = None
+    try:
+        session_id, workdir, pdf_path = save_uploaded_pdf(request.files.get("pdf"))
+
+        with fitz.open(pdf_path) as doc:
+            page_count = len(doc)
+            first_page = doc[0] if page_count > 0 else None
+            page_width = round(first_page.rect.width, 1) if first_page else 0
+            page_height = round(first_page.rect.height, 1) if first_page else 0
+            image_count = sum(1 for p in range(page_count) for _ in doc[p].get_images())
+
+            meta = doc.metadata
+            title = meta.get("title", "")
+            author = meta.get("author", "")
+            subject = meta.get("subject", "")
+            creator = meta.get("creator", "")
+            producer = meta.get("producer", "")
+            creation = meta.get("creationDate", "")
+            modified = meta.get("modDate", "")
+
+            return jsonify({
+                "session_id": session_id,
+                "pages": page_count,
+                "images": image_count,
+                "page_width": page_width,
+                "page_height": page_height,
+                "page_size": f"{page_width} x {page_height} pts",
+                "title": title,
+                "author": author,
+                "subject": subject,
+                "creator": creator,
+                "producer": producer,
+                "created": creation,
+                "modified": modified,
+            })
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        if session_id:
+            remove_session(session_id)
+        app.logger.error(traceback.format_exc())
+        return jsonify({"error": f"Error interno del servidor: {error}"}), 500
+
+
 @app.route("/api/extract", methods=["GET", "POST", "OPTIONS"])
 def api_extract():
     ensure_upload_dir()
