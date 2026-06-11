@@ -1,72 +1,111 @@
-# Herramientas PDF Locales
+# PDF-FIT — Herramientas PDF Online
 
-Aplicacion web local para trabajar con PDFs desde el navegador.
+Aplicación web para trabajar con PDFs desde el navegador. Extrae imágenes, edita páginas, agrega marcas de agua, comprime y convierte a Office.
 
-## Funcionalidad
+**🌐 Demo online:** [https://pdf-fit.onrender.com](https://pdf-fit.onrender.com) *(después de deployar)*
 
-- Extraer imagenes de un PDF y descargar un ZIP
-- Reemplazar o girar imagenes extraidas
-- Regenerar un PDF con las imagenes editadas
-- Comprimir el PDF original o el PDF editado
-- Agregar marcas de agua de texto
-- Convertir el PDF a Word (`.docx`)
-- Convertir el PDF a Excel (`.xlsx`)
-- Convertir el PDF a PowerPoint (`.pptx`)
-- Exportar un ZIP de imagenes optimizadas para web
+**📁 Repositorio:** [https://github.com/wmlumen/PDF-FIT](https://github.com/wmlumen/PDF-FIT)
 
-## Requisitos
+## ✨ Funcionalidades
 
+- 📄 **Extraer imágenes** de PDF y descargar ZIP
+- 🖼️ **Vista previa de páginas** con thumbnails reales
+- 🔄 **Reordenar páginas** con drag & drop visual
+- ➕ **Agregar páginas** en cualquier posición (inicio, final, antes, después)
+- 💧 **Marcas de agua** de texto configurables
+- 🗜️ **Comprimir PDF** para reducir tamaño
+- 📄 **Convertir a Word** (`.docx`)
+- 📊 **Convertir a Excel** (`.xlsx`)
+- 📽️ **Convertir a PowerPoint** (`.pptx`)
+- 🌐 **Exportar imágenes web** optimizadas
+
+## 🚀 Deploy en Render.com (Gratis)
+
+### Paso 1: Crear cuenta en Render
+1. Ve a [https://render.com](https://render.com)
+2. Regístrate con GitHub (más fácil)
+
+### Paso 2: Crear nuevo Web Service
+1. En el dashboard, clic en **"New +"** → **"Web Service"**
+2. Conecta tu repositorio `wmlumen/PDF-FIT`
+3. Render detectará automáticamente la configuración
+
+### Paso 3: Configurar
+- **Name:** `pdf-fit` (o el que prefieras)
+- **Runtime:** `Python`
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 app:app`
+- **Plan:** Free
+
+### Paso 4: Deploy
+1. Clic en **"Create Web Service"**
+2. Espera 2-3 minutos a que se instale y deploye
+3. ¡Listo! Tu app estará online en `https://pdf-fit.onrender.com`
+
+## 💻 Uso local
+
+### Requisitos
 - Python 3.10 o superior
-- `pip install -r requirements.txt`
+- pip
 
-## Ejecutar
+### Instalación
+```bash
+pip install -r requirements.txt
+```
 
+### Ejecutar
 ```bash
 python app.py
 ```
 
-Luego abre:
+Abre en tu navegador: `http://localhost:5000`
 
-- `http://localhost:5000/`
+### Windows (ejecutable rápido)
+Haz doble clic en `iniciar.bat`
 
-## Conversiones Office soportadas
+## 📦 Archivos principales
 
-- Word (`.docx`)
-- Excel (`.xlsx`)
-- PowerPoint (`.pptx`)
+| Archivo | Descripción |
+|---------|-------------|
+| `app.py` | Backend Flask y procesamiento PDF |
+| `templates/index.html` | Interfaz web moderna |
+| `requirements.txt` | Dependencias Python |
+| `Procfile` | Configuración para Render |
+| `render.yaml` | Configuración alternativa para Render |
+| `compress_pdf.py` | Utilidad de compresión por línea de comandos |
+| `iniciar.bat` | Lanzador para Windows |
 
-## Imagenes ligeras para web
+## ⚙️ Configuración avanzada
 
-Despues de extraer imagenes, la interfaz permite generar `ZIP web ligero`.
+### Variables de entorno
+- `PORT`: Puerto del servidor (default: 5000)
+- `PYTHON_VERSION`: Versión de Python para Render
 
-Ese ZIP:
+### Workers Gunicorn
+Para más rendimiento en producción, aumenta workers:
+```bash
+gunicorn --bind 0.0.0.0:$PORT --workers 4 --threads 8 --timeout 120 app:app
+```
 
-- reduce el ancho maximo de imagenes grandes
-- prioriza formato `WebP`
-- baja calidad para publicacion web
-- entrega archivos listos para web o CMS
+## 📝 Notas importantes
 
-Valores por defecto:
+- **Compresión PDF:** Rasteriza páginas para reducir peso. Puede afectar calidad visual y texto seleccionable.
+- **Conversión PowerPoint:** Una diapositiva por página del PDF con imagen de la página.
+- **Exportación web:** Requiere Pillow. Optimiza imágenes para publicación web.
+- **Almacenamiento:** En producción, los archivos se guardan temporalmente. Reiniciar el servidor limpia las sesiones.
 
-- ancho maximo: `1600px`
-- calidad: `72`
-- formato preferido: `WebP`
+## 🔧 Tecnologías
 
-## Archivos principales
+- **Backend:** Flask + PyMuPDF (fitz)
+- **Frontend:** HTML5 + CSS3 + JavaScript vanilla
+- **Procesamiento PDF:** PyMuPDF, Pillow
+- **Conversión Office:** python-docx, openpyxl, python-pptx
 
-- `app.py`: backend Flask y procesamiento PDF
-- `compress_pdf.py`: compresion local por linea de comandos
-- `templates/index.html`: interfaz web
-- `requirements.txt`: dependencias del proyecto
+## 📄 Licencia
 
-## Notas
+MIT — Libre para uso personal y comercial.
 
-- La compresion PDF rasteriza paginas para bajar peso. Puede reducir calidad visual y afectar texto seleccionable.
-- La conversion a PowerPoint usa una diapositiva por pagina del PDF con imagen de la pagina y notas basicas.
-- La exportacion web de imagenes requiere Pillow.
-
-## Referencias
+## 🙏 Referencias
 
 - `Efrice/watermark`: https://github.com/Efrice/watermark
 - `deminimis/minimalpdfcompress`: https://github.com/deminimis/minimalpdfcompress
-- `wmlumen/PDF-FIT`: https://github.com/wmlumen/PDF-FIT
