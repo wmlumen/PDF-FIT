@@ -7,6 +7,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Open+Sans:wght@400;600&display=swap');
         
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Open Sans', sans-serif;
             background-color: #f4f7f6;
@@ -86,11 +89,27 @@
             color: #999;
             font-size: 0.9rem;
         }
+        .btn-inicio {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px 14px;
+            background: #2c3e50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            z-index: 999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background 0.3s;
+        }
+        .btn-inicio:hover {
+            background: #1a252f;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="inicio">
     <h1>Estilos de Aprendizaje VAK</h1>
     <div class="subtitle">Resumen VAK (2026)</div>
 
@@ -113,14 +132,20 @@
     <h2>4. Conclusión</h2>
     <p>El resumen concluye que no existe un estilo puro ni superior. El desafío docente radica en diagnosticar adecuadamente al grupo y emplear estrategias multimodales. Al alinear el método de enseñanza con el canal de recepción preferido del estudiante, se reduce significativamente la frustración académica y se optimiza el rendimiento cognitivo.</p>
 
-    <div style="text-align: center;">
-        <a href="VAK/index.html" class="btn-link" style="background-color: #2980b9;">Ir al Test VAK (App)</a>
+    <h2>5. Recursos y Elementos del Proyecto</h2>
+    <p>Accede de forma directa a todos los entregables e instrumentos que forman parte de este proyecto de monografía:</p>
+    <div style="text-align: center; margin-top: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+        <a href="VAK/index.html" class="btn-link" style="background-color: #2980b9; margin-top: 10px;">📱 Aplicación Web (Test & Métricas)</a>
+        <a href="Monografia_VAK.docx" class="btn-link" style="background-color: #27ae60; margin-top: 10px;" download>📄 Descargar Monografía (.docx)</a>
+        <a href="https://github.com/wmlumen/VAK-1" target="_blank" class="btn-link" style="background-color: #34495e; margin-top: 10px;">💻 Código Fuente (GitHub)</a>
     </div>
 
     <div class="footer">
         Desarrollado por Christhian Keim © 2026 | Universidad Metropolitana de Asunción (UMA)
     </div>
 </div>
+
+<a href="#inicio" class="btn-inicio" title="Volver al inicio">↑ Inicio</a>
 
 </body>
 </html>
