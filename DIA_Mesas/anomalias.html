@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECCIONAL 40 - Monitoreo de Anomalías</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
+        .shake { animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both; }
+        .alarm-ring { animation: alarmPulse 1s ease-in-out infinite; }
+        @keyframes alarmPulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+        .scroll-hidden::-webkit-scrollbar { width: 6px; }
+        .scroll-hidden::-webkit-scrollbar-track { background: #fef2f2; }
+        .scroll-hidden::-webkit-scrollbar-thumb { background: #fecaca; border-radius: 3px; }
+        .scroll-hidden::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+    <div id="app"></div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXSjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+        const PW_PC = 'Paraguay100';
+        const AUTH_SESSION_KEY = 'seccional40_auth';
+        const NIVEL_SESSION_KEY = 'seccional40_nivel';
+        const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+        
+        function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+        function estaAutenticado() { return getNivel() === 'pc'; }
+        
+        // CONFIGURACIÓN DE ANOMALÍAS
+        const CONFIG = {
+            MIN_VOTOS_PARA_MEDIA: 10,     // Mínimo de votos para calcular media
+            UMBRAL_RAPIDO: 0.35,          // Intervalo < 35% de la media = muy rápido
+            UMBRAL_LENTO: 3.0,            // Intervalo > 300% de la media = muy lento
+            MINIMO_SEGUNDOS: 5,           // Intervalo absoluto mínimo (5 segundos)
+            ALARMA_CONSECUTIVOS: 3,       // 3 votos rápidos consecutivos = alarma
+        };
+
+        let state = {
+            autenticado: estaAutenticado(),
+            cargando: false,
+            votos: [],
+            padron: [],
+            mesasInfo: {},
+            ultimaActualizacion: null,
+            mensaje: ''
+        };
+
+        function login() {
+            const input = document.getElementById('passwordInput');
+            if (!input) return;
+            const pass = input.value.trim();
+            if (pass === PW_PC) {
+                sessionStorage.setItem(NIVEL_SESSION_KEY, 'pc');
+                sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+                state.autenticado = true;
+                cargarPadron();
+            } else {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        function getBackendAccessError() {
+            return 'Backend no disponible: la web app de Apps Script esta pidiendo inicio de sesion.';
+        }
+
+        async function fetchJsonOrThrow(url, options) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            const trimmed = text.trim().toLowerCase();
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+                throw new Error(getBackendAccessError());
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                throw new Error('Respuesta invalida del backend.');
+            }
+        }
+
+        async function cargarPadron() {
+            state.cargando = true;
+            state.mensaje = 'Cargando padrón...';
+            render();
+            try {
+                const response = await fetch(PADRON_CSV_URL);
+                const csvText = await response.text();
+                const lineas = csvText.split('\n').filter(l => l.trim());
+                const registros = [];
+                for (let i = 1; i < lineas.length; i++) {
+                    const partes = lineas[i].split(',');
+                    if (partes.length >= 8) {
+                        const mesa = parseInt(partes[3].trim()) || 0;
+                        registros.push({
+                            mesa: mesa,
+                            cedula: partes[5].replace(/\./g, '').trim(),
+                            nombre: (partes[6].trim() + ' ' + partes[7].trim()).trim()
+                        });
+                    }
+                }
+                state.padron = registros;
+                calcularTamanosMesas();
+                state.cargando = false;
+                state.mensaje = `Padrón cargado: ${registros.length} electores`;
+                cargarDatos();
+            } catch (error) {
+                console.error('Error:', error);
+                state.cargando = false;
+                state.mensaje = 'Error cargando padrón';
+            }
+            render();
+        }
+
+        function calcularTamanosMesas() {
+            const tamanos = {};
+            state.padron.forEach(p => {
+                if (!tamanos[p.mesa]) tamanos[p.mesa] = 0;
+                tamanos[p.mesa]++;
+            });
+            state.mesasInfo = tamanos;
+        }
+
+        async function cargarDatos() {
+            if (!API_URL || API_URL === '') {
+                state.mensaje = '⚠️ API_URL no configurada. Configure la URL del Web App.';
+                render();
+                return;
+            }
+            try {
+                // Cargar votos
+                const dataVotos = await fetchJsonOrThrow(API_URL + '?action=votos');
+                
+                if (dataVotos && dataVotos.registros) {
+                    const votos = dataVotos.registros
+                        .filter(r => r.estado === 'voto')
+                        .map(r => ({
+                            ...r,
+                            timestamp: new Date(r.timestamp).getTime()
+                        }));
+                    state.votos = votos;
+                }
+                
+                state.ultimaActualizacion = new Date();
+                state.mensaje = `Datos actualizados: ${state.votos.length} votos`;
+            } catch (e) {
+                console.error('Error cargando datos:', e);
+                state.mensaje = e && e.message ? e.message : 'Error cargando datos del servidor';
+            }
+            render();
+        }
+
+        // ============ LÓGICA DE ANOMALÍAS ============
+
+        function analizarMesas() {
+            const mesas = {};
+            
+            // Agrupar votos por mesa
+            state.votos.forEach(v => {
+                const m = parseInt(v.mesa) || 0;
+                if (!mesas[m]) {
+                    mesas[m] = {
+                        mesa: m,
+                        votos: [],
+                        totalElectores: state.mesasInfo[m] || 0
+                    };
+                }
+                mesas[m].votos.push(v);
+            });
+
+            const resultados = [];
+            
+            Object.keys(mesas).forEach(mesaNum => {
+                const mesa = mesas[mesaNum];
+                
+                // Ordenar por timestamp
+                mesa.votos.sort((a, b) => a.timestamp - b.timestamp);
+                
+                // Deduplicar por cédula (mantener solo el último)
+                const vistos = new Set();
+                const votosUnicos = [];
+                for (let i = mesa.votos.length - 1; i >= 0; i--) {
+                    const cedula = mesa.votos[i].cedula;
+                    if (!vistos.has(cedula)) {
+                        vistos.add(cedula);
+                        votosUnicos.unshift(mesa.votos[i]);
+                    }
+                }
+                mesa.votos = votosUnicos;
+                
+                const totalVotos = mesa.votos.length;
+                
+                if (totalVotos < 2) {
+                    resultados.push({
+                        mesa: parseInt(mesaNum),
+                        totalVotos: totalVotos,
+                        totalElectores: mesa.totalElectores,
+                        intervalos: [],
+                        promedioIntervalo: null,
+                        anomalías: [],
+                        votosRapidos: 0,
+                        votosLentos: 0,
+                        consecutivosRapidos: 0,
+                        maxConsecutivosRapidos: 0,
+                        estado: 'insuficiente',
+                        estadoTexto: 'Insuficiente',
+                        estadoColor: 'slate',
+                        ultimoVoto: totalVotos > 0 ? new Date(mesa.votos[totalVotos - 1].timestamp) : null,
+                        participacion: mesa.totalElectores > 0 ? ((totalVotos / mesa.totalElectores) * 100).toFixed(1) : 0
+                    });
+                    return;
+                }
+                
+                // Calcular intervalos
+                const intervalos = [];
+                for (let i = 1; i < mesa.votos.length; i++) {
+                    const intervalo = (mesa.votos[i].timestamp - mesa.votos[i - 1].timestamp) / 1000; // segundos
+                    intervalos.push({
+                        desde: mesa.votos[i - 1],
+                        hasta: mesa.votos[i],
+                        segundos: Math.round(intervalo),
+                        indice: i
+                    });
+                }
+                
+                // Calcular promedio (solo a partir de 10 votos)
+                let promedioIntervalo = null;
+                let intervalosParaMedia = [];
+                
+                if (totalVotos >= CONFIG.MIN_VOTOS_PARA_MEDIA) {
+                    // Usar intervalos desde el voto 10 en adelante
+                    intervalosParaMedia = intervalos.slice(CONFIG.MIN_VOTOS_PARA_MEDIA - 1);
+                    const suma = intervalosParaMedia.reduce((acc, int) => acc + int.segundos, 0);
+                    promedioIntervalo = Math.round(suma / intervalosParaMedia.length);
+                } else {
+                    // Con menos de 10 votos, usar todos los intervalos pero marcar como "insuficiente"
+                    const suma = intervalos.reduce((acc, int) => acc + int.segundos, 0);
+                    promedioIntervalo = Math.round(suma / intervalos.length);
+                }
+                
+                // Detectar anomalías
+                const anomalías = [];
+                let votosRapidos = 0;
+                let votosLentos = 0;
+                let consecutivosRapidos = 0;
+                let maxConsecutivosRapidos = 0;
+                
+                intervalos.forEach((int, idx) => {
+                    if (promedioIntervalo && promedioIntervalo > 0) {
+                        const ratio = int.segundos / promedioIntervalo;
+                        
+                        if (int.segundos < CONFIG.MINIMO_SEGUNDOS || ratio < CONFIG.UMBRAL_RAPIDO) {
+                            // Voto muy rápido
+                            anomalías.push({
+                                tipo: 'rapido',
+                                tipoTexto: 'Muy Rápido',
+                                intervalo: int,
+                                ratio: ratio,
+                                desde: int.desde,
+                                hasta: int.hasta,
+                                segundos: int.segundos,
+                                indice: idx
+                            });
+                            votosRapidos++;
+                            consecutivosRapidos++;
+                            maxConsecutivosRapidos = Math.max(maxConsecutivosRapidos, consecutivosRapidos);
+                        } else if (ratio > CONFIG.UMBRAL_LENTO) {
+                            // Voto muy lento
+                            anomalías.push({
+                                tipo: 'lento',
+                                tipoTexto: 'Muy Lento',
+                                intervalo: int,
+                                ratio: ratio,
+                                desde: int.desde,
+                                hasta: int.hasta,
+                                segundos: int.segundos,
+                                indice: idx
+                            });
+                            votosLentos++;
+                            consecutivosRapidos = 0;
+                        } else {
+                            consecutivosRapidos = 0;
+                        }
+                    }
+                });
+                
+                // Determinar estado
+                let estado = 'normal';
+                let estadoTexto = 'Normal';
+                let estadoColor = 'green';
+                
+                if (totalVotos < CONFIG.MIN_VOTOS_PARA_MEDIA) {
+                    estado = 'insuficiente';
+                    estadoTexto = 'Insuficiente';
+                    estadoColor = 'slate';
+                } else if (maxConsecutivosRapidos >= CONFIG.ALARMA_CONSECUTIVOS) {
+                    estado = 'alarma';
+                    estadoTexto = 'ALARMA';
+                    estadoColor = 'red';
+                } else if (anomalías.length > 0) {
+                    if (votosRapidos >= 2) {
+                        estado = 'alerta';
+                        estadoTexto = 'Alerta';
+                        estadoColor = 'orange';
+                    } else {
+                        estado = 'precaucion';
+                        estadoTexto = 'Precaución';
+                        estadoColor = 'yellow';
+                    }
+                }
+                
+                resultados.push({
+                    mesa: parseInt(mesaNum),
+                    totalVotos: totalVotos,
+                    totalElectores: mesa.totalElectores,
+                    intervalos: intervalos,
+                    promedioIntervalo: promedioIntervalo,
+                    anomalías: anomalías,
+                    votosRapidos: votosRapidos,
+                    votosLentos: votosLentos,
+                    consecutivosRapidos: consecutivosRapidos,
+                    maxConsecutivosRapidos: maxConsecutivosRapidos,
+                    estado: estado,
+                    estadoTexto: estadoTexto,
+                    estadoColor: estadoColor,
+                    ultimoVoto: totalVotos > 0 ? new Date(mesa.votos[totalVotos - 1].timestamp) : null,
+                    participacion: mesa.totalElectores > 0 ? ((totalVotos / mesa.totalElectores) * 100).toFixed(1) : 0
+                });
+            });
+            
+            // Ordenar: alarma primero, luego alerta, precaucion, normal, insuficiente
+            const orden = { alarma: 0, alerta: 1, precaucion: 2, normal: 3, insuficiente: 4 };
+            resultados.sort((a, b) => orden[a.estado] - orden[b.estado] || b.anomalías.length - a.anomalías.length);
+            
+            return resultados;
+        }
+
+        // NOTA: detectarNoVotosQueVotaron fue removido - los no-votos no se procesan en anomalías
+
+        function formatDuration(seconds) {
+            if (seconds === null || seconds === undefined) return '-';
+            if (seconds < 60) return `${seconds}s`;
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return `${min}m ${sec}s`;
+        }
+
+        function formatTime(date) {
+            if (!date) return '-';
+            return date.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center p-4">
+                    <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+                        <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6 alarm-ring">
+                            <i class="fas fa-radar text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">MONITOREO</h1>
+                        <p class="text-slate-500 text-sm mb-2">Detección de Anomalías Electorales</p>
+                        <div class="bg-red-50 rounded-xl p-3 mb-8">
+                            <p class="text-xs text-red-700 font-bold">Intervalos voto-a-voto por mesa</p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <input type="password" id="passwordInput" placeholder="Contraseña" 
+                                class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all text-center"
+                                onkeypress="if(event.key === 'Enter') login()">
+                            <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                                INICIAR MONITOREO
+                            </button>
+                        </div>
+                        
+                        <p class="text-xs text-slate-400 mt-6">Sistema Privado - Uso Autorizado</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (!state.autenticado) {
+                app.innerHTML = renderLogin();
+                return;
+            }
+            
+            const analisis = analizarMesas();
+            const mesasAlarma = analisis.filter(m => m.estado === 'alarma');
+            const mesasAlerta = analisis.filter(m => m.estado === 'alerta');
+            const mesasPrecaucion = analisis.filter(m => m.estado === 'precaucion');
+            const mesasConAnomalia = mesasAlarma.length + mesasAlerta.length + mesasPrecaucion.length;
+            
+            // Colores de estado
+            const colores = {
+                red: { bg: 'bg-red-600', text: 'text-red-600', light: 'bg-red-50', border: 'border-red-200', badge: 'bg-red-600 text-white' },
+                orange: { bg: 'bg-orange-500', text: 'text-orange-600', light: 'bg-orange-50', border: 'border-orange-200', badge: 'bg-orange-500 text-white' },
+                yellow: { bg: 'bg-yellow-500', text: 'text-yellow-600', light: 'bg-yellow-50', border: 'border-yellow-200', badge: 'bg-yellow-500 text-white' },
+                green: { bg: 'bg-green-600', text: 'text-green-600', light: 'bg-green-50', border: 'border-green-200', badge: 'bg-green-600 text-white' },
+                slate: { bg: 'bg-slate-500', text: 'text-slate-600', light: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-500 text-white' }
+            };
+            
+            app.innerHTML = `
+                <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-red-500 rounded-xl ${mesasAlarma.length > 0 ? 'alarm-ring' : ''}">
+                                <i class="fas fa-radar text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">MONITOREO</h1>
+                                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">Detección de Anomalías</p>
+                            </div>
+                        </div>
+                        
+                        <!-- MENÚ DE NAVEGACIÓN -->
+                        <div class="flex flex-wrap items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">📍 ${sessionStorage.getItem('seccional40_escuela') || 'Esc. ...'}</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+                          <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+                          <a href="mesas.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Mesas</a>
+                          <a href="No_voto.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">No Voto</a>
+                          <a href="padron_unificado.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Padrón</a>
+                          <span class="text-[10px] text-red-400 mx-1">|</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase">PC:</span>
+                          <a href="anomalias.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Anomalías</a>
+                          <a href="escrutinio.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Escrutinio</a>
+                          <a href="asistencia.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Seguimiento</a>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-xs">
+                            <div class="text-right">
+                                <p class="text-red-200">Última actualización</p>
+                                <p class="font-bold">${state.ultimaActualizacion ? formatTime(state.ultimaActualizacion) : '-'}</p>
+                            </div>
+                            <button onclick="cargarDatos()" class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-xl transition-all" title="Recargar">
+                                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-7xl mx-auto p-4 md:p-6">
+                    <!-- BANNER DE ALARMAS -->
+                    ${mesasAlarma.length > 0 ? `
+                        <div class="bg-red-600 text-white rounded-[2rem] p-6 mb-6 shadow-2xl animate-in alarm-ring">
+                            <div class="flex items-center gap-4 mb-3">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shake">
+                                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-black uppercase tracking-tighter">ALERTA MÁXIMA</h2>
+                                    <p class="text-red-100 font-bold text-sm">${mesasAlarma.length} mesa${mesasAlarma.length > 1 ? 's' : ''} con votación anómala detectada</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${mesasAlarma.map(m => `
+                                    <span class="bg-white text-red-600 font-black px-4 py-2 rounded-xl text-sm">MESA ${m.mesa}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${mesasAlerta.length > 0 && mesasAlarma.length === 0 ? `
+                        <div class="bg-orange-500 text-white rounded-[2rem] p-6 mb-6 shadow-xl animate-in">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                                    <i class="fas fa-exclamation-circle text-orange-500 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-black uppercase tracking-tighter">ALERTA</h2>
+                                    <p class="text-orange-100 font-bold text-sm">${mesasAlerta.length} mesa${mesasAlerta.length > 1 ? 's' : ''} con anomalías detectadas</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- RESUMEN GENERAL -->
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-100 text-center">
+                            <div class="text-xs font-bold text-slate-500 uppercase mb-1">Mesas Monitoreadas</div>
+                            <div class="text-3xl font-black text-slate-900">${analisis.length}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-100 text-center">
+                            <div class="text-xs font-bold text-slate-500 uppercase mb-1">Votos Total</div>
+                            <div class="text-3xl font-black text-slate-900">${state.votos.length}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-100 text-center ${mesasConAnomalia > 0 ? 'ring-2 ring-red-500' : ''}">
+                            <div class="text-xs font-bold text-slate-500 uppercase mb-1">Mesas Anómalas</div>
+                            <div class="text-3xl font-black ${mesasConAnomalia > 0 ? 'text-red-600' : 'text-slate-900'}">${mesasConAnomalia}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-100 text-center">
+                            <div class="text-xs font-bold text-slate-500 uppercase mb-1">Alarmas Activas</div>
+                            <div class="text-3xl font-black ${mesasAlarma.length > 0 ? 'text-red-600' : 'text-slate-900'}">${mesasAlarma.length}</div>
+                        </div>
+
+                    </div>
+
+                    <!-- MENSAJE -->
+                    ${state.mensaje ? `
+                        <div class="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
+                            <p class="font-bold text-red-800 text-center text-sm">${state.mensaje}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- TABLA RESUMEN POR MESA -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 mb-6 overflow-hidden">
+                        <div class="p-4 md:p-6 border-b border-red-100">
+                            <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight">
+                                <i class="fas fa-table text-red-600 mr-2"></i>Resumen por Mesa
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Media calculada a partir de ${CONFIG.MIN_VOTOS_PARA_MEDIA} votos. Anomalías: intervalo < ${Math.round(CONFIG.UMBRAL_RAPIDO * 100)}% o > ${CONFIG.UMBRAL_LENTO * 100}% de la media.</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-red-50">
+                                        <th class="px-4 py-3 text-left font-bold text-red-900">Mesa</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Votos</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Participación</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Intervalo Promedio</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Último Voto</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Anomalías</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${analisis.map(m => {
+                                        const c = colores[m.estadoColor] || colores.slate;
+                                        return `
+                                            <tr class="border-b border-red-50 hover:bg-red-50/50 transition-all ${m.estado === 'alarma' ? 'shake bg-red-50' : ''}">
+                                                <td class="px-4 py-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="w-8 h-8 rounded-full ${c.bg} text-white flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                                                        <span class="font-bold text-slate-900">Mesa ${m.mesa}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center font-bold text-slate-900">${m.totalVotos}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex items-center justify-center gap-2">
+                                                        <div class="w-16 h-2 bg-red-100 rounded-full overflow-hidden">
+                                                            <div class="h-full ${c.bg} rounded-full" style="width: ${Math.min(m.participacion, 100)}%"></div>
+                                                        </div>
+                                                        <span class="font-bold text-xs ${c.text}">${m.participacion}%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center font-bold text-slate-900">${formatDuration(m.promedioIntervalo)}</td>
+                                                <td class="px-4 py-3 text-center text-xs text-slate-600">${formatTime(m.ultimoVoto)}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    ${m.anomalías.length > 0 ? `
+                                                        <div class="flex items-center justify-center gap-1">
+                                                            ${m.votosRapidos > 0 ? `<span class="bg-red-100 text-red-700 font-bold text-xs px-2 py-1 rounded-lg">${m.votosRapidos} rápido${m.votosRapidos > 1 ? 's' : ''}</span>` : ''}
+                                                            ${m.votosLentos > 0 ? `<span class="bg-slate-100 text-slate-700 font-bold text-xs px-2 py-1 rounded-lg">${m.votosLentos} lento${m.votosLentos > 1 ? 's' : ''}</span>` : ''}
+                                                        </div>
+                                                    ` : '<span class="text-slate-400 text-xs">-</span>'}
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="${c.badge} text-xs font-bold px-3 py-1 rounded-full">${m.estadoTexto}</span>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- DETALLE DE ANOMALÍAS -->
+                    ${mesasConAnomalia > 0 ? `
+                        <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 mb-6 overflow-hidden">
+                            <div class="p-4 md:p-6 border-b border-red-100 bg-red-50">
+                                <h2 class="text-lg font-black text-red-900 uppercase tracking-tight">
+                                    <i class="fas fa-search text-red-600 mr-2"></i>Detalle de Anomalías
+                                </h2>
+                            </div>
+                            <div class="p-4 md:p-6 max-h-[600px] overflow-y-auto scroll-hidden">
+                                ${analisis.filter(m => m.anomalías.length > 0).map(m => {
+                                    const c = colores[m.estadoColor] || colores.slate;
+                                    return `
+                                        <div class="mb-6 last:mb-0 animate-in">
+                                            <div class="flex items-center gap-3 mb-3">
+                                                <span class="w-10 h-10 rounded-full ${c.bg} text-white flex items-center justify-center font-black">${m.mesa}</span>
+                                                <div>
+                                                    <h3 class="font-black text-slate-900">Mesa ${m.mesa}</h3>
+                                                    <p class="text-xs text-slate-500">${m.anomalías.length} anomalía${m.anomalías.length > 1 ? 's' : ''} detectada${m.anomalías.length > 1 ? 's' : ''} • Intervalo promedio: ${formatDuration(m.promedioIntervalo)}</p>
+                                                </div>
+                                                ${m.maxConsecutivosRapidos >= CONFIG.ALARMA_CONSECUTIVOS ? `
+                                                    <span class="ml-auto bg-red-600 text-white text-xs font-black px-3 py-1 rounded-full shake">
+                                                        <i class="fas fa-bell mr-1"></i>${m.maxConsecutivosRapidos} CONSECUTIVOS
+                                                    </span>
+                                                ` : ''}
+                                            </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                ${m.anomalías.map((a, idx) => `
+                                                    <div class="rounded-xl p-4 border-2 ${a.tipo === 'rapido' ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'} transition-all hover:shadow-md">
+                                                        <div class="flex items-center gap-2 mb-2">
+                                                            <i class="fas ${a.tipo === 'rapido' ? 'fa-bolt text-red-600' : 'fa-hourglass-end text-slate-600'}"></i>
+                                                            <span class="font-black text-sm ${a.tipo === 'rapido' ? 'text-red-700' : 'text-slate-700'}">${a.tipoTexto}</span>
+                                                            <span class="ml-auto text-xs font-bold text-slate-500">#${a.indice + 1}</span>
+                                                        </div>
+                                                        <div class="space-y-1 text-xs">
+                                                            <div class="flex justify-between">
+                                                                <span class="text-slate-500">Intervalo:</span>
+                                                                <span class="font-black ${a.tipo === 'rapido' ? 'text-red-600' : 'text-slate-700'}">${formatDuration(a.segundos)}</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-slate-500">Promedio:</span>
+                                                                <span class="font-bold text-slate-700">${formatDuration(m.promedioIntervalo)}</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-slate-500">Ratio:</span>
+                                                                <span class="font-black ${a.tipo === 'rapido' ? 'text-red-600' : 'text-slate-700'}">${(a.ratio * 100).toFixed(0)}%</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-slate-500">Hora:</span>
+                                                                <span class="font-bold text-slate-700">${formatTime(new Date(a.hasta.timestamp))}</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-slate-500">Electores:</span>
+                                                                <span class="font-bold text-slate-700">${a.hasta.cedula || '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- GRÁFICO DE INTERVALOS -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 overflow-hidden">
+                        <div class="p-4 md:p-6 border-b border-red-100">
+                            <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight">
+                                <i class="fas fa-chart-line text-red-600 mr-2"></i>Gráfico de Intervalos por Mesa
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1">Visualización de intervalos entre votos consecutivos. Línea roja = promedio.</p>
+                        </div>
+                        <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${analisis.filter(m => m.intervalos.length > 0).map(m => `
+                                <div class="rounded-xl border border-red-100 p-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h3 class="font-black text-slate-900">Mesa ${m.mesa}</h3>
+                                        <span class="text-xs font-bold text-slate-500">${m.intervalos.length} intervalos</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${m.intervalos.map((int, idx) => {
+                                            const isAnomaly = m.anomalías.some(a => a.indice === idx);
+                                            const height = m.promedioIntervalo && m.promedioIntervalo > 0 
+                                                ? Math.min((int.segundos / m.promedioIntervalo) * 50, 100) 
+                                                : 50;
+                                            const isFast = isAnomaly && m.anomalías.find(a => a.indice === idx)?.tipo === 'rapido';
+                                            return `
+                                                <div class="flex items-center gap-2 text-xs">
+                                                    <span class="w-6 text-right text-slate-400 font-bold">${idx + 1}</span>
+                                                    <div class="flex-1 h-6 bg-red-50 rounded-full overflow-hidden relative">
+                                                        <div class="h-full rounded-full transition-all ${isFast ? 'bg-red-600' : isAnomaly ? 'bg-slate-500' : 'bg-red-300'}" 
+                                                             style="width: ${Math.max(height, 2)}%"></div>
+                                                        ${isFast ? `<div class="absolute inset-0 bg-red-400 rounded-full opacity-30 pulse"></div>` : ''}
+                                                    </div>
+                                                    <span class="w-16 font-bold ${isFast ? 'text-red-600' : isAnomaly ? 'text-slate-600' : 'text-slate-500'}">${formatDuration(int.segundos)}</span>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                    ${m.promedioIntervalo ? `
+                                        <div class="mt-3 pt-3 border-t border-red-100 flex items-center gap-2">
+                                            <div class="w-4 h-1 bg-red-600 rounded-full"></div>
+                                            <span class="text-xs font-bold text-slate-600">Promedio: ${formatDuration(m.promedioIntervalo)}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+
+
+                    <!-- LEYENDA -->
+                    <div class="mt-6 bg-white rounded-2xl p-4 shadow-lg border border-red-100">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-3">Leyenda de Anomalías</h3>
+                        <div class="flex flex-wrap gap-4 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-red-600 rounded"></div>
+                                <span class="font-bold text-slate-700">Muy rápido (< 35% de media)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-slate-500 rounded"></div>
+                                <span class="font-bold text-slate-700">Muy lento (> 300% de media)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-red-300 rounded"></div>
+                                <span class="font-bold text-slate-700">Normal</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-4 h-4 bg-red-600 rounded-full"></div>
+                                <span class="font-bold text-slate-700">ALARMA: 3+ consecutivos rápidos</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </main>
+            `;
+        }
+
+        // Iniciar actualización automática cada 5 segundos
+        setInterval(() => {
+            if (state.autenticado && !state.cargando) {
+                cargarDatos();
+            }
+        }, 5000);
+
+        if (state.autenticado) {
+            cargarPadron();
+        } else {
+            render();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECCIONAL 40 - Padrón Unificado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .filtro-btn-active { background: #dc2626 !important; color: white !important; border-color: #dc2626 !important; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+    <div id="app"></div>
+
+    <script>
+        // ============ CONFIGURACIÓN ============
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXSjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+        const PW_PC = 'Paraguay100';
+        const AUTH_SESSION_KEY = 'seccional40_auth';
+        const NIVEL_SESSION_KEY = 'seccional40_nivel';
+
+        function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+        function estaAutenticado() { return getNivel() === 'pc'; }
+
+        // ============ ESTADO ============
+        let state = {
+            autenticado: estaAutenticado(),
+            cargando: false,
+            mensaje: '',
+            electores: [],
+            dirigentes: [],
+            mesas: [],
+            filtroMesa: '',
+            filtroDirigente: '',
+            filtroEstado: '',
+            ordenEstado: 'sin_registro', // 'sin_registro' | 'voto' | 'no_voto'
+            busqueda: '',
+            escuela: sessionStorage.getItem('seccional40_escuela') || ''
+        };
+
+        // ============ LOGIN ============
+        function login() {
+            const passInput = document.getElementById('passwordInput');
+            const pass = passInput ? passInput.value.trim() : '';
+            if (!pass) { alert('Ingrese la contraseña.'); return; }
+            if (pass !== PW_PC) { alert('Contraseña incorrecta.'); return; }
+            sessionStorage.setItem(NIVEL_SESSION_KEY, 'pc');
+            sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+            state.autenticado = true;
+            cargarDatos();
+        }
+
+        function logout() {
+            sessionStorage.removeItem(NIVEL_SESSION_KEY);
+            sessionStorage.removeItem(AUTH_SESSION_KEY);
+            state.autenticado = false;
+            render();
+        }
+
+        // ============ CARGAR DATOS ============
+        async function cargarDatos() {
+            state.cargando = true;
+            state.mensaje = 'Cargando padrón unificado...';
+            render();
+
+            try {
+                const params = new URLSearchParams({ action: 'padron_unificado', v: Date.now() });
+                if (state.filtroMesa) params.set('mesa', state.filtroMesa);
+                if (state.filtroDirigente) params.set('dirigente', state.filtroDirigente);
+
+                const resp = await fetch(API_URL + '?' + params.toString(), {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const text = await resp.text();
+                const data = JSON.parse(text);
+
+                if (data && data.electores) {
+                    state.electores = data.electores;
+                    state.dirigentes = data.dirigentes || [];
+                    state.mesas = data.mesas || [];
+                    state.mensaje = `✅ ${data.total} electores · ${data.resumen.voto} votos · ${data.resumen.no_voto} no votos · ${data.resumen.sin_registro} sin registro`;
+                } else {
+                    state.mensaje = '⚠️ Error del servidor: ' + (data.error || data.message || 'no se pudieron cargar los datos');
+                    console.error('Respuesta inesperada:', data);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                state.mensaje = '⚠️ Error de conexión: ' + err.message;
+            }
+
+            state.cargando = false;
+            render();
+        }
+
+        // ============ FILTROS ============
+        function aplicarFiltros() {
+            state.filtroMesa = document.getElementById('filtroMesa').value;
+            state.filtroDirigente = document.getElementById('filtroDirigente').value;
+            state.filtroEstado = document.getElementById('filtroEstado').value;
+            state.busqueda = document.getElementById('filtroBusqueda').value.trim();
+            cargarDatos();
+        }
+
+        function toggleOrden(orden) {
+            state.ordenEstado = orden;
+            render();
+        }
+
+        // ============ RENDER ============
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center p-4">
+                    <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+                        <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-list text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">PADRÓN UNIFICADO</h1>
+                        <p class="text-slate-500 text-sm mb-8">SECCIONAL 40</p>
+                        <div class="space-y-4">
+                            <input type="password" id="passwordInput" placeholder="Contraseña" 
+                                class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all text-center"
+                                onkeypress="if(event.key === 'Enter') login()">
+                            <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                                ACCEDER
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-6">Acceso unificado para todo el sistema</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (!state.autenticado) {
+                app.innerHTML = renderLogin();
+                return;
+            }
+
+            // Aplicar filtros locales y ordenamiento
+            let lista = [...state.electores];
+
+            // Filtro por búsqueda (cédula o nombre)
+            if (state.busqueda) {
+                const q = state.busqueda.toLowerCase();
+                lista = lista.filter(e => 
+                    e.cedula.includes(q) || 
+                    e.nombreCompleto.toLowerCase().includes(q) ||
+                    e.apellido.toLowerCase().includes(q) ||
+                    e.nombre.toLowerCase().includes(q)
+                );
+            }
+
+            // Filtro por estado
+            if (state.filtroEstado) {
+                lista = lista.filter(e => e.estado === state.filtroEstado);
+            }
+
+            // Ordenar por estado según selección
+            const ordenEstados = ['sin_registro', 'voto', 'no_voto'];
+            const idxOrden = ordenEstados.indexOf(state.ordenEstado);
+            if (idxOrden >= 0) {
+                const primero = ordenEstados[idxOrden];
+                const segundo = ordenEstados[(idxOrden + 1) % 3];
+                const tercero = ordenEstados[(idxOrden + 2) % 3];
+                lista.sort((a, b) => {
+                    const ma = a.estado === primero ? 0 : a.estado === segundo ? 1 : 2;
+                    const mb = b.estado === primero ? 0 : b.estado === segundo ? 1 : 2;
+                    if (ma !== mb) return ma - mb;
+                    return (a.mesa - b.mesa) || (a.orden - b.orden);
+                });
+            }
+
+            const resumen = {
+                voto: lista.filter(e => e.estado === 'voto').length,
+                no_voto: lista.filter(e => e.estado === 'no_voto').length,
+                sin_registro: lista.filter(e => e.estado === 'sin_registro').length,
+                total: lista.length
+            };
+
+            app.innerHTML = `
+                <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-red-500 rounded-xl">
+                                <i class="fas fa-list text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">PADRÓN UNIFICADO</h1>
+                                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">SECC. 40</p>
+                            </div>
+                        </div>
+
+                        <!-- MENÚ DE NAVEGACIÓN -->
+                        <div class="flex flex-wrap items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+                            <span class="text-[10px] text-red-300 font-bold uppercase mr-2">📍 ${state.escuela || 'Esc. ...'}</span>
+                            <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+                            <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+                            <a href="dirigente.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Dirigente</a>
+                            <a href="mesas.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Mesas</a>
+                            <a href="No_voto.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">No Voto</a>
+                            <span class="text-[10px] text-red-400 mx-1">|</span>
+                            <span class="text-[10px] text-red-300 font-bold uppercase">PC:</span>
+                            <a href="padron_unificado.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Padrón</a>
+                            <a href="anomalias.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Anomalías</a>
+                            <a href="escrutinio.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Escrutinio</a>
+                            <a href="asistencia.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Seguimiento</a>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="cargarDatos()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Recargar">
+                                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                            </button>
+                            <button onclick="logout()" class="px-3 py-2 bg-red-800 hover:bg-red-700 rounded-xl text-xs font-bold transition-all">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-7xl mx-auto p-3 md:p-6">
+                    ${state.cargando ? `
+                        <div class="text-center py-12">
+                            <div class="inline-block w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4"></div>
+                            <p class="text-slate-500 font-bold">${state.mensaje}</p>
+                        </div>
+                    ` : `
+                        <!-- BARRA DE FILTROS -->
+                        <div class="bg-white rounded-[2rem] p-4 shadow-xl border border-slate-100 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Mesa</label>
+                                    <select id="filtroMesa" class="w-full px-3 py-2 text-sm font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none bg-white">
+                                        <option value="">Todas</option>
+                                        ${state.mesas.map(m => `
+                                            <option value="${m}" ${state.filtroMesa == m ? 'selected' : ''}>Mesa ${m}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Dirigente</label>
+                                    <select id="filtroDirigente" class="w-full px-3 py-2 text-sm font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none bg-white">
+                                        <option value="">Todos</option>
+                                        ${state.dirigentes.map(d => `
+                                            <option value="${d.cedula}" ${state.filtroDirigente === d.cedula ? 'selected' : ''}>${d.nombre}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Estado</label>
+                                    <select id="filtroEstado" class="w-full px-3 py-2 text-sm font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none bg-white">
+                                        <option value="">Todos</option>
+                                        <option value="sin_registro" ${state.filtroEstado === 'sin_registro' ? 'selected' : ''}>Sin registro</option>
+                                        <option value="voto" ${state.filtroEstado === 'voto' ? 'selected' : ''}>Voto</option>
+                                        <option value="no_voto" ${state.filtroEstado === 'no_voto' ? 'selected' : ''}>No voto</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Buscar (cédula o nombre)</label>
+                                    <input type="text" id="filtroBusqueda" placeholder="Buscar..." value="${state.busqueda}"
+                                        class="w-full px-3 py-2 text-sm font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all"
+                                        onkeypress="if(event.key === 'Enter') aplicarFiltros()">
+                                </div>
+                            </div>
+                            <div class="flex justify-end mt-3">
+                                <button onclick="aplicarFiltros()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition-all shadow">
+                                    <i class="fas fa-filter mr-1"></i> APLICAR FILTROS
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- RESUMEN Y ORDEN -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <div class="bg-white p-3 rounded-[1.5rem] shadow-lg border border-slate-100 text-center">
+                                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Total</p>
+                                <span class="text-2xl font-black text-slate-900">${resumen.total}</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-[1.5rem] shadow-lg border border-green-200 text-center">
+                                <p class="text-[10px] uppercase font-black text-green-600 tracking-widest">Votos</p>
+                                <span class="text-2xl font-black text-green-600">${resumen.voto}</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-[1.5rem] shadow-lg border border-red-200 text-center">
+                                <p class="text-[10px] uppercase font-black text-red-600 tracking-widest">No Votos</p>
+                                <span class="text-2xl font-black text-red-600">${resumen.no_voto}</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-[1.5rem] shadow-lg border border-yellow-200 text-center">
+                                <p class="text-[10px] uppercase font-black text-yellow-600 tracking-widest">Sin registro</p>
+                                <span class="text-2xl font-black text-yellow-600">${resumen.sin_registro}</span>
+                            </div>
+                        </div>
+
+                        <!-- ORDENAR POR ESTADO -->
+                        <div class="bg-white p-3 rounded-[2rem] shadow-xl border border-slate-100 mb-4">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">Ordenar por:</span>
+                                ${[
+                                    { valor: 'sin_registro', label: 'Sin registro primero', icon: 'fa-hourglass-half' },
+                                    { valor: 'voto', label: 'Voto primero', icon: 'fa-check-circle' },
+                                    { valor: 'no_voto', label: 'No voto primero', icon: 'fa-user-slash' }
+                                ].map(op => `
+                                    <button onclick="toggleOrden('${op.valor}')"
+                                        class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl border-2 transition-all
+                                        ${state.ordenEstado === op.valor 
+                                            ? 'bg-red-600 text-white border-red-600' 
+                                            : 'bg-white text-slate-600 border-slate-200 hover:border-red-300'}">
+                                        <i class="fas ${op.icon}"></i> ${op.label}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- LISTA / TABLA -->
+                        <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-100">
+                            ${lista.length === 0 ? `
+                                <div class="text-center py-12 text-slate-400">
+                                    <i class="fas fa-inbox text-4xl mb-3"></i>
+                                    <p class="font-bold">No se encontraron electores</p>
+                                </div>
+                            ` : `
+                                <!-- Vista tarjetas en móvil -->
+                                <div class="md:hidden divide-y divide-slate-100">
+                                    ${lista.map(e => {
+                                        const estadoClass = e.estado === 'voto' 
+                                            ? 'bg-green-100 text-green-700 border-green-200' 
+                                            : e.estado === 'no_voto' 
+                                                ? 'bg-red-100 text-red-700 border-red-200' 
+                                                : 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                                        const estadoIcon = e.estado === 'voto'
+                                            ? 'fa-check-circle'
+                                            : e.estado === 'no_voto'
+                                                ? 'fa-user-slash'
+                                                : 'fa-hourglass-half';
+                                        return `
+                                            <div class="p-3 hover:bg-red-50/30 transition-all">
+                                                <div class="flex justify-between items-center mb-1">
+                                                    <div class="text-xs font-black text-slate-500">
+                                                        Mesa <span class="text-slate-900">${e.mesa}</span> · Orden <span class="text-slate-900">${e.orden}</span>
+                                                    </div>
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-lg border ${estadoClass}">
+                                                        <i class="fas ${estadoIcon}"></i>
+                                                        ${e.estado === 'voto' ? 'VOTO' : e.estado === 'no_voto' ? 'NO VOTO' : 'SIN REGISTRO'}
+                                                    </span>
+                                                </div>
+                                                <div class="font-mono text-xs font-bold text-slate-700 mb-0.5">CI: ${e.cedula}</div>
+                                                <div class="font-bold text-slate-900 text-sm mb-0.5">${e.nombreCompleto}</div>
+                                                <div class="text-[11px] text-slate-500">Local: ${e.local} · Dirigente: <span class="font-semibold text-slate-700">${e.dirigenteAsignado || e.dirigenteNombre || '-'}</span></div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+
+                                <!-- Vista tabla en escritorio -->
+                                <div class="hidden md:block overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead class="sticky top-0 z-10">
+                                            <tr class="bg-red-900 text-white">
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Mesa</th>
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Orden</th>
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Cédula</th>
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Nombre</th>
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Local</th>
+                                                <th class="px-3 py-2 text-center text-[10px] font-bold uppercase tracking-wider">Estado</th>
+                                                <th class="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider">Dirigente</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${lista.map(e => {
+                                                const estadoClass = e.estado === 'voto' 
+                                                    ? 'bg-green-100 text-green-700 border-green-200' 
+                                                    : e.estado === 'no_voto' 
+                                                        ? 'bg-red-100 text-red-700 border-red-200' 
+                                                        : 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                                                const estadoIcon = e.estado === 'voto'
+                                                    ? 'fa-check-circle'
+                                                    : e.estado === 'no_voto'
+                                                        ? 'fa-user-slash'
+                                                        : 'fa-hourglass-half';
+                                                return `
+                                                    <tr class="border-b border-slate-100 hover:bg-red-50/50 transition-all">
+                                                        <td class="px-3 py-2 font-black text-slate-900">${e.mesa}</td>
+                                                        <td class="px-3 py-2 font-bold text-slate-700">${e.orden}</td>
+                                                        <td class="px-3 py-2 font-mono font-bold text-slate-900">${e.cedula}</td>
+                                                        <td class="px-3 py-2 font-bold text-slate-900">${e.nombreCompleto}</td>
+                                                        <td class="px-3 py-2 text-xs text-slate-500">${e.local}</td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-lg border ${estadoClass}">
+                                                                <i class="fas ${estadoIcon}"></i>
+                                                                ${e.estado === 'voto' ? 'VOTO' : e.estado === 'no_voto' ? 'NO VOTO' : 'SIN REGISTRO'}
+                                                            </span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-xs text-slate-600">${e.dirigenteAsignado || e.dirigenteNombre || '-'}</td>
+                                                    </tr>
+                                                `;
+                                            }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- MENSAJE -->
+                        ${state.mensaje ? `
+                            <div class="mt-4 bg-red-50 border-2 border-red-100 rounded-xl p-3">
+                                <p class="text-xs font-bold text-red-800 text-center">${state.mensaje}</p>
+                            </div>
+                        ` : ''}
+                    `}
+                </main>
+            `;
+
+            lucide.createIcons();
+        }
+
+        // ============ INICIALIZAR ============
+        if (state.autenticado) {
+            cargarDatos();
+        } else {
+            render();
+        }
+    </script>
+</body>
+</html>

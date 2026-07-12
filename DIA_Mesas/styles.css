@@ -1,0 +1,162 @@
+/* ===================================================
+   SECCIONAL 40 — Estilos Globales Responsive
+   =================================================== */
+
+/* --- Fuente --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* --- Reset base --- */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Contenedor principal adaptable --- */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem;
+}
+
+/* --- Animaciones compartidas --- */
+.animate-in {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================
+   GRILLA DE ELECTORES (múltiplos de 5)
+   =================================================== */
+.grid-electores {
+  display: grid;
+  gap: 4px;
+}
+
+/* Móvil: columnas adaptativas */
+@media (max-width: 480px) {
+  .grid-electores { grid-template-columns: repeat(5, 1fr); gap: 2px; }
+}
+@media (min-width: 481px) and (max-width: 639px) {
+  .grid-electores { grid-template-columns: repeat(10, 1fr); gap: 2px; }
+}
+@media (min-width: 640px) and (max-width: 767px) {
+  .grid-electores { grid-template-columns: repeat(10, 1fr); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-electores { grid-template-columns: repeat(15, 1fr); }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .grid-electores { grid-template-columns: repeat(20, 1fr); }
+}
+@media (min-width: 1280px) {
+  .grid-electores { grid-template-columns: repeat(30, 1fr); }
+}
+
+/* Botón individual de la grilla */
+.btn-elector {
+  aspect-ratio: 1;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-elector:hover { transform: scale(1.08); border-color: #fca5a5; color: #dc2626; }
+.btn-elector:active { transform: scale(0.95); }
+
+@media (max-width: 640px) {
+  .btn-elector { font-size: 9px; border-radius: 3px; }
+}
+
+/* Estados del botón */
+.btn-elector.voto { background: #ef4444; color: #fff; border-color: #dc2626; font-weight: 800; }
+.btn-elector.ausente { background: #e2e8f0; color: #64748b; border-color: #cbd5e1; font-weight: 800; }
+.btn-elector.controversia { background: #ea580c; color: #fff; border-color: #c2410c; font-weight: 800; }
+.btn-elector.dirigente { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; font-weight: 700; }
+.btn-elector.padron { background: #fef2f2; color: #f87171; border-color: #fecaca; font-weight: 700; }
+
+/* ===================================================
+   LISTA DE ELECTORES (tarjetas verticales)
+   =================================================== */
+.lista-electores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.elector-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
+}
+.elector-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+.elector-card .campo {
+  margin-bottom: 0.2rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+.elector-card .campo strong {
+  color: #1e293b;
+}
+
+/* ===================================================
+   TABLA RESPONSIVE (sin scroll horizontal)
+   =================================================== */
+.tabla-responsive {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.tabla-responsive th {
+  background: #7f1d1d;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tabla-responsive td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* ===================================================
+   RESPONSIVE HELPERS
+   =================================================== */
+@media (max-width: 640px) {
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+}
+@media (min-width: 641px) {
+  .show-mobile { display: none !important; }
+}
+
+/* Contenedor scroll horizontal en mobile */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===================================================
+   TRANSICIONES Y UTILIDADES
+   =================================================== */
+.transition-all { transition: all 0.2s ease; }
+.rounded-card { border-radius: 2rem; }
+.shadow-card { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }

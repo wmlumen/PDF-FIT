@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECCIONAL 40 - Seguimiento de Cargas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --bg: #fef2f2;
+            --bg-soft: #fff7f7;
+            --card: #ffffff;
+            --line: #fecaca;
+            --line-strong: #fca5a5;
+            --text: #450a0a;
+            --muted: #7f1d1d;
+            --subtle: #b91c1c;
+            --brand: #dc2626;
+            --brand-dark: #991b1b;
+            --shadow: 0 10px 30px rgba(127, 29, 29, 0.10);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(220, 38, 38, 0.08), transparent 25%),
+                linear-gradient(180deg, #fff5f5 0%, var(--bg) 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .shell {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .login-wrap {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .login-card,
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .login-card {
+            width: min(460px, 100%);
+            padding: 40px 32px;
+            text-align: center;
+        }
+
+        .login-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 18px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            color: #fff;
+            font-size: 30px;
+        }
+
+        .title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .field,
+        .select,
+        .search {
+            width: 100%;
+            border: 2px solid var(--line);
+            border-radius: 16px;
+            background: #fff;
+            color: var(--text);
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .field:focus,
+        .select:focus,
+        .search:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+        }
+
+        .button {
+            border: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            color: #fff;
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .button.secondary {
+            background: #fff;
+            color: var(--brand-dark);
+            border: 1px solid var(--line);
+        }
+
+        .header {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .header-copy {
+            max-width: 820px;
+        }
+
+        .header-copy p {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .status-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            padding: 18px;
+        }
+
+        .stat-label {
+            color: var(--subtle);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.95fr);
+            gap: 20px;
+        }
+
+        .panel {
+            padding: 20px;
+        }
+
+        .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .panel-title h2 {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        .panel-title p {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr auto;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--bg-soft);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .only-mobile { display: none; }
+        .only-desktop { display: block; }
+        @media (max-width: 768px) {
+            .only-mobile { display: block; }
+            .only-desktop { display: none; }
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #fee2e2;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #fff1f2;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            z-index: 1;
+        }
+
+        tbody tr:hover {
+            background: #fff;
+        }
+
+        .mesa-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 48px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        .detail-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .detail-head h3 {
+            font-size: 26px;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .detail-head p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .detail-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-box {
+            border: 1px solid var(--line);
+            background: var(--bg-soft);
+            border-radius: 16px;
+            padding: 14px;
+        }
+
+        .detail-box-label {
+            color: var(--subtle);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            font-weight: 800;
+        }
+
+        .detail-box-value {
+            font-size: 26px;
+            font-weight: 900;
+            margin-top: 6px;
+            letter-spacing: -0.04em;
+        }
+
+        .people-list {
+            display: grid;
+            gap: 10px;
+            max-height: 66vh;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .person {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fff 0%, #fff8f8 100%);
+            padding: 14px;
+        }
+
+        .person-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .person-name {
+            font-weight: 900;
+            font-size: 15px;
+        }
+
+        .person-doc {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .person-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .empty {
+            border: 1px dashed var(--line-strong);
+            border-radius: 18px;
+            padding: 28px 18px;
+            text-align: center;
+            color: var(--muted);
+            background: #fffafa;
+        }
+
+        .hint {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 1120px) {
+            .stats,
+            .detail-stats,
+            .toolbar,
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header,
+            .panel-title,
+            .detail-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .shell {
+                padding: 16px;
+            }
+
+            body {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        const PW_COLEGIO = 'Paraguay40';
+        const PW_PC = 'Paraguay100';
+        const AUTH_SESSION_KEY = 'seccional40_auth';
+        const NIVEL_SESSION_KEY = 'seccional40_nivel';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXSjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+        const SPREADSHEET_ID = '1tDtXxCqV5L70-w5wAXBkb73e3ZKtTu7ni8lJ_AUg73I';
+        const RESPUESTAS_GID = '1919603001';
+        const RESPUESTAS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${RESPUESTAS_GID}`;
+
+        function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+        function estaAutenticado() { return getNivel() === 'pc' || getNivel() === 'colegio'; }
+
+        function getBackendAccessError() {
+            return 'Backend no disponible: la web app de Apps Script esta pidiendo inicio de sesion.';
+        }
+
+        async function fetchJsonOrThrow(url, options) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            const trimmed = text.trim().toLowerCase();
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+                throw new Error(getBackendAccessError());
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                throw new Error('Respuesta invalida del backend.');
+            }
+        }
+
+        const state = {
+            autenticado: estaAutenticado(),
+            cargando: false,
+            respuestas: [],
+            mesas: [],
+            busqueda: '',
+            mesaActiva: 'TODAS',
+            mensaje: '',
+            ultimaActualizacion: null
+        };
+
+        function normalizeText(value) {
+            return String(value || '').trim();
+        }
+
+        function normalizeKey(value) {
+            return normalizeText(value)
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+        }
+
+        function cleanCedula(value) {
+            return normalizeText(value).replace(/[.\s,-]/g, '');
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+
+                if (char === '"' && !inQuotes) {
+                    inQuotes = true;
+                } else if (char === '"' && inQuotes && nextChar === '"') {
+                    current += '"';
+                    i++;
+                } else if (char === '"' && inQuotes) {
+                    inQuotes = false;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+
+            result.push(current.trim());
+            return result;
+        }
+
+        function parseTimestamp(value) {
+            const raw = normalizeText(value);
+            if (!raw) return null;
+
+            const parts = raw.split(' ');
+            const datePart = parts[0] || '';
+            const timePart = parts[1] || '00:00:00';
+            const dateBits = datePart.split('/');
+            if (dateBits.length !== 3) return null;
+
+            const day = parseInt(dateBits[0], 10);
+            const month = parseInt(dateBits[1], 10);
+            const year = parseInt(dateBits[2], 10);
+            if (!day || !month || !year) return null;
+
+            const iso = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${timePart}`;
+            const date = new Date(iso);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function logout() {
+            sessionStorage.removeItem(NIVEL_SESSION_KEY);
+            sessionStorage.removeItem(AUTH_SESSION_KEY);
+            state.autenticado = false;
+            render();
+        }
+
+        function login() {
+            const input = document.getElementById('passwordInput');
+            const password = input ? input.value.trim() : '';
+
+            if (!password) {
+                alert('Ingrese la contrasena.');
+                return;
+            }
+
+            let nivel = '';
+            if (password === PW_PC) nivel = 'pc';
+            else if (password === PW_COLEGIO) nivel = 'colegio';
+            else {
+                alert('Contrasena incorrecta.');
+                return;
+            }
+
+            sessionStorage.setItem(NIVEL_SESSION_KEY, nivel);
+            sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+            state.autenticado = true;
+            loadAll();
+        }
+
+        async function loadResponses() {
+            const data = await fetchJsonOrThrow(API_URL + '?action=votos&v=' + Date.now());
+
+            if (!data || !data.registros) {
+                throw new Error('No se pudieron cargar los registros');
+            }
+
+            const records = data.registros.map((r, i) => {
+                const mesa = normalizeText(r.mesa || '');
+                const item = {
+                    index: i,
+                    marcaTemporal: r.timestamp || '',
+                    timestamp: r.timestamp ? new Date(r.timestamp) : new Date(0),
+                    cedula: cleanCedula(r.cedula || ''),
+                    mesa: mesa,
+                    orden: normalizeText(r.orden || ''),
+                    mesaKey: mesa || 'SIN_MESA',
+                    busqueda: normalizeKey(`${r.timestamp || ''} ${r.cedula || ''} ${mesa} ${r.orden || ''}`)
+                };
+                return item;
+            });
+
+            records.sort((a, b) => {
+                const aTime = a.timestamp ? a.timestamp.getTime() : 0;
+                const bTime = b.timestamp ? b.timestamp.getTime() : 0;
+                return bTime - aTime;
+            });
+
+            state.respuestas = records;
+        }
+
+        function buildMesas() {
+            const byMesa = new Map();
+
+            state.respuestas.forEach(item => {
+                if (!byMesa.has(item.mesaKey)) {
+                    byMesa.set(item.mesaKey, {
+                        key: item.mesaKey,
+                        mesa: item.mesa || 'Sin mesa',
+                        registros: [],
+                        cedulas: new Set(),
+                        ordenes: new Set(),
+                        ultimoRegistro: null
+                    });
+                }
+
+                const mesa = byMesa.get(item.mesaKey);
+                mesa.registros.push(item);
+                if (item.cedula) mesa.cedulas.add(item.cedula);
+                if (item.orden) mesa.ordenes.add(item.orden);
+                if (!mesa.ultimoRegistro || ((item.timestamp ? item.timestamp.getTime() : 0) > (mesa.ultimoRegistro.timestamp ? mesa.ultimoRegistro.timestamp.getTime() : 0))) {
+                    mesa.ultimoRegistro = item;
+                }
+            });
+
+            state.mesas = Array.from(byMesa.values())
+                .map(mesa => ({
+                    ...mesa,
+                    totalRegistros: mesa.registros.length,
+                    totalCedulas: mesa.cedulas.size,
+                    totalOrdenes: mesa.ordenes.size
+                }))
+                .sort((a, b) => {
+                    const aMesa = parseInt(a.mesa, 10);
+                    const bMesa = parseInt(b.mesa, 10);
+                    if (!Number.isNaN(aMesa) && !Number.isNaN(bMesa)) return aMesa - bMesa;
+                    return a.mesa.localeCompare(b.mesa, 'es');
+                });
+
+            if (state.mesaActiva === 'TODAS' && state.mesas.length > 0) {
+                state.mesaActiva = state.mesas[0].key;
+            }
+        }
+
+        function getGlobalStats() {
+            const cedulas = new Set(state.respuestas.map(item => item.cedula).filter(Boolean));
+            const mesas = new Set(state.respuestas.map(item => item.mesa).filter(Boolean));
+            return {
+                totalRegistros: state.respuestas.length,
+                totalCedulas: cedulas.size,
+                totalMesas: mesas.size,
+                ultimoRegistro: state.respuestas[0] || null
+            };
+        }
+
+        function getFilteredMesas() {
+            const query = normalizeKey(state.busqueda);
+            if (!query) return state.mesas;
+
+            return state.mesas.filter(mesa =>
+                normalizeKey(`mesa ${mesa.mesa}`).includes(query) ||
+                mesa.registros.some(item => item.busqueda.includes(query))
+            );
+        }
+
+        function getActiveMesa() {
+            return state.mesas.find(mesa => mesa.key === state.mesaActiva) || null;
+        }
+
+        async function loadAll() {
+            state.cargando = true;
+            state.mensaje = 'Cargando hoja Respuestas de formulario 1...';
+            render();
+
+            try {
+                await loadResponses();
+                buildMesas();
+                state.ultimaActualizacion = new Date();
+                state.mensaje = `Registros cargados: ${state.respuestas.length}`;
+            } catch (error) {
+                console.error(error);
+                state.mensaje = error.message || 'No se pudo cargar la hoja Respuestas de formulario 1';
+            }
+
+            state.cargando = false;
+            render();
+        }
+
+        function renderLogin() {
+            return `
+                <div class="login-wrap">
+                    <div class="login-card">
+                        <div class="login-icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="title">Seguimiento<br>Mesas</div>
+                        <p class="subtitle">Fuente principal: hoja Respuestas de formulario 1.</p>
+                        <div style="margin-top: 22px;">
+                            <input id="passwordInput" type="password" class="field" placeholder="Contrasena"
+                                onkeypress="if(event.key === 'Enter') login()">
+                        </div>
+                        <button class="button" style="width:100%;margin-top:14px;" onclick="login()">Ingresar</button>
+                        <div class="hint">Vista basada en los registros enviados desde el formulario de votacion.</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStats(stats) {
+            return `
+                <section class="stats">
+                    <div class="card stat">
+                        <div class="stat-label">Registros</div>
+                        <div class="stat-value">${stats.totalRegistros}</div>
+                    </div>
+                    <div class="card stat">
+                        <div class="stat-label">Cedulas unicas</div>
+                        <div class="stat-value">${stats.totalCedulas}</div>
+                    </div>
+                    <div class="card stat">
+                        <div class="stat-label">Mesas con carga</div>
+                        <div class="stat-value">${stats.totalMesas}</div>
+                    </div>
+                    <div class="card stat">
+                        <div class="stat-label">Ultimo registro</div>
+                        <div class="stat-value" style="font-size:22px;">${stats.ultimoRegistro ? stats.ultimoRegistro.marcaTemporal : '-'}</div>
+                    </div>
+                </section>
+            `;
+        }
+
+        function renderMesasTable(mesas) {
+            if (!mesas.length) {
+                return `<div class="empty">No hay mesas que coincidan con la busqueda.</div>`;
+            }
+
+            // Vista tarjetas en móvil
+            const cardsMobile = `
+                <div class="people-list" style="margin-bottom:16px;">
+                    ${mesas.map(mesa => `
+                        <article class="person" onclick="selectMesa('${mesa.key}')" style="cursor:pointer; ${mesa.key === state.mesaActiva ? 'box-shadow:0 0 0 2px #fecaca;' : ''}">
+                            <div class="person-top">
+                                <div>
+                                    <div class="person-name">Mesa ${mesa.mesa}</div>
+                                    <div class="person-doc">${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : 'Sin registros recientes'}</div>
+                                </div>
+                                <div class="pill">Registros ${mesa.totalRegistros}</div>
+                            </div>
+                            <div class="person-tags">
+                                <span class="tag">Cédulas: ${mesa.totalCedulas}</span>
+                                <span class="tag">Órdenes: ${mesa.totalOrdenes}</span>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+
+            // Vista tabla en escritorio
+            const tableDesktop = `
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mesa</th>
+                                <th>Registros</th>
+                                <th>Cedulas</th>
+                                <th>Ordenes</th>
+                                <th>Ultimo registro</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${mesas.map(mesa => `
+                                <tr onclick="selectMesa('${mesa.key}')" style="cursor:pointer; background:${mesa.key === state.mesaActiva ? '#fff1f2' : 'transparent'};">
+                                    <td><span class="mesa-name">Mesa ${mesa.mesa}</span></td>
+                                    <td><span class="pill">${mesa.totalRegistros}</span></td>
+                                    <td><span class="pill">${mesa.totalCedulas}</span></td>
+                                    <td><span class="pill">${mesa.totalOrdenes}</span></td>
+                                    <td><span class="pill">${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : '-'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return `
+                <div class="only-mobile">${cardsMobile}</div>
+                <div class="only-desktop">${tableDesktop}</div>
+            `;
+        }
+
+        function renderActiveDetail(mesa) {
+            if (!mesa) {
+                return `<div class="empty">No hay una mesa seleccionada.</div>`;
+            }
+
+            const registros = [...mesa.registros].sort((a, b) => {
+                const aTime = a.timestamp ? a.timestamp.getTime() : 0;
+                const bTime = b.timestamp ? b.timestamp.getTime() : 0;
+                return bTime - aTime;
+            });
+
+            return `
+                <div class="detail-head">
+                    <div>
+                        <h3>Mesa ${mesa.mesa}</h3>
+                        <p>Detalle directo de la hoja Respuestas de formulario 1.</p>
+                    </div>
+                    <button class="button secondary" onclick="exportMesa()">Copiar resumen</button>
+                </div>
+
+                <div class="detail-stats">
+                    <div class="detail-box">
+                        <div class="detail-box-label">Registros</div>
+                        <div class="detail-box-value">${mesa.totalRegistros}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-box-label">Cedulas unicas</div>
+                        <div class="detail-box-value">${mesa.totalCedulas}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-box-label">Ultimo envio</div>
+                        <div class="detail-box-value" style="font-size:18px;">${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : '-'}</div>
+                    </div>
+                </div>
+
+                <div class="people-list">
+                    ${registros.map(item => `
+                        <article class="person">
+                            <div class="person-top">
+                                <div>
+                                    <div class="person-name">CI ${item.cedula || '-'}</div>
+                                    <div class="person-doc">${item.marcaTemporal || 'Sin fecha'}</div>
+                                </div>
+                                <div class="pill">Orden ${item.orden || '-'}</div>
+                            </div>
+                            <div class="person-tags">
+                                <span class="tag">Mesa ${item.mesa || '-'}</span>
+                                <span class="tag">Fila ${item.index}</span>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function selectMesa(key) {
+            state.mesaActiva = key;
+            render();
+        }
+
+        function updateSearch(value) {
+            state.busqueda = value;
+            render();
+        }
+
+        function updateMesa(value) {
+            state.mesaActiva = value;
+            render();
+        }
+
+        function exportMesa() {
+            const mesa = getActiveMesa();
+            if (!mesa) return;
+
+            const text = [
+                `Mesa: ${mesa.mesa}`,
+                `Registros: ${mesa.totalRegistros}`,
+                `Cedulas unicas: ${mesa.totalCedulas}`,
+                `Ordenes unicos: ${mesa.totalOrdenes}`,
+                `Ultimo registro: ${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : '-'}`
+            ].join('\n');
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Resumen copiado al portapapeles.');
+            }).catch(() => {
+                alert(text);
+            });
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (!state.autenticado) {
+                app.innerHTML = renderLogin();
+                return;
+            }
+
+            const stats = getGlobalStats();
+            const filtered = getFilteredMesas();
+            const active = getActiveMesa();
+
+            app.innerHTML = `
+                <div class="shell">
+                    <header class="header">
+                        <!-- MENÚ DE NAVEGACIÓN -->
+                        <div style="display:flex; flex-wrap:nowrap; gap:6px; align-items:center; background:#7f1d1d; padding:8px 12px; border-radius:12px; border:1px solid #991b1b; margin-bottom:12px; overflow-x:auto; white-space:nowrap;">
+                          <span style="color:#fca5a5; font-size:10px; font-weight:700; text-transform:uppercase; margin-right:5px;">📍 ${sessionStorage.getItem('seccional40_escuela') || 'Esc. ...'}</span>
+                          <span style="color:#fca5a5; font-size:10px; font-weight:700; text-transform:uppercase; margin-right:5px;">Colegio:</span>
+                          <a href="index.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">Votación</a>
+                          <a href="mesas.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">Mesas</a>
+                          <a href="No_voto.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">No Voto</a>
+                          <a href="padron_unificado.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">Padrón</a>
+                          <span style="color:#fca5a5; font-size:10px; margin:0 4px;">|</span>
+                          <span style="color:#fca5a5; font-size:10px; font-weight:700; text-transform:uppercase;">PC:</span>
+                          <a href="anomalias.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">Anomalías</a>
+                          <a href="escrutinio.html" style="color:#fecaca; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;" onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='transparent'">Escrutinio</a>
+                          <a href="asistencia.html" style="background:#dc2626; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:8px; text-decoration:none;">Seguimiento</a>
+                        </div>
+                        <div class="header-copy">
+                            <div class="title">Seguimiento de cargas</div>
+                            <p>Vista construida sobre los registros de <strong>Votación</strong>. Muestra las cargas registradas con <strong>Cédula</strong>, <strong>Mesa</strong> y <strong>Orden</strong>.</p>
+                            <div class="status-badges">
+                                <span class="badge">Libro: Votacion</span>
+                                <span class="badge">Fuente: API Registros</span>
+                                <span class="badge">${state.ultimaActualizacion ? `Actualizado ${state.ultimaActualizacion.toLocaleTimeString('es-PY')}` : 'Sin actualizar'}</span>
+                                <span class="badge">${state.mensaje || 'Sin datos'}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button class="button secondary" onclick="loadAll()">${state.cargando ? 'Cargando...' : 'Recargar'}</button>
+                            <button class="button secondary" onclick="logout()">Salir</button>
+                        </div>
+                    </header>
+
+                    ${renderStats(stats)}
+
+                    <section class="grid">
+                        <div class="card panel">
+                            <div class="panel-title">
+                                <div>
+                                    <h2>Resumen por mesa</h2>
+                                    <p>${filtered.length} mesa(s) visibles sobre ${state.mesas.length} con registros.</p>
+                                </div>
+                            </div>
+
+                            <div class="toolbar">
+                                <input class="search" placeholder="Buscar por mesa, cedula, orden o fecha" value="${state.busqueda.replace(/"/g, '&quot;')}"
+                                    oninput="updateSearch(this.value)">
+                                <select class="select" onchange="updateMesa(this.value)">
+                                    ${state.mesas.map(mesa => `
+                                        <option value="${mesa.key}" ${mesa.key === state.mesaActiva ? 'selected' : ''}>Mesa ${mesa.mesa}</option>
+                                    `).join('')}
+                                </select>
+                                <button class="button secondary" onclick="updateSearch('')">Limpiar</button>
+                            </div>
+
+                            ${renderMesasTable(filtered)}
+                        </div>
+
+                        <aside class="card panel">
+                            <div class="panel-title">
+                                <div>
+                                    <h2>Detalle de registros</h2>
+                                    <p>Ordenado desde el mas reciente al mas antiguo.</p>
+                                </div>
+                            </div>
+                            ${renderActiveDetail(active)}
+                        </aside>
+                    </section>
+                </div>
+            `;
+        }
+
+        if (state.autenticado) {
+            loadAll();
+        } else {
+            render();
+        }
+    </script>
+</body>
+</html>

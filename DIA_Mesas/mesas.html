@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECCIONAL 40 - Mesas Electorales</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+    <div id="app"></div>
+
+    <script>
+        const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXSjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+        const PW_COLEGIO = 'Paraguay40';
+        const PW_PC = 'Paraguay100';
+        const AUTH_SESSION_KEY = 'seccional40_auth';
+        const NIVEL_SESSION_KEY = 'seccional40_nivel';
+        
+        function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+        function esPc() { return getNivel() === 'pc'; }
+        function estaAutenticado() {
+            const nivel = getNivel();
+            return nivel === 'colegio' || nivel === 'pc';
+        }
+        
+        let state = {
+            autenticado: estaAutenticado(),
+            cargando: false,
+            padron: [],
+            mesas: {},
+            votos: [],
+            ausentes: 0,
+            controversias: 0,
+            miembros: [],
+            ultimaActualizacion: null,
+            mensaje: ''
+        };
+
+        function login() {
+            const input = document.getElementById('passwordInput');
+            if (!input) return;
+            const pass = input.value.trim();
+            if (pass === PW_PC) {
+                sessionStorage.setItem(NIVEL_SESSION_KEY, 'pc');
+                sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+                state.autenticado = true;
+                cargarDatos();
+            } else if (pass === PW_COLEGIO) {
+                sessionStorage.setItem(NIVEL_SESSION_KEY, 'colegio');
+                sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+                state.autenticado = true;
+                cargarDatos();
+            } else {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        function getBackendAccessError() {
+            return 'Backend no disponible: la web app de Apps Script esta pidiendo inicio de sesion.';
+        }
+
+        async function fetchJsonOrThrow(url, options) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            const trimmed = text.trim().toLowerCase();
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+                throw new Error(getBackendAccessError());
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                throw new Error('Respuesta invalida del backend.');
+            }
+        }
+
+        async function cargarDatos() {
+            state.cargando = true;
+            state.mensaje = 'Cargando datos...';
+            render();
+            
+            try {
+                const [padronResp, votosData, miembrosData] = await Promise.all([
+                    fetch(PADRON_CSV_URL),
+                    fetchJsonOrThrow(API_URL + '?action=votos'),
+                    fetchJsonOrThrow(API_URL + '?action=miembros_mesa_v2')
+                ]);
+                
+                const padronText = await padronResp.text();
+                const lineas = padronText.split('\n').filter(l => l.trim());
+                
+                const padronData = [];
+                const mesasData = {};
+                
+                for (let i = 1; i < lineas.length; i++) {
+                    const partes = lineas[i].split(',');
+                    if (partes.length >= 8) {
+                        const mesa = parseInt(partes[3].trim()) || 0;
+                        const cedula = partes[5].replace(/\./g, '').trim();
+                        const elector = {
+                            cedula: cedula,
+                            nombre: (partes[6].trim() + ' ' + partes[7].trim()).trim(),
+                            mesa: mesa,
+                            orden: parseInt(partes[4].trim()) || 0
+                        };
+                        padronData.push(elector);
+                        
+                        if (!mesasData[mesa]) {
+                            mesasData[mesa] = {
+                                mesa: mesa,
+                                electores: [],
+                                totalElectores: 0,
+                                votos: 0,
+                                ausentes: 0,
+                                controversias: 0,
+                                participacion: 0
+                            };
+                        }
+                        mesasData[mesa].electores.push(elector);
+                        mesasData[mesa].totalElectores++;
+                    }
+                }
+                
+                state.padron = padronData;
+                
+                // Calcular estadísticas por mesa con todos los estados
+                if (votosData && votosData.registros) {
+                    state.votos = votosData.registros.filter(r => r.estado === 'voto');
+                    state.ausentes = votosData.registros.filter(r => r.estado === 'ausente').length;
+                    state.controversias = votosData.registros.filter(r => r.estado === 'controversia').length;
+                    
+                    Object.keys(mesasData).forEach(mesaNum => {
+                        const mesa = mesasData[mesaNum];
+                        const registrosMesa = votosData.registros.filter(v => parseInt(v.mesa) === parseInt(mesaNum));
+                        mesa.votos = registrosMesa.filter(r => r.estado === 'voto').length;
+                        mesa.ausentes = registrosMesa.filter(r => r.estado === 'ausente').length;
+                        mesa.controversias = registrosMesa.filter(r => r.estado === 'controversia').length;
+                        const totalRegistros = registrosMesa.length;
+                        mesa.participacion = mesa.totalElectores > 0 ? ((totalRegistros / mesa.totalElectores) * 100).toFixed(1) : 0;
+                    });
+                }
+
+                state.miembros = miembrosData && miembrosData.miembros ? miembrosData.miembros : [];
+                state.mesas = mesasData;
+                state.ultimaActualizacion = new Date();
+                state.cargando = false;
+                state.mensaje = `✅ ${padronData.length} electores · ${Object.keys(mesasData).length} mesas · ${state.votos.length} votos · ${state.ausentes} ausentes · ${state.controversias} controversias`;
+            } catch (error) {
+                console.error('Error:', error);
+                state.cargando = false;
+                state.mensaje = error && error.message ? error.message : 'Error cargando datos';
+            }
+            render();
+        }
+
+        async function guardarMiembroMesa() {
+            const cedulaInput = document.getElementById('miembroCedula');
+            const nombreInput = document.getElementById('miembroNombre');
+            const passwordInput = document.getElementById('miembroPassword');
+            const mesaInput = document.getElementById('miembroMesa');
+            const estadoSelect = document.getElementById('miembroEstado');
+
+            const cedula = (cedulaInput ? cedulaInput.value : '').replace(/[.\s,-]/g, '').trim();
+            const nombre = nombreInput ? nombreInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
+            const mesa = mesaInput ? mesaInput.value.trim() : '';
+            const estado = estadoSelect ? estadoSelect.value : 'ACTIVO';
+
+            if (!cedula || !nombre || !password) {
+                alert('Cédula, nombre y contraseña son obligatorios.');
+                return;
+            }
+
+            try {
+                const result = await fetchJsonOrThrow(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'registrar_miembro',
+                        cedula: cedula,
+                        nombre: nombre,
+                        password: password,
+                        mesa: mesa,
+                        estado: estado
+                    })
+                });
+
+                if (!result.success) {
+                    alert(result.error || 'No se pudo guardar el miembro.');
+                    return;
+                }
+
+                state.mensaje = `Miembro ${result.accion === 'actualizado' ? 'actualizado' : 'registrado'}: ${nombre}`;
+                if (cedulaInput) cedulaInput.value = '';
+                if (nombreInput) nombreInput.value = '';
+                if (passwordInput) passwordInput.value = '';
+                if (mesaInput) mesaInput.value = '';
+                if (estadoSelect) estadoSelect.value = 'ACTIVO';
+                await cargarDatos();
+            } catch (error) {
+                console.error('Error guardando miembro:', error);
+                alert(error && error.message ? error.message : 'Error guardando miembro de mesa.');
+            }
+        }
+
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center p-4">
+                    <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+                        <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-landmark text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">MESAS</h1>
+                        <p class="text-slate-500 text-sm mb-8">Información de Mesas Electorales</p>
+                        
+                        <div class="space-y-4">
+                            <input type="password" id="passwordInput" placeholder="Contraseña" 
+                                class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all text-center"
+                                onkeypress="if(event.key === 'Enter') login()">
+                            <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                                ACCEDER
+                            </button>
+                        </div>
+                        
+                        <p class="text-xs text-slate-400 mt-6">Sistema Privado - Uso Autorizado</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (!state.autenticado) {
+                app.innerHTML = renderLogin();
+                return;
+            }
+            
+            const mesasArray = Object.values(state.mesas).sort((a, b) => a.mesa - b.mesa);
+            const totalElectores = state.padron.length;
+            const totalVotos = state.votos.length;
+            const totalMesas = mesasArray.length;
+            
+            app.innerHTML = `
+                <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-red-500 rounded-xl">
+                                <i class="fas fa-landmark text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">MESAS</h1>
+                                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">Seccional 40</p>
+                            </div>
+                        </div>
+                        
+                        <!-- MENÚ DE NAVEGACIÓN -->
+                        <div class="flex flex-wrap items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">📍 ${sessionStorage.getItem('seccional40_escuela') || 'Esc. ...'}</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+                          <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+                          <a href="mesas.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Mesas</a>
+                          <a href="No_voto.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">No Voto</a>
+                          <a href="padron_unificado.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Padrón</a>
+                          <span class="text-[10px] text-red-400 mx-1">|</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase">PC:</span>
+                          <a href="anomalias.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Anomalías</a>
+                          <a href="escrutinio.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Escrutinio</a>
+                          <a href="asistencia.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Seguimiento</a>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-xs">
+                            <div class="text-right">
+                                <p class="text-red-200">Actualizado</p>
+                                <p class="font-bold">${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleTimeString('es-PY') : '-'}</p>
+                            </div>
+                            <button onclick="cargarDatos()" class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-xl transition-all">
+                                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-7xl mx-auto p-4 md:p-6">
+                    <!-- RESUMEN GENERAL -->
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 text-center">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Mesas</div>
+                            <div class="text-3xl font-black text-slate-900">${totalMesas}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 text-center">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Electores</div>
+                            <div class="text-3xl font-black text-slate-900">${totalElectores}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-green-200 text-center">
+                            <div class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Votos</div>
+                            <div class="text-3xl font-black text-green-600">${totalVotos}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-orange-200 text-center">
+                            <div class="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Ausentes</div>
+                            <div class="text-3xl font-black text-orange-600">${state.ausentes}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-200 text-center">
+                            <div class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Controversias</div>
+                            <div class="text-3xl font-black text-red-600">${state.controversias}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 text-center">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Participación</div>
+                            <div class="text-3xl font-black ${totalElectores > 0 ? (totalVotos/totalElectores*100) > 50 ? 'text-green-600' : 'text-red-600' : 'text-slate-900'}">${totalElectores > 0 ? ((totalVotos/totalElectores)*100).toFixed(1) : 0}%</div>
+                        </div>
+                    </div>
+
+                    <!-- MENSAJE -->
+                    ${state.mensaje ? `
+                        <div class="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
+                            <p class="font-bold text-red-800 text-center text-sm">${state.mensaje}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- ACORDEÓN: HABILITAR MIEMBRO DE MESA -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 mb-6 overflow-hidden">
+                        <button onclick="toggleAcordeon('miembrosPanel')" class="w-full p-4 md:p-6 flex items-center justify-between hover:bg-red-50/50 transition-all">
+                            <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight">
+                                <i class="fas fa-user-shield text-red-600 mr-2"></i>Habilitar Miembro de Mesa
+                            </h2>
+                            <i class="fas fa-chevron-down text-red-600 transition-transform" id="miembrosPanelIcon"></i>
+                        </button>
+                        <div id="miembrosPanel" class="hidden">
+                            <div class="px-4 md:px-6 pb-6 grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
+                                <div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <input id="miembroCedula" type="text" placeholder="Cédula"
+                                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold focus:border-red-500 focus:outline-none">
+                                        <input id="miembroNombre" type="text" placeholder="Nombre completo"
+                                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold focus:border-red-500 focus:outline-none">
+                                        <input id="miembroPassword" type="text" placeholder="Contraseña de acceso"
+                                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold focus:border-red-500 focus:outline-none">
+                                        <input id="miembroMesa" type="number" placeholder="Mesa asignada"
+                                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold focus:border-red-500 focus:outline-none">
+                                        <select id="miembroEstado"
+                                            class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold focus:border-red-500 focus:outline-none bg-white">
+                                            <option value="ACTIVO">ACTIVO</option>
+                                            <option value="INACTIVO">INACTIVO</option>
+                                        </select>
+                                        <button onclick="guardarMiembroMesa()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all shadow-lg">
+                                            GUARDAR MIEMBRO
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-3">Solo los miembros con estado ACTIVO podrán ingresar al módulo de votación.</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-black text-slate-700 uppercase tracking-tight mb-3">
+                                        <i class="fas fa-users text-red-600 mr-2"></i>Miembros Habilitados
+                                    </h3>
+                                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                                        ${state.miembros.length > 0 ? state.miembros.map(m => `
+                                            <div class="border border-red-100 rounded-2xl p-3 bg-red-50/40">
+                                                <div class="flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p class="font-black text-slate-900">${m.nombre}</p>
+                                                        <p class="text-xs text-slate-500">CI: ${m.cedula} | Mesa: ${m.mesa || '-'}</p>
+                                                    </div>
+                                                    <span class="px-3 py-1 rounded-full text-xs font-black ${m.estado === 'ACTIVO' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-700'}">${m.estado || 'ACTIVO'}</span>
+                                                </div>
+                                            </div>
+                                        `).join('') : '<p class="text-sm text-slate-500">No hay miembros registrados.</p>'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLA / TARJETAS DE MESAS -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 mb-6 overflow-hidden">
+                        <div class="p-4 md:p-6 border-b border-red-100">
+                            <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight">
+                                <i class="fas fa-table text-red-600 mr-2"></i>Estado por Mesa
+                            </h2>
+                        </div>
+
+                        <!-- Vista tarjetas en móvil -->
+                        <div class="md:hidden divide-y divide-red-50">
+                            ${mesasArray.map(m => {
+                                const porcentaje = parseFloat(m.participacion) || 0;
+                                const color = porcentaje >= 80 ? 'text-green-600' : porcentaje >= 50 ? 'text-yellow-600' : porcentaje >= 30 ? 'text-orange-600' : 'text-red-600';
+                                const bgColor = porcentaje >= 80 ? 'bg-green-50' : porcentaje >= 50 ? 'bg-yellow-50' : porcentaje >= 30 ? 'bg-orange-50' : 'bg-red-50';
+                                const estadoTexto = porcentaje >= 80 ? 'Excelente' : porcentaje >= 50 ? 'Buena' : porcentaje >= 30 ? 'Regular' : 'Baja';
+                                return `
+                                    <div class="p-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                                                <span class="font-bold text-slate-900 text-sm">Mesa ${m.mesa}</span>
+                                            </div>
+                                            <span class="${bgColor} ${color} font-bold text-[11px] px-3 py-1 rounded-full">${estadoTexto}</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+                                            <div>
+                                                <p class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Electores</p>
+                                                <p class="font-black text-slate-900 text-sm">${m.totalElectores}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-green-600 font-bold uppercase text-[9px] tracking-wider">Votos</p>
+                                                <p class="font-black text-green-600 text-sm">${m.votos || 0}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-orange-600 font-bold uppercase text-[9px] tracking-wider">Ausentes</p>
+                                                <p class="font-black text-orange-600 text-sm">${m.ausentes || 0}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-red-600 font-bold uppercase text-[9px] tracking-wider">Controv.</p>
+                                                <p class="font-black text-red-600 text-sm">${m.controversias || 0}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-slate-400 font-bold uppercase text-[9px] tracking-wider">Particip.</p>
+                                                <p class="font-black ${color} text-sm">${porcentaje}%</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="w-full h-3 bg-red-100 rounded-full overflow-hidden">
+                                                <div class="h-full rounded-full ${porcentaje >= 80 ? 'bg-green-500' : porcentaje >= 50 ? 'bg-yellow-500' : porcentaje >= 30 ? 'bg-orange-500' : 'bg-red-500'}" style="width: ${Math.min(porcentaje, 100)}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <!-- Vista tabla en escritorio -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-red-50">
+                                        <th class="px-4 py-3 text-left font-bold text-red-900 text-[10px] uppercase tracking-wider">Mesa</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900 text-[10px] uppercase tracking-wider">Electores</th>
+                                        <th class="px-4 py-3 text-center font-bold text-green-700 text-[10px] uppercase tracking-wider">Votos</th>
+                                        <th class="px-4 py-3 text-center font-bold text-orange-700 text-[10px] uppercase tracking-wider">Ausentes</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-700 text-[10px] uppercase tracking-wider">Controv.</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900 text-[10px] uppercase tracking-wider">Particip.</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900 text-[10px] uppercase tracking-wider">Progreso</th>
+                                        <th class="px-4 py-3 text-center font-bold text-red-900 text-[10px] uppercase tracking-wider">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${mesasArray.map(m => {
+                                        const porcentaje = parseFloat(m.participacion) || 0;
+                                        const color = porcentaje >= 80 ? 'text-green-600' : porcentaje >= 50 ? 'text-yellow-600' : porcentaje >= 30 ? 'text-orange-600' : 'text-red-600';
+                                        const bgColor = porcentaje >= 80 ? 'bg-green-50' : porcentaje >= 50 ? 'bg-yellow-50' : porcentaje >= 30 ? 'bg-orange-50' : 'bg-red-50';
+                                        const estadoTexto = porcentaje >= 80 ? 'Excelente' : porcentaje >= 50 ? 'Buena' : porcentaje >= 30 ? 'Regular' : 'Baja';
+                                        return `
+                                            <tr class="border-b border-red-50 hover:bg-red-50/50 transition-all">
+                                                <td class="px-4 py-3">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                                                        <span class="font-bold text-slate-900">Mesa ${m.mesa}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center font-bold text-slate-900">${m.totalElectores}</td>
+                                                <td class="px-4 py-3 text-center font-bold text-green-600">${m.votos || 0}</td>
+                                                <td class="px-4 py-3 text-center font-bold text-orange-600">${m.ausentes || 0}</td>
+                                                <td class="px-4 py-3 text-center font-bold text-red-600">${m.controversias || 0}</td>
+                                                <td class="px-4 py-3 text-center font-black ${color}">${porcentaje}%</td>
+                                                <td class="px-4 py-3">
+                                                    <div class="w-full h-3 bg-red-100 rounded-full overflow-hidden">
+                                                        <div class="h-full rounded-full ${porcentaje >= 80 ? 'bg-green-500' : porcentaje >= 50 ? 'bg-yellow-500' : porcentaje >= 30 ? 'bg-orange-500' : 'bg-red-500'}" style="width: ${Math.min(porcentaje, 100)}%"></div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <span class="${bgColor} ${color} font-bold text-xs px-3 py-1 rounded-full">${estadoTexto}</span>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO DE BARRAS + LÍNEA -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 p-4 md:p-6 mb-6">
+                        <h2 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4">
+                            <i class="fas fa-chart-bar text-red-600 mr-2"></i>Electores · Votos · Ausentes · Controversias
+                        </h2>
+                        <div class="relative h-[250px] md:h-[400px]">
+                            <canvas id="chartMesas"></canvas>
+                        </div>
+                    </div>
+                </main>
+            `;
+            
+            // Inicializar gráfico después de renderizar
+            initChart();
+        }
+
+        function initChart() {
+            const canvas = document.getElementById('chartMesas');
+            if (!canvas) return;
+            
+            // Destruir gráfico anterior si existe
+            if (window._chartInstance) {
+                window._chartInstance.destroy();
+            }
+            
+            const mesasArray = Object.values(state.mesas).sort((a, b) => a.mesa - b.mesa);
+            const labels = mesasArray.map(m => 'M' + m.mesa);
+            const electoresData = mesasArray.map(m => m.totalElectores);
+            const votosData = mesasArray.map(m => m.votos || 0);
+            const participacionData = mesasArray.map(m => parseFloat(m.participacion) || 0);
+            
+            const ausentesData = mesasArray.map(m => m.ausentes || 0);
+            const controversiasData = mesasArray.map(m => m.controversias || 0);
+
+            window._chartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Electores',
+                            data: electoresData,
+                            backgroundColor: 'rgba(100, 116, 139, 0.15)',
+                            borderColor: 'rgba(100, 116, 139, 0.4)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'yElectores'
+                        },
+                        {
+                            label: 'Votos',
+                            data: votosData,
+                            backgroundColor: 'rgba(22, 163, 74, 0.6)',
+                            borderColor: 'rgba(22, 163, 74, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'yElectores'
+                        },
+                        {
+                            label: 'Ausentes',
+                            data: ausentesData,
+                            backgroundColor: 'rgba(234, 88, 12, 0.4)',
+                            borderColor: 'rgba(234, 88, 12, 0.7)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'yElectores'
+                        },
+                        {
+                            label: 'Controversias',
+                            data: controversiasData,
+                            backgroundColor: 'rgba(220, 38, 38, 0.3)',
+                            borderColor: 'rgba(220, 38, 38, 0.6)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'yElectores'
+                        },
+                        {
+                            label: 'Participación %',
+                            data: participacionData,
+                            type: 'line',
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'yPorcentaje'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { weight: 'bold', size: 11 },
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 12,
+                            cornerRadius: 12
+                        }
+                    },
+                    scales: {
+                        yElectores: {
+                            position: 'left',
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                font: { weight: 'bold', size: 10 },
+                                stepSize: 50
+                            },
+                            title: {
+                                display: true,
+                                text: 'Electores / Votos',
+                                font: { weight: 'bold', size: 11 }
+                            }
+                        },
+                        yPorcentaje: {
+                            position: 'right',
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { display: false },
+                            ticks: {
+                                font: { weight: 'bold', size: 10 },
+                                callback: function(value) { return value + '%'; }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Participación %',
+                                font: { weight: 'bold', size: 11 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { weight: 'bold', size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Actualizar cada 30 segundos
+        setInterval(() => {
+            if (state.autenticado && !state.cargando) {
+                cargarDatos();
+            }
+        }, 30000);
+
+        function toggleAcordeon(id) {
+            const panel = document.getElementById(id);
+            const icon = document.getElementById(id + 'Icon');
+            if (panel) {
+                const isHidden = panel.classList.contains('hidden');
+                panel.classList.toggle('hidden');
+                if (icon) {
+                    icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            }
+        }
+
+        if (state.autenticado) {
+            cargarDatos();
+        } else {
+            render();
+        }
+    </script>
+</body>
+</html>

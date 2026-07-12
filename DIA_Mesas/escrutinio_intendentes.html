@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECCIONAL 40 - Escrutinio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f3f4f6; }
+    /* Certificado */
+    .certificado { font-family: Arial, sans-serif; color: #333; }
+    .certificado h1 { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 2px; }
+    .certificado h2 { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 2px; }
+    .certificado .header { text-align: center; margin-bottom: 12px; }
+    .certificado .info-box { border: 1px solid #ccc; padding: 8px 12px; background: #fff; margin-bottom: 12px; font-size: 12px; }
+    .certificado table { width: 100%; border-collapse: collapse; margin-bottom: 10px; background: #fff; font-size: 12px; }
+    .certificado table, .certificado th, .certificado td { border: 1px solid #000; }
+    .certificado th, .certificado td { padding: 6px 8px; text-align: center; }
+    .certificado .signatures { display: flex; justify-content: space-between; margin-top: 24px; gap: 12px; }
+    .certificado .signature-block { flex: 1; border: 1px solid #ccc; padding: 8px 12px; background: #fff; font-size: 11px; }
+    .certificado .footer-note { text-align: center; margin-top: 16px; font-size: 0.85em; color: #666; }
+
+    /* TSJE-style table */
+    .tsje-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; background: #fff; font-size: 13px; }
+    .tsje-table th, .tsje-table td { padding: 8px 10px; text-align: center; }
+    .tsje-table thead th { background: #343a40; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .tsje-table tbody tr { border-bottom: 1px solid #e2e8f0; }
+    .tsje-table tbody tr:hover { background: #f8fafc; }
+    .tsje-table .color-bar { width: 4px; padding: 0; }
+    .tsje-stat { background: #fff; border-radius: 8px; padding: 10px 14px; text-align: center; border: 1px solid #e2e8f0; }
+    .tsje-stat .label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+    .tsje-stat .value { font-size: 20px; font-weight: 900; color: #1e293b; margin-top: 2px; }
+
+    .focus-ring:focus { outline: none; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3); border-color: #dc2626; }
+    @media print { .no-print { display: none !important; } body { background: white; } }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXsjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+    const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+    const PW_PC = 'Paraguay100';
+    const AUTH_SESSION_KEY = 'seccional40_auth';
+    const NIVEL_SESSION_KEY = 'seccional40_nivel';
+
+    function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+    function estaAutenticado() { return getNivel() === 'pc'; }
+
+    // ============ AGRUPACIONES POR TIPO ============
+    const AGRUPACIONES_INTENDENTE = [
+      { nro: 1, nombre: 'ANR - Movimiento Colorado Añetete', color: '#6b7280' },
+      { nro: 2, nombre: 'Honor Colorado', color: '#d32f2f' },
+      { nro: 3, nombre: 'Movimiento Democrático Republicano', color: '#7c3aed' },
+      { nro: 4, nombre: 'Nueva Mayoría Republicana', color: '#f59e0b' },
+      { nro: 5, nombre: 'Fuerza Republicana Integración', color: '#0891b2' },
+      { nro: 6, nombre: 'Unión Nacional Republicana', color: '#059669' },
+      { nro: 7, nombre: 'Fuerza y Causa Republicana por Asunción', color: '#1976d2' },
+      { nro: 8, nombre: 'Movimiento Republicano Independiente', color: '#d946ef' },
+      { nro: 9, nombre: 'Alternativa Republicana', color: '#f97316' },
+      { nro: 10, nombre: 'Compromiso Republicano', color: '#64748b' },
+      { nro: 300, nombre: 'Universitario Estudiantil', color: '#388e3c' }
+    ];
+
+    const AGRUPACIONES_JUNTA = [
+      { nro: 201, nombre: 'Lista 2A - Honor Colorado A', color: '#d32f2f' },
+      { nro: 202, nombre: 'Lista 2B - Honor Colorado B', color: '#1976d2' },
+      { nro: 210, nombre: 'Lista 2K - Honor Colorado K', color: '#388e3c' },
+      { nro: 4, nombre: 'Lista 4 - Fuerza Republicana', color: '#fbc02d' },
+      { nro: 5, nombre: 'Lista 5 - Causa Republicana', color: '#7b1fa2' },
+      { nro: 6, nombre: 'Lista 6 - Colorado Añetete', color: '#0097a7' }
+    ];
+
+    // ============ PREFERENCIAS (Junta Municipal) ============
+    const PREFERENCIAS_DATA = {
+      201: [
+        { orden: 1, nombre: 'Venus Nuñez', votos: 1829 },
+        { orden: 2, nombre: 'Negro Nuñez', votos: 1111 },
+        { orden: 4, nombre: 'Tono Sosa', votos: 463 },
+        { orden: 6, nombre: 'Gonzalito', votos: 427 },
+        { orden: 10, nombre: 'Dr. Ariel Escandriolo Doctorcito', votos: 352 },
+        { orden: 3, nombre: 'Ema Gomez', votos: 297 },
+        { orden: 5, nombre: 'Tutu Gimenez', votos: 269 },
+        { orden: 9, nombre: 'Lili Irala', votos: 227 },
+        { orden: 12, nombre: 'Lidia Evers', votos: 167 },
+        { orden: 7, nombre: 'Liza Ferreira', votos: 104 },
+        { orden: 11, nombre: 'Lic. Gloria Alvarenga', votos: 76 },
+        { orden: 8, nombre: 'Kristel Pinho', votos: 60 }
+      ]
+    };
+
+    function getPreferencias(listaNro) {
+      const d = state.preferencias[listaNro] || PREFERENCIAS_DATA[listaNro] || [];
+      return d.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    }
+
+    function getAgrupaciones() {
+      return state.tipo === 'junta' ? AGRUPACIONES_JUNTA : AGRUPACIONES_INTENDENTE;
+    }
+
+    function getTipoLabel() {
+      return state.tipo === 'junta' ? 'Junta Municipal' : 'Intendente Municipal';
+    }
+
+    function getTipoSlug() {
+      return state.tipo === 'junta' ? 'junta' : 'intendente';
+    }
+
+    // ============ ESTADO ============
+    let state = {
+      autenticado: estaAutenticado(),
+      cargando: false,
+      tipo: 'intendente',    // 'intendente' | 'junta'
+      mesa: 12,
+      mesas: [],
+      electoresPorMesa: {},
+      totalElectores: 0,
+      totalVotosSistema: 0,
+      totalRegistros: 0,
+      mensaje: '',
+      escrutinio: { votos: {}, nulos: 0, blanco: 0, vac: 0 },
+      editMode: false,
+      vista: 'certificado',  // 'certificado' | 'contraste' | 'general'
+      general: {
+        intendente: { mesasInstaladas: 0, mesasProcesadas: 0, votosSistema: 0, votosLista2: 0, votosLista7: 0, votosLista300: 0, nulos: 0, blanco: 0, vac: 0 },
+        junta: { mesasInstaladas: 0, mesasProcesadas: 0, votosSistema: 0, votosLista2A: 0, votosLista2B: 0, votosLista2K: 0, votosLista4: 0, votosLista5: 0, votosLista6: 0, nulos: 0, blanco: 0, vac: 0 }
+      },
+      preferencias: JSON.parse(JSON.stringify(PREFERENCIAS_DATA)),
+      preferenciasLista: null  // lista nro being viewed/edited
+    };
+
+    // Init escrutinio votos
+    function initEscrutinioVotos() {
+      state.escrutinio.votos = {};
+      getAgrupaciones().forEach(a => { state.escrutinio.votos[a.nro] = 0; });
+      state.escrutinio.nulos = 0;
+      state.escrutinio.blanco = 0;
+      state.escrutinio.vac = 0;
+    }
+    initEscrutinioVotos();
+
+    function getGeneral() {
+      return state.general[getTipoSlug()];
+    }
+
+    // ============ AUTH ============
+    function login() {
+      const input = document.getElementById('passwordInput');
+      if (!input) return;
+      const pass = input.value.trim();
+      if (pass !== PW_PC) { alert('Contraseña incorrecta.'); return; }
+      sessionStorage.setItem(NIVEL_SESSION_KEY, 'pc');
+      sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+      state.autenticado = true;
+      cargarDatos();
+    }
+
+    function logout() {
+      sessionStorage.removeItem(NIVEL_SESSION_KEY);
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+      state.autenticado = false;
+      render();
+    }
+
+    // ============ FETCH ============
+    async function fetchJsonOrThrow(url, options) {
+      const resp = await fetch(url, options);
+      const text = await resp.text();
+      const ct = (resp.headers.get('content-type') || '').toLowerCase();
+      const t = text.trim().toLowerCase();
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      if (ct.includes('text/html') || t.startsWith('<!doctype html') || t.startsWith('<html'))
+        throw new Error('Backend no disponible.');
+      try { return JSON.parse(text); } catch (e) { throw new Error('Respuesta inválida.'); }
+    }
+
+    // ============ CARGAR DATOS DEL SISTEMA ============
+    async function cargarDatos() {
+      state.cargando = true;
+      state.mensaje = 'Cargando datos del sistema...';
+      render();
+
+      try {
+        const [padronResp, resumenData] = await Promise.all([
+          fetch(PADRON_CSV_URL),
+          fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now()).catch(() => ({ mesas: [] }))
+        ]);
+
+        const text = await padronResp.text();
+        const lineas = text.split('\n').filter(l => l.trim());
+
+        const electoresPorMesa = {};
+        let totalElectores = 0;
+        const mesasSet = new Set();
+
+        for (let i = 1; i < lineas.length; i++) {
+          const p = lineas[i].split(',');
+          if (p.length >= 8) {
+            const mesa = parseInt(p[3].trim()) || 0;
+            if (!electoresPorMesa[mesa]) electoresPorMesa[mesa] = 0;
+            electoresPorMesa[mesa]++;
+            totalElectores++;
+            mesasSet.add(mesa);
+          }
+        }
+
+        state.electoresPorMesa = electoresPorMesa;
+        state.totalElectores = totalElectores;
+        state.mesas = Array.from(mesasSet).sort((a, b) => a - b);
+
+        if (!state.mesa || !electoresPorMesa[state.mesa]) {
+          state.mesa = state.mesas[0] || 1;
+        }
+
+        if (resumenData && resumenData.mesas) {
+          const mesaData = resumenData.mesas.find(m => parseInt(m.mesa) === state.mesa);
+          state.totalVotosSistema = mesaData ? (parseInt(mesaData.votos) || 0) : 0;
+          state.totalRegistros = mesaData ? (parseInt(mesaData.total) || 0) : 0;
+
+          // Totales generales (ambos tipos comparten estos datos del sistema)
+          let totalVotos = 0;
+          let totalProc = 0;
+          for (const m of resumenData.mesas) {
+            totalVotos += parseInt(m.votos) || 0;
+            totalProc++;
+          }
+          state.general.intendente.mesasInstaladas = resumenData.mesas.length;
+          state.general.intendente.mesasProcesadas = totalProc;
+          state.general.intendente.votosSistema = totalVotos;
+          state.general.junta.mesasInstaladas = resumenData.mesas.length;
+          state.general.junta.mesasProcesadas = totalProc;
+          state.general.junta.votosSistema = totalVotos;
+        }
+
+        state.cargando = false;
+        state.mensaje = `✅ ${state.mesas.length} mesas · ${totalElectores} electores`;
+      } catch (e) {
+        state.cargando = false;
+        state.mensaje = '⚠️ Error: ' + (e.message || 'No se pudieron cargar datos');
+      }
+      render();
+    }
+
+    // ============ CAMBIAR TIPO ============
+    function cambiarTipo(tipo) {
+      if (tipo === state.tipo) return;
+      state.tipo = tipo;
+      initEscrutinioVotos();
+      state.editMode = false;
+      state.vista = 'certificado';
+
+      // Recargar datos de la mesa actual
+      fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now()).then(d => {
+        if (d && d.mesas) {
+          const m = d.mesas.find(x => parseInt(x.mesa) === state.mesa);
+          state.totalVotosSistema = m ? (parseInt(m.votos) || 0) : 0;
+          state.totalRegistros = m ? (parseInt(m.total) || 0) : 0;
+        }
+        render();
+      }).catch(() => render());
+      render();
+    }
+
+    // ============ SELECCIONAR MESA ============
+    function seleccionarMesa() {
+      const input = document.getElementById('mesaInput');
+      if (!input) return;
+      const mesa = parseInt(input.value);
+      if (!mesa || mesa < 1) { alert('Ingrese un número de mesa válido.'); return; }
+      state.mesa = mesa;
+      state.totalVotosSistema = 0;
+      state.totalRegistros = 0;
+      initEscrutinioVotos();
+      state.vista = 'certificado';
+      fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now()).then(d => {
+        if (d && d.mesas) {
+          const m = d.mesas.find(x => parseInt(x.mesa) === mesa);
+          state.totalVotosSistema = m ? (parseInt(m.votos) || 0) : 0;
+          state.totalRegistros = m ? (parseInt(m.total) || 0) : 0;
+        }
+        render();
+      }).catch(() => render());
+      render();
+    }
+
+    // ============ CARGAR EJEMPLO MESA 12 ============
+    function cargarEjemplo() {
+      state.mesa = 12;
+      initEscrutinioVotos();
+      if (state.tipo === 'intendente') {
+        state.escrutinio.votos[2] = 60;
+        state.escrutinio.votos[7] = 68;
+        state.escrutinio.votos[300] = 3;
+        state.escrutinio.vac = 3;
+      } else {
+        state.escrutinio.votos[201] = 100;
+        state.escrutinio.votos[202] = 25;
+        state.escrutinio.votos[210] = 70;
+        state.escrutinio.votos[4] = 5;
+        state.escrutinio.votos[5] = 3;
+        state.escrutinio.votos[6] = 15;
+        state.escrutinio.nulos = 1;
+        state.escrutinio.blanco = 6;
+        state.escrutinio.vac = 2;
+      }
+      state.editMode = false;
+      state.vista = 'certificado';
+      fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now()).then(d => {
+        if (d && d.mesas) {
+          const m = d.mesas.find(x => parseInt(x.mesa) === 12);
+          state.totalVotosSistema = m ? (parseInt(m.votos) || 0) : 0;
+          state.totalRegistros = m ? (parseInt(m.total) || 0) : 0;
+        }
+        render();
+      }).catch(() => render());
+      render();
+    }
+
+    // ============ CALCULAR TOTALES ============
+    function totalEscrutinio() {
+      let t = state.escrutinio.nulos + state.escrutinio.blanco + state.escrutinio.vac;
+      getAgrupaciones().forEach(a => { t += (parseInt(state.escrutinio.votos[a.nro]) || 0); });
+      return t;
+    }
+
+    function totalPartidos() {
+      let t = 0;
+      getAgrupaciones().forEach(a => { t += (parseInt(state.escrutinio.votos[a.nro]) || 0); });
+      return t;
+    }
+
+    // ============ EDITAR ============
+    function toggleEdit() {
+      state.editMode = !state.editMode;
+      render();
+    }
+
+    function applyEdits() {
+      for (const a of getAgrupaciones()) {
+        const el = document.getElementById('voto_' + a.nro);
+        if (el) state.escrutinio.votos[a.nro] = parseInt(el.value) || 0;
+      }
+      const nulosEl = document.getElementById('voto_nulos');
+      const blcEl = document.getElementById('voto_blanco');
+      const vacEl = document.getElementById('voto_vac');
+      if (nulosEl) state.escrutinio.nulos = parseInt(nulosEl.value) || 0;
+      if (blcEl) state.escrutinio.blanco = parseInt(blcEl.value) || 0;
+      if (vacEl) state.escrutinio.vac = parseInt(vacEl.value) || 0;
+      state.editMode = false;
+      render();
+    }
+
+    function actualizarTotalEdit() {
+      let t = 0;
+      for (const a of getAgrupaciones()) {
+        const el = document.getElementById('voto_' + a.nro);
+        if (el) t += parseInt(el.value) || 0;
+      }
+      const nulosEl = document.getElementById('voto_nulos');
+      const blcEl = document.getElementById('voto_blanco');
+      const vacEl = document.getElementById('voto_vac');
+      if (nulosEl) t += parseInt(nulosEl.value) || 0;
+      if (blcEl) t += parseInt(blcEl.value) || 0;
+      if (vacEl) t += parseInt(vacEl.value) || 0;
+      const display = document.getElementById('totalEditDisplay');
+      if (display) display.textContent = t;
+    }
+
+    // ============ CAMBIAR VISTA ============
+    function setVista(v) {
+      state.vista = v;
+      render();
+    }
+
+    // ============ APLICAR GENERALES ============
+    function aplicarGenerales() {
+      const g = getGeneral();
+      const get = id => parseInt(document.getElementById(id)?.value) || 0;
+      if (state.tipo === 'intendente') {
+        g.votosLista2 = get('gen_lista2');
+        g.votosLista7 = get('gen_lista7');
+        g.votosLista300 = get('gen_lista300');
+      } else {
+        g.votosLista2A = get('gen_lista2a');
+        g.votosLista2B = get('gen_lista2b');
+        g.votosLista2K = get('gen_lista2k');
+        g.votosLista4 = get('gen_lista4');
+        g.votosLista5 = get('gen_lista5');
+        g.votosLista6 = get('gen_lista6');
+      }
+      g.nulos = get('gen_nulos');
+      g.blanco = get('gen_blanco');
+      g.vac = get('gen_vac');
+      render();
+    }
+
+    // ============ PREFERENCIAS ============
+    function abrirPreferencias(listaNro) {
+      state.preferenciasLista = listaNro;
+      render();
+    }
+
+    function cerrarPreferencias() {
+      state.preferenciasLista = null;
+      render();
+    }
+
+    function guardarPreferenciasEdit() {
+      const lista = state.preferenciasLista;
+      if (!lista) return;
+      const rows = document.querySelectorAll('#pref-table tbody tr');
+      const datos = [];
+      rows.forEach(row => {
+        const orden = parseInt(row.querySelector('.pref-orden')?.value) || 0;
+        const nombre = row.querySelector('.pref-nombre')?.value?.trim() || '';
+        const votos = parseInt(row.querySelector('.pref-votos')?.value) || 0;
+        if (nombre) datos.push({ orden, nombre, votos });
+      });
+      state.preferencias[lista] = datos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+      state.preferenciasLista = null;
+      render();
+    }
+
+    function toggleEditPref() {
+      state.editMode = !state.editMode;
+      render();
+    }
+
+    function renderPreferenciasModal() {
+      const lista = state.preferenciasLista;
+      if (!lista) return '';
+      const candidatos = getPreferencias(lista);
+      const agrupacion = getAgrupaciones().find(a => a.nro === lista);
+      const nombreLista = agrupacion ? agrupacion.nombre : 'Lista ' + lista;
+      const totalPref = candidatos.reduce((s, c) => s + (c.votos || 0), 0);
+      const editando = state.editMode;
+
+      return `
+      <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;" class="no-print" onclick="if(event.target===this) cerrarPreferencias()">
+        <div style="background:#fff;border-radius:16px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e2e8f0;background:#f8fafc;border-radius:16px 16px 0 0;">
+            <div>
+              <h2 style="font-size:16px;font-weight:900;margin:0;color:#1e293b;text-transform:uppercase;">${nombreLista}</h2>
+              <p style="font-size:11px;color:#64748b;margin:2px 0 0 0;">Votos Preferenciales · Total: <strong>${totalPref.toLocaleString()}</strong></p>
+            </div>
+            <button onclick="cerrarPreferencias()" style="width:32px;height:32px;border:none;border-radius:50%;background:#e2e8f0;cursor:pointer;font-size:16px;color:#475569;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div style="padding:16px 20px;">
+            <table id="pref-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:#f1f5f9;">
+                  <th style="padding:8px;text-align:center;width:50px;font-size:10px;text-transform:uppercase;color:#64748b;">#</th>
+                  <th style="padding:8px;text-align:center;width:60px;font-size:10px;text-transform:uppercase;color:#64748b;">Orden</th>
+                  <th style="padding:8px;text-align:left;font-size:10px;text-transform:uppercase;color:#64748b;">Nombre del Candidato</th>
+                  <th style="padding:8px;text-align:center;width:100px;font-size:10px;text-transform:uppercase;color:#64748b;">Preferencias</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${candidatos.length > 0 ? candidatos.map((c, i) => `
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:8px;text-align:center;font-weight:700;color:#94a3b8;">${i + 1}</td>
+                    <td style="padding:8px;text-align:center;">
+                      ${editando
+                        ? `<input type="number" class="pref-orden" value="${c.orden || i + 1}" min="0" style="width:50px;padding:4px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:700;">`
+                        : `<span style="font-weight:700;">${c.orden}</span>`
+                      }
+                    </td>
+                    <td style="padding:8px;text-align:left;font-weight:600;">
+                      ${editando
+                        ? `<input type="text" class="pref-nombre" value="${c.nombre}" style="width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;">`
+                        : c.nombre
+                      }
+                    </td>
+                    <td style="padding:8px;text-align:center;font-weight:900;font-size:15px;">
+                      ${editando
+                        ? `<input type="number" class="pref-votos" value="${c.votos}" min="0" style="width:80px;padding:4px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:900;">`
+                        : c.votos.toLocaleString()
+                      }
+                    </td>
+                  </tr>
+                `).join('') : `
+                  <tr><td colspan="4" style="padding:20px;text-align:center;color:#94a3b8;">Sin datos de preferencias</td></tr>
+                `}
+              </tbody>
+            </table>
+
+            ${editando ? `
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <button onclick="(() => { const t=document.querySelector('#pref-table tbody'); const r=document.createElement('tr'); r.innerHTML='<td style=\\'padding:8px;text-align:center;font-weight:700;color:#94a3b8;\\'>'+(t.children.length+1)+'</td><td style=\\'padding:8px;text-align:center;\\'><input type=\\'number\\' class=\\'pref-orden\\' value=\\'0\\' min=\\'0\\' style=\\'width:50px;padding:4px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:700;\\'></td><td style=\\'padding:8px;text-align:left;\\'><input type=\\'text\\' class=\\'pref-nombre\\' value=\\'\\' style=\\'width:100%;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;\\'></td><td style=\\'padding:8px;text-align:center;\\'><input type=\\'number\\' class=\\'pref-votos\\' value=\\'0\\' min=\\'0\\' style=\\'width:80px;padding:4px;border:1px solid #cbd5e1;border-radius:4px;text-align:center;font-weight:900;\\'></td>'; t.appendChild(r); })()"
+                  style="padding:6px 14px;background:#e2e8f0;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">
+                  <i class="fas fa-plus"></i> AÑADIR
+                </button>
+                <button onclick="if(document.querySelectorAll('#pref-table tbody tr').length > 1) document.querySelector('#pref-table tbody').removeChild(document.querySelector('#pref-table tbody').lastElementChild);"
+                  style="padding:6px 14px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">
+                  <i class="fas fa-trash"></i> ELIMINAR ÚLTIMO
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 16px 16px;">
+            ${!editando ? `
+              <button onclick="toggleEditPref()" style="padding:8px 16px;background:#d97706;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;">
+                <i class="fas fa-pen mr-1"></i> EDITAR
+              </button>
+            ` : `
+              <button onclick="guardarPreferenciasEdit()" style="padding:8px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">
+                <i class="fas fa-check mr-1"></i> GUARDAR
+              </button>
+            `}
+            <button onclick="cerrarPreferencias()" style="padding:8px 20px;background:#e2e8f0;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;color:#475569;">
+              CERRAR
+            </button>
+          </div>
+        </div>
+      </div>
+      `;
+    }
+
+    // ============ EXPORTAR ============
+    function exportCSV() {
+      const slug = getTipoSlug();
+      const agrs = getAgrupaciones();
+      const rows = [['Agrupacion', 'Nro', 'Votos']];
+      agrs.forEach(a => {
+        const v = parseInt(state.escrutinio.votos[a.nro]) || 0;
+        if (v > 0) rows.push([a.nombre, a.nro, v]);
+      });
+      rows.push(['Nulos', '', state.escrutinio.nulos]);
+      rows.push(['Blanco', '', state.escrutinio.blanco]);
+      rows.push(['VAC', '', state.escrutinio.vac]);
+      rows.push(['TOTAL', '', totalEscrutinio()]);
+
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'escrutinio_' + slug + '_mesa' + state.mesa + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+    }
+
+    // ============ RENDER ============
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+            <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-vote-yea text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">ESCRUTINIO</h1>
+            <p class="text-slate-500 text-sm mb-8">SECCIONAL 40</p>
+            <div class="space-y-4">
+              <input type="password" id="passwordInput" placeholder="Contraseña"
+                class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all text-center"
+                onkeypress="if(event.key === 'Enter') login()">
+              <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">ACCEDER</button>
+            </div>
+            <p class="text-xs text-slate-400 mt-6">Acceso exclusivo PC</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+
+      const AGR = getAgrupaciones();
+      const sistemaVotos = state.totalVotosSistema || 0;
+      const sistemaElectores = state.electoresPorMesa[state.mesa] || 0;
+      const totalActa = totalEscrutinio();
+      const totalPart = totalPartidos();
+      const difVotos = sistemaVotos - totalPart;
+      const difTotal = sistemaElectores - totalActa;
+
+      const agrupacionesConVotos = AGR.filter(a => (parseInt(state.escrutinio.votos[a.nro]) || 0) > 0);
+
+      // === Certificado ===
+      function renderCertificado() {
+        return `
+        <div class="certificado" style="max-width:800px;margin:0 auto;padding:20px;background:white;border:1px solid #ddd;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <div class="header">
+            <h1>CERTIFICADO DE RESULTADOS</h1>
+            <h2>${getTipoLabel()}</h2>
+            <p style="font-size:12px;margin:2px 0;">Justicia Electoral - República del Paraguay</p>
+            <p style="font-size:12px;margin:2px 0;">Elecciones Internas ANR 2026</p>
+            <p style="font-size:12px;margin:2px 0;"><strong>Seguridad:</strong> ${4926250 + state.mesa}</p>
+          </div>
+
+          <div class="info-box" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+            <div><strong>Elección:</strong> Asociación Nacional Republicana</div>
+            <div><strong>Departamento:</strong> Capital</div>
+            <div><strong>Distrito:</strong> Asunción</div>
+            <div><strong>Zona:</strong> 40 - Seccional 40 - Capital</div>
+            <div><strong>Local:</strong> FSC NAC N281 Luis Alberto de Herrera</div>
+            <div><strong>Mesa:</strong> ${state.mesa}</div>
+          </div>
+
+          <table>
+            <thead><tr><th>Agrupaciones</th><th>${state.tipo === 'intendente' ? 'INT' : 'JM'}</th></tr></thead>
+            <tbody>
+              ${agrupacionesConVotos.length > 0 ? agrupacionesConVotos.map(a => {
+                const v = parseInt(state.escrutinio.votos[a.nro]) || 0;
+                return `<tr><td style="text-align:left;padding-left:10px;">${a.nombre}</td><td>${v}</td></tr>`;
+              }).join('') : '<tr><td colspan="2" style="color:#999;">Sin datos cargados</td></tr>'}
+            </tbody>
+          </table>
+
+          <table>
+            <tbody>
+              <tr><td><strong>Votos Nulos</strong></td><td>${state.escrutinio.nulos}</td></tr>
+              <tr><td><strong>Votos en Blanco</strong></td><td>${state.escrutinio.blanco}</td></tr>
+              <tr><td><strong>Votos a Computar</strong></td><td>${state.escrutinio.vac}</td></tr>
+              <tr><td><strong>Total General</strong></td><td>${totalActa}</td></tr>
+            </tbody>
+          </table>
+
+          <div class="signatures">
+            <div class="signature-block">
+              <h4 style="margin:0 0 8px 0;text-align:center;">Firma de los Miembros de Mesa</h4>
+              <p>Presidente: ____________________</p>
+              <p>Vocal 1: ____________________</p>
+              <p>Vocal 2: ____________________</p>
+            </div>
+            <div class="signature-block">
+              <h4 style="margin:0 0 8px 0;text-align:center;">Firma de los Veedores</h4>
+              <p>____________________</p>
+              <p>____________________</p>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            <p>Documento oficial de la Justicia Electoral</p>
+          </div>
+        </div>
+        `;
+      }
+
+      // === Contraste ===
+      function renderContraste() {
+        const max = Math.max(...AGR.map(x => parseInt(state.escrutinio.votos[x.nro]) || 0));
+        return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white rounded-[2rem] p-5 shadow-lg border border-blue-200">
+            <h3 class="text-xs font-black uppercase tracking-wider text-blue-700 mb-3">
+              <i class="fas fa-server mr-1"></i> Registro del Sistema
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                <span class="text-sm text-slate-600">Electores habilitados</span>
+                <span class="text-lg font-black text-slate-900">${sistemaElectores}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                <span class="text-sm text-slate-600">Votos registrados</span>
+                <span class="text-lg font-black text-blue-600">${sistemaVotos}</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-sm text-slate-600">Total registros</span>
+                <span class="text-lg font-black text-slate-900">${state.totalRegistros}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-[2rem] p-5 shadow-lg border border-green-200">
+            <h3 class="text-xs font-black uppercase tracking-wider text-green-700 mb-3">
+              <i class="fas fa-file-alt mr-1"></i> Acta de Escrutinio
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                <span class="text-sm text-slate-600">Votos a listas</span>
+                <span class="text-lg font-black text-green-600">${totalPart}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                <span class="text-sm text-slate-600">Nulos + Blanco + VAC</span>
+                <span class="text-lg font-black text-slate-900">${state.escrutinio.nulos + state.escrutinio.blanco + state.escrutinio.vac}</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-sm font-bold text-slate-800">Total acta</span>
+                <span class="text-lg font-black text-slate-900">${totalActa}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-xl border border-slate-100 mb-4 overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-black uppercase tracking-wider text-slate-700">
+              <i class="fas fa-balance-scale mr-2 text-red-600"></i> Contraste Sistema vs Acta
+            </h3>
+          </div>
+          <div class="p-4">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Indicador</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-blue-600">Sistema</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-green-600">Acta</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-red-600">Diferencia</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-100">
+                  <td class="px-3 py-3 font-bold text-slate-900">Votos contabilizados</td>
+                  <td class="px-3 py-3 text-center font-bold text-blue-600">${sistemaVotos}</td>
+                  <td class="px-3 py-3 text-center font-bold text-green-600">${totalPart}</td>
+                  <td class="px-3 py-3 text-center font-black ${difVotos === 0 ? 'text-green-600' : Math.abs(difVotos) < 5 ? 'text-amber-600' : 'text-red-600'}">
+                    ${difVotos === 0 ? '0' : (difVotos > 0 ? '+':'') + difVotos}
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    ${difVotos === 0
+                      ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full">✅ COINCIDE</span>'
+                      : '<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full">⚠️ DIFIERE</span>'}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-3 py-3 font-bold text-slate-900">Total general</td>
+                  <td class="px-3 py-3 text-center font-bold text-blue-600">${sistemaElectores}</td>
+                  <td class="px-3 py-3 text-center font-bold text-green-600">${totalActa}</td>
+                  <td class="px-3 py-3 text-center font-black ${difTotal === 0 ? 'text-green-600' : 'text-red-600'}">
+                    ${difTotal === 0 ? '0' : (difTotal > 0 ? '+':'') + difTotal}
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    ${difTotal === 0
+                      ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full">✅ COINCIDE</span>'
+                      : '<span class="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-black rounded-full">❌ DISCREPANCIA</span>'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-black uppercase tracking-wider text-slate-700">
+              <i class="fas fa-list-ol mr-2 text-red-600"></i> Resultados por Agrupación
+            </h3>
+            <span class="text-xs text-slate-400">Mesa ${state.mesa}</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-red-50">
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">N°</th>
+                  <th class="px-3 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-500">Agrupación</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-red-600">Votos</th>
+                  <th class="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${agrupacionesConVotos.map(a => {
+                  const v = parseInt(state.escrutinio.votos[a.nro]) || 0;
+                  const pct = totalPart > 0 ? ((v / totalPart) * 100).toFixed(1) : '0.0';
+                  const isWinner = v === max && v > 0;
+                  return `
+                    <tr class="border-b border-slate-100 ${isWinner ? 'bg-green-50' : 'hover:bg-slate-50'}">
+                      <td class="px-3 py-3 text-center font-black text-slate-900">${a.nro}</td>
+                      <td class="px-3 py-3 font-bold ${isWinner ? 'text-green-800' : 'text-slate-900'}">
+                        ${a.nombre}
+                        ${isWinner ? '<span class="ml-2 px-2 py-0.5 bg-green-200 text-green-800 text-[9px] font-black rounded-full">GANADOR</span>' : ''}
+                      </td>
+                      <td class="px-3 py-3 text-center font-black text-slate-900">${v}</td>
+                      <td class="px-3 py-3 text-center font-bold text-slate-600">${pct}%</td>
+                    </tr>
+                  `;
+                }).join('')}
+                ${(() => {
+                  const extras = [];
+                  if (state.escrutinio.nulos > 0) extras.push({ label: 'Votos Nulos (NUL)', v: state.escrutinio.nulos });
+                  if (state.escrutinio.blanco > 0) extras.push({ label: 'Votos en Blanco (BLC)', v: state.escrutinio.blanco });
+                  if (state.escrutinio.vac > 0) extras.push({ label: 'Votos a Computar (VAC)', v: state.escrutinio.vac });
+                  return extras.map(e => `
+                    <tr class="border-b border-slate-100 text-slate-500">
+                      <td class="px-3 py-3 text-center font-black">-</td>
+                      <td class="px-3 py-3 font-bold italic">${e.label}</td>
+                      <td class="px-3 py-3 text-center font-black">${e.v}</td>
+                      <td class="px-3 py-3 text-center">-</td>
+                    </tr>
+                  `).join('');
+                })()}
+              </tbody>
+              <tfoot>
+                <tr class="bg-red-50 font-bold">
+                  <td class="px-3 py-3 text-center font-black"></td>
+                  <td class="px-3 py-3 font-black text-slate-900">TOTAL GENERAL</td>
+                  <td class="px-3 py-3 text-center font-black text-slate-900">${totalActa}</td>
+                  <td class="px-3 py-3 text-center font-black text-slate-900">100%</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        `;
+      }
+
+      // === General (TSJE style) ===
+      function renderGeneral() {
+        const g = getGeneral();
+        const totalVotos = g.votosSistema || 0;
+        const totalElect = state.totalElectores;
+        const participacion = totalElect > 0 ? ((totalVotos / totalElect) * 100).toFixed(2) : '0.00';
+        const pctProc = g.mesasInstaladas > 0 ? ((g.mesasProcesadas / g.mesasInstaladas) * 100).toFixed(2) : '0.00';
+
+        // Compute totals based on tipo
+        let totalGeneral = g.nulos + g.blanco + g.vac;
+        let candidates = [];
+
+        if (state.tipo === 'intendente') {
+          totalGeneral += g.votosLista2 + g.votosLista7 + g.votosLista300;
+          const maxV = Math.max(g.votosLista2, g.votosLista7, g.votosLista300, 1);
+          candidates = [
+            { label: 'Lista 2 - Honor Colorado', clave: 'votosLista2', votos: g.votosLista2, color: '#d32f2f' },
+            { label: 'Lista 7 - Fuerza y Causa Republicana', clave: 'votosLista7', votos: g.votosLista7, color: '#1976d2' },
+            { label: 'Lista 300 - Universitario Estudiantil', clave: 'votosLista300', votos: g.votosLista300, color: '#388e3c' }
+          ].map(c => ({ ...c, pct: totalGeneral > 0 ? ((c.votos / totalGeneral) * 100).toFixed(2) : '0.00', bar: ((c.votos / maxV) * 100).toFixed(0) }));
+        } else {
+          totalGeneral += g.votosLista2A + g.votosLista2B + g.votosLista2K + g.votosLista4 + g.votosLista5 + g.votosLista6;
+          const maxV = Math.max(g.votosLista2A, g.votosLista2B, g.votosLista2K, g.votosLista4, g.votosLista5, g.votosLista6, 1);
+          candidates = [
+            { label: 'Lista 2A - Honor Colorado A', clave: 'votosLista2A', listaNro: 201, votos: g.votosLista2A, color: '#d32f2f' },
+            { label: 'Lista 2B - Honor Colorado B', clave: 'votosLista2B', listaNro: 202, votos: g.votosLista2B, color: '#1976d2' },
+            { label: 'Lista 2K - Honor Colorado K', clave: 'votosLista2K', listaNro: 210, votos: g.votosLista2K, color: '#388e3c' },
+            { label: 'Lista 4 - Fuerza Republicana', clave: 'votosLista4', listaNro: 4, votos: g.votosLista4, color: '#fbc02d' },
+            { label: 'Lista 5 - Causa Republicana', clave: 'votosLista5', listaNro: 5, votos: g.votosLista5, color: '#7b1fa2' },
+            { label: 'Lista 6 - Colorado Añetete', clave: 'votosLista6', listaNro: 6, votos: g.votosLista6, color: '#0097a7' }
+          ].map(c => ({ ...c, pct: totalGeneral > 0 ? ((c.votos / totalGeneral) * 100).toFixed(2) : '0.00', bar: ((c.votos / maxV) * 100).toFixed(0) }));
+        }
+
+        return `
+        <div style="max-width:800px;margin:0 auto;">
+          <!-- STATS CARDS (TSJE style) -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-bottom:14px;">
+            <div class="tsje-stat"><div class="label">Mesas instaladas</div><div class="value">${g.mesasInstaladas}</div></div>
+            <div class="tsje-stat"><div class="label">Mesas procesadas</div><div class="value">${g.mesasProcesadas}</div></div>
+            <div class="tsje-stat"><div class="label">% Procesado</div><div class="value" style="color:${pctProc >= 100 ? '#16a34a' : '#d97706'}">${pctProc}%</div></div>
+            <div class="tsje-stat"><div class="label">Participación</div><div class="value" style="color:${parseFloat(participacion) > 50 ? '#16a34a' : '#dc2626'}">${participacion}%</div></div>
+            <div class="tsje-stat"><div class="label">Total votos</div><div class="value">${totalVotos.toLocaleString()}</div></div>
+          </div>
+
+          <!-- TABLA PRINCIPAL (TSJE style) -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:14px;">
+            <table class="tsje-table">
+              <thead><tr><th colspan="4" style="background:#343a40;color:#fff;font-size:12px;text-align:center;">${getTipoLabel().toUpperCase()} · ${g.mesasInstaladas} MESAS</th></tr></thead>
+              <thead>
+                <tr>
+                  <th style="width:4px;padding:0;"></th>
+                  <th style="text-align:left;">Lista · Candidato</th>
+                  <th>Votos</th>
+                  <th>Porcentaje</th>
+                  ${state.tipo === 'junta' ? '<th style="font-size:9px;">Preferencias</th>' : ''}
+                </tr>
+              </thead>
+              <tbody>
+                ${candidates.map(c => `
+                  <tr>
+                    <td class="color-bar" style="background:${c.color};"></td>
+                    <td style="text-align:left;font-weight:700;">${c.label}</td>
+                    <td style="font-weight:900;font-size:15px;">${c.votos.toLocaleString()}</td>
+                    <td>${c.pct}%</td>
+                    ${state.tipo === 'junta' && c.listaNro ? `
+                      <td>
+                        <button onclick="abrirPreferencias(${c.listaNro})" style="padding:4px 10px;background:#e2e8f0;border:none;border-radius:6px;font-weight:700;font-size:10px;cursor:pointer;color:#475569;white-space:nowrap;">
+                          <i class="fas fa-list"></i> VER
+                        </button>
+                      </td>
+                    ` : ''}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- BARRAS -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px;">
+            <h3 style="font-size:11px;font-weight:700;margin:0 0 10px 0;text-transform:uppercase;color:#475569;letter-spacing:0.5px;">
+              <i class="fas fa-chart-bar" style="margin-right:6px;"></i> Votos por Lista
+            </h3>
+            ${candidates.map(c => `
+              <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:1px;">
+                  <span style="font-weight:700;color:${c.color};">${c.label}</span>
+                  <span>${c.votos.toLocaleString()} · ${c.pct}%</span>
+                </div>
+                <div style="height:22px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                  <div style="height:100%;background:${c.color};width:${c.bar}%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;color:#fff;font-size:9px;font-weight:700;${c.bar < 15 ? 'min-width:fit-content;padding-left:6px;color:#333;' : ''}">
+                    ${parseInt(c.bar) > 0 ? c.bar + '%' : ''}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- NULOS / BLANCO / VAC -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;">
+            <div class="tsje-stat"><div class="label">Votos Nulos</div><div class="value" style="color:#dc2626;">${g.nulos.toLocaleString()}</div></div>
+            <div class="tsje-stat"><div class="label">Votos en Blanco</div><div class="value" style="color:#2563eb;">${g.blanco.toLocaleString()}</div></div>
+            <div class="tsje-stat"><div class="label">Votos a Computar</div><div class="value" style="color:#7c3aed;">${g.vac.toLocaleString()}</div></div>
+          </div>
+
+          <!-- FORMULARIO EDITABLE GENERAL -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px;" class="no-print">
+            <h3 style="font-size:11px;font-weight:700;margin:0 0 10px 0;text-transform:uppercase;color:#475569;letter-spacing:0.5px;">
+              <i class="fas fa-edit" style="margin-right:6px;"></i> Editar Totales Generales · ${getTipoLabel()}
+            </h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;">
+              ${state.tipo === 'intendente' ? `
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 2</label>
+                  <input type="number" id="gen_lista2" value="${g.votosLista2}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 7</label>
+                  <input type="number" id="gen_lista7" value="${g.votosLista7}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 300</label>
+                  <input type="number" id="gen_lista300" value="${g.votosLista300}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+              ` : `
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos 2A</label>
+                  <input type="number" id="gen_lista2a" value="${g.votosLista2A}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos 2B</label>
+                  <input type="number" id="gen_lista2b" value="${g.votosLista2B}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos 2K</label>
+                  <input type="number" id="gen_lista2k" value="${g.votosLista2K}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 4</label>
+                  <input type="number" id="gen_lista4" value="${g.votosLista4}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 5</label>
+                  <input type="number" id="gen_lista5" value="${g.votosLista5}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+                <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Votos Lista 6</label>
+                  <input type="number" id="gen_lista6" value="${g.votosLista6}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+              `}
+              <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Nulos (NUL)</label>
+                <input type="number" id="gen_nulos" value="${g.nulos}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+              <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">Blanco (BLC)</label>
+                <input type="number" id="gen_blanco" value="${g.blanco}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+              <div><label style="font-size:9px;font-weight:700;color:#666;display:block;margin-bottom:1px;">VAC</label>
+                <input type="number" id="gen_vac" value="${g.vac}" min="0" style="width:100%;padding:6px;border:2px solid #e2e8f0;border-radius:6px;font-weight:900;font-size:14px;text-align:center;"></div>
+            </div>
+            <button onclick="aplicarGenerales()" style="margin-top:8px;padding:8px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">
+              <i class="fas fa-check" style="margin-right:6px;"></i> ACTUALIZAR
+            </button>
+          </div>
+
+          <!-- INFO SISTEMA -->
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:14px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;font-size:11px;">
+              <div><span style="color:#888;">Elección:</span> <strong>${getTipoLabel()}</strong></div>
+              <div><span style="color:#888;">Departamento:</span> <strong>Capital</strong></div>
+              <div><span style="color:#888;">Distrito:</span> <strong>Asunción</strong></div>
+              <div><span style="color:#888;">Seccional:</span> <strong>40</strong></div>
+              <div><span style="color:#888;">Electores habilitados:</span> <strong>${totalElect.toLocaleString()}</strong></div>
+              <div><span style="color:#888;">Votos emitidos (sistema):</span> <strong>${totalVotos.toLocaleString()}</strong></div>
+            </div>
+          </div>
+        </div>
+        `;
+      }
+
+      // ============ APP HTML ============
+      app.innerHTML = `
+        <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg no-print">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-red-500 rounded-xl"><i class="fas fa-vote-yea text-white text-xl"></i></div>
+              <div>
+                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">ESCRUTINIO</h1>
+                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">${getTipoLabel()} · SECC. 40</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+              <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+              <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+              <a href="mesas.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Mesas</a>
+              <a href="escrutinio.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">General</a>
+              <span class="text-[10px] text-red-400 mx-1">|</span>
+              <span class="text-[10px] text-red-300 font-bold uppercase">Intendentes:</span>
+              <a href="escrutinio_intendentes.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Escrutinio</a>
+            </div>
+
+            <div class="flex items-center gap-2 no-print">
+              <button onclick="cargarDatos()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Recargar">
+                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+              </button>
+              <button onclick="exportCSV()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="CSV">
+                <i class="fas fa-file-csv"></i>
+              </button>
+              <button onclick="window.print()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Imprimir">
+                <i class="fas fa-print"></i>
+              </button>
+              <button onclick="logout()" class="px-3 py-2 bg-red-800 hover:bg-red-700 rounded-xl text-xs font-bold transition-all" title="Salir">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="max-w-5xl mx-auto p-3 md:p-6">
+          ${state.cargando ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">${state.mensaje}</p>
+            </div>
+          ` : `
+            <!-- SELECTOR DE MESA -->
+            <div class="bg-white rounded-[2rem] p-4 shadow-xl border border-slate-100 mb-4 no-print">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-xs font-black uppercase tracking-wider text-slate-500">Mesa:</span>
+                <input type="number" id="mesaInput" value="${state.mesa}" min="1"
+                  class="w-20 px-3 py-2 text-lg font-black border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none text-center"
+                  onkeypress="if(event.key==='Enter') seleccionarMesa()">
+                <button onclick="seleccionarMesa()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-sm transition-all shadow">
+                  <i class="fas fa-arrow-right mr-1"></i> CARGAR
+                </button>
+                <span class="text-xs text-slate-400 ml-2">
+                  Electores en padrón: <strong>${sistemaElectores}</strong>
+                </span>
+                <button onclick="cargarEjemplo()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-all shadow ml-auto">
+                  <i class="fas fa-database mr-1"></i> EJEMPLO
+                </button>
+              </div>
+            </div>
+
+            ${state.mensaje ? `
+              <div class="bg-red-50 border-2 border-red-100 rounded-xl p-3 mb-4 no-print">
+                <p class="text-xs font-bold text-red-800 text-center">${state.mensaje}</p>
+              </div>
+            ` : ''}
+
+            <!-- BARRA DE ACCIONES -->
+            <div class="flex flex-wrap items-center gap-2 mb-4 no-print">
+              <!-- TIPO TOGGLE -->
+              <button onclick="cambiarTipo('intendente')" class="px-3 py-2 ${state.tipo === 'intendente' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold rounded-xl text-xs transition-all">
+                <i class="fas fa-user-tie mr-1"></i> INTENDENTE
+              </button>
+              <button onclick="cambiarTipo('junta')" class="px-3 py-2 ${state.tipo === 'junta' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold rounded-xl text-xs transition-all">
+                <i class="fas fa-users mr-1"></i> JUNTA MUNICIPAL
+              </button>
+
+              <span class="text-xs text-slate-300 mx-1">|</span>
+              <button onclick="toggleEdit()" class="px-4 py-2 ${state.editMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-700 hover:bg-slate-800'} text-white font-bold rounded-xl text-xs transition-all shadow">
+                <i class="fas ${state.editMode ? 'fa-times' : 'fa-pen'} mr-1"></i> ${state.editMode ? 'CANCELAR' : 'EDITAR ACTA'}
+              </button>
+              ${state.editMode ? `
+                <button onclick="applyEdits()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl text-xs transition-all shadow">
+                  <i class="fas fa-check mr-1"></i> GUARDAR
+                </button>
+              ` : ''}
+              <span class="text-xs text-slate-300 mx-1">|</span>
+              <button onclick="setVista('certificado')" class="px-3 py-2 ${state.vista === 'certificado' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold rounded-xl text-xs transition-all">
+                <i class="fas fa-file-alt mr-1"></i> CERTIFICADO
+              </button>
+              <button onclick="setVista('contraste')" class="px-3 py-2 ${state.vista === 'contraste' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold rounded-xl text-xs transition-all">
+                <i class="fas fa-balance-scale mr-1"></i> CONTRASTE
+              </button>
+              <button onclick="setVista('general')" class="px-3 py-2 ${state.vista === 'general' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'} font-bold rounded-xl text-xs transition-all">
+                <i class="fas fa-chart-bar mr-1"></i> RESULTADOS
+              </button>
+            </div>
+
+            ${state.editMode ? `
+              <!-- FORMULARIO DE EDICIÓN -->
+              <div class="bg-white rounded-[2rem] shadow-xl border border-amber-200 mb-4 overflow-hidden">
+                <div class="p-4 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+                  <h3 class="text-sm font-black uppercase tracking-wider text-amber-700">
+                    <i class="fas fa-edit mr-2"></i> ${getTipoLabel()} — Mesa ${state.mesa}
+                  </h3>
+                </div>
+                <div class="p-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    ${AGR.map(a => {
+                      const v = parseInt(state.escrutinio.votos[a.nro]) || 0;
+                      return `
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                          <label class="text-[9px] font-black uppercase tracking-wider text-slate-500 block mb-1" for="voto_${a.nro}">N° ${a.nro}</label>
+                          <div class="text-[10px] text-slate-700 mb-1 leading-tight">${a.nombre}</div>
+                          <input type="number" id="voto_${a.nro}" value="${v}" min="0"
+                            class="w-full px-3 py-2 text-lg font-black border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:outline-none text-center"
+                            onchange="actualizarTotalEdit()">
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                  <div class="grid grid-cols-3 gap-3 mt-3">
+                    <div class="bg-red-50 p-3 rounded-xl border border-red-200">
+                      <label class="text-[9px] font-black uppercase tracking-wider text-red-600 block mb-1">Nulos (NUL)</label>
+                      <input type="number" id="voto_nulos" value="${state.escrutinio.nulos}" min="0"
+                        class="w-full px-3 py-2 text-lg font-black border-2 border-red-200 rounded-xl focus:border-red-500 focus:outline-none text-center"
+                        onchange="actualizarTotalEdit()">
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                      <label class="text-[9px] font-black uppercase tracking-wider text-blue-600 block mb-1">Blanco (BLC)</label>
+                      <input type="number" id="voto_blanco" value="${state.escrutinio.blanco}" min="0"
+                        class="w-full px-3 py-2 text-lg font-black border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:outline-none text-center"
+                        onchange="actualizarTotalEdit()">
+                    </div>
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                      <label class="text-[9px] font-black uppercase tracking-wider text-purple-600 block mb-1">VAC</label>
+                      <input type="number" id="voto_vac" value="${state.escrutinio.vac}" min="0"
+                        class="w-full px-3 py-2 text-lg font-black border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:outline-none text-center"
+                        onchange="actualizarTotalEdit()">
+                    </div>
+                  </div>
+                  <div class="mt-3 p-3 bg-slate-100 rounded-xl text-center">
+                    <span class="text-xs font-bold text-slate-600">Total acta: </span>
+                    <span id="totalEditDisplay" class="text-xl font-black text-slate-900">${totalActa}</span>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- VISTAS -->
+            ${state.vista === 'certificado' ? renderCertificado() : ''}
+            ${state.vista === 'contraste' ? renderContraste() : ''}
+            ${state.vista === 'general' ? renderGeneral() : ''}
+
+            <!-- DATOS DEL CERTIFICADO -->
+            ${state.vista !== 'general' ? `
+            <div class="bg-white rounded-[2rem] shadow-xl border border-slate-100 mt-4 p-4 md:p-6">
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
+                <i class="fas fa-clipboard-list mr-2"></i> Datos del Certificado
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div><span class="text-slate-400">Elección:</span> <span class="font-bold text-slate-900">${getTipoLabel()}</span></div>
+                <div><span class="text-slate-400">Departamento:</span> <span class="font-bold text-slate-900">Capital</span></div>
+                <div><span class="text-slate-400">Distrito:</span> <span class="font-bold text-slate-900">Asunción</span></div>
+                <div><span class="text-slate-400">Seccional:</span> <span class="font-bold text-slate-900">40</span></div>
+                <div><span class="text-slate-400">Mesa:</span> <span class="font-bold text-slate-900">${state.mesa}</span></div>
+                <div><span class="text-slate-400">Electores habilitados:</span> <span class="font-bold text-slate-900">${sistemaElectores}</span></div>
+                <div><span class="text-slate-400">Votos emitidos (acta):</span> <span class="font-bold text-slate-900">${totalActa}</span></div>
+                <div><span class="text-slate-400">Participación:</span> <span class="font-bold ${sistemaElectores > 0 ? ((totalActa/sistemaElectores)*100) > 50 ? 'text-green-600' : 'text-red-600' : ''}">${sistemaElectores > 0 ? ((totalActa/sistemaElectores)*100).toFixed(1) : 0}%</span></div>
+              </div>
+            </div>
+            ` : ''}
+          `}
+        </main>
+        ${state.preferenciasLista ? renderPreferenciasModal() : ''}
+      `;
+    }
+
+    // ============ INIT ============
+    if (state.autenticado) {
+      cargarDatos();
+    } else {
+      render();
+    }
+  </script>
+</body>
+</html>

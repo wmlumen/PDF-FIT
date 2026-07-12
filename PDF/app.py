@@ -754,6 +754,10 @@ def api_pdf_info():
     session_id = None
     try:
         session_id, workdir, pdf_path = save_uploaded_pdf(request.files.get("pdf"))
+        file_size = pdf_path.stat().st_size
+        file_size_kb = round(file_size / 1024, 1)
+        file_size_mb = round(file_size / (1024 * 1024), 2)
+        file_size_human = f"{file_size_mb} MB" if file_size_mb >= 1 else f"{file_size_kb} KB"
 
         with fitz.open(pdf_path) as doc:
             page_count = len(doc)
@@ -785,6 +789,10 @@ def api_pdf_info():
                 "producer": producer,
                 "created": creation,
                 "modified": modified,
+                "file_size": file_size,
+                "file_size_kb": file_size_kb,
+                "file_size_mb": file_size_mb,
+                "file_size_human": file_size_human,
             })
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
@@ -1224,12 +1232,23 @@ def api_compress():
         reduction = max(0, original_size - compressed_size)
         reduction_percent = round((reduction / original_size) * 100, 1) if original_size else 0
 
+        def format_size(size):
+            if size >= 1024 * 1024:
+                return f"{round(size / (1024 * 1024), 2)} MB"
+            elif size >= 1024:
+                return f"{round(size / 1024, 1)} KB"
+            else:
+                return f"{size} B"
+
         return jsonify({
             "session_id": session_id,
             "download_url": f"/api/download/{session_id}/{output_name}",
             "original_size": original_size,
             "compressed_size": compressed_size,
             "reduction_percent": reduction_percent,
+            "original_size_human": format_size(original_size),
+            "compressed_size_human": format_size(compressed_size),
+            "reduction_human": format_size(reduction),
             "target_size": MAX_COMPRESSED_BYTES,
             "message": (
                 "PDF comprimido al maximo posible."

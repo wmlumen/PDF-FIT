@@ -344,9 +344,21 @@ body {
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Páginas:</span> <span id="pdfPages" style="font-weight: 600;">-</span></div>
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Imágenes:</span> <span id="pdfImages" style="font-weight: 600;">-</span></div>
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Tamaño página:</span> <span id="pdfPageSize" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Tamaño archivo:</span> <span id="pdfFileSize" style="font-weight: 600;">-</span></div>
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Título:</span> <span id="pdfTitle" style="font-weight: 600;">-</span></div>
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Autor:</span> <span id="pdfAuthor" style="font-weight: 600;">-</span></div>
             <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Creado:</span> <span id="pdfCreated" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Productor:</span> <span id="pdfProducer" style="font-weight: 600;">-</span></div>
+          </div>
+        </div>
+        <!-- Compression Result -->
+        <div id="compressionResult" class="hidden mt-2" style="padding: 12px; background: var(--accent-green-light); border-radius: var(--radius-sm); border: 1px solid var(--accent-green);">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">🗜 Resultado de compresión</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem;">
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Original:</span> <span id="compOriginal" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Comprimido:</span> <span id="compCompressed" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Reducción:</span> <span id="compReduction" style="font-weight: 600;">-</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Porcentaje:</span> <span id="compPercent" style="font-weight: 600; color: var(--accent-green);">-</span></div>
           </div>
         </div>
       </div>

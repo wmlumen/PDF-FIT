@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECCIONAL 40 - Escrutinio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    @media print {
+      body { background: white !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .print-break { page-break-before: always; }
+      .print-table { font-size: 10px; }
+      .print-table th, .print-table td { padding: 4px 6px; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXsjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+    const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+    const PW_PC = 'Paraguay100';
+    const AUTH_SESSION_KEY = 'seccional40_auth';
+    const NIVEL_SESSION_KEY = 'seccional40_nivel';
+
+    function getNivel() { return sessionStorage.getItem(NIVEL_SESSION_KEY) || ''; }
+    function estaAutenticado() { return getNivel() === 'pc'; }
+
+    let state = {
+      autenticado: estaAutenticado(),
+      cargando: false,
+      mensaje: '',
+      mesas: [],
+      totalElectores: 0,
+      totalVotos: 0,
+      totalAusentes: 0,
+      totalControversias: 0,
+      totalRegistros: 0,
+      ultimaActualizacion: null,
+      escuela: sessionStorage.getItem('seccional40_escuela') || ''
+    };
+
+    function login() {
+      const input = document.getElementById('passwordInput');
+      if (!input) return;
+      const pass = input.value.trim();
+      if (pass !== PW_PC) { alert('Contraseña incorrecta.'); return; }
+      sessionStorage.setItem(NIVEL_SESSION_KEY, 'pc');
+      sessionStorage.setItem(AUTH_SESSION_KEY, 'ok');
+      state.autenticado = true;
+      cargarDatos();
+    }
+
+    function logout() {
+      sessionStorage.removeItem(NIVEL_SESSION_KEY);
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+      state.autenticado = false;
+      render();
+    }
+
+    async function fetchJsonOrThrow(url, options) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      const contentType = (response.headers.get('content-type') || '').toLowerCase();
+      const trimmed = text.trim().toLowerCase();
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html'))
+        throw new Error('Backend no disponible: la web app de Apps Script esta pidiendo inicio de sesion.');
+      try { return JSON.parse(text); } catch (e) { throw new Error('Respuesta invalida del backend.'); }
+    }
+
+    async function cargarDatos() {
+      state.cargando = true;
+      state.mensaje = 'Cargando resultados...';
+      render();
+
+      try {
+        // 1) Cargar resumen desde API
+        const resumenData = await fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now());
+
+        // 2) Cargar padrón CSV para total de electores por mesa
+        const padronResp = await fetch(PADRON_CSV_URL + '?v=' + Date.now());
+        const padronText = await padronResp.text();
+        const lineas = padronText.split('\n').filter(l => l.trim());
+
+        const electoresPorMesa = {};
+        let totalElectoresPadron = 0;
+        for (let i = 1; i < lineas.length; i++) {
+          const partes = lineas[i].split(',');
+          if (partes.length >= 8) {
+            const mesa = parseInt(partes[3].trim()) || 0;
+            if (!electoresPorMesa[mesa]) electoresPorMesa[mesa] = 0;
+            electoresPorMesa[mesa]++;
+            totalElectoresPadron++;
+          }
+        }
+
+        // 3) Fusionar datos de resumen con total de electores del padrón
+        const mesasMap = {};
+        if (resumenData && resumenData.mesas) {
+          resumenData.mesas.forEach(m => {
+            const mesaNum = parseInt(m.mesa) || 0;
+            mesasMap[mesaNum] = {
+              mesa: mesaNum,
+              votos: parseInt(m.votos) || 0,
+              ausentes: parseInt(m.ausentes) || 0,
+              controversias: parseInt(m.controversias) || 0,
+              totalRegistros: parseInt(m.total) || 0,
+              totalElectores: electoresPorMesa[mesaNum] || 0,
+              participacion: parseFloat(m.participacion) || 0
+            };
+          });
+        }
+
+        // También incluir mesas que tienen electores pero no registros
+        Object.keys(electoresPorMesa).forEach(mesaNum => {
+          if (!mesasMap[mesaNum]) {
+            mesasMap[mesaNum] = {
+              mesa: parseInt(mesaNum),
+              votos: 0,
+              ausentes: 0,
+              controversias: 0,
+              totalRegistros: 0,
+              totalElectores: electoresPorMesa[mesaNum],
+              participacion: 0
+            };
+          }
+        });
+
+        state.mesas = Object.values(mesasMap).sort((a, b) => a.mesa - b.mesa);
+        state.totalElectores = totalElectoresPadron;
+        state.totalVotos = state.mesas.reduce((s, m) => s + m.votos, 0);
+        state.totalAusentes = state.mesas.reduce((s, m) => s + m.ausentes, 0);
+        state.totalControversias = state.mesas.reduce((s, m) => s + m.controversias, 0);
+        state.totalRegistros = state.mesas.reduce((s, m) => s + m.totalRegistros, 0);
+        state.ultimaActualizacion = new Date();
+        state.mensaje = `✅ ${state.mesas.length} mesas · ${state.totalElectores} electores · ${state.totalVotos} votos`;
+      } catch (err) {
+        console.error('Error:', err);
+        state.mensaje = '⚠️ Error: ' + (err.message || 'no se pudieron cargar los datos');
+      }
+
+      state.cargando = false;
+      render();
+    }
+
+    function exportCSV() {
+      if (!state.mesas.length) return;
+
+      const rows = [
+        ['Mesa', 'Electores', 'Votos', 'Ausentes', 'Controversias', 'Total Registros', 'Participacion %']
+      ];
+      state.mesas.forEach(m => {
+        rows.push([
+          m.mesa, m.totalElectores, m.votos, m.ausentes, m.controversias, m.totalRegistros,
+          (typeof m.participacion === 'number' ? m.participacion.toFixed(1) : m.participacion) + '%'
+        ]);
+      });
+
+      // Fila total
+      const totalPart = state.totalElectores > 0 ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1) + '%' : '0%';
+      rows.push([
+        'TOTAL', state.totalElectores, state.totalVotos, state.totalAusentes, state.totalControversias,
+        state.totalRegistros, totalPart
+      ]);
+
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'escrutinio_seccional40_' + new Date().toISOString().slice(0, 10) + '.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exportJSON() {
+      if (!state.mesas.length) return;
+      const data = {
+        generado: new Date().toISOString(),
+        escuela: state.escuela,
+        totalElectores: state.totalElectores,
+        totalVotos: state.totalVotos,
+        totalAusentes: state.totalAusentes,
+        totalControversias: state.totalControversias,
+        participacionGeneral: state.totalElectores > 0
+          ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1) + '%'
+          : '0%',
+        mesas: state.mesas
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'escrutinio_seccional40_' + new Date().toISOString().slice(0, 10) + '.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+            <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i class="fas fa-chart-pie text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">ESCRUTINIO</h1>
+            <p class="text-slate-500 text-sm mb-8">Resultados oficiales · SECCIONAL 40</p>
+            <div class="space-y-4">
+              <input type="password" id="passwordInput" placeholder="Contraseña"
+                class="w-full px-6 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all text-center"
+                onkeypress="if(event.key === 'Enter') login()">
+              <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                ACCEDER
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-6">Acceso exclusivo PC</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+
+      const totalPart = state.totalElectores > 0
+        ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1)
+        : '0.0';
+      const partColor = parseFloat(totalPart) >= 80 ? 'text-green-600'
+        : parseFloat(totalPart) >= 50 ? 'text-yellow-600'
+        : parseFloat(totalPart) >= 30 ? 'text-orange-600' : 'text-red-600';
+
+      app.innerHTML = `
+        <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg no-print">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-red-500 rounded-xl">
+                <i class="fas fa-chart-pie text-white text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">ESCRUTINIO</h1>
+                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">Resultados Oficiales · SECC. 40</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+              <span class="text-[10px] text-red-300 font-bold uppercase mr-2">📍 ${state.escuela || 'Esc. ...'}</span>
+              <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+              <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+              <a href="mesas.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Mesas</a>
+              <a href="No_voto.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">No Voto</a>
+              <span class="text-[10px] text-red-400 mx-1">|</span>
+              <span class="text-[10px] text-red-300 font-bold uppercase">PC:</span>
+              <a href="padron_unificado.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Padrón</a>
+              <a href="escrutinio.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Escrutinio</a>
+              <a href="anomalias.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Anomalías</a>
+              <a href="asistencia.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Seguimiento</a>
+            </div>
+
+            <div class="flex items-center gap-2 no-print">
+              <button onclick="cargarDatos()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Recargar">
+                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+              </button>
+              <button onclick="window.print()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Imprimir">
+                <i class="fas fa-print"></i>
+              </button>
+              <button onclick="exportCSV()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Exportar CSV">
+                <i class="fas fa-file-csv"></i>
+              </button>
+              <button onclick="exportJSON()" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-xl text-xs font-bold transition-all" title="Exportar JSON">
+                <i class="fas fa-file-code"></i>
+              </button>
+              <button onclick="logout()" class="px-3 py-2 bg-red-800 hover:bg-red-700 rounded-xl text-xs font-bold transition-all" title="Salir">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- BLOQUE PARA IMPRESIÓN -->
+        <div class="print-only text-center mb-6">
+          <h1 style="font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:-0.05em;">Seccional 40</h1>
+          <h2 style="font-size:18px;font-weight:700;margin-top:4px;">Escrutinio Definitivo</h2>
+          <p style="font-size:12px;color:#666;margin-top:4px;">${state.escuela || ''} · ${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleString('es-PY') : ''}</p>
+          <hr style="margin:12px 0;border:1px solid #ccc;">
+        </div>
+
+        <main class="max-w-7xl mx-auto p-3 md:p-6">
+          ${state.cargando ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">${state.mensaje}</p>
+            </div>
+          ` : `
+            <!-- TARJETAS DE RESUMEN -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Mesas</p>
+                <p class="text-2xl font-black text-slate-900">${state.mesas.length}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Electores</p>
+                <p class="text-2xl font-black text-slate-900">${state.totalElectores}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-green-200 text-center">
+                <p class="text-[10px] uppercase font-black text-green-600 tracking-widest">Votos</p>
+                <p class="text-2xl font-black text-green-600">${state.totalVotos}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-orange-200 text-center">
+                <p class="text-[10px] uppercase font-black text-orange-600 tracking-widest">Ausentes</p>
+                <p class="text-2xl font-black text-orange-600">${state.totalAusentes}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-red-200 text-center">
+                <p class="text-[10px] uppercase font-black text-red-600 tracking-widest">Controversias</p>
+                <p class="text-2xl font-black text-red-600">${state.totalControversias}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Participación</p>
+                <p class="text-2xl font-black ${partColor}">${totalPart}%</p>
+              </div>
+            </div>
+
+            <!-- BARRA DE PROGRESO GENERAL -->
+            <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Progreso general</span>
+                <span class="text-xs font-black ${partColor}">${totalPart}%</span>
+              </div>
+              <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500 ${parseFloat(totalPart) >= 80 ? 'bg-green-500' : parseFloat(totalPart) >= 50 ? 'bg-yellow-500' : parseFloat(totalPart) >= 30 ? 'bg-orange-500' : 'bg-red-500'}"
+                     style="width: ${Math.min(parseFloat(totalPart), 100)}%"></div>
+              </div>
+            </div>
+
+            <!-- MENSAJE -->
+            ${state.mensaje ? `
+              <div class="bg-red-50 border-2 border-red-100 rounded-xl p-3 mb-4 no-print">
+                <p class="text-xs font-bold text-red-800 text-center">${state.mensaje}</p>
+              </div>
+            ` : ''}
+
+            <!-- TABLA DE RESULTADOS -->
+            <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
+              <!-- Vista móvil: tarjetas -->
+              <div class="md:hidden divide-y divide-slate-100">
+                ${state.mesas.map(m => {
+                  const pct = typeof m.participacion === 'number' ? m.participacion : parseFloat(m.participacion) || 0;
+                  const color = pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-yellow-600' : pct >= 30 ? 'text-orange-600' : 'text-red-600';
+                  const bgColor = pct >= 80 ? 'bg-green-50 border-green-200' : pct >= 50 ? 'bg-yellow-50 border-yellow-200' : pct >= 30 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200';
+                  return `
+                    <div class="p-4">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                          <span class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                          <span class="font-bold text-slate-900">Mesa ${m.mesa}</span>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black border-2 ${bgColor} ${color}">${pct.toFixed(1)}%</span>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div><p class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Electores</p><p class="font-black text-slate-900">${m.totalElectores}</p></div>
+                        <div><p class="text-green-600 font-bold uppercase tracking-wider text-[9px]">Votos</p><p class="font-black text-green-600">${m.votos}</p></div>
+                        <div><p class="text-orange-600 font-bold uppercase tracking-wider text-[9px]">Ausentes</p><p class="font-black text-orange-600">${m.ausentes}</p></div>
+                        <div><p class="text-red-600 font-bold uppercase tracking-wider text-[9px]">Controv.</p><p class="font-black text-red-600">${m.controversias}</p></div>
+                        <div><p class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Registros</p><p class="font-black text-slate-900">${m.totalRegistros}</p></div>
+                      </div>
+                      <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
+                        <div class="h-full rounded-full ${pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : pct >= 30 ? 'bg-orange-500' : 'bg-red-500'}" style="width: ${Math.min(pct, 100)}%"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Vista escritorio: tabla -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="w-full print-table">
+                  <thead>
+                    <tr class="bg-red-900 text-white">
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Mesa</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Electores</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Votos</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Ausentes</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Controversias</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Total Reg.</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Participación</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Progreso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${state.mesas.map(m => {
+                      const pct = typeof m.participacion === 'number' ? m.participacion : parseFloat(m.participacion) || 0;
+                      const color = pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-yellow-600' : pct >= 30 ? 'text-orange-600' : 'text-red-600';
+                      const bgBar = pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : pct >= 30 ? 'bg-orange-500' : 'bg-red-500';
+                      return `
+                        <tr class="border-b border-slate-100 hover:bg-red-50/40 transition-all">
+                          <td class="px-4 py-3 text-center">
+                            <span class="w-8 h-8 rounded-full bg-red-600 text-white inline-flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                          </td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-slate-900">${m.totalElectores}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-green-600">${m.votos}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-orange-600">${m.ausentes}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-red-600">${m.controversias}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-slate-900">${m.totalRegistros}</td>
+                          <td class="px-4 py-3 text-center font-black ${color}">${pct.toFixed(1)}%</td>
+                          <td class="px-4 py-3">
+                            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                              <div class="h-full rounded-full ${bgBar}" style="width: ${Math.min(pct, 100)}%"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                  <!-- FILA TOTAL -->
+                  <tfoot>
+                    <tr class="bg-red-50 border-t-2 border-red-200 font-bold">
+                      <td class="px-4 py-3 text-center font-black text-slate-900">TOTAL</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-slate-900">${state.totalElectores}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-green-700">${state.totalVotos}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-orange-700">${state.totalAusentes}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-red-700">${state.totalControversias}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-slate-900">${state.totalRegistros}</td>
+                      <td class="px-4 py-3 text-center font-black ${partColor}">${totalPart}%</td>
+                      <td class="px-4 py-3">
+                        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full ${parseFloat(totalPart) >= 80 ? 'bg-green-500' : parseFloat(totalPart) >= 50 ? 'bg-yellow-500' : parseFloat(totalPart) >= 30 ? 'bg-orange-500' : 'bg-red-500'}" style="width: ${Math.min(parseFloat(totalPart), 100)}%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- PIE DE PÁGINA (solo impresión) -->
+            <div class="print-only text-center mt-8">
+              <hr style="margin:12px 0;border:1px solid #ddd;">
+              <p style="font-size:10px;color:#999;">Documento generado el ${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleString('es-PY') : ''} · Sistema de Control Electoral Seccional 40</p>
+              <p style="font-size:10px;color:#999;">Los datos presentados son preliminares hasta la certificación oficial.</p>
+            </div>
+          `}
+        </main>
+      `;
+    }
+
+    // Actualizar cada 30 segundos
+    setInterval(() => {
+      if (state.autenticado && !state.cargando) {
+        cargarDatos();
+      }
+    }, 30000);
+
+    if (state.autenticado) {
+      cargarDatos();
+    } else {
+      render();
+    }
+  </script>
+</body>
+</html>

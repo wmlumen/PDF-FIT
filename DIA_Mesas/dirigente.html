@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECCIONAL 40 - Panel del Dirigente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .scroll-hidden::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scroll-hidden::-webkit-scrollbar-track { background: #fef2f2; }
+        .scroll-hidden::-webkit-scrollbar-thumb { background: #fecaca; border-radius: 3px; }
+        .scroll-hidden::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-slate-50">
+    <div id="app"></div>
+
+    <script>
+        // ============ CONFIGURACIÓN ============
+        const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+        const DIRIGENTES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?gid=79263661&single=true&output=csv';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXSjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+        
+        // ============ ESTADO ============
+        let state = {
+            autenticado: false,
+            cargando: false,
+            dirigente: null,
+            padron: [],
+            dirigentes: [],
+            votos: [],
+            noVotos: [],
+            comunicaciones: [],
+            ultimaActualizacion: null,
+            mensaje: '',
+            tabActiva: 'todos',
+            busqueda: ''
+        };
+
+        // ============ UTILIDADES CSV ============
+        function cleanBOM(text) {
+            // Eliminar BOM (Byte Order Mark) que a veces añade Google Sheets
+            return text.replace(/^\uFEFF/, '');
+        }
+
+        function parseCSVLine(line) {
+            // Limpiar \r al final si existe
+            line = line.replace(/\r$/, '');
+            
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"' && !inQuotes) {
+                    inQuotes = true;
+                } else if (char === '"' && inQuotes && nextChar === '"') {
+                    current += '"';
+                    i++; // Skip next quote
+                } else if (char === '"' && inQuotes) {
+                    inQuotes = false;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        // ============ LIMPIAR CÉDULA ============
+        function limpiarCedula(cedula) {
+            return (cedula || '').replace(/[.\s,-]/g, '').trim();
+        }
+
+        // ============ HELPERS API ============
+        function getBackendAccessError() {
+            return 'Backend no disponible: la web app de Apps Script esta pidiendo inicio de sesion.';
+        }
+
+        async function fetchJsonOrThrow(url, options) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            const trimmed = text.trim().toLowerCase();
+
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
+            if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+                throw new Error(getBackendAccessError());
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                throw new Error('Respuesta invalida del backend.');
+            }
+        }
+
+        // ============ LOGIN ============
+        function login() {
+            const cedulaInput = document.getElementById('cedulaInput');
+            const passInput = document.getElementById('passInput');
+            const cedulaRaw = cedulaInput ? cedulaInput.value.trim() : '';
+            const cedula = limpiarCedula(cedulaRaw);
+            const password = passInput ? passInput.value.trim() : '';
+            
+            if (!cedula || !password) {
+                alert('Ingrese cédula y contraseña.');
+                return;
+            }
+            
+            const dirigente = state.dirigentes.find(d => {
+                return limpiarCedula(d.cedula) === cedula && d.contraseña === password;
+            });
+            
+            if (dirigente) {
+                state.dirigente = dirigente;
+                state.autenticado = true;
+                cargarDatos();
+            } else {
+                const porCedula = state.dirigentes.find(d => limpiarCedula(d.cedula) === cedula);
+                if (porCedula) {
+                    alert('Cédula encontrada pero contraseña incorrecta.\n\nVerifique mayúsculas/minúsculas y espacios.');
+                } else {
+                    alert('Cédula no encontrada en la lista de dirigentes.\n\nVerifique que su cédula esté registrada correctamente.');
+                }
+            }
+        }
+
+        // ============ CARGAR DATOS ============
+        async function cargarDatos() {
+            state.cargando = true;
+            state.mensaje = 'Cargando datos...';
+            render();
+            
+            try {
+                const [padronResp, votosResp, noVotosResp] = await Promise.all([
+                    fetch(PADRON_CSV_URL),
+                    fetch(API_URL + '?action=votos'),
+                    fetch(API_URL + '?action=no_votos')
+                ]);
+                
+                // Parsear padron
+                const padronText = await padronResp.text();
+                const padronLineas = padronText.split('\n').filter(l => l.trim());
+                const padronData = [];
+                
+                for (let i = 1; i < padronLineas.length; i++) {
+                    const partes = parseCSVLine(padronLineas[i]);
+                    if (partes.length >= 8) {
+                        padronData.push({
+                            cedula: limpiarCedula(partes[5]),
+                            nombre: (partes[6].trim() + ' ' + partes[7].trim()).trim(),
+                            mesa: parseInt(partes[3].trim()) || 0,
+                            orden: parseInt(partes[4].trim()) || 0
+                        });
+                    }
+                }
+                state.padron = padronData;
+                
+                // Parsear votos
+                const votosData = await votosResp.json();
+                if (votosData && votosData.registros) {
+                    state.votos = votosData.registros;
+                }
+                
+                // Parsear no votos
+                const noVotosData = await noVotosResp.json();
+                if (noVotosData && noVotosData.registros) {
+                    state.noVotos = noVotosData.registros;
+                }
+                
+                state.ultimaActualizacion = new Date();
+                state.cargando = false;
+                state.mensaje = `Datos actualizados: ${padronData.length} electores, ${state.votos.length} votos`;
+            } catch (error) {
+                console.error('Error:', error);
+                state.cargando = false;
+                state.mensaje = 'Error cargando datos: ' + error.message;
+            }
+            render();
+        }
+
+        // ============ CARGAR DIRIGENTES ============
+        async function cargarDirigentes() {
+            state.cargando = true;
+            state.mensaje = 'Cargando dirigentes desde servidor...';
+            render();
+            
+            try {
+                // Usar el API en lugar del CSV para leer directamente del Google Sheet
+                const response = await fetch(API_URL + '?action=dirigentes');
+                const data = await response.json();
+                
+                console.log('=== DEBUG DIRIGENTES DESDE API ===');
+                console.log('Respuesta:', data);
+                
+                if (data && data.dirigentes) {
+                    const dirs = data.dirigentes.map(d => ({
+                        cedula: limpiarCedula(d.cedula),
+                        cedulaOriginal: d.cedula,
+                        nombre: d.nombre,
+                        contraseña: d.contraseña
+                    }));
+                    
+                    state.dirigentes = dirs;
+                    console.log('Dirigentes cargados desde API:', dirs);
+                    state.cargando = false;
+                    state.mensaje = dirs.length > 0 
+                        ? `Ingrese sus credenciales (${dirs.length} dirigentes cargados)` 
+                        : 'Error: No se cargaron dirigentes. Verifique la hoja "Dirigentes".';
+                } else {
+                    state.dirigentes = [];
+                    state.cargando = false;
+                    state.mensaje = 'Error: No se pudieron cargar los dirigentes.';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Fallback: intentar con CSV si el API falla
+                console.log('⚠️ API falló, intentando CSV como fallback...');
+                try {
+                    const response = await fetch(DIRIGENTES_CSV_URL);
+                    const csvText = cleanBOM(await response.text());
+                    const lineas = csvText.split(/\r?\n/).filter(l => l.trim());
+                    
+                    const dirs = [];
+                    for (let i = 1; i < lineas.length; i++) {
+                        const linea = lineas[i].trim();
+                        if (!linea) continue;
+                        const partes = parseCSVLine(linea);
+                        if (partes.length >= 3) {
+                            dirs.push({
+                                cedula: limpiarCedula(partes[0]),
+                                cedulaOriginal: partes[0],
+                                nombre: partes[1].trim().replace(/^"|"$/g, ''),
+                                contraseña: partes[2].trim().replace(/^"|"$/g, '')
+                            });
+                        }
+                    }
+                    state.dirigentes = dirs;
+                    state.cargando = false;
+                    state.mensaje = `Ingrese sus credenciales (${dirs.length} dirigentes cargados desde CSV)`;
+                } catch (csvError) {
+                    console.error('CSV también falló:', csvError);
+                    state.cargando = false;
+                    state.mensaje = 'Error cargando dirigentes: ' + error.message;
+                }
+            }
+            render();
+        }
+
+        // ============ REGISTRAR COMUNICACIÓN ============
+        function registrarComunicacion() {
+            const cedulaInput = document.getElementById('cedulaComunicacion');
+            const notaInput = document.getElementById('notaComunicacion');
+            const cedula = cedulaInput ? limpiarCedula(cedulaInput.value.trim()) : '';
+            const nota = notaInput ? notaInput.value.trim() : '';
+            
+            if (!cedula) {
+                alert('Ingrese una cédula.');
+                return;
+            }
+            
+            const elector = state.padron.find(p => p.cedula === cedula);
+            const nombre = elector ? elector.nombre : 'Desconocido';
+            
+            state.comunicaciones.push({
+                cedula: cedula,
+                nombre: nombre,
+                nota: nota,
+                timestamp: new Date().toISOString(),
+                dirigente: state.dirigente.nombre
+            });
+            
+            state.mensaje = `✅ Comunicación registrada: ${nombre}`;
+            if (cedulaInput) cedulaInput.value = '';
+            if (notaInput) notaInput.value = '';
+            render();
+        }
+
+        // ============ REGISTRAR NO VOTO ============
+        async function registrarNoVotoDirigente() {
+            const cedulaInput = document.getElementById('cedulaNoVoto');
+            const motivoInput = document.getElementById('motivoNoVoto');
+            const observacionInput = document.getElementById('observacionNoVoto');
+            
+            const cedula = cedulaInput ? limpiarCedula(cedulaInput.value.trim()) : '';
+            const motivo = motivoInput ? motivoInput.value : 'Otro';
+            const observacion = observacionInput ? observacionInput.value.trim() : '';
+            
+            if (!cedula) {
+                alert('Ingrese una cédula.');
+                return;
+            }
+            
+            const elector = state.padron.find(p => p.cedula === cedula);
+            if (!elector) {
+                alert('Cédula no encontrada en el padrón.');
+                return;
+            }
+            
+            const data = {
+                timestamp: new Date().toISOString(),
+                cedula: cedula,
+                nombre: elector.nombre,
+                mesa: elector.mesa,
+                orden: elector.orden,
+                estado: 'no_voto',
+                accion: 'registrar',
+                motivo: motivo,
+                observacion: observacion,
+                origen: 'dirigente_' + state.dirigente.cedula
+            };
+            
+            try {
+                const result = await fetchJsonOrThrow(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'registrar',
+                        estado: 'no_voto',
+                        cedula: cedula,
+                        apellido: '',
+                        nombre: elector.nombre,
+                        dirigente: state.dirigente.nombre,
+                        motivo: motivo
+                    })
+                });
+                console.log('Respuesta:', result);
+                
+                if (result.success) {
+                    state.mensaje = `✅ No voto registrado: ${elector.nombre}`;
+                } else {
+                    state.mensaje = `⚠️ Error: ${result.error}`;
+                }
+                
+                state.noVotos.push({ ...data, timestamp: new Date().toISOString() });
+                
+                if (cedulaInput) cedulaInput.value = '';
+                if (observacionInput) observacionInput.value = '';
+                
+                render();
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error enviando datos. Intente nuevamente.');
+            }
+        }
+
+        // ============ BUSCAR ELECTOR ============
+        function buscarElectorPadron(inputId, resultadoId) {
+            const input = document.getElementById(inputId);
+            const resultadoDiv = document.getElementById(resultadoId);
+            const cedula = input ? limpiarCedula(input.value.trim()) : '';
+            
+            if (!cedula || !resultadoDiv) return;
+            
+            const elector = state.padron.find(p => p.cedula === cedula);
+            if (elector) {
+                resultadoDiv.innerHTML = `
+                    <div class="bg-green-50 border-2 border-green-200 rounded-xl p-3 mt-2 animate-in">
+                        <p class="font-bold text-green-800">${elector.nombre}</p>
+                        <p class="text-xs text-green-600">Mesa: ${elector.mesa} | Orden: ${elector.orden}</p>
+                    </div>
+                `;
+            } else {
+                resultadoDiv.innerHTML = `
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3 mt-2 animate-in">
+                        <p class="font-bold text-red-800">Cédula no encontrada en el padrón</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============ ANÁLISIS DE DATOS ============
+        function getVotantesDelDirigente() {
+            const cedulaDirigenteLimpia = limpiarCedula(state.dirigente.cedula);
+            
+            const votosDelDirigente = state.votos.filter(v => {
+                const cedulaVoto = limpiarCedula(v.dirigente || '');
+                return cedulaVoto === cedulaDirigenteLimpia || v.dirigenteNombre === state.dirigente.nombre;
+            });
+            
+            const noVotosDelDirigente = state.noVotos.filter(nv => 
+                nv.origen && nv.origen.includes('dirigente_' + cedulaDirigenteLimpia)
+            );
+            
+            return { votos: votosDelDirigente, noVotos: noVotosDelDirigente };
+        }
+
+        function getEstadisticas() {
+            const { votos, noVotos } = getVotantesDelDirigente();
+            
+            const votosUnicos = {};
+            votos.forEach(v => {
+                const cedula = v.cedula;
+                if (!votosUnicos[cedula] || new Date(v.timestamp) > new Date(votosUnicos[cedula].timestamp)) {
+                    votosUnicos[cedula] = v;
+                }
+            });
+            
+            const yaVotaron = Object.values(votosUnicos).filter(v => v.estado === 'voto');
+            const ausentes = Object.values(votosUnicos).filter(v => v.estado === 'ausente');
+            const controversias = Object.values(votosUnicos).filter(v => v.estado === 'controversia');
+            
+            return { yaVotaron, ausentes, controversias, noVotos };
+        }
+
+        // ============ RENDERIZADO ============
+        function renderLogin() {
+            const mostrarDiagnostico = state.dirigentes.length === 0 || state.mensaje.includes('Error');
+            
+            return `
+                <div class="min-h-screen flex items-center justify-center p-4">
+                    <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-lg w-full text-center">
+                        <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-user-tie text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">DIRIGENTE</h1>
+                        <p class="text-slate-500 text-sm mb-8">Panel Privado de Control</p>
+                        
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="cedulaInput" placeholder="Cédula del Dirigente" 
+                                    class="w-full pl-12 pr-4 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all"
+                                    onkeypress="if(event.key === 'Enter') login()">
+                            </div>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="password" id="passInput" placeholder="Contraseña" 
+                                    class="w-full pl-12 pr-4 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-red-500 focus:outline-none transition-all"
+                                    onkeypress="if(event.key === 'Enter') login()">
+                            </div>
+                            <button onclick="login()" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-lg">
+                                INGRESAR
+                            </button>
+                        </div>
+                        
+                        ${state.dirigentes.length > 0 ? `
+                            <div class="mt-4 bg-green-50 border-2 border-green-200 rounded-xl p-3">
+                                <p class="text-xs text-green-700 font-bold">✅ ${state.dirigentes.length} dirigentes cargados</p>
+                            </div>
+                        ` : state.mensaje.includes('Error') ? `
+                            <div class="mt-4 bg-red-50 border-2 border-red-200 rounded-xl p-3">
+                                <p class="text-xs text-red-700 font-bold">❌ ${state.mensaje}</p>
+                            </div>
+                        ` : `
+                            <div class="mt-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-3">
+                                <p class="text-xs text-yellow-700 font-bold">⏳ ${state.mensaje}</p>
+                            </div>
+                        `}
+                        
+                        <!-- DIAGNÓSTICO VISIBLE -->
+                        ${state.dirigentes.length > 0 ? `
+                            <div class="mt-4 text-left">
+                                <details class="bg-slate-50 rounded-xl border border-slate-200">
+                                    <summary class="px-4 py-3 text-xs font-bold text-slate-600 cursor-pointer hover:bg-slate-100 rounded-xl">
+                                        🔍 Ver diagnóstico de carga (${state.dirigentes.length} dirigentes)
+                                    </summary>
+                                    <div class="px-4 py-3 text-xs font-mono text-slate-600 overflow-x-auto">
+                                        <p class="font-bold mb-2">Primeros registros cargados:</p>
+                                        ${state.dirigentes.slice(0, 5).map((d, i) => `
+                                            <div class="mb-1 p-2 bg-white rounded border border-slate-200">
+                                                <span class="font-bold">${i+1}.</span> Cédula: "${d.cedulaOriginal || d.cedula}" → Limpia: "${d.cedula}" | Nombre: "${d.nombre}" | Pass: "${d.contraseña.replace(/./g, '*')}" (len:${d.contraseña.length})
+                                            </div>
+                                        `).join('')}
+                                        ${state.dirigentes.length > 5 ? `<p class="text-slate-400 mt-2">... y ${state.dirigentes.length - 5} más</p>` : ''}
+                                    </div>
+                                </details>
+                            </div>
+                        ` : ''}
+                        
+                        <p class="text-xs text-slate-400 mt-6">Sistema Privado - Uso Autorizado</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            try {
+                const app = document.getElementById('app');
+                if (!app) {
+                    console.error('Elemento #app no encontrado');
+                    return;
+                }
+                
+                if (!state.autenticado) {
+                    // Siempre renderizar el login primero, luego cargar dirigentes en segundo plano
+                    app.innerHTML = renderLogin();
+                    
+                    // Si no hay dirigentes cargados y no está cargando, iniciar carga
+                    if (state.dirigentes.length === 0 && !state.cargando) {
+                        console.log('No hay dirigentes, iniciando carga...');
+                        cargarDirigentes();
+                    }
+                    return;
+                }
+                
+                const stats = getEstadisticas();
+                const total = stats.yaVotaron.length + stats.ausentes.length + stats.controversias.length + stats.noVotos.length;
+            
+            app.innerHTML = `
+                <header class="bg-red-900 text-white sticky top-0 z-40 shadow-lg">
+                    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-red-500 rounded-xl">
+                                <i class="fas fa-user-tie text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">${state.dirigente.nombre}</h1>
+                                <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest opacity-80">Panel del Dirigente - SECC. 40</p>
+                            </div>
+                        </div>
+                        
+                        <!-- MENÚ DE NAVEGACIÓN -->
+                        <div class="flex items-center gap-2 bg-red-800/50 px-3 py-1.5 rounded-xl border border-red-700">
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">📍 ${sessionStorage.getItem('seccional40_escuela') || 'Esc. ...'}</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase mr-2">Colegio:</span>
+                          <a href="index.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Votación</a>
+                          <a href="dirigente.html" class="px-2 py-1 bg-red-600 rounded-lg text-[10px] font-bold text-white">Dirigente</a>
+                          <a href="mesas.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Mesas</a>
+                          <a href="No_voto.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">No Voto</a>
+                          <a href="padron_unificado.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Padrón</a>
+                          <span class="text-[10px] text-red-400 mx-1">|</span>
+                          <span class="text-[10px] text-red-300 font-bold uppercase">PC:</span>
+                          <a href="anomalias.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Anomalías</a>
+                          <a href="escrutinio.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Escrutinio</a>
+                          <a href="asistencia.html" class="px-2 py-1 hover:bg-red-700 rounded-lg text-[10px] font-bold text-red-200 transition-all">Seguimiento</a>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-xs">
+                            <div class="text-right">
+                                <p class="text-red-200">Última actualización</p>
+                                <p class="font-bold">${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleTimeString('es-PY') : '-'}</p>
+                            </div>
+                            <button onclick="cargarDatos()" class="px-4 py-2 bg-red-500 hover:bg-red-400 rounded-xl transition-all" title="Recargar">
+                                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                            </button>
+                            <button onclick="state.autenticado=false; state.dirigente=null; render();" class="px-4 py-2 bg-red-800 hover:bg-red-700 rounded-xl transition-all" title="Salir">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-7xl mx-auto p-4 md:p-6">
+                    <!-- RESUMEN -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-green-200 text-center">
+                            <div class="text-xs font-bold text-green-600 uppercase mb-1">Ya Votaron</div>
+                            <div class="text-3xl font-black text-green-600">${stats.yaVotaron.length}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-red-200 text-center">
+                            <div class="text-xs font-bold text-red-600 uppercase mb-1">No Votarán</div>
+                            <div class="text-3xl font-black text-red-600">${stats.noVotos.length}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-yellow-200 text-center">
+                            <div class="text-xs font-bold text-yellow-600 uppercase mb-1">Ausentes</div>
+                            <div class="text-3xl font-black text-yellow-600">${stats.ausentes.length}</div>
+                        </div>
+                        <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-orange-200 text-center">
+                            <div class="text-xs font-bold text-orange-600 uppercase mb-1">Controversias</div>
+                            <div class="text-3xl font-black text-orange-600">${stats.controversias.length}</div>
+                        </div>
+                    </div>
+
+                    <!-- MENSAJE -->
+                    ${state.mensaje ? `
+                        <div class="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
+                            <p class="font-bold text-red-800 text-center text-sm">${state.mensaje}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- ACCIONES RÁPIDAS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <!-- REGISTRAR COMUNICACIÓN -->
+                        <div class="bg-white rounded-[2rem] p-6 shadow-xl border border-red-100">
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4">
+                                <i class="fas fa-phone text-red-600 mr-2"></i>Registrar Comunicación
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="relative">
+                                    <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" id="cedulaComunicacion" placeholder="Cédula del elector" 
+                                        class="w-full pl-12 pr-4 py-3 text-base font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all"
+                                        oninput="buscarElectorPadron('cedulaComunicacion', 'resultadoComunicacion')">
+                                </div>
+                                <div id="resultadoComunicacion"></div>
+                                <textarea id="notaComunicacion" rows="2" placeholder="¿Qué dijo? Ej: Ya votó, No va a ir, Duda, etc."
+                                    class="w-full px-4 py-3 text-base font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all resize-none"></textarea>
+                                <button onclick="registrarComunicacion()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all shadow-lg">
+                                    <i class="fas fa-save mr-2"></i>REGISTRAR COMUNICACIÓN
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- REGISTRAR NO VOTO -->
+                        <div class="bg-white rounded-[2rem] p-6 shadow-xl border border-red-100">
+                            <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight mb-4">
+                                <i class="fas fa-user-slash text-red-600 mr-2"></i>Registrar No Voto
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="relative">
+                                    <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" id="cedulaNoVoto" placeholder="Cédula del elector" 
+                                        class="w-full pl-12 pr-4 py-3 text-base font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all"
+                                        oninput="buscarElectorPadron('cedulaNoVoto', 'resultadoNoVoto')">
+                                </div>
+                                <div id="resultadoNoVoto"></div>
+                                <select id="motivoNoVoto" class="w-full px-4 py-3 text-base font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all bg-white">
+                                    <option value="Enfermedad">Enfermedad</option>
+                                    <option value="Viaje">Viaje</option>
+                                    <option value="Fallecido">Fallecido</option>
+                                    <option value="Trabajo">Trabajo</option>
+                                    <option value="Desinterés">Desinterés</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                                <textarea id="observacionNoVoto" rows="2" placeholder="Observación (opcional)"
+                                    class="w-full px-4 py-3 text-base font-bold border-2 border-slate-200 rounded-xl focus:border-red-500 focus:outline-none transition-all resize-none"></textarea>
+                                <button onclick="registrarNoVotoDirigente()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all shadow-lg">
+                                    <i class="fas fa-user-slash mr-2"></i>REGISTRAR NO VOTO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABS -->
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-red-100 overflow-hidden mb-6">
+                        <div class="flex flex-wrap border-b border-red-100">
+                            <button onclick="state.tabActiva='todos'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'todos' ? 'text-red-600 border-b-2 border-red-600 bg-red-50' : 'text-slate-500 hover:text-red-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-list mr-1"></i>Todos (${total})
+                            </button>
+                            <button onclick="state.tabActiva='votaron'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'votaron' ? 'text-green-600 border-b-2 border-green-600 bg-green-50' : 'text-slate-500 hover:text-green-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-check-circle mr-1"></i>Votaron (${stats.yaVotaron.length})
+                            </button>
+                            <button onclick="state.tabActiva='ausentes'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'ausentes' ? 'text-yellow-600 border-b-2 border-yellow-600 bg-yellow-50' : 'text-slate-500 hover:text-yellow-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-clock mr-1"></i>Ausentes (${stats.ausentes.length})
+                            </button>
+                            <button onclick="state.tabActiva='novotos'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'novotos' ? 'text-red-600 border-b-2 border-red-600 bg-red-50' : 'text-slate-500 hover:text-red-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-user-slash mr-1"></i>No Votarán (${stats.noVotos.length})
+                            </button>
+                            <button onclick="state.tabActiva='controversias'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'controversias' ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50' : 'text-slate-500 hover:text-orange-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Controversias (${stats.controversias.length})
+                            </button>
+                            <button onclick="state.tabActiva='comunicaciones'; render();" 
+                                class="flex-1 px-4 py-3 text-sm font-bold ${state.tabActiva === 'comunicaciones' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 hover:text-blue-600'} transition-all whitespace-nowrap">
+                                <i class="fas fa-phone mr-1"></i>Comunicaciones (${state.comunicaciones.length})
+                            </button>
+                        </div>
+
+                        <div class="p-4 md:p-6 max-h-[600px] overflow-y-auto scroll-hidden">
+                            ${state.tabActiva === 'todos' ? renderTablaTodos() : ''}
+                            ${state.tabActiva === 'votaron' ? renderTablaVotos(stats.yaVotaron, 'green') : ''}
+                            ${state.tabActiva === 'ausentes' ? renderTablaVotos(stats.ausentes, 'yellow') : ''}
+                            ${state.tabActiva === 'novotos' ? renderTablaNoVotos(stats.noVotos) : ''}
+                            ${state.tabActiva === 'controversias' ? renderTablaVotos(stats.controversias, 'orange') : ''}
+                            ${state.tabActiva === 'comunicaciones' ? renderTablaComunicaciones() : ''}
+                        </div>
+                    </div>
+                </main>
+            `;
+        } catch (e) {
+            console.error('Error en render:', e);
+            const app = document.getElementById('app');
+            if (app) {
+                app.innerHTML = '<div style="padding:20px; color:red; text-align:center;">Error al renderizar la página. Recargue.</div>';
+            }
+        }
+
+        function renderTablaTodos() {
+            const { votos, noVotos } = getVotantesDelDirigente();
+            const todos = [...votos, ...noVotos];
+            
+            if (todos.length === 0) {
+                return renderEmptyState('No hay registros de este dirigente');
+            }
+            
+            return renderTablaVotos(todos, 'slate');
+        }
+
+        function renderTablaVotos(votos, color) {
+            if (votos.length === 0) {
+                return renderEmptyState('No hay registros en esta categoría');
+            }
+            
+            const colorClass = color === 'green' ? 'text-green-600' : color === 'yellow' ? 'text-yellow-600' : color === 'orange' ? 'text-orange-600' : 'text-slate-600';
+            
+            return `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-red-50">
+                            <th class="px-4 py-3 text-left font-bold text-red-900">Cédula</th>
+                            <th class="px-4 py-3 text-left font-bold text-red-900">Nombre</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Mesa</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Estado</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${votos.map(v => {
+                            const hora = v.timestamp ? new Date(v.timestamp).toLocaleTimeString('es-PY', {hour: '2-digit', minute: '2-digit'}) : '-';
+                            const estadoColor = v.estado === 'voto' ? 'bg-green-100 text-green-700' : 
+                                               v.estado === 'no_voto' ? 'bg-red-100 text-red-700' :
+                                               v.estado === 'ausente' ? 'bg-yellow-100 text-yellow-700' :
+                                               v.estado === 'controversia' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700';
+                            return `
+                                <tr class="border-b border-red-50 hover:bg-red-50/50 transition-all">
+                                    <td class="px-4 py-3 font-bold text-slate-900">${v.cedula || '-'}</td>
+                                    <td class="px-4 py-3 font-bold text-slate-900">${v.nombre || '-'}</td>
+                                    <td class="px-4 py-3 text-center font-black ${colorClass}">${v.mesa || '-'}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="${estadoColor} font-bold text-xs px-2 py-1 rounded-lg">${v.estado || '-'}</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center text-xs text-slate-500">${hora}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderTablaNoVotos(noVotos) {
+            if (noVotos.length === 0) {
+                return renderEmptyState('No hay registros de no votos');
+            }
+            
+            return `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-red-50">
+                            <th class="px-4 py-3 text-left font-bold text-red-900">Cédula</th>
+                            <th class="px-4 py-3 text-left font-bold text-red-900">Nombre</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Mesa</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Motivo</th>
+                            <th class="px-4 py-3 text-left font-bold text-red-900">Observación</th>
+                            <th class="px-4 py-3 text-center font-bold text-red-900">Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${noVotos.map(nv => {
+                            const hora = nv.timestamp ? new Date(nv.timestamp).toLocaleTimeString('es-PY', {hour: '2-digit', minute: '2-digit'}) : '-';
+                            return `
+                                <tr class="border-b border-red-50 hover:bg-red-50/50 transition-all">
+                                    <td class="px-4 py-3 font-bold text-slate-900">${nv.cedula || '-'}</td>
+                                    <td class="px-4 py-3 font-bold text-slate-900">${nv.nombre || '-'}</td>
+                                    <td class="px-4 py-3 text-center font-black text-red-600">${nv.mesa || '-'}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="bg-red-100 text-red-700 font-bold text-xs px-2 py-1 rounded-lg">${nv.motivo || 'Otro'}</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-slate-600">${nv.observacion || '-'}</td>
+                                    <td class="px-4 py-3 text-center text-xs text-slate-500">${hora}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderTablaComunicaciones() {
+            if (state.comunicaciones.length === 0) {
+                return renderEmptyState('No hay comunicaciones registradas');
+            }
+            
+            return `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-blue-50">
+                            <th class="px-4 py-3 text-left font-bold text-blue-900">Cédula</th>
+                            <th class="px-4 py-3 text-left font-bold text-blue-900">Nombre</th>
+                            <th class="px-4 py-3 text-left font-bold text-blue-900">Nota</th>
+                            <th class="px-4 py-3 text-center font-bold text-blue-900">Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${state.comunicaciones.map(c => {
+                            const hora = new Date(c.timestamp).toLocaleTimeString('es-PY', {hour: '2-digit', minute: '2-digit'});
+                            return `
+                                <tr class="border-b border-blue-50 hover:bg-blue-50/50 transition-all">
+                                    <td class="px-4 py-3 font-bold text-slate-900">${c.cedula}</td>
+                                    <td class="px-4 py-3 font-bold text-slate-900">${c.nombre}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">${c.nota || '-'}</td>
+                                    <td class="px-4 py-3 text-center text-xs text-slate-500">${hora}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderEmptyState(mensaje) {
+            return `
+                <div class="text-center py-12 text-slate-400">
+                    <i class="fas fa-inbox text-4xl mb-3"></i>
+                    <p class="font-bold">${mensaje}</p>
+                </div>
+            `;
+        }
+
+        // Iniciar actualización automática cada 10 segundos
+        setInterval(() => {
+            if (state.autenticado && !state.cargando) {
+                cargarDatos();
+            }
+        }, 10000);
+
+        // Asegurar que el DOM esté listo antes de renderizar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOM cargado, iniciando render...');
+                try {
+                    render();
+                } catch (e) {
+                    console.error('Error en render inicial:', e);
+                    document.getElementById('app').innerHTML = '<div style="padding:20px; color:red;">Error al cargar la página. Recargue.</div>';
+                }
+            });
+        } else {
+            console.log('DOM ya listo, iniciando render...');
+            try {
+                render();
+            } catch (e) {
+                console.error('Error en render inicial:', e);
+                document.getElementById('app').innerHTML = '<div style="padding:20px; color:red;">Error al cargar la página. Recargue.</div>';
+            }
+        }
+    </script>
+</body>
+</html>

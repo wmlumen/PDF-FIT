@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SECCIONAL 40 - Registro Previo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .qr-expanded { width: 18rem !important; height: 18rem !important; max-width: 90vw !important; max-height: 90vw !important; padding: 0.5rem !important; }
+    .focus-ring:focus { outline: none; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3); border-color: #dc2626; }
+    .bg-pattern { background: linear-gradient(135deg, #fef2f2 0%, #ffffff 50%, #fee2e2 100%); }
+  </style>
+</head>
+<body class="min-h-screen bg-pattern">
+  <!-- ENCABEZADO INSTITUCIONAL -->
+  <header class="bg-red-900 text-white shadow-lg">
+    <div class="max-w-2xl mx-auto px-4 md:px-6 py-4 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center shadow-inner">
+        <i class="fas fa-landmark text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-black uppercase tracking-tight leading-none">Seccional 40</h1>
+        <p class="text-[11px] text-red-300 font-semibold tracking-wider uppercase">Sistema de Control Electoral</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl border border-red-100 p-6 md:p-10">
+
+      <!-- TÍTULO -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-full bg-red-600 text-white flex items-center justify-center mx-auto mb-5 text-2xl font-black shadow-lg shadow-red-200">
+          <i class="fas fa-qrcode"></i>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tight">Registro Previo</h2>
+        <p class="text-sm text-slate-500 mt-3 max-w-sm mx-auto leading-relaxed">
+          Complete sus datos básicos. Un administrador del sistema aprobará su solicitud y luego podrá acceder al panel electoral.
+        </p>
+      </div>
+
+      <!-- SECCIÓN QR -->
+      <div class="bg-gradient-to-br from-red-50 to-red-100/40 border-2 border-red-100 rounded-[2rem] p-5 md:p-6 mb-8 text-center">
+        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-red-700 mb-4">Acceso móvil</p>
+        <div class="flex justify-center">
+          <button id="qrBtn" onclick="toggleQR()" class="transition-all duration-300 ease-in-out focus-ring rounded-2xl" aria-label="Tocar para agrandar o achicar el código QR">
+            <img id="qrImg" alt="Código QR de acceso al formulario de registro previo de la Seccional 40"
+                 class="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-white p-1.5 border-2 border-red-200 shadow-sm cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out">
+          </button>
+        </div>
+        <p id="qrHint" class="text-xs text-slate-500 mt-4 leading-relaxed">
+          <i class="fas fa-hand-pointer mr-1"></i> Toque el código QR para agrandarlo y escanearlo con su celular.
+        </p>
+        <p id="qrHintLarge" class="text-xs text-slate-500 mt-2 leading-relaxed hidden">
+          <i class="fas fa-compress mr-1"></i> Toque nuevamente para achicar.
+        </p>
+      </div>
+
+      <!-- ALERTA -->
+      <div id="alerta" class="hidden rounded-2xl px-5 py-4 text-sm font-bold mb-6" role="alert"></div>
+
+      <!-- FORMULARIO -->
+      <div class="space-y-6">
+        <!-- CÉDULA -->
+        <div>
+          <label for="cedulaInput" class="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1.5">
+            Cédula de identidad <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2">
+            <input id="cedulaInput" type="text" 
+                   aria-label="Cédula de identidad"
+                   placeholder="Ingrese su cédula sin puntos ni guiones"
+                   autocomplete="off"
+                   class="flex-1 px-4 py-3.5 rounded-xl border-2 border-slate-200 focus-ring font-bold text-slate-900 placeholder-slate-400 transition-all"
+                   oninput="buscarEnPadron(this.value)">
+            <button id="btnBuscar" onclick="buscarEnPadron(document.getElementById('cedulaInput').value)" 
+                    aria-label="Buscar cédula en el padrón"
+                    class="px-4 py-3.5 bg-slate-100 hover:bg-slate-200 border-2 border-slate-200 rounded-xl font-bold text-sm focus-ring transition-all">
+              <i class="fas fa-search text-slate-600"></i>
+            </button>
+          </div>
+          <p id="electorInfo" class="text-xs mt-1.5 hidden" role="status"></p>
+        </div>
+
+        <!-- NOMBRE (manual, se oculta si se encuentra en padrón) -->
+        <div id="nombreGroup" class="hidden">
+          <label for="nombreInput" class="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1.5">
+            Nombre completo <span class="text-red-500">*</span>
+          </label>
+          <input id="nombreInput" type="text"
+                 aria-label="Nombre completo"
+                 placeholder="Nombre y apellido"
+                 autocomplete="name"
+                 class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-200 focus-ring font-bold text-slate-900 placeholder-slate-400 transition-all">
+        </div>
+
+        <!-- MESA (manual, se oculta si se encuentra en padrón) -->
+        <div id="mesaGroup" class="hidden">
+          <label for="mesaInput" class="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1.5">
+            Mesa electoral
+          </label>
+          <input id="mesaInput" type="text"
+                 aria-label="Número de mesa electoral"
+                 placeholder="Ej: 1, 2, 3..."
+                 class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-200 focus-ring font-bold text-slate-900 placeholder-slate-400 transition-all">
+        </div>
+
+        <!-- TELÉFONO -->
+        <div>
+          <label for="telefonoInput" class="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1.5">
+            Teléfono de contacto <span class="text-slate-400 font-normal normal-case">(opcional)</span>
+          </label>
+          <input id="telefonoInput" type="tel"
+                 aria-label="Teléfono de contacto"
+                 placeholder="Ej: 0981 123 456"
+                 autocomplete="tel"
+                 class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-200 focus-ring font-bold text-slate-900 placeholder-slate-400 transition-all">
+        </div>
+
+        <!-- OBSERVACIÓN -->
+        <div>
+          <label for="observacionInput" class="block text-xs font-black uppercase tracking-wider text-slate-600 mb-1.5">
+            Observación <span class="text-slate-400 font-normal normal-case">(opcional)</span>
+          </label>
+          <textarea id="observacionInput" rows="3"
+                    aria-label="Observación adicional"
+                    placeholder="Cualquier información útil para el administrador"
+                    class="w-full px-4 py-3.5 rounded-xl border-2 border-slate-200 focus-ring font-bold text-slate-900 placeholder-slate-400 resize-none transition-all"></textarea>
+        </div>
+
+        <!-- BOTÓN -->
+        <button id="btnEnviar" onclick="registrarSolicitud()" 
+                aria-label="Enviar solicitud de registro previo"
+                class="w-full py-4 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-2xl font-black text-base tracking-wider shadow-lg shadow-red-200 focus-ring transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fas fa-paper-plane mr-2"></i> ENVIAR SOLICITUD
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="bg-white border-t border-red-100 py-6 mt-4">
+    <div class="max-w-lg mx-auto px-4 text-center">
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <i class="fas fa-landmark text-red-600 text-sm"></i>
+        <span class="text-sm font-bold text-slate-700">Seccional 40</span>
+      </div>
+      <p class="text-[11px] text-slate-400 leading-relaxed">
+        Sistema de Control Electoral · Uso autorizado · Ante cualquier duda consulte al administrador del sistema.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    const PADRON_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9_LntZNPtljJwoE3IZRMx_86hLA3SZnGAoRZHqDDJrCqrsuAZS7rHNoCdGqywcw/pub?output=csv';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwMR773AI2CXsjokD7lEbjhbWSny3I4Pi8SzyuDDp0HQ-sK8UCAueu5uBRrL18K4eG_tg/exec';
+    let padron = [];
+    let cargando = false;
+    let electorEncontrado = null;
+
+    // ===== QR =====
+    var qrExpandido = false;
+
+    function generarQR() {
+      const img = document.getElementById('qrImg');
+      if (!img) return;
+      const url = window.location.href;
+
+      function ponerURL(dataURL) {
+        img.src = dataURL;
+      }
+
+      function fallbackGoogle() {
+        img.src = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(url);
+      }
+
+      if (typeof QRCode !== 'undefined') {
+        QRCode.toDataURL(url, {
+          width: 200,
+          margin: 1,
+          color: { dark: '#1e293b', light: '#ffffff' }
+        }, function(err, dataURL) {
+          if (err || !dataURL) { fallbackGoogle(); return; }
+          ponerURL(dataURL);
+        });
+      } else {
+        fallbackGoogle();
+      }
+    }
+
+    function toggleQR() {
+      const img = document.getElementById('qrImg');
+      const hint = document.getElementById('qrHint');
+      const hintLarge = document.getElementById('qrHintLarge');
+      if (!img) return;
+
+      qrExpandido = !qrExpandido;
+      if (qrExpandido) {
+        img.classList.add('qr-expanded');
+        img.classList.remove('w-24', 'h-24', 'md:w-28', 'md:h-28');
+        if (hint) hint.classList.add('hidden');
+        if (hintLarge) hintLarge.classList.remove('hidden');
+      } else {
+        img.classList.remove('qr-expanded');
+        img.classList.add('w-24', 'h-24', 'md:w-28', 'md:h-28');
+        if (hint) hint.classList.remove('hidden');
+        if (hintLarge) hintLarge.classList.add('hidden');
+      }
+    }
+
+    // ===== UI HELPERS =====
+    function mostrarAlerta(texto, tipo) {
+      const alerta = document.getElementById('alerta');
+      if (!alerta) return;
+      alerta.textContent = texto;
+      alerta.className = 'rounded-2xl px-5 py-4 text-sm font-bold mb-6 ' + (tipo === 'ok'
+        ? 'bg-green-50 text-green-700 border-2 border-green-200'
+        : 'bg-red-50 text-red-700 border-2 border-red-200');
+      alerta.setAttribute('role', 'alert');
+    }
+
+    function getBackendAccessError() {
+      return 'El servidor backend no está disponible en este momento. Verifique su conexión e intente nuevamente.';
+    }
+
+    async function fetchJsonOrThrow(url, options) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      const contentType = (response.headers.get('content-type') || '').toLowerCase();
+      const trimmed = text.trim().toLowerCase();
+
+      if (!response.ok) {
+        throw new Error('Error de conexión con el servidor (HTTP ' + response.status + ').');
+      }
+
+      if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html')) {
+        throw new Error(getBackendAccessError());
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        throw new Error('El servidor devolvió una respuesta inesperada. Intente nuevamente.');
+      }
+    }
+
+    // ===== PADRÓN =====
+    async function cargarPadron() {
+      try {
+        const response = await fetch(PADRON_CSV_URL);
+        if (!response.ok) {
+          throw new Error('No se pudo cargar el padrón electoral.');
+        }
+        const csvText = await response.text();
+        const lineas = csvText.split('\n').filter(l => l.trim());
+        const registros = [];
+        for (let i = 1; i < lineas.length; i++) {
+          const partes = lineas[i].split(',');
+          if (partes.length >= 8) {
+            registros.push({
+              cedula: (partes[5] || '').replace(/\./g, '').trim(),
+              mesa: (partes[3] || '').trim(),
+              orden: (partes[4] || '').trim(),
+              apellido: (partes[6] || '').trim(),
+              nombre: (partes[7] || '').trim(),
+              nombreCompleto: ((partes[6] || '').trim() + ' ' + (partes[7] || '').trim()).trim()
+            });
+          }
+        }
+        padron = registros;
+      } catch (error) {
+        mostrarAlerta('No se pudo cargar el padrón. Complete sus datos manualmente.', 'error');
+      }
+    }
+
+    function buscarEnPadron(cedulaRaw) {
+      const cedula = cedulaRaw.replace(/\D/g, '');
+      const info = document.getElementById('electorInfo');
+      const nombreGroup = document.getElementById('nombreGroup');
+      const mesaGroup = document.getElementById('mesaGroup');
+
+      if (!cedula) {
+        if (info) {
+          info.classList.add('hidden');
+          info.className = 'text-xs mt-1.5 hidden';
+        }
+        if (nombreGroup) nombreGroup.classList.add('hidden');
+        if (mesaGroup) mesaGroup.classList.add('hidden');
+        electorEncontrado = null;
+        return;
+      }
+
+      const elector = padron.find(p => p.cedula === cedula);
+      if (elector) {
+        electorEncontrado = elector;
+        document.getElementById('nombreInput').value = elector.nombreCompleto;
+        document.getElementById('mesaInput').value = elector.mesa;
+        if (info) {
+          info.textContent = '✅ Encontrado: ' + elector.nombreCompleto + ' · Mesa ' + elector.mesa + ' · Orden ' + elector.orden;
+          info.className = 'text-xs mt-1.5 font-bold text-green-600';
+          info.classList.remove('hidden');
+        }
+        if (nombreGroup) nombreGroup.classList.add('hidden');
+        if (mesaGroup) mesaGroup.classList.add('hidden');
+      } else {
+        electorEncontrado = null;
+        if (info) {
+          info.textContent = '⚠️ Cédula no encontrada en el padrón. Complete los datos manualmente.';
+          info.className = 'text-xs mt-1.5 font-bold text-amber-600';
+          info.classList.remove('hidden');
+        }
+        if (nombreGroup) nombreGroup.classList.remove('hidden');
+        if (mesaGroup) mesaGroup.classList.remove('hidden');
+      }
+    }
+
+    // ===== VALIDACIÓN =====
+    function validarFormulario() {
+      const cedula = (document.getElementById('cedulaInput').value || '').replace(/\D/g, '');
+      const nombre = electorEncontrado
+        ? electorEncontrado.nombreCompleto
+        : (document.getElementById('nombreInput').value || '').trim();
+      const mesa = electorEncontrado
+        ? electorEncontrado.mesa
+        : (document.getElementById('mesaInput').value || '').trim();
+
+      if (!cedula) {
+        mostrarAlerta('Debe ingresar su número de cédula.', 'error');
+        document.getElementById('cedulaInput').focus();
+        return false;
+      }
+      if (cedula.length < 4) {
+        mostrarAlerta('El número de cédula ingresado no es válido.', 'error');
+        document.getElementById('cedulaInput').focus();
+        return false;
+      }
+      if (!nombre) {
+        mostrarAlerta('Debe ingresar su nombre completo.', 'error');
+        document.getElementById('nombreInput').focus();
+        return false;
+      }
+      if (!electorEncontrado && !mesa) {
+        mostrarAlerta('Debe ingresar el número de mesa electoral.', 'error');
+        document.getElementById('mesaInput').focus();
+        return false;
+      }
+      return true;
+    }
+
+    // ===== REGISTRO =====
+    async function registrarSolicitud() {
+      const btn = document.getElementById('btnEnviar');
+      if (cargando) return;
+
+      if (!validarFormulario()) return;
+
+      const cedula = (document.getElementById('cedulaInput').value || '').replace(/\D/g, '');
+      const nombre = electorEncontrado
+        ? electorEncontrado.nombreCompleto
+        : (document.getElementById('nombreInput').value || '').trim();
+      const mesa = electorEncontrado
+        ? electorEncontrado.mesa
+        : (document.getElementById('mesaInput').value || '').trim();
+      const orden = electorEncontrado ? electorEncontrado.orden : '';
+      const telefono = (document.getElementById('telefonoInput').value || '').trim();
+      const observacion = (document.getElementById('observacionInput').value || '').trim();
+
+      cargando = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> ENVIANDO...';
+      btn.disabled = true;
+
+      try {
+        const result = await fetchJsonOrThrow(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'registrar_pendiente_qr',
+            cedula: cedula,
+            nombre: nombre,
+            mesa: mesa,
+            orden: orden,
+            telefono: telefono,
+            observacion: observacion
+          })
+        });
+
+        if (!result.success) {
+          mostrarAlerta(result.error || 'No se pudo procesar la solicitud.', 'error');
+          return;
+        }
+
+        mostrarAlerta('✅ Solicitud enviada correctamente. Espere la aprobación del administrador.', 'ok');
+
+        // Limpiar formulario
+        document.getElementById('cedulaInput').value = '';
+        document.getElementById('telefonoInput').value = '';
+        document.getElementById('observacionInput').value = '';
+        document.getElementById('nombreInput').value = '';
+        document.getElementById('mesaInput').value = '';
+        const info = document.getElementById('electorInfo');
+        if (info) { info.classList.add('hidden'); info.className = 'text-xs mt-1.5 hidden'; }
+        document.getElementById('nombreGroup').classList.add('hidden');
+        document.getElementById('mesaGroup').classList.add('hidden');
+        electorEncontrado = null;
+
+        // Scroll al inicio para ver mensaje
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        mostrarAlerta(error.message || 'Error de conexión con el servidor.', 'error');
+      } finally {
+        cargando = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> ENVIAR SOLICITUD';
+        btn.disabled = false;
+      }
+    }
+
+    // ===== SOPORTE TECLADO =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Enter en el campo cédula dispara búsqueda
+      const cedulaInput = document.getElementById('cedulaInput');
+      if (cedulaInput) {
+        cedulaInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            buscarEnPadron(this.value);
+          }
+        });
+      }
+
+      // Enter en campos manuales dispara envío
+      ['nombreInput', 'mesaInput', 'telefonoInput'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              registrarSolicitud();
+            }
+          });
+        }
+      });
+    });
+
+    // ===== INIT =====
+    generarQR();
+    cargarPadron();
+  </script>
+</body>
+</html>
