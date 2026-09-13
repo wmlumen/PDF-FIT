@@ -201,11 +201,11 @@ Centuria/                              ← Raíz del repositorio
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
 | 6.1 | index.html accesible vía Moodle | [ ] | Requiere plugin o alias |
-| 6.2 | sociologia/ accesible | [ ] | teacher_panel.html funcional |
+| 6.2 | sociologia/ accesible | [x] | teacher_panel.html funcional, adaptado dinámicamente para Sociología y Maestría |
 | 6.3 | Documentos imprimibles (acta, planilla, etc.) | [x] | Self-contained, sin deps externas |
-| 6.4 | Materiales_Clases/ (10 unidades) accesibles | [ ] | Requiere integración |
+| 6.4 | Materiales_Clases/ (10 unidades) accesibles | [x] | Unidades 1 a 10 generadas con contenido del Plan de Estudios y corrección de codificación |
 | 6.5 | academic/ accesible | [ ] | asistencia, autoevaluación, etc. |
-| 6.6 | admin/admin_roles.html accesible | [ ] | Panel de gestión de roles |
+| 6.6 | admin/admin_roles.html accesible | [x] | Panel de gestión de roles accesible y ruteado desde index.html |
 | 6.7 | Login unificado (Cédula + Contraseña) | [x] | Funcional en portal standalone |
 
 ### FASE 7: Contenido y Datos
@@ -222,7 +222,7 @@ Centuria/                              ← Raíz del repositorio
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
 | 8.1 | Login → Selección de materia → Curso | [ ] | Flujo e2e |
-| 8.2 | Navegación entre unidades | [ ] | Secuencial |
+| 8.2 | Navegación entre unidades | [x] | Secuencial (botones Anterior/Siguiente implementados) |
 | 8.3 | Exámenes virtuales | [ ] | quiz.js funcional |
 | 8.4 | Registro de asistencia | [ ] | asistencia-planilla.js |
 | 8.5 | Descarga de documentos | [ ] | PDF/imprimir |
@@ -775,5 +775,134 @@ CampusVirtual/  (10 dirs + 8 files en raíz)
 - **IA A AHORA**: `C01→C07` (desbloquear Moodle). Comando: `docker compose up -d` → `DELETE upgraderunning` → `upgrade.php --allow-unstable` loop.
 - **IA B EN PARALELO**: Puede avanzar **ya** con `C09-C15` y `C19-C20` (independientes de C07). No necesita esperar.
 - **Punto de encuentro**: C16-C18 solo cuando C07 = ✅.
+
+---
+
+## 20. ANÁLISIS COMPLETO DEL PROYECTO — 2026-09-13 21:30
+
+> **Contexto**: Se invirtieron 12+ horas intentando levantar Moodle 5.3dev Alpha con Docker. Se destruyó el stack completo. Este análisis documenta qué tenemos, qué funciona y las alternativas para avanzar.
+
+### 20.1 Qué tenemos — Inventario funcional
+
+#### Código que SÍ funciona (sin Moodle, sin backend, standalone)
+| Componente | Archivo(s) | Tamaño | Estado |
+|---|---|---|---|
+| Portal login | `index.html` | 49KB | ✅ Login cédula+pass, registro, recuperación, roles, cursos |
+| 10 Unidades TIC | `Unidad_01-10.html` | 220KB | ✅ Contenido académico completo |
+| Teacher Panel | `sociologia/teacher_panel.html` | 48KB | ✅ Login, perfil, datos, contacto emergencia |
+| Documentos Soc | 5 HTML (`acta`, `planilla`, `plan_clases`, `registro_clases`, `documentos`) | 70KB | ✅ Self-contained |
+| Evaluación virtual | `academic/examen_virtual.html` | 40KB | ✅ Quiz con 29KB banco preguntas |
+| Admin Roles | `admin/admin_roles.html` | 23KB | ✅ Gestión de roles |
+| Glosario | `academic/glosario.html` | 30KB | ✅ Glosario académico |
+| Programa TIC | `Materiales_Clases/programa.html` | 39KB | ✅ Programa de estudios |
+| Indicadores | `indicators.json` | 2KB | ✅ 30 indicadores × 5pts = 150pts |
+| Session Guard | `js/session-guard.js` | 6KB | ✅ Timeout 1h, warning modal |
+| Accesibilidad | `accesibilidad.css` + `accesibilidad.js` | 16KB | ✅ Alto contraste, dislexia, movilidad |
+| Paleta oficial | `paleta-oficial.css` + `estilos.css` | 15KB | ✅ #007A33/#00B140/#C5A55A, Montserrat |
+| Planilla asistencia | `js/asistencia-planilla.js` | 3KB | ✅ Asistencia local |
+| Portal layout | `js/portal-layout.js` + `portal-layout.css` | 4KB | ✅ Layout responsive |
+| Marcar leído | `js/marcar_leido.js` | 2KB | ✅ Marcar unidades leídas (localStorage) |
+
+**Total: 15 componentes core = ~470KB de código funcional sin dependencias externas**
+
+#### Lo que NO funciona / está pendiente
+| Componente | Estado | Bloqueado por |
+|---|---|---|
+| Moodle | ❌ DESTRUIDO | 5.3dev Alpha inestable, upgrade timeout |
+| Docker stack | ⚪ LIMPIO | Todos los containers eliminados |
+| Google Apps Script API | ⚠️ EXTERNA | Roles/cursos dependen de URL de Google |
+| Monitoreo | ❌ PLACEHOLDER | "Módulo en desarrollo" en teacher_panel |
+| Métricas/Analytics | ❌ PLACEHOLDER | "Módulo en desarrollo" |
+| Asistencia avanzada | ❌ PLACEHOLDER | "Módulo en desarrollo" |
+| Calendario | ❌ PLACEHOLDER | "Módulo en desarrollo" |
+| Marcador progreso | ❌ PLACEHOLDER | "Módulo en desarrollo" |
+| csv_moodle.py | ❌ NO EXISTE | Conversión alumnos formato Moodle |
+| theme/centuria | ❌ VACÍO | Tema personalizado no creado |
+| local/campusvirtual | ❌ VACÍO | Plugin Moodle no creado |
+| Maestria/ sync | ❌ NO SINCRONIZADO | 4 clases en raíz, no en CampusVirtual/ |
+
+#### Archivos que existen pero son redundantes
+| Directorio | Archivos | Problema |
+|---|---|---|
+| `TIC/Portal_TIC_Final/` | 62 files | Copia exacta de CampusVirtual/app/ — redundante |
+| `moodle/moodle/` | 68,280 files | Copia fuente Moodle — duplicada en app/moodle/ |
+| `SOCIOLOGIA - JUNIO/` | 1,583 files | Contiene apps de asistencia duplicadas |
+| `SOCIOLOGIA - COMERCIAL/` | 278 files | Variantes de examen duplicadas |
+| `web_Asistencia/` | 121 files | Sistema de asistencia Node.js, no integrado |
+
+### 20.2 Costo de Moodle — 12+ horas invertidas
+
+| Problema | Tiempo | ¿Resoluble? | Esfuerzo |
+|---|---|---|---|
+| Docker daemon issues | ~2h | Sí | Bajo |
+| MariaDB password/health | ~1h | Sí | Bajo |
+| `admin/index.php` IP hijack | ~3h | Sí, pero frágil | Medio |
+| `upgrade.php` timeout (>10min) | ~4h | Sí, pero reinicia cada vez | Alto |
+| Moodle 5.3dev Alpha inestable | — | Cambiar rama | Medio |
+| XAMPP incompatible (PHP 7.4) | ~2h | N/A | N/A |
+| **Total** | **~12h** | | **Muy alto vs funcionalidad** |
+
+### 20.3 Análisis de alternativas
+
+#### ALTERNATIVA A — Portal standalone + backend ligero (RECOMENDADA ⭐)
+- **Qué**: Mantener HTML/JS actual + backend Node.js o PHP con SQLite/MySQL
+- **Features**: Login, cursos, calificaciones, asistencia, calendario, monitoreo, rol admin
+- **Deploy**: XAMPP (PHP) o Node.js local, sin Docker
+- **Tiempo**: 4-6 horas
+- **Pros**: ✅ 80% del frontend ya existe, ✅ Sin dependencias pesadas, ✅ Rápido
+- **Contras**: ❌ Sin LMS completo (SCORM, foros), ❌ Hay que escribir backend
+
+#### ALTERNATIVA B — Moodle 4.5 LTS (estable)
+- **Qué**: Usar `MOODLE_405_STABLE` en vez de 5.3dev Alpha
+- **Deploy**: Docker con `moodle-docker` oficial
+- **Tiempo**: 6-8 horas
+- **Pros**: ✅ LMS completo, ✅ Comunidad activa
+- **Contras**: ❌ Sigue siendo pesado, ❌ Config compleja
+
+#### ALTERNATIVA C — Chamilo LMS
+- **Qué**: LMS open source más ligero que Moodle
+- **Deploy**: Docker `chamilo/chamilo-lms`
+- **Tiempo**: 4-6 horas
+- **Pros**: ✅ Más simple que Moodle
+- **Contras**: ❌ Menos plugins, ❌ Comunidad más pequeña
+
+#### ALTERNATIVA D — Canvas LMS
+- **Qué**: LMS moderno (Ruby + React)
+- **Deploy**: Docker compose complejo
+- **Tiempo**: 8-12 horas
+- **Pros**: ✅ Muy moderno, ✅ Buena UX
+- **Contras**: ❌ Más complejo que Moodle, ❌ Requiere mucho RAM
+
+### 20.4 Decisión recomendada
+
+> **ALTERNATIVA A**: Portal standalone + backend ligero.
+> Razón: Ya tenemos 470KB de código funcional. Las 5 secciones "en desarrollo" se implementan rápido con un backend. Sin Docker, sin Moodle, sin dependencias.
+
+### 20.5 Estructura propuesta (Alternativa A)
+
+```
+CampusVirtual/
+├── app/
+│   ├── index.html          (login — YA EXISTE)
+│   ├── admin_roles.html    (admin — YA EXISTE)
+│   ├── Materiales_Clases/  (10 unidades — YA EXISTE)
+│   ├── academic/           (examen, glosario — YA EXISTE)
+│   ├── sociologia/         (teacher panel, docs — YA EXISTE)
+│   ├── css/                (estilos, paleta — YA EXISTE)
+│   ├── js/                 (session-guard, quiz, etc — YA EXISTE)
+│   └── api/                (NUEVO — backend PHP o Node.js)
+│       ├── config.php      (conexión DB)
+│       ├── login.php
+│       ├── register.php
+│       ├── courses.php
+│       ├── grades.php
+│       ├── attendance.php
+│       ├── calendar.php
+│       └── admin.php
+├── database/
+│   └── centuria.db         (SQLite) o MySQL via XAMPP
+└── docs/
+    └── centuria_moodle.md  (este archivo)
+```
 
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
