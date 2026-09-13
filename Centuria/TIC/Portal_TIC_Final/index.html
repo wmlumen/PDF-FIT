@@ -1038,28 +1038,53 @@
             btn.disabled = true;
 
             try {
+                // 1) Buscar en RegistroAlumnos
                 const res = await fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula));
                 const data = await res.json();
 
-                if(!data.existe){
-                    document.getElementById('recuperar-error').style.display = 'block';
-                    document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada en el sistema.';
+                if(data.existe){
+                    // Encontrado en RegistroAlumnos
+                    const nombreCompleto = (data.nombre || '').trim();
+                    const parts = nombreCompleto.split(/\s+/);
+                    const nombre = parts[0] || '';
+                    const apellido = parts.slice(1).join(' ') || '';
+                    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+
+                    document.getElementById('recuperar-password').textContent = password;
+                    document.getElementById('recuperar-paso1').style.display = 'none';
+                    document.getElementById('recuperar-paso2').style.display = 'block';
+                    document.getElementById('recuperar-error').style.display = 'none';
                     btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
                     btn.disabled = false;
                     return;
                 }
 
-                // Calcular contraseña
-                const nombreCompleto = (data.nombre || '').trim();
-                const parts = nombreCompleto.split(/\s+/);
-                const nombre = parts[0] || '';
-                const apellido = parts.slice(1).join(' ') || '';
-                const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+                // 2) No está en RegistroAlumnos → buscar en Roles
+                const rolesRes = await fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
+                const rolesData = await rolesRes.json();
 
-                document.getElementById('recuperar-password').textContent = password;
-                document.getElementById('recuperar-paso1').style.display = 'none';
-                document.getElementById('recuperar-paso2').style.display = 'block';
-                document.getElementById('recuperar-error').style.display = 'none';
+                if(rolesData && rolesData.roles && rolesData.roles.length > 0){
+                    // Encontrado en Roles
+                    const primerRol = rolesData.roles[0];
+                    const nombreRol = (primerRol.nombre || '').trim();
+                    const partsRol = nombreRol.split(/\s+/);
+                    const nombreR = partsRol[0] || '';
+                    const apellidoR = partsRol.slice(1).join(' ') || '';
+                    const password = nombreR.charAt(0).toUpperCase() + apellidoR.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+
+                    document.getElementById('recuperar-password').textContent = password;
+                    document.getElementById('recuperar-paso1').style.display = 'none';
+                    document.getElementById('recuperar-paso2').style.display = 'block';
+                    document.getElementById('recuperar-error').style.display = 'none';
+                    btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 3) No encontrado en ningún lado
+                document.getElementById('recuperar-error').style.display = 'block';
+                document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada en el sistema.';
+
             } catch(e) {
                 document.getElementById('recuperar-error').style.display = 'block';
                 document.getElementById('recuperar-error-text').textContent = 'Error de conexión.';
