@@ -431,19 +431,17 @@
                         <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Portal
                     </button>
 
-                    <div style="text-align:center;margin-top:12px;">
-                        <button onclick="abrirRecuperarContrasena()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.72rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                    <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;">
+                        <button onclick="abrirRecuperarContrasena()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
                             <i class="bi bi-question-circle me-1"></i>¿Olvidaste tu contraseña?
+                        </button>
+                        <span style="color:rgba(255,255,255,.15);">|</span>
+                        <button onclick="mostrarRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-person-plus me-1"></i>Registrarse
                         </button>
                     </div>
 
                     <hr class="premium-separator">
-
-                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.72rem;padding:12px 14px;margin-bottom:16px;">
-                        <i class="bi bi-info-circle me-1"></i>
-                        <strong>Formato de contraseña:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minúscula) + cédula sin puntos + *<br>
-                        <em style="opacity:.7;">Ej: Juan Pérez, CI 12345678 → <strong>Jp12345678*</strong></em>
-                    </div>
 
                     <div class="premium-alert-info">
                         <i class="bi bi-info-circle me-2"></i>
@@ -500,10 +498,9 @@
                         </div>
                     </div>
 
-                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
-                        <i class="bi bi-key me-1"></i>
-                        <strong>Tu contraseña se generará automáticamente:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula sin puntos + *<br>
-                        <em style="opacity:.7;">Ej: si te llamas Juan Pérez con CI 12345678 → <strong>Jp12345678*</strong></em>
+                    <div style="background:rgba(0,177,64,.08);border:1px solid rgba(0,177,64,.2);border-left:3px solid var(--verde-medio);border-radius:10px;color:var(--verde-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Al registrarte, tu contraseña se genera automáticamente. Consulta en <strong>"¿Olvidaste tu contraseña?"</strong> para verla.
                     </div>
 
                     <button id="btn-registrar" class="premium-btn mt-3" onclick="registrarYAcceder()">
@@ -711,6 +708,11 @@
         function volverPaso1(){
             document.getElementById('step-2-register').style.display = 'none';
             document.getElementById('step-1-cedula').style.display = 'block';
+        }
+
+        function mostrarRegistro(){
+            document.getElementById('step-1-cedula').style.display = 'none';
+            document.getElementById('step-2-register').style.display = 'block';
         }
 
         // ═══ PASO 2.5: Selector de roles (cuando hay múltiples) ═══
@@ -932,6 +934,15 @@
             </div>
 
             <div id="recuperar-paso1">
+                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+                    <p style="color:var(--dorado-claro);font-size:.72rem;text-align:center;line-height:1.6;">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        <strong>Tu contraseña se genera automáticamente con este formato:</strong><br><br>
+                        <span style="font-size:.8rem;color:#fff;">Primera letra nombre(<span style="color:#81C784;">MAYÚS</span>) + primera letra apellido(<span style="color:#81C784;">minúscula</span>) + cédula(sin puntos) + <span style="color:#C5A55A;">*</span></span><br><br>
+                        <span style="font-size:.68rem;opacity:.6;">Ej: <strong>J</strong>uan <strong>P</strong>érez, CI 12345678 → <span style="color:#fff;font-family:monospace;font-weight:700;">Jp12345678*</span></span>
+                    </p>
+                </div>
+
                 <label style="font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:5px;">Cédula de Identidad</label>
                 <input type="text" id="recuperar-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
                 <button onclick="buscarContrasena()" class="premium-btn" style="margin-top:16px;">
@@ -948,10 +959,11 @@
                     <p style="color:rgba(255,255,255,.35);font-size:.6rem;margin-top:8px;">Haz clic para copiar</p>
                     <p id="recuperar-copiado" style="color:var(--verde-hover);font-size:.7rem;font-weight:600;margin-top:4px;display:none;">✓ Copiado al portapapeles</p>
                 </div>
-                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:12px;margin-top:14px;">
-                    <p style="color:var(--dorado-claro);font-size:.68rem;text-align:center;">
+                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:12px;margin-top:14px;">
+                    <p style="color:var(--dorado-claro);font-size:.68rem;text-align:center;line-height:1.5;">
                         <i class="bi bi-info-circle me-1"></i>
-                        <strong>Fórmula:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                        <strong>Recordá:</strong> Tu contraseña se genera con tu nombre y cédula.<br>
+                        Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
                     </p>
                 </div>
             </div>
