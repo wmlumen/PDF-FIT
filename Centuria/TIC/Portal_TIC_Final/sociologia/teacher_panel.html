@@ -180,17 +180,72 @@
             <i class="bi bi-shield-lock me-2"></i>Ingresar al Panel
         </button>
 
+        <div style="text-align:center;margin-top:14px;">
+            <button onclick="abrirRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                <i class="bi bi-person-plus me-1"></i>Registrar nuevo docente
+            </button>
+        </div>
+
         <hr class="login-divider">
 
         <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:12px 14px;font-size:.7rem;color:var(--dorado);">
             <i class="bi bi-info-circle me-1"></i>
-            <strong>Formato:</strong> Primera letra de tu nombre (MAYÚS) + primera letra apellido (minúscula) + cédula sin puntos + asterisco.<br>
+            <strong>Formato:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minúscula) + cédula + *<br>
             <em style="opacity:.7;">Ej: Juan Pérez, CI 12345678 → <strong>Jp12345678*</strong></em>
         </div>
 
         <div class="login-footer">
             <p><i class="bi bi-lock-fill me-1"></i>Acceso restringido — Instituto Superior Centuria 2026</p>
         </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL REGISTRO DOCENTE                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="modal-registro" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(24px);border-radius:20px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);">
+        <h3 style="color:#fff;font-size:1rem;font-weight:700;text-align:center;margin-bottom:4px;">
+            <i class="bi bi-person-plus me-2" style="color:var(--dorado);"></i>Registrar Docente/Académico
+        </h3>
+        <p style="color:rgba(255,255,255,.4);font-size:.65rem;text-align:center;margin-bottom:18px;">Los datos se guardan solo en esta PC</p>
+
+        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;">Cédula</label>
+        <input type="text" id="reg-cedula" class="login-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'')">
+
+        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Nombre</label>
+        <input type="text" id="reg-nombre" class="login-input" placeholder="Ej: JUAN" style="text-transform:uppercase;font-size:.85rem;">
+
+        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Apellido</label>
+        <input type="text" id="reg-apellido" class="login-input" placeholder="Ej: PÉREZ" style="text-transform:uppercase;font-size:.85rem;">
+
+        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Rol</label>
+        <select id="reg-rol" class="login-input" style="font-size:.85rem;cursor:pointer;">
+            <option value="docente">Docente</option>
+            <option value="academico">Académico</option>
+            <option value="admin">Administrador</option>
+        </select>
+
+        <div style="background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.2);border-radius:10px;padding:10px;margin-top:14px;">
+            <p style="color:rgba(255,255,255,.6);font-size:.65rem;text-align:center;">
+                <i class="bi bi-key me-1"></i>
+                La contraseña se genera automáticamente: <strong style="color:#fff;">Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *</strong>
+            </p>
+        </div>
+
+        <div id="reg-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:10px;text-align:center;margin-top:12px;">
+            <p style="color:#ef9a9a;font-size:.7rem;"><i class="bi bi-exclamation-circle me-1"></i><span id="reg-error-text">Error</span></p>
+        </div>
+        <div id="reg-exito" style="display:none;background:rgba(0,177,64,.12);border:1px solid rgba(0,177,64,.3);border-radius:10px;padding:10px;text-align:center;margin-top:12px;">
+            <p style="color:#81C784;font-size:.7rem;"><i class="bi bi-check-circle me-1"></i><span id="reg-exito-text">Registrado correctamente</span></p>
+        </div>
+
+        <button onclick="registrarDocente()" style="width:100%;padding:12px;margin-top:16px;background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));color:#fff;border:none;border-radius:12px;font-family:Montserrat;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:.3s;">
+            <i class="bi bi-person-check me-2"></i>Registrar
+        </button>
+        <button onclick="cerrarRegistro()" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.75rem;cursor:pointer;font-family:Montserrat;transition:.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
+            Cerrar
+        </button>
     </div>
 </div>
 
@@ -550,11 +605,40 @@
 <!-- AUTH + PANEL SCRIPT                                        -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <script>
-// === CAMPUS VIRTUAL BACKEND ===
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+// === LOCAL STORAGE BACKEND (SIN NUBE) ===
+const USERS_KEY = 'sociologia_users';
 const STORAGE_KEY = 'sociologia_teacherRecords';
 const STUDENT_RESULTS_KEY = 'socioResults';
 const ATTENDANCE_KEY = 'sociologia_attendanceRecords';
+
+// Base de datos local de usuarios (cédula → {nombre, apellido, rol, password})
+function getUsersDB() {
+    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
+    catch { return {}; }
+}
+
+function saveUsersDB(db) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(db));
+}
+
+// Registrar usuario local (docente/académico)
+function registrarUsuarioLocal(cedula, nombre, apellido, rol) {
+    const db = getUsersDB();
+    if (db[cedula]) return false; // Ya existe
+    const cedulaLimpia = cedula.replace(/\./g, '');
+    const primeraNombre = nombre.charAt(0).toUpperCase();
+    const primeraApellido = apellido.charAt(0).toLowerCase();
+    const password = primeraNombre + primeraApellido + cedulaLimpia + '*';
+    db[cedula] = { nombre, apellido, rol, password, fechaRegistro: new Date().toISOString() };
+    saveUsersDB(db);
+    return true;
+}
+
+// Buscar usuario por cédula
+function buscarUsuario(cedula) {
+    const db = getUsersDB();
+    return db[cedula] || null;
+}
 
 // === SESSION GUARD (1hr inactivity) ===
 let lastActivity = Date.now();
@@ -576,7 +660,7 @@ function togglePasswordVisibility() {
     else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
 }
 
-// === LOGIN: Cédula + Contraseña ===
+// === LOGIN: Cédula + Contraseña (LOCAL) ===
 async function loginDocente() {
     const cedula = document.getElementById('login-cedula').value.trim();
     const password = document.getElementById('login-password').value;
@@ -594,29 +678,19 @@ async function loginDocente() {
     errorDiv.classList.remove('show');
 
     try {
-        // 1) Verificar que la cédula exista en RegistroAlumnos
-        const res = await fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula));
-        const data = await res.json();
+        // 1) Buscar usuario en base de datos local
+        const usuario = buscarUsuario(cedula);
 
-        if (!data.existe) {
-            errorText.textContent = 'Cédula no registrada en el sistema.';
+        if (!usuario) {
+            errorText.textContent = 'Cédula no registrada. Contacte al administrador.';
             errorDiv.classList.add('show');
             btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
             btn.disabled = false;
             return;
         }
 
-        // 2) Calcular contraseña esperada: Primera letra Nombre(Mayús) + primera letra Apellido(minús) + cédula(sin puntos) + *
-        const nombreCompleto = (data.nombre || '').trim();
-        const parts = nombreCompleto.split(/\s+/);
-        const nombre = parts[0] || '';
-        const apellido = parts.slice(1).join(' ') || '';
-        const primeraNombre = nombre.charAt(0).toUpperCase();
-        const primeraApellido = apellido.charAt(0).toLowerCase();
-        const cedulaLimpia = cedula.replace(/\./g, '');
-        const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
-
-        if (password !== passwordEsperada) {
+        // 2) Verificar contraseña
+        if (password !== usuario.password) {
             errorText.textContent = 'Contraseña incorrecta. Intenta nuevamente.';
             errorDiv.classList.add('show');
             btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
@@ -624,22 +698,21 @@ async function loginDocente() {
             return;
         }
 
-        // 3) Verificar que tenga rol de docente
-        const rolesRes = await fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
-        const rolesData = await rolesRes.json();
-        const roles = rolesData.roles || [];
-        const esDocente = roles.some(r => r.rol === 'docente' && (r.asignatura || '').toLowerCase().includes('sociolog'));
-
-        if (!esDocente && roles.length > 0 && !roles.some(r => r.rol === 'admin')) {
-            // Si tiene roles pero ninguno es docente de Sociología, permitir acceso pero mostrar aviso
-            console.log('Rol detectado:', roles.map(r => r.rol).join(', '), '(acceso permitido)');
+        // 3) Verificar que sea docente o académico
+        if (usuario.rol !== 'docente' && usuario.rol !== 'academico' && usuario.rol !== 'admin') {
+            errorText.textContent = 'Acceso no autorizado. Solo docentes y académicos.';
+            errorDiv.classList.add('show');
+            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
+            btn.disabled = false;
+            return;
         }
 
         // 4) Guardar sesión
+        const nombreCompleto = usuario.nombre + ' ' + usuario.apellido;
         sessionStorage.setItem('teacher_cedula', cedula);
         sessionStorage.setItem('teacher_nombre', nombreCompleto);
         sessionStorage.setItem('teacher_session_active', '1');
-        sessionStorage.setItem('userRole', 'docente');
+        sessionStorage.setItem('userRole', usuario.rol);
         sessionStorage.setItem('current_cedula', cedula);
         sessionStorage.setItem('current_nombre', nombreCompleto);
 
@@ -654,7 +727,7 @@ async function loginDocente() {
 
     } catch (e) {
         console.error('Error de autenticación:', e);
-        errorText.textContent = 'Error de conexión. Revisa tu internet.';
+        errorText.textContent = 'Error inesperado. Intenta nuevamente.';
         errorDiv.classList.add('show');
         btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
         btn.disabled = false;
@@ -666,6 +739,58 @@ function cerrarSesion() {
     sessionStorage.clear();
     localStorage.removeItem('userRole');
     window.location.href = '../index.html';
+}
+
+// === REGISTRO DOCENTE LOCAL ===
+function abrirRegistro() {
+    document.getElementById('modal-registro').style.display = 'flex';
+    document.getElementById('reg-cedula').value = '';
+    document.getElementById('reg-nombre').value = '';
+    document.getElementById('reg-apellido').value = '';
+    document.getElementById('reg-rol').value = 'docente';
+    document.getElementById('reg-error').style.display = 'none';
+    document.getElementById('reg-exito').style.display = 'none';
+    document.getElementById('reg-cedula').focus();
+}
+
+function cerrarRegistro() {
+    document.getElementById('modal-registro').style.display = 'none';
+}
+
+function registrarDocente() {
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
+    const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
+    const rol = document.getElementById('reg-rol').value;
+    const errorDiv = document.getElementById('reg-error');
+    const errorText = document.getElementById('reg-error-text');
+    const exitoDiv = document.getElementById('reg-exito');
+    const exitoText = document.getElementById('reg-exito-text');
+
+    errorDiv.style.display = 'none';
+    exitoDiv.style.display = 'none';
+
+    if (!cedula || !nombre || !apellido) {
+        errorText.textContent = 'Completa cédula, nombre y apellido.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    if (buscarUsuario(cedula)) {
+        errorText.textContent = 'Esta cédula ya está registrada.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const cedulaLimpia = cedula.replace(/\./g, '');
+    const primeraNombre = nombre.charAt(0).toUpperCase();
+    const primeraApellido = apellido.charAt(0).toLowerCase();
+    const passwordGenerada = primeraNombre + primeraApellido + cedulaLimpia + '*';
+
+    registrarUsuarioLocal(cedula, nombre, apellido, rol);
+
+    exitoText.innerHTML = `Registrado correctamente.<br><br><strong>Tu contraseña es:</strong><br><span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${passwordGenerada}</span><br><br><span style="font-size:.6rem;opacity:.7;">Guárdala, no se puede recuperar.</span>`;
+    exitoDiv.style.display = 'block';
 }
 
 // === INIT PANEL ===
