@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Clases Modular — Campus Virtual Centuria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        @page { size: A4 landscape; margin: 15mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 10pt; color: #000; background: #f0f0f0; }
+        .page { width: 297mm; min-height: 210mm; margin: 15mm auto; background: #fff; padding: 15mm 20mm; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+
+        .title { text-align: center; font-size: 13pt; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 6px; }
+
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 16px; font-size: 9pt; margin-bottom: 10px; border: 1px solid #000; padding: 6px 8px; }
+        .header-grid .field { display: flex; gap: 4px; }
+        .header-grid .label { font-weight: bold; white-space: nowrap; }
+        .header-grid .value { flex: 1; border-bottom: 1px solid #999; min-height: 14px; }
+
+        .objective { border: 1px solid #000; padding: 6px 8px; margin-bottom: 10px; font-size: 9pt; }
+        .objective .obj-title { font-weight: bold; text-transform: uppercase; font-size: 9pt; margin-bottom: 4px; }
+        .objective .obj-text { border-bottom: 1px solid #999; min-height: 40px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+        th, td { border: 1px solid #000; padding: 4px 6px; vertical-align: top; }
+        th { background: #e0e0e0; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
+        td.semana { text-align: center; width: 30px; font-weight: bold; }
+        td.unidad { text-align: center; width: 40px; }
+        td.horas { text-align: center; width: 50px; }
+        td.tall { min-height: 50px; }
+
+        .eval-section { border: 1px solid #000; padding: 6px 8px; margin-top: 10px; font-size: 9pt; }
+        .eval-section .eval-title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+
+        .refs-section { border: 1px solid #000; padding: 6px 8px; margin-top: 10px; font-size: 9pt; }
+        .refs-section .refs-title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+
+        .firma-area { margin-top: 30px; display: flex; justify-content: flex-end; }
+        .firma-area .firma { text-align: center; width: 250px; }
+        .firma-area .firma .line { border-top: 1px solid #000; margin-top: 50px; padding-top: 4px; }
+
+        /* Edit Panel */
+        .edit-panel { position: fixed; top: 0; left: 0; width: 300px; height: 100vh; background: #1a1a2e; color: #fff; padding: 16px; overflow-y: auto; z-index: 100; font-family: 'Segoe UI', sans-serif; font-size: 11px; }
+        .edit-panel h3 { font-size: 13px; margin-bottom: 12px; color: #81C784; }
+        .edit-panel label { display: block; font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin: 8px 0 3px; }
+        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 6px 8px; border: 1px solid #333; border-radius: 5px; background: #16213e; color: #fff; font-size: 11px; font-family: 'Segoe UI', sans-serif; }
+        .edit-panel textarea { resize: vertical; min-height: 50px; font-size: 10px; }
+        .edit-panel .btn { display: block; width: 100%; padding: 8px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 8px; font-size: 11px; }
+        .edit-panel .btn-primary { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
+        .edit-panel .btn-print { background: #3498db; color: #fff; }
+        .edit-panel .btn-close { background: #e74c3c; color: #fff; }
+        .edit-panel .btn-add { background: #f39c12; color: #fff; }
+        .edit-panel .week-row { background: #16213e; border: 1px solid #333; border-radius: 6px; padding: 8px; margin-bottom: 6px; }
+        .edit-panel .week-row .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .edit-panel .week-row .row-header span { font-weight: 700; color: #81C784; }
+        .edit-panel .week-row .remove-btn { background: #e74c3c; color: #fff; border: none; border-radius: 3px; padding: 1px 6px; cursor: pointer; font-size: 9px; }
+        .page { margin-left: 310px; }
+
+        @media print {
+            .edit-panel { display: none !important; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+    <h3>📋 Plan de Clases Modular</h3>
+
+    <label>Programa</label>
+    <select id="inp-programa" onchange="actualizar()">
+        <option value="LICENCIATURA / INGENIERÍA">Grado (Licenciatura/Ingeniería)</option>
+        <option value="ESPECIALIZACIÓN">Especialización</option>
+        <option value="MAESTRÍA EN ADMINISTRACIÓN Y GESTIÓN PÚBLICA" selected>Maestría</option>
+        <option value="DOCTORADO">Doctorado</option>
+    </select>
+
+    <label>Área de Formación</label>
+    <input type="text" id="inp-area" value="ADMINISTRACIÓN Y GESTIÓN PÚBLICA" oninput="actualizar()">
+
+    <label>Código</label>
+    <input type="text" id="inp-codigo" value="CEN-AS-PC-MAGP 006" oninput="actualizar()">
+
+    <label>Asignatura</label>
+    <input type="text" id="inp-asignatura" value="PLANIFICACIÓN ESTRATÉGICA EN EL SECTOR PÚBLICO" oninput="actualizar()">
+
+    <label>Curso</label>
+    <input type="text" id="inp-curso" value="Segundo" oninput="actualizar()">
+
+    <label>Modalidad</label>
+    <input type="text" id="inp-modalidad" value="Modular-Semipresencial con soporte virtual" oninput="actualizar()">
+
+    <label>Profesor/a</label>
+    <input type="text" id="inp-profesor" value="" oninput="actualizar()">
+
+    <label>Módulo</label>
+    <input type="text" id="inp-modulo" value="M-AGP07" oninput="actualizar()">
+
+    <label>Carga Horaria Semestral</label>
+    <input type="text" id="inp-carga-semestral" value="80 H." oninput="actualizar()">
+
+    <label>Año</label>
+    <input type="text" id="inp-ano" value="2026" oninput="actualizar()">
+
+    <label>Turno</label>
+    <input type="text" id="inp-turno" value="Noche" oninput="actualizar()">
+
+    <label>Carga Horaria Semanal</label>
+    <input type="text" id="inp-carga-semanal" value="4 h. Presencial / 12 h. A distancia" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:10px 0;">
+
+    <label>Objetivo General</label>
+    <textarea id="inp-objetivo" rows="5" oninput="actualizar()">Fortalecer las competencias para reconocer, interpretar y aplicar los conceptos e instrumentos de la planificación y la estrategia, desarrollando habilidades para el diagnóstico, diseño e implementación de planes estratégicos en el sector público.</textarea>
+
+    <hr style="border-color:#333;margin:10px 0;">
+
+    <label>Semanas / Unidades</label>
+    <div id="weeks-container"></div>
+    <button class="btn btn-add" onclick="addWeek()">+ Agregar Semana</button>
+
+    <hr style="border-color:#333;margin:10px 0;">
+
+    <label>Evaluación</label>
+    <textarea id="inp-evaluacion" rows="3" oninput="actualizar()">Evaluación continua, trabajos prácticos, foros de discusión y examen final.</textarea>
+
+    <label>Referencias Bibliográficas</label>
+    <textarea id="inp-referencias" rows="3" oninput="actualizar()">Chiavenato, I. (2011). Administración de Recursos Humanos. McGraw-Hill.</textarea>
+
+    <label>Firma y Sello del Docente</label>
+    <input type="text" id="inp-firma" value="" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:10px 0;">
+
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
+</div>
+
+<!-- DOCUMENTO -->
+<div class="page" id="plan-page">
+    <div class="title">PLAN DE CLASE MODULAR</div>
+
+    <div class="header-grid">
+        <div class="field"><span class="label">CARRERA:</span><span class="value" id="doc-programa">MAESTRÍA</span></div>
+        <div class="field"><span class="label">ÁREA:</span><span class="value" id="doc-area">ADMINISTRACIÓN Y GESTIÓN PÚBLICA</span></div>
+        <div class="field"><span class="label">CÓDIGO:</span><span class="value" id="doc-codigo">CEN-AS-PC-MAGP 006</span></div>
+        <div class="field"><span class="label">ASIGNATURA:</span><span class="value" id="doc-asignatura">PLANIFICACIÓN ESTRATÉGICA</span></div>
+        <div class="field"><span class="label">CURSO:</span><span class="value" id="doc-curso">Segundo</span></div>
+        <div class="field"><span class="label">MODALIDAD:</span><span class="value" id="doc-modalidad">Modular-Semipresencial</span></div>
+        <div class="field"><span class="label">PROFESOR/A:</span><span class="value" id="doc-profesor">………………………</span></div>
+        <div class="field"><span class="label">MÓDULO:</span><span class="value" id="doc-modulo">M-AGP07</span></div>
+        <div class="field"><span class="label">CARGA SEMESTRAL:</span><span class="value" id="doc-carga-semestral">80 H.</span></div>
+        <div class="field"><span class="label">AÑO:</span><span class="value" id="doc-ano">2026</span></div>
+        <div class="field"><span class="label">TURNO:</span><span class="value" id="doc-turno">Noche</span></div>
+        <div class="field"><span class="label">CARGA SEMANAL:</span><span class="value" id="doc-carga-semanal">4h Presencial / 12h A distancia</span></div>
+    </div>
+
+    <div class="objective">
+        <div class="obj-title">OBJETIVO/S GENERAL/ES DE LA ASIGNATURA</div>
+        <div class="obj-text" id="doc-objetivo" style="text-align:justify;"></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:30px;">Semana</th>
+                <th style="width:40px;">Unidad</th>
+                <th style="width:180px;">Objetivos Específicos</th>
+                <th style="width:180px;">Contenidos</th>
+                <th style="width:150px;">Estrategias Metodológicas</th>
+                <th style="width:120px;">Medios Auxiliares</th>
+                <th style="width:60px;">Tipo</th>
+                <th style="width:35px;">Pres.</th>
+                <th style="width:35px;">Dist.</th>
+                <th style="width:35px;">Total</th>
+            </tr>
+        </thead>
+        <tbody id="plan-tbody"></tbody>
+    </table>
+
+    <div class="eval-section">
+        <div class="eval-title">EVALUACIÓN DEL PROCESO DE ENSEÑANZA Y DE APRENDIZAJE</div>
+        <div id="doc-evaluacion" style="font-size:9pt;"></div>
+    </div>
+
+    <div class="refs-section">
+        <div class="refs-title">REFERENCIAS BIBLIOGRÁFICAS</div>
+        <div id="doc-referencias" style="font-size:9pt;"></div>
+    </div>
+
+    <div class="firma-area">
+        <div class="firma">
+            <div class="line">
+                <strong id="doc-firma">………………………</strong><br>
+                <span style="font-size:9pt;">Firma y sello del Docente</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let weeks = [
+    { semana: 1, unidad: 1, objetivos: 'Introducir a los alumnos en la fundamentación teórica de la Planificación Estratégica.', contenidos: 'FUNDAMENTOS TEÓRICOS DE LA PLANIFICACIÓN ESTRATÉGICA\nEstrategia. Planificación Estratégica.\nEl Proceso de la Planificación Estratégica.\nEl Plan Estratégico integral.', estrategias: 'Presentación de la asignatura\nClase magistral\nTrabajo en equipo\nElaboración de conclusiones\nSocialización', medios: 'Material impreso\nMaterial digital\nInfocus\nPlataforma Classroom\nCanva\nZOOM', tipo: 'Presencial', pres: 4, dist: 12 },
+    { semana: 2, unidad: 2, objetivos: 'Identificar y desarrollar las fases del Proceso General de la Planificación.', contenidos: 'EL PROCESO GENERAL DE LA PLANEACIÓN:\nPrimera fase: el diagnóstico\nSegunda fase: la programación\nTercera fase: discusión-decisión\nCuarta fase: formulación y selección de alternativas.\nQuinta fase: ejecución o instrumentación\nSexta fase: evaluación, retroalimentación y control', estrategias: 'Presentación de la asignatura\nClase magistral\nTrabajo en equipo\nElaboración de conclusiones\nSocialización', medios: 'Material impreso\nMaterial digital\nInfocus\nPlataforma Classroom\nCanva\nZOOM', tipo: 'Presencial', pres: 4, dist: 12 },
+    { semana: 3, unidad: '3 y 4', objetivos: 'Identificar y desarrollar la teoría acerca de las tareas inherentes al proceso de la Planificación Estratégica General.', contenidos: 'EL PROCESO DE LA PLANIFICACIÓN ESTRATÉGICA\nTareas preparatorias: Formación del equipo de planificación, sensibilización, información y difusión, previsión de gastos e inversiones, capacitación y determinación del plan de trabajo', estrategias: 'Presentación de la asignatura\nClase magistral\nTrabajo en equipo\nElaboración de conclusiones\nSocialización', medios: 'Material impreso\nMaterial digital\nInfocus\nPlataforma Classroom\nCanva\nZOOM', tipo: 'Presencial', pres: 4, dist: 12 },
+    { semana: 4, unidad: 5, objetivos: 'Analizar y comprender los componentes de las distintas etapas de la Planificación Estratégica.', contenidos: 'VISIÓN SISTÉMICO DE LAS 4 ETAPAS DE LA PLANIFICACIÓN ESTRATÉGICA.\nEtapa filosófica (Visión, misión, valores)\nEtapa analítica (análisis FODA)\nEtapa operativa (objetivos, estrategias, programas)\nEtapa de acción y desarrollo (organización y control)', estrategias: 'Presentación de la asignatura\nClase magistral\nTrabajo en equipo\nElaboración de conclusiones\nSocialización', medios: 'Material impreso\nMaterial digital\nInfocus\nPlataforma Classroom\nCanva\nZOOM', tipo: 'Presencial', pres: 4, dist: 12 },
+    { semana: 5, unidad: 6, objetivos: 'Analizar y relacionar holísticamente la Planificación Estratégica con los asuntos de interés público.', contenidos: 'LA PLANIFICACIÓN ESTRATÉGICA Y EL PUEBLO\nEl "sueño del buen gobierno" y la planificación estratégica\nLa gestión de los asuntos de interés público y la rendición de cuentas\nLa construcción de interés público', estrategias: 'Presentación de la asignatura\nClase magistral\nTrabajo en equipo\nElaboración de conclusiones\nSocialización', medios: 'Material impreso\nMaterial digital\nInfocus\nPlataforma Classroom\nCanva\nZOOM', tipo: 'Presencial', pres: 4, dist: 12 },
+];
+
+function renderWeeks() {
+    const tbody = document.getElementById('plan-tbody');
+    const container = document.getElementById('weeks-container');
+    tbody.innerHTML = '';
+    container.innerHTML = '';
+
+    weeks.forEach((w, i) => {
+        const total = (parseInt(w.pres)||0) + (parseInt(w.dist)||0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="semana">${w.semana}</td>
+            <td class="unidad">${w.unidad}</td>
+            <td class="tall">${w.objetivos.replace(/\n/g,'<br>')}</td>
+            <td class="tall">${w.contenidos.replace(/\n/g,'<br>')}</td>
+            <td class="tall">${w.estrategias.replace(/\n/g,'<br>')}</td>
+            <td class="tall">${w.medios.replace(/\n/g,'<br>')}</td>
+            <td style="text-align:center;">${w.tipo}</td>
+            <td class="horas">${w.pres}</td>
+            <td class="horas">${w.dist}</td>
+            <td class="horas"><strong>${total}</strong></td>`;
+        tbody.appendChild(tr);
+
+        // Edit row
+        const div = document.createElement('div');
+        div.className = 'week-row';
+        div.innerHTML = `
+            <div class="row-header"><span>Semana ${w.semana} — Unidad ${w.unidad}</span><button class="remove-btn" onclick="removeWeek(${i})">✕</button></div>
+            <input type="number" value="${w.semana}" placeholder="Semana" style="width:20%;margin-bottom:3px;" oninput="weeks[${i}].semana=this.value;actualizar()">
+            <input type="text" value="${w.unidad}" placeholder="Unidad" style="width:20%;margin-bottom:3px;" oninput="weeks[${i}].unidad=this.value;actualizar()">
+            <textarea placeholder="Objetivos específicos" rows="2" oninput="weeks[${i}].objetivos=this.value;actualizar()">${w.objetivos}</textarea>
+            <textarea placeholder="Contenidos" rows="2" oninput="weeks[${i}].contenidos=this.value;actualizar()">${w.contenidos}</textarea>
+            <textarea placeholder="Estrategias metodológicas" rows="2" oninput="weeks[${i}].estrategias=this.value;actualizar()">${w.estrategias}</textarea>
+            <textarea placeholder="Medios auxiliares" rows="2" oninput="weeks[${i}].medios=this.value;actualizar()">${w.medios}</textarea>
+            <div style="display:flex;gap:4px;">
+                <select style="width:30%;" onchange="weeks[${i}].tipo=this.value;actualizar()">
+                    <option ${w.tipo=='Presencial'?'selected':''}>Presencial</option>
+                    <option ${w.tipo=='A distancia'?'selected':''}>A distancia</option>
+                </select>
+                <input type="number" value="${w.pres}" placeholder="Pres." style="width:20%;" oninput="weeks[${i}].pres=this.value;actualizar()">
+                <input type="number" value="${w.dist}" placeholder="Dist." style="width:20%;" oninput="weeks[${i}].dist=this.value;actualizar()">
+            </div>`;
+        container.appendChild(div);
+    });
+}
+
+function addWeek() {
+    const last = weeks[weeks.length-1];
+    weeks.push({ semana: (last?last.semana:0)+1, unidad: (last?last.unidad:0)+1, objetivos: '', contenidos: '', estrategias: '', medios: '', tipo: 'Presencial', pres: 4, dist: 12 });
+    renderWeeks();
+}
+
+function removeWeek(i) { weeks.splice(i,1); renderWeeks(); }
+
+function actualizar() {
+    document.getElementById('doc-programa').textContent = document.getElementById('inp-programa').value;
+    document.getElementById('doc-area').textContent = document.getElementById('inp-area').value;
+    document.getElementById('doc-codigo').textContent = document.getElementById('inp-codigo').value;
+    document.getElementById('doc-asignatura').textContent = document.getElementById('inp-asignatura').value;
+    document.getElementById('doc-curso').textContent = document.getElementById('inp-curso').value;
+    document.getElementById('doc-modalidad').textContent = document.getElementById('inp-modalidad').value;
+    document.getElementById('doc-profesor').textContent = document.getElementById('inp-profesor').value || '………………………';
+    document.getElementById('doc-modulo').textContent = document.getElementById('inp-modulo').value;
+    document.getElementById('doc-carga-semestral').textContent = document.getElementById('inp-carga-semestral').value;
+    document.getElementById('doc-ano').textContent = document.getElementById('inp-ano').value;
+    document.getElementById('doc-turno').textContent = document.getElementById('inp-turno').value;
+    document.getElementById('doc-carga-semanal').textContent = document.getElementById('inp-carga-semanal').value;
+    document.getElementById('doc-objetivo').textContent = document.getElementById('inp-objetivo').value;
+    document.getElementById('doc-evaluacion').textContent = document.getElementById('inp-evaluacion').value;
+    document.getElementById('doc-referencias').textContent = document.getElementById('inp-referencias').value;
+    document.getElementById('doc-firma').textContent = document.getElementById('inp-firma').value || '………………………';
+    renderWeeks();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const profesor = sessionStorage.getItem('teacher_nombre');
+    if (profesor) document.getElementById('inp-profesor').value = profesor;
+    const prog = sessionStorage.getItem('docente_programa');
+    if (prog) {
+        const sel = document.getElementById('inp-programa');
+        for (let o of sel.options) { if (o.value.toLowerCase().includes(prog)) { sel.value = o.value; break; } }
+    }
+    actualizar();
+});
+</script>
+
+</body>
+</html>

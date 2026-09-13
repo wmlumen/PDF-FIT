@@ -431,6 +431,12 @@
                         <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Portal
                     </button>
 
+                    <div style="text-align:center;margin-top:12px;">
+                        <button onclick="abrirRecuperarContrasena()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.72rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-question-circle me-1"></i>¿Olvidaste tu contraseña?
+                        </button>
+                    </div>
+
                     <hr class="premium-separator">
 
                     <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.72rem;padding:12px 14px;margin-bottom:16px;">
@@ -912,6 +918,116 @@
             const curso = sessionStorage.getItem('curso_actual');
             if(ced && !curso) mostrarCursos(null);
         });
+    </script>
+
+    <!-- ═══ MODAL RECUPERAR CONTRASEÑA ═══ -->
+    <div id="modal-recuperar" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;">
+        <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:24px;padding:36px 32px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:fadeInUp .5s cubic-bezier(.16,1,.3,1);">
+            <div style="text-align:center;margin-bottom:20px;">
+                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.4rem;color:#fff;">
+                    <i class="bi bi-key"></i>
+                </div>
+                <h3 style="color:#fff;font-weight:700;font-size:1rem;letter-spacing:1px;">Recuperar Contraseña</h3>
+                <p style="color:rgba(255,255,255,.45);font-size:.72rem;margin-top:4px;">Ingresa tu cédula para ver tu contraseña</p>
+            </div>
+
+            <div id="recuperar-paso1">
+                <label style="font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:5px;">Cédula de Identidad</label>
+                <input type="text" id="recuperar-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+                <button onclick="buscarContrasena()" class="premium-btn" style="margin-top:16px;">
+                    <i class="bi bi-search me-2"></i>Buscar mi contraseña
+                </button>
+            </div>
+
+            <div id="recuperar-paso2" style="display:none;">
+                <div id="recuperar-resultado" style="background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.25);border-radius:14px;padding:20px;text-align:center;">
+                    <p style="color:rgba(255,255,255,.5);font-size:.7rem;margin-bottom:8px;">Tu contraseña es:</p>
+                    <div id="recuperar-password" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:14px;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:2px;font-family:monospace;cursor:pointer;transition:.2s;" onclick="copiarContrasena()" title="Clic para copiar">
+                        ---
+                    </div>
+                    <p style="color:rgba(255,255,255,.35);font-size:.6rem;margin-top:8px;">Haz clic para copiar</p>
+                    <p id="recuperar-copiado" style="color:var(--verde-hover);font-size:.7rem;font-weight:600;margin-top:4px;display:none;">✓ Copiado al portapapeles</p>
+                </div>
+                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:12px;margin-top:14px;">
+                    <p style="color:var(--dorado-claro);font-size:.68rem;text-align:center;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Fórmula:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                    </p>
+                </div>
+            </div>
+
+            <div id="recuperar-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:12px;text-align:center;margin-top:12px;">
+                <p style="color:#ef9a9a;font-size:.75rem;"><i class="bi bi-exclamation-circle me-1"></i><span id="recuperar-error-text">Cédula no encontrada</span></p>
+            </div>
+
+            <button onclick="cerrarRecuperar()" style="width:100%;margin-top:16px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.78rem;cursor:pointer;font-family:Montserrat;transition:.2s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.3)'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.15)'">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ═══ RECUPERAR CONTRASEÑA ═══
+        function abrirRecuperarContrasena(){
+            const modal = document.getElementById('modal-recuperar');
+            modal.style.display = 'flex';
+            document.getElementById('recuperar-paso1').style.display = 'block';
+            document.getElementById('recuperar-paso2').style.display = 'none';
+            document.getElementById('recuperar-error').style.display = 'none';
+            document.getElementById('recuperar-cedula').value = '';
+            document.getElementById('recuperar-cedula').focus();
+        }
+        function cerrarRecuperar(){
+            document.getElementById('modal-recuperar').style.display = 'none';
+        }
+        async function buscarContrasena(){
+            const cedula = document.getElementById('recuperar-cedula').value.trim();
+            if(!cedula){ alert('Ingresa tu cédula.'); return; }
+
+            const btn = event.target;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Buscando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula));
+                const data = await res.json();
+
+                if(!data.existe){
+                    document.getElementById('recuperar-error').style.display = 'block';
+                    document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada en el sistema.';
+                    btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Calcular contraseña
+                const nombreCompleto = (data.nombre || '').trim();
+                const parts = nombreCompleto.split(/\s+/);
+                const nombre = parts[0] || '';
+                const apellido = parts.slice(1).join(' ') || '';
+                const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+
+                document.getElementById('recuperar-password').textContent = password;
+                document.getElementById('recuperar-paso1').style.display = 'none';
+                document.getElementById('recuperar-paso2').style.display = 'block';
+                document.getElementById('recuperar-error').style.display = 'none';
+            } catch(e) {
+                document.getElementById('recuperar-error').style.display = 'block';
+                document.getElementById('recuperar-error-text').textContent = 'Error de conexión.';
+            }
+
+            btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
+            btn.disabled = false;
+        }
+        function copiarContrasena(){
+            const pwd = document.getElementById('recuperar-password').textContent;
+            navigator.clipboard.writeText(pwd).then(()=>{
+                document.getElementById('recuperar-copiado').style.display = 'block';
+                setTimeout(()=>{ document.getElementById('recuperar-copiado').style.display = 'none'; }, 2000);
+            });
+        }
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarRecuperar(); });
     </script>
 </body>
 </html>
