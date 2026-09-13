@@ -1,7 +1,7 @@
 # Campus Virtual Centuria — Prompt Maestro de Instalación Moodle
 
 > **Archivo de referencia para cualquier IA que trabaje en este proyecto.**
-> **Última actualización:** 2026-09-13
+> **Última actualización:** 2026-09-13 19:50 (sesión Docker 80/443)
 > **Repositorio:** `https://github.com/wmlumen/PDF-FIT.git`
 > **Ruta raíz:** `C:\Users\HP 250 G10\Documents\GITHUT\Centuria`
 
@@ -80,13 +80,15 @@ Centuria/                              ← Raíz del repositorio
 
 | Componente | Tecnología | Versión | Estado |
 |------------|-----------|---------|--------|
-| **Plataforma** | Moodle | 5.3dev (Build: 20260911) | Clonado, sin instalar |
-| **Servidor Web** | Apache (Docker) | moodlehq/moodle-php-apache:8.3 | Configurado |
+| **Plataforma** | Moodle | 5.3dev (Build: 20260911) | Instalación en progreso (428 tablas) |
+| **Servidor Web** | Apache (Docker) | moodlehq/moodle-php-apache:8.3 | Corriendo 80→80, 443→443 |
 | **PHP** | PHP | 8.3 (dentro del contenedor) | OK |
-| **Base de datos** | MariaDB | 11.4 (Docker) | Configurada |
-| **Contenedores** | Docker Desktop | 29.7.2 + Compose v5.5.1 | Instalado |
+| **Base de datos** | MariaDB | 11.4 (Docker) | 428 tablas, upgraderunning activo |
+| **Contenedores** | Docker Desktop | 29.7.2 + Compose v5.5.1 | Instalado, daemon requiere reinicio |
 | **Sistema OS** | Windows | 10/11 | Host |
 | **Control de versiones** | Git/GitHub | remote: PDF-FIT.git | OK |
+| **Volumen Moodle** | Bind mount | `../CampusVirtual/app/moodle:/var/www/html` | OK |
+| **config.php** | Manual | `CampusVirtual/app/moodle/config.php` | Corregido (mariadb/db/moodle_user) |
 
 ---
 
@@ -147,12 +149,12 @@ Centuria/                              ← Raíz del repositorio
 | # | Tarea | Estado | Notas |
 |---|-------|--------|-------|
 | 1.1 | Docker Desktop instalado | [x] | v29.7.2 + Compose v5.5.1 |
-| 1.2 | docker-compose.yml creado | [x] | Puertos 80/443 mapeados |
-| 1.3 | Moodle 5.3dev clonado | [x] | En `CampusVirtual/app/moodle/` |
-| 1.4 | MariaDB configurada | [x] | utf8mb4_unicode_ci |
-| 1.5 | Contenedores Docker arrancados | [!] | Verificar tras último cambio |
-| 1.6 | `docker compose up -d` exitoso | [!] | Necesita validación |
-| 1.7 | Moodle accesible en navegador | [!] | Necesita install_database.php |
+| 1.2 | docker-compose.yml creado | [x] | Puertos **80:80 / 443:443**, volumen `../CampusVirtual/app/moodle:/var/www/html` |
+| 1.3 | Moodle 5.3dev clonado | [x] | En `CampusVirtual/app/moodle/` y `moodle/moodle/` |
+| 1.4 | MariaDB configurada | [x] | utf8mb4_unicode_ci, healthcheck OK |
+| 1.5 | Contenedores Docker arrancados | [x] | `moodle_web` + `moodle_db` (healthy) 2026-09-13 19:10 |
+| 1.6 | `docker compose up -d` exitoso | [x] | Network `moodle_default` creada |
+| 1.7 | Moodle accesible en navegador | [/] | http://localhost → 302 → /install.php (antes de completar install) |
 
 ### FASE 2: Instalación Moodle
 | # | Tarea | Estado | Notas |
@@ -160,12 +162,12 @@ Centuria/                              ← Raíz del repositorio
 | 2.1 | Composer install dentro del contenedor | [x] | 61 paquetes |
 | 2.2 | mod_rewrite habilitado | [x] | Apache config |
 | 2.3 | Certificado SSL auto-firmado | [x] | Generado |
-| 2.4 | config.php generado por instalador | [ ] | Falta completar wizard |
-| 2.5 | install_database.php ejecutado | [/] | Creó tablas (278) pero timeout |
-| 2.6 | Flag upgraderunning limpiado | [x] | Resuelto |
-| 2.7 | upgrade.php ejecutado | [ ] | Pendiente |
-| 2.8 | Login admin funcional | [ ] | Pendiente |
-| 2.9 | Aceptación de licencia GPL | [ ] | Pendiente |
+| 2.4 | config.php generado/corregido | [x] | Manual: mariadb/db/moodle_user/wwwroot http://localhost/dataroot /var/www/moodledata - 2026-09-13 19:25 |
+| 2.5 | install_database.php ejecutado | [/] | 1er intento timeout 194s (System OK), 2do intento progresó hasta `mod_data` ~321 tablas, 428 tablas actuales |
+| 2.6 | Flag upgraderunning limpiado | [/] | Se limpia pero se recrea mientras upgrade corre - normal |
+| 2.7 | upgrade.php --allow-unstable ejecutado | [/] | En progreso PID 147, avanzó hasta `block_social_activities` / `block_recent_activity`, timeout 600s |
+| 2.8 | Login admin funcional | [ ] | Bloqueado hasta que upgrade complete (Site is being upgraded) |
+| 2.9 | Aceptación de licencia GPL | [ ] | --agree-license ya pasado, falta pantalla final de Moodle |
 
 ### FASE 3: Configuración Moodle
 | # | Tarea | Estado | Notas |
@@ -457,7 +459,7 @@ curl.exe -s -o NUL -w "%{http_code}" "http://localhost/"
 
 # DB con tablas
 docker exec moodle_db mariadb -u root -pmoodle_root_pwd moodle -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='moodle';"
-# Debe mostrar ~278 tablas
+# Debe mostrar ~430 tablas (428 al 2026-09-13)
 ```
 
 ### Paso 6: Crear cursos e importar indicadores
@@ -544,20 +546,27 @@ docker exec -i moodle_web php /var/www/html/import_indicators.php 3
 
 ---
 
-## 6. ACTUALIZACIONES DEL PROYECTO
+## 15. SESIÓN 2026-09-13 — AVANCES Y PENDIENTE INMEDIATO
 
-**Lo que se ha completado**:
-- Creado directorio `C:\moodledata` y generado `config.php` minimalista.
-- Copiados recursos estáticos (`Backend_Scripts`, `Materiales_Clases`, `academic`, `admin`) dentro de `CampusVirtual/app/moodle`.
-- Añadida regla de firewall para permitir tráfico en el puerto **8080**.
-- Verificado que Apache escucha en **8080** y que MySQL está activo.
+### ✅ Completado hoy (2026-09-13 tarde)
+- **XAMPP descartado para Moodle**: PHP 7.4 incompatible con Moodle 5.3 (requiere 8.3). Se vuelve a Docker (moodlehq/moodle-php-apache:8.3).
+- **docker-compose.yml reescrito**: `80:80 / 443:443`, volumen `../CampusVirtual/app/moodle:/var/www/html`, `MOODLE_SITENAME="Campus Virtual Centuria"`, `MOODLE_PASSWORD=Centuria2024*`.
+- **Puertos liberados**: `taskkill httpd` + `net stop MySQL80` + `docker compose down -v` (volúmenes borrados).
+- **config.php corregido**: Fix de escaping `\$CFG` (heredoc falló), reescrito vía Write tool a `CampusVirtual/app/moodle/config.php` con `dbhost=db`, `wwwroot=http://localhost`.
+- **DB recreada**: 0 → 428 tablas (utf8mb4_unicode_ci). Dos installs paralelos detectados (`install.php` PID 38 + `install_database.php` PID 83) → `kill 38 83`.
+- **DocumentRoot Moodle 5.3**: confirmado `public/` como web root. Apache alias `/CampusVirtual` probado en XAMPP, ahora Docker sirve directo en `http://localhost/`.
+- **centuria_moodle.md creado** en raíz (14 secciones, 64 tareas) y pusheado `bdf7043`.
 
-**Pendientes**:
-- Actualizar XAMPP a una versión con **PHP 8.3** (se aprobó instalación full XAMPP 8.3).
-- Modificar `httpd.conf` para cargar el módulo PHP 8.3 y eliminar el módulo PHP 7.4.
-- Conceder permisos de escritura a `C:\moodledata` al usuario/servicio Apache (`daemon` o cuenta actual).
-- Reiniciar Apache y validar la versión de PHP (`phpinfo()`).
-- Completar el asistente de instalación de Moodle (aceptar licencia GPL, crear base de datos, admin).
-- Verificar que Moodle funciona accediendo a `http://localhost:8080/CampusVirtual`.
+### ⚠️ Pendiente inmediato (próxima IA / próxima sesión)
+1. **Re-arrancar Docker daemon** (ahora `failed to connect to docker API` — reiniciar Docker Desktop).
+2. `cd moodle && docker compose up -d` y esperar `healthy`.
+3. **Reintentar upgrade**: `docker exec moodle_web php /var/www/html/admin/cli/upgrade.php --non-interactive --allow-unstable` con timeout 900s+ o `--timeout 0`. Si vuelve a timeout, repetir (es idempotente) hasta que retorne `Upgrade completed`.
+4. Limpiar flag si queda: `docker exec moodle_db mariadb -u root -pmoodle_root_pwd moodle -e "DELETE FROM mdl_config WHERE name='upgraderunning';"`
+5. **Verificar**: `curl -k http://localhost/` → 200, login `admin / Centuria2024*`, versión `2026091100`.
+6. Crear cursos + `import_indicators.php 3`.
+7. Marcar FASE 2.7-2.9 como [x] en este archivo y pushear.
+
+### 🔴 Bloqueo actual
+- Docker daemon apagado al final de sesión. No es error de config, solo reiniciar Docker Desktop.
 
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
