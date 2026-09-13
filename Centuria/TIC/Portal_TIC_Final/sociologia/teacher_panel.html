@@ -211,7 +211,7 @@
         <p style="color:rgba(255,255,255,.4);font-size:.65rem;text-align:center;margin-bottom:18px;">Los datos se guardan solo en esta PC</p>
 
         <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;">Cédula</label>
-        <input type="text" id="reg-cedula" class="login-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'')">
+        <input type="text" id="reg-cedula" class="login-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'');verificarCedulaRegistro()">
 
         <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Nombre</label>
         <input type="text" id="reg-nombre" class="login-input" placeholder="Ej: JUAN" style="text-transform:uppercase;font-size:.85rem;">
@@ -753,6 +753,41 @@ function abrirRegistro() {
     document.getElementById('reg-cedula').focus();
 }
 
+// Verificar cédula al escribir
+function verificarCedulaRegistro() {
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    if (cedula.length < 5) return; // Esperar a que tenga suficientes dígitos
+    
+    const usuario = buscarUsuario(cedula);
+    if (usuario) {
+        // Cargar datos existentes
+        document.getElementById('reg-nombre').value = usuario.nombre;
+        document.getElementById('reg-apellido').value = usuario.apellido;
+        document.getElementById('reg-rol').value = usuario.rol;
+        
+        // Mostrar aviso
+        const exitoDiv = document.getElementById('reg-exito');
+        const exitoText = document.getElementById('reg-exito-text');
+        const nombreUpper = usuario.nombre.toUpperCase();
+        const apellidoUpper = usuario.apellido.toUpperCase();
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const password = nombreUpper.charAt(0) + apellidoUpper.charAt(0).toLowerCase() + cedulaLimpia + '*';
+        
+        exitoText.innerHTML = `
+            <strong>Usuario ya registrado.</strong> Datos cargados.<br><br>
+            <strong>Tu contraseña:</strong>
+            <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${password}</span>
+        `;
+        exitoDiv.style.display = 'block';
+        document.getElementById('reg-error').style.display = 'none';
+    } else {
+        // Limpiar campos si es nuevo
+        document.getElementById('reg-nombre').value = '';
+        document.getElementById('reg-apellido').value = '';
+        document.getElementById('reg-exito').style.display = 'none';
+    }
+}
+
 function cerrarRegistro() {
     document.getElementById('modal-registro').style.display = 'none';
 }
@@ -770,14 +805,41 @@ function registrarDocente() {
     errorDiv.style.display = 'none';
     exitoDiv.style.display = 'none';
 
-    if (!cedula || !nombre || !apellido) {
-        errorText.textContent = 'Completa cédula, nombre y apellido.';
+    if (!cedula) {
+        errorText.textContent = 'Ingresa tu cédula.';
         errorDiv.style.display = 'block';
         return;
     }
 
-    if (buscarUsuario(cedula)) {
-        errorText.textContent = 'Esta cédula ya está registrada.';
+    // Verificar si ya existe en la base de datos local
+    const usuarioExistente = buscarUsuario(cedula);
+    
+    if (usuarioExistente) {
+        // Cargar datos existentes en los campos
+        document.getElementById('reg-nombre').value = usuarioExistente.nombre;
+        document.getElementById('reg-apellido').value = usuarioExistente.apellido;
+        document.getElementById('reg-rol').value = usuarioExistente.rol;
+
+        // Calcular contraseña con el nombre existente
+        const nombreUpper = usuarioExistente.nombre.toUpperCase();
+        const apellidoUpper = usuarioExistente.apellido.toUpperCase();
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const password = nombreUpper.charAt(0) + apellidoUpper.charAt(0).toLowerCase() + cedulaLimpia + '*';
+
+        exitoText.innerHTML = `
+            <strong>Ya estás registrado.</strong><br>
+            Cargando tus datos existentes...<br><br>
+            <strong>Tu contraseña es:</strong><br>
+            <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${password}</span><br><br>
+            <span style="font-size:.6rem;opacity:.7;">Copia tu contraseña e ingresa al panel.</span>
+        `;
+        exitoDiv.style.display = 'block';
+        return;
+    }
+
+    // Nuevo registro
+    if (!nombre || !apellido) {
+        errorText.textContent = 'Completa nombre y apellido.';
         errorDiv.style.display = 'block';
         return;
     }
@@ -789,7 +851,12 @@ function registrarDocente() {
 
     registrarUsuarioLocal(cedula, nombre, apellido, rol);
 
-    exitoText.innerHTML = `Registrado correctamente.<br><br><strong>Tu contraseña es:</strong><br><span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${passwordGenerada}</span><br><br><span style="font-size:.6rem;opacity:.7;">Guárdala, no se puede recuperar.</span>`;
+    exitoText.innerHTML = `
+        <strong>Registrado correctamente.</strong><br><br>
+        <strong>Tu contraseña es:</strong><br>
+        <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${passwordGenerada}</span><br><br>
+        <span style="font-size:.6rem;opacity:.7;">Guárdala, no se puede recuperar.</span>
+    `;
     exitoDiv.style.display = 'block';
 }
 
