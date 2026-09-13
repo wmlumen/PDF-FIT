@@ -1,0 +1,50 @@
+{
+  "project": "Campus Virtual Centuria",
+  "centuria_moodle": "C:/Users/HP 250 G10/Documents/GITHUT/Centuria/centuria_moodle.md",
+  "coordination": {
+    "IA_A": {
+      "role": "Infra + Moodle Core",
+      "bloques": ["A", "B"],
+      "casos": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08"],
+      "fases": ["FASE 1", "FASE 2"],
+      "archivos_responsable": ["moodle/docker-compose.yml", "CampusVirtual/app/moodle/config.php", "CampusVirtual/app/moodle/*"],
+      "tarea_actual": "C07 upgrade.php --allow-unstable hasta Upgrade completed",
+      "estado": "en_progreso",
+      "bloqueante": "C07"
+    },
+    "IA_B": {
+      "role": "Portal + Contenido + Tema",
+      "bloques": ["C", "D", "F"],
+      "casos": ["C09", "C10", "C11", "C12", "C13", "C14", "C15", "C19", "C20"],
+      "fases": ["FASE 4", "FASE 5", "FASE 6", "FASE 7"],
+      "archivos_responsable": ["CampusVirtual/app/index.html", "CampusVirtual/app/sociologia/*", "CampusVirtual/app/css/*", "CampusVirtual/app/js/*", "CampusVirtual/theme/*", "CampusVirtual/local/*"],
+      "tarea_actual": "C19 theme Centuria + C20 healthcheck script + preparar csv_moodle.py",
+      "estado": "pendiente",
+      "bloqueante": null
+    },
+    "reglas": [
+      "Solo IA_A toca moodle/docker-compose.yml y CampusVirtual/app/moodle/config.php",
+      "Solo IA_B toca CampusVirtual/theme/* y CampusVirtual/local/* y css/js",
+      "Ambas pueden leer centuria_moodle.md pero solo editar su bloque asignado (IA_A: §15-16.5, IA_B: §17-18)",
+      "Antes de push, hacer git pull --rebase",
+      "Actualizar shared_state.json al terminar cada caso: estado, timestamp",
+      "Si IA_A desbloquea C07, avisa a IA_B escribiendo courseId real en shared_state.json"
+    ],
+    "semaforo": {
+      "moodle_core": "IA_A",
+      "portal": "IA_B",
+      "centuria_moodle_md": "ambas_con_turnos"
+    }
+  },
+  "curso": {
+    "courseId": null,
+    "courseName": null,
+    "status": "esperando_C07",
+    "updated_by": "IA_A",
+    "updated_at": "2026-09-13T20:30:00"
+  },
+  "casos_20": {
+    "C07_desbloquea": ["C08", "C16", "C17", "C18"],
+    "independientes_de_C07": ["C09", "C10", "C11", "C12", "C13", "C14", "C15", "C19", "C20"]
+  }
+}

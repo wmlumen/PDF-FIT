@@ -751,4 +751,29 @@ CampusVirtual/  (10 dirs + 8 files en raíz)
 
 > **Instrucción para la IA**: Ejecuta los 20 casos en orden. Si C01-C05 no son ✅, repara infraestructura primero. No toques C16-C20 hasta que C07 sea ✅.
 
+---
+
+## 19. COORDINACIÓN IA A + IA B — Trabajo paralelo sin pisarse
+
+> **IA A = Infra + Moodle Core** | **IA B = Portal + Contenido + Tema**
+> Archivo de coordinación: `CampusVirtual/shared_state.json` (raíz, accesible a ambas)
+
+### Reparto
+| IA | Bloques | Casos | Fases | Archivos que TOCA |
+|----|---------|-------|-------|-------------------|
+| **IA A (yo)** | A, B | C01-C08 | FASE 1-2 | `moodle/docker-compose.yml`, `CampusVirtual/app/moodle/config.php`, `CampusVirtual/app/moodle/*` |
+| **IA B** | C, D, F | C09-C12, C13-C15, C19-C20 | FASE 4-7 | `CampusVirtual/app/index.html`, `sociologia/*`, `css/*`, `js/*`, `CampusVirtual/theme/*`, `local/*` |
+
+### Reglas de semáforo
+1. **Solo IA A** toca `moodle/` core. **Solo IA B** toca `theme/`/`local/`/`css/`/`js`.
+2. `centuria_moodle.md` es compartido pero con turnos: IA A edita §15-16.5, IA B edita §17-18.
+3. `git pull --rebase` antes de cada push.
+4. Al terminar cada caso, actualizar `CampusVirtual/shared_state.json` con `estado` + `timestamp`.
+5. Cuando IA A desbloquee **C07** (`upgrade completed`), escribe `courseId` real en `shared_state.json` → IA B puede arrancar C16-C18.
+
+### Orden inmediato
+- **IA A AHORA**: `C01→C07` (desbloquear Moodle). Comando: `docker compose up -d` → `DELETE upgraderunning` → `upgrade.php --allow-unstable` loop.
+- **IA B EN PARALELO**: Puede avanzar **ya** con `C09-C15` y `C19-C20` (independientes de C07). No necesita esperar.
+- **Punto de encuentro**: C16-C18 solo cuando C07 = ✅.
+
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
