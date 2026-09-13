@@ -9,10 +9,6 @@ services:
       MARIADB_DATABASE: moodle
       MARIADB_USER: moodle_user
       MARIADB_PASSWORD: moodle_pwd
-      MYSQL_ROOT_PASSWORD: moodle_root_pwd
-      MYSQL_DATABASE: moodle
-      MYSQL_USER: moodle_user
-      MYSQL_PASSWORD: moodle_pwd
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -29,8 +25,8 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     environment:
       MOODLE_DBTYPE: mariadb
       MOODLE_DBHOST: db
@@ -38,13 +34,11 @@ services:
       MOODLE_DBUSER: moodle_user
       MOODLE_DBPASS: moodle_pwd
       MOODLE_USERNAME: admin
-      MOODLE_PASSWORD: admin_pwd
-      MOODLE_SITENAME: "TIC - Centuria"
-      # - APACHE_DOCUMENT_ROOT: /var/www/html/public
+      MOODLE_PASSWORD: Centuria2024*
+      MOODLE_SITENAME: "Campus Virtual Centuria"
     volumes:
-      - ./moodle:/var/www/html
+      - ../CampusVirtual/app/moodle:/var/www/html
       - moodledata_data:/var/www/moodledata
-      - ./moodle/public/local/marcado:/var/www/html/public/local/marcado
 
 volumes:
   db_data:
