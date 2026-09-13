@@ -842,67 +842,138 @@ CampusVirtual/  (10 dirs + 8 files en raíz)
 | XAMPP incompatible (PHP 7.4) | ~2h | N/A | N/A |
 | **Total** | **~12h** | | **Muy alto vs funcionalidad** |
 
-### 20.3 Análisis de alternativas
+### 20.3 Alternativas evaluadas y DESCARTADAS
 
-#### ALTERNATIVA A — Portal standalone + backend ligero (RECOMENDADA ⭐)
-- **Qué**: Mantener HTML/JS actual + backend Node.js o PHP con SQLite/MySQL
-- **Features**: Login, cursos, calificaciones, asistencia, calendario, monitoreo, rol admin
-- **Deploy**: XAMPP (PHP) o Node.js local, sin Docker
-- **Tiempo**: 4-6 horas
-- **Pros**: ✅ 80% del frontend ya existe, ✅ Sin dependencias pesadas, ✅ Rápido
-- **Contras**: ❌ Sin LMS completo (SCORM, foros), ❌ Hay que escribir backend
+| Alternativa | Motivo de descarte |
+|---|---|
+| **B — Moodle 4.5 LTS** | 12h perdidas con 5.3dev. Config compleja, Docker obligatorio, pesado. DESCARTADO. |
+| **C — Chamilo LMS** | Docker obligatorio, comunidad pequeña, sin ventaja real sobre A. DESCARTADO. |
+| **D — Canvas LMS** | Ruby+React, RAM alta, 8-12h. DESCARTADO. |
 
-#### ALTERNATIVA B — Moodle 4.5 LTS (estable)
-- **Qué**: Usar `MOODLE_405_STABLE` en vez de 5.3dev Alpha
-- **Deploy**: Docker con `moodle-docker` oficial
-- **Tiempo**: 6-8 horas
-- **Pros**: ✅ LMS completo, ✅ Comunidad activa
-- **Contras**: ❌ Sigue siendo pesado, ❌ Config compleja
+### 20.4 DECISIÓN FINAL — ALTERNATIVA A ✅
 
-#### ALTERNATIVA C — Chamilo LMS
-- **Qué**: LMS open source más ligero que Moodle
-- **Deploy**: Docker `chamilo/chamilo-lms`
-- **Tiempo**: 4-6 horas
-- **Pros**: ✅ Más simple que Moodle
-- **Contras**: ❌ Menos plugins, ❌ Comunidad más pequeña
+> **SE ELIGE: Portal standalone + backend PHP/SQLite sobre XAMPP.**
+> Se descartan Moodle, Chamilo y Canvas. No se vuelve a Docker.
+> Motivo: 80% del frontend ya funciona. Solo falta persistencia en DB. Tiempo estimado: 4-6h.
 
-#### ALTERNATIVA D — Canvas LMS
-- **Qué**: LMS moderno (Ruby + React)
-- **Deploy**: Docker compose complejo
-- **Tiempo**: 8-12 horas
-- **Pros**: ✅ Muy moderno, ✅ Buena UX
-- **Contras**: ❌ Más complejo que Moodle, ❌ Requiere mucho RAM
-
-### 20.4 Decisión recomendada
-
-> **ALTERNATIVA A**: Portal standalone + backend ligero.
-> Razón: Ya tenemos 470KB de código funcional. Las 5 secciones "en desarrollo" se implementan rápido con un backend. Sin Docker, sin Moodle, sin dependencias.
-
-### 20.5 Estructura propuesta (Alternativa A)
+### 20.5 Stack definitivo
 
 ```
-CampusVirtual/
-├── app/
-│   ├── index.html          (login — YA EXISTE)
-│   ├── admin_roles.html    (admin — YA EXISTE)
-│   ├── Materiales_Clases/  (10 unidades — YA EXISTE)
-│   ├── academic/           (examen, glosario — YA EXISTE)
-│   ├── sociologia/         (teacher panel, docs — YA EXISTE)
-│   ├── css/                (estilos, paleta — YA EXISTE)
-│   ├── js/                 (session-guard, quiz, etc — YA EXISTE)
-│   └── api/                (NUEVO — backend PHP o Node.js)
-│       ├── config.php      (conexión DB)
-│       ├── login.php
-│       ├── register.php
-│       ├── courses.php
-│       ├── grades.php
-│       ├── attendance.php
-│       ├── calendar.php
-│       └── admin.php
-├── database/
-│   └── centuria.db         (SQLite) o MySQL via XAMPP
-└── docs/
-    └── centuria_moodle.md  (este archivo)
+XAMPP (PHP 7.4 + Apache) — sin Docker, sin containers
+├── Apache puerto 80
+├── SQLite (centuria.db) — sin configurar MySQL
+└── PHP CLI y module
+
+CampusVirtual/app/
+├── index.html              ✅ LOGIN (ya existe, 49KB)
+├── admin_roles.html        ✅ ADMIN (ya existe, 23KB)
+├── Materiales_Clases/      ✅ 10 UNIDADES (ya existe, 220KB)
+├── academic/               ✅ EXAMEN + GLOSARIO (ya existe, 70KB)
+├── sociologia/             ✅ TEACHER PANEL + DOCS (ya existe, 118KB)
+├── css/ js/                ✅ ESTILOS + JS (ya existe, 50KB)
+└── api/                    🆕 BACKEND PHP
+    ├── config.php          (SQLite path, CORS, headers)
+    ├── db.php              (schema, migrations, init)
+    ├── auth.php            (login + register + JWT session)
+    ├── courses.php         (listar/crear cursos)
+    ├── grades.php          (calificaciones por curso/alumno)
+    ├── attendance.php      (asistencia por fecha/alumno)
+    ├── calendar.php        (eventos CRUD)
+    ├── admin.php           (CRUD usuarios, roles)
+    └── upload.php          (subir CSV de alumnos)
+```
+
+### 20.6 Plan de trabajo — 2 IA en paralelo
+
+> **Regla**: Ambas IA comparten `centuria_moodle.md` y `shared_state.json`.
+> Antes de cada cambio, leer el archivo. Al terminar, actualizar estado.
+
+---
+
+#### IA A — Backend PHP + Base de datos
+
+**Responsabilidad**: Crear toda la capa de servidor. NO toca HTML/JS/CSS.
+
+| # | Tarea | Archivos | Dependencia | Estado |
+|---|---|---|---|---|
+| A1 | Crear `api/config.php` | Ruta SQLite, CORS, headers JSON | Ninguna | ⬜ |
+| A2 | Crear `api/db.php` + schema SQL | Tablas: users, courses, grades, attendance, calendar, sessions | A1 | ⬜ |
+| A3 | Crear `api/auth.php` | Login POST, register POST, session validation | A2 | ⬜ |
+| A4 | Crear `api/courses.php` | GET listar, GET por id, POST crear | A2 | ⬜ |
+| A5 | Crear `api/grades.php` | GET por alumno/curso, POST insertar, PUT actualizar | A2, A4 | ⬜ |
+| A6 | Crear `api/attendance.php` | GET por fecha/curso, POST marcar | A2, A4 | ⬜ |
+| A7 | Crear `api/calendar.php` | CRUD eventos | A2 | ⬜ |
+| A8 | Crear `api/admin.php` | GET listar users, PUT rol, DELETE user | A2, A3 | ⬜ |
+| A9 | Crear `api/upload.php` | Subir CSV y crear usuarios masivo | A2, A3 | ⬜ |
+| A10 | Test cada endpoint con curl | Verificar respuestas JSON correctas | A1-A9 | ⬜ |
+
+**Entregables IA A**: 9 archivos PHP + 1 schema SQL + tests curl
+
+---
+
+#### IA B — Frontend: Conectar HTML existente a la API
+
+**Responsabilidad**: Modificar HTML/JS existentes para que usen la API en vez de localStorage puro. NO crea archivos nuevos (excepto donde sea estrictamente necesario).
+
+| # | Tarea | Archivos | Dependencia | Estado |
+|---|---|---|---|---|
+| B1 | Crear `js/api.js` | Wrapper fetch() para todos los endpoints | A1-A3 listos | ⬜ |
+| B2 | Actualizar `index.html` | Login → POST /api/auth.php, registro → POST /api/auth.php | B1 | ⬜ |
+| B3 | Actualizar `admin_roles.html` | Listar users → GET /api/admin.php, cambiar rol → PUT | B1 | ⬜ |
+| B4 | Actualizar `teacher_panel.html` | Conectar perfil, attendance placeholder → API real | B1 | ⬜ |
+| B5 | Crear `admin/upload_alumnos.html` | Formulario subir CSV + preview | B1 | ⬜ |
+| B6 | Actualizar `academic/examen_virtual.html` | Guardar notas → POST /api/grades.php | B1 | ⬜ |
+| B7 | Actualizar `js/asistencia-planilla.js` | Guardar asistencia → POST /api/attendance.php | B1 | ⬜ |
+| B8 | Actualizar `academic/indicadores_por_unidad.html` | Mostrar calificaciones desde API | B1 | ⬜ |
+| B9 | Test manual end-to-end | Login → curso → contenido → evaluar → ver nota | B1-B8 | ⬜ |
+
+**Entregables IA B**: 1 archivo JS nuevo, 5-6 HTML actualizados, 1 HTML nuevo
+
+---
+
+#### Punto de encuentro entre IA A y IA B
+
+```
+IA A avanza A1-A4 sin depender de nadie.
+IA B espera a que A1-A3 estén listos (api/auth.php funciona).
+Cuando A3 = ✅, IA B arranca B1-B2.
+IA A continúa A5-A10 en paralelo con B3-B9.
+```
+
+### 20.7 Criterio de cierre — "Proyecto cerrado"
+
+El proyecto se da por **CERRADO** cuando:
+
+| # | Criterio | Verificación |
+|---|---|---|
+| 1 | Login funciona con cédula + contraseña | Abrir `localhost/CampusVirtual/app/` → login → redirectiona |
+| 2 | Registro crea usuario en SQLite | Registrar nuevo → aparece en DB |
+| 3 | Roles funcionan (alumno/docente/admin) | Admin cambia rol → usuario tiene nuevo rol |
+| 4 | Cursos listan desde DB | GET /api/courses.php retorna JSON |
+| 5 | 10 unidades TIC accesibles | Navegar a cada unidad → carga |
+| 6 | Evaluación guarda nota | Hacer quiz → nota persiste en DB |
+| 7 | Asistencia registra | Marcar asistencia → guardado en DB |
+| 8 | Admin gestiona usuarios | Ver lista, cambiar rol, eliminar |
+| 9 | Upload CSV funciona | Subir CSV → usuarios creados |
+| 10 | Todo accesible en `localhost` | XAMPP Apache sirve archivos |
+
+### 20.8 DIRECTRICES PARA AMBAS IA
+
+1. **Leer** `centuria_moodle.md` ANTES de empezar cualquier tarea.
+2. **Actualizar** `shared_state.json` al terminar cada tarea (estado + timestamp).
+3. **No editar** archivos del otro. IA A no toca HTML. IA B no toca API.
+4. **Git pull --rebase** antes de cada commit.
+5. **Commit frecuente** (1 commit por tarea completada).
+6. Si hay conflicto, pausar y notificar al programador.
+
+### 20.9 Orden de ejecución inmediato
+
+```
+PASO 1: IA A arranca con A1 (config.php) → A2 (db.php) → A3 (auth.php)
+PASO 2: IA B espera A3 listo, luego arranca B1 (api.js) → B2 (index.html)
+PASO 3: Ambas en paralelo (A4-A10 / B3-B9)
+PASO 4: Test end-to-end juntas
+PASO 5: Actualizar centuria_moodle.md con resultado + commit
 ```
 
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
