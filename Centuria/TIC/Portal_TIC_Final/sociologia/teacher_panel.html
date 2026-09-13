@@ -4,38 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Docente — Sociología | Campus Virtual Centuria</title>
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Tailwind (para el panel original) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Montserrat', 'Segoe UI', 'sans-serif'] },
-                    colors: {
-                        institucional: {
-                            dark: '#003d19',
-                            base: '#007A33',
-                            light: '#00B140',
-                            accent: '#81C784',
-                            gold: '#C5A55A',
-                            'gold-light': '#D4B96A'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- jsPDF + html2canvas for PDF export -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         :root {
             --verde-oscuro: #007A33;
@@ -46,10 +20,10 @@
             --dorado: #C5A55A;
             --dorado-claro: #D4B96A;
         }
-        * { box-sizing: border-box; }
-        body { font-family: 'Montserrat', 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Montserrat', 'Segoe UI', sans-serif; min-height: 100vh; color: var(--texto-oscuro); }
 
-        /* =========== LOGIN OVERLAY =========== */
+        /* =========== LOGIN OVERLAY — MISMO DISEÑO QUE INDEX =========== */
         #login-overlay {
             position: fixed; inset: 0; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
@@ -60,70 +34,66 @@
             transition: opacity .4s, visibility .4s;
         }
         #login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        #login-overlay::after {
+            content: ''; position: fixed; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.03)'/%3E%3C/svg%3E");
+            z-index: -1;
+        }
+        .login-wrapper { width: 100%; max-width: 520px; padding: 20px; animation: fadeInUp .8s cubic-bezier(.16,1,.3,1); }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+        .login-hero { text-align: center; margin-bottom: 32px; }
+        .login-hero img { height: 130px; margin-bottom: 20px; filter: drop-shadow(0 4px 20px rgba(0,0,0,.4)); animation: logoFloat 4s ease-in-out infinite; }
+        @keyframes logoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        .login-hero h1 { font-weight:200; letter-spacing:6px; font-size:1.6rem; text-transform:uppercase; text-shadow:0 2px 12px rgba(0,0,0,.3); color:#fff; }
+        .login-hero .subtitle { font-weight:400; font-size:.78rem; letter-spacing:2px; text-transform:uppercase; color:var(--dorado); margin-top:4px; }
+        .login-divider { display:flex; align-items:center; justify-content:center; gap:12px; margin:20px auto; }
+        .login-divider .line { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--dorado),transparent); }
+        .login-divider .diamond { width:8px; height:8px; background:var(--dorado); transform:rotate(45deg); }
         .login-card {
-            background: rgba(255,255,255,.07);
-            border: 1px solid rgba(255,255,255,.12);
-            backdrop-filter: blur(24px);
-            border-radius: 24px;
-            padding: 40px 36px 36px;
-            max-width: 440px; width: 92%;
-            box-shadow: 0 8px 32px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.1);
-            animation: fadeUp .6s cubic-bezier(.16,1,.3,1);
+            border-radius:24px; overflow:hidden;
+            background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+            backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+            box-shadow:0 8px 32px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.1);
         }
-        .login-card::before {
-            content:''; display:block; height:3px; border-radius:2px;
-            background: linear-gradient(90deg, transparent, var(--dorado), var(--verde-hover), var(--dorado), transparent);
-            margin-bottom: 28px;
-        }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-        .login-logo { height:90px; filter:drop-shadow(0 4px 16px rgba(0,0,0,.4)); display:block; margin:0 auto 16px; }
-        .login-title { text-align:center; font-weight:200; font-size:1.35rem; letter-spacing:4px; text-transform:uppercase; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.3); }
-        .login-subtitle { text-align:center; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--dorado); margin-top:2px; margin-bottom:24px; }
-        .login-label { font-size:.65rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dorado); margin-bottom:5px; display:block; }
-        .login-input {
-            width:100%; padding:13px 15px; background:rgba(255,255,255,.08);
+        .login-card::before { content:''; display:block; height:3px; background:linear-gradient(90deg,transparent,var(--dorado),var(--verde-hover),var(--dorado),transparent); }
+        .login-card-body { padding:36px 40px 40px; }
+        .card-greeting { text-align:center; margin-bottom:24px; }
+        .card-greeting h2 { font-size:1rem; font-weight:600; letter-spacing:1px; color:#fff; }
+        .card-greeting p { font-size:.75rem; color:rgba(255,255,255,.5); letter-spacing:.5px; }
+        .premium-label { font-size:.68rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dorado); margin-bottom:6px; display:block; }
+        .premium-input {
+            width:100%; padding:14px 16px; background:rgba(255,255,255,.08);
             border:1px solid rgba(255,255,255,.15); border-radius:12px;
-            color:#fff; font-family:'Montserrat',sans-serif; font-weight:600; font-size:.9rem;
+            color:#fff; font-family:'Montserrat',sans-serif; font-weight:600; font-size:.95rem;
             letter-spacing:1px; outline:none; transition:.3s;
         }
-        .login-input::placeholder { color:rgba(255,255,255,.3); font-weight:400; letter-spacing:0; }
-        .login-input:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(197,165,90,.2); background:rgba(255,255,255,.12); }
-        .login-btn {
+        .premium-input::placeholder { color:rgba(255,255,255,.35); font-weight:400; letter-spacing:0; }
+        .premium-input:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(197,165,90,.2); background:rgba(255,255,255,.12); }
+        .premium-btn {
             width:100%; padding:14px; margin-top:20px;
-            background:linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
+            background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));
             color:#fff; border:none; border-radius:14px;
             font-family:'Montserrat',sans-serif; font-weight:700; font-size:.88rem;
             letter-spacing:1px; cursor:pointer; transition:.35s cubic-bezier(.16,1,.3,1);
             position:relative; overflow:hidden;
         }
-        .login-btn::before {
-            content:''; position:absolute; inset:0;
-            background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);
-            transform:translateX(-100%); transition:.5s;
-        }
-        .login-btn:hover::before { transform:translateX(100%); }
-        .login-btn:hover { transform:translateY(-2px); box-shadow:0 12px 35px rgba(0,122,51,.4); }
-        .login-btn:disabled { opacity:.5; transform:none!important; cursor:not-allowed; }
-        .login-error {
-            background:rgba(239,83,80,.12); border:1px solid rgba(239,83,80,.3);
-            border-radius:10px; color:#ef9a9a; font-size:.75rem; padding:10px 14px;
-            margin-bottom:14px; display:none; text-align:center;
-        }
+        .premium-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%); transform:translateX(-100%); transition:.5s; }
+        .premium-btn:hover::before { transform:translateX(100%); }
+        .premium-btn:hover { transform:translateY(-2px); box-shadow:0 12px 35px rgba(0,122,51,.4); }
+        .premium-btn:disabled { opacity:.5; transform:none!important; cursor:not-allowed; }
+        .login-error { background:rgba(239,83,80,.12); border:1px solid rgba(239,83,80,.3); border-radius:10px; color:#ef9a9a; font-size:.75rem; padding:10px 14px; margin-bottom:14px; display:none; text-align:center; }
         .login-error.show { display:block; animation:shake .4s ease; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
-        .login-divider { border:none; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin:18px 0; }
-        .login-footer { text-align:center; margin-top:20px; }
-        .login-footer p { font-size:.6rem; color:rgba(255,255,255,.3); letter-spacing:1px; }
+        .premium-separator { border:none; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin:18px 0; }
+        .premium-alert-info { background:rgba(0,177,64,.1); border:1px solid rgba(0,177,64,.2); border-radius:12px; color:rgba(255,255,255,.6); font-size:.72rem; padding:12px 16px; text-align:center; }
+
+        /* =========== MODAL REGISTRO =========== */
+        .modal-overlay { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); align-items:center; justify-content:center; }
+        .modal-overlay.show { display:flex; }
 
         /* =========== PANEL STRUCTURE =========== */
-        .sidebar-glass {
-            background: rgba(0,61,25,.95); backdrop-filter:blur(20px);
-            border-right:1px solid rgba(255,255,255,.08);
-        }
-        .header-glass {
-            background:rgba(255,255,255,.85); backdrop-filter:blur(12px);
-            border-bottom:1px solid rgba(226,232,240,.6);
-        }
+        .sidebar-glass { background:rgba(0,61,25,.95); backdrop-filter:blur(20px); border-right:1px solid rgba(255,255,255,.08); }
+        .header-glass { background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid rgba(226,232,240,.6); }
         .kpi-hover { transition:all .3s cubic-bezier(.4,0,.2,1); }
         .kpi-hover:hover { transform:translateY(-2px); box-shadow:0 10px 25px -5px rgba(0,0,0,.08); }
         tbody tr { transition:all .15s ease; }
@@ -133,522 +103,353 @@
         .custom-scrollbar::-webkit-scrollbar { width:6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
         .animate-fade { animation:fadeIn .4s cubic-bezier(.4,0,.2,1) forwards; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-        @media (max-width:880px) {
-            .w-72 { width:15rem; }
-            .md\:pl-72 { padding-left:0!important; }
-        }
+        @media(max-width:880px) { .w-72{width:15rem;} .md\:pl-72{padding-left:0!important;} }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex"
-      x-data="{ sidebarOpen:true, activeTab:'live', showImport:false }">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen:true, activeTab:'perfil' }">
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- LOGIN OVERLAY — Cédula + Contraseña                        -->
+<!-- LOGIN OVERLAY — MISMO DISEÑO QUE INDEX.HTML               -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="login-overlay">
-    <div class="login-card">
-        <img src="../logo_centuria_blanco_1.png" alt="Instituto Superior Centuria" class="login-logo">
-        <h1 class="login-title">Campus Virtual</h1>
-        <p class="login-subtitle">Sociología — Panel Docente</p>
-
-        <div id="login-error" class="login-error">
-            <i class="bi bi-exclamation-circle me-1"></i>
-            <span id="login-error-text">Cédula o contraseña incorrecta</span>
+    <div class="login-wrapper">
+        <div class="login-hero">
+            <img src="../images/logo_centuria_blanco_1.png" alt="Instituto Superior Centuria">
+            <h1>Campus Virtual</h1>
+            <div class="subtitle">Sociología — Panel Docente/Académico</div>
         </div>
 
-        <label class="login-label">Cédula de Identidad</label>
-        <input type="text" id="login-cedula" class="login-input text-center" placeholder="SIN PUNTOS"
-               oninput="this.value=this.value.replace(/\./g,'')" style="font-size:1rem;letter-spacing:3px;">
-
-        <label class="login-label" style="margin-top:14px;">Contraseña</label>
-        <div style="position:relative;">
-            <input type="password" id="login-password" class="login-input" placeholder="Tu contraseña"
-                   style="padding-right:44px;font-size:.85rem;letter-spacing:.5px;"
-                   onkeydown="if(event.key==='Enter') loginDocente()">
-            <button type="button" onclick="togglePasswordVisibility()"
-                    style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;"
-                    title="Mostrar/ocultar contraseña">
-                <i id="pwd-toggle-icon" class="bi bi-eye"></i>
-            </button>
+        <div class="login-divider">
+            <div class="line"></div>
+            <div class="diamond"></div>
+            <div class="line"></div>
         </div>
 
-        <button id="btn-login" class="login-btn" onclick="loginDocente()">
-            <i class="bi bi-shield-lock me-2"></i>Ingresar al Panel
-        </button>
+        <!-- PASO 1: Login -->
+        <div id="login-step-1">
+            <div class="login-card">
+                <div class="login-card-body">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-shield-lock me-2"></i>Iniciar Sesión</h2>
+                        <p>Acceda a su panel docente o académico</p>
+                    </div>
 
-        <div style="text-align:center;margin-top:14px;">
-            <button onclick="abrirRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
-                <i class="bi bi-person-plus me-1"></i>Registrar nuevo docente
-            </button>
-        </div>
+                    <div id="login-error" class="login-error">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        <span id="login-error-text">Cédula o contraseña incorrecta</span>
+                    </div>
 
-        <hr class="login-divider">
+                    <label class="premium-label">Cédula de Identidad</label>
+                    <input type="text" id="login-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
 
-        <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:12px 14px;font-size:.7rem;color:var(--dorado);">
-            <i class="bi bi-info-circle me-1"></i>
-            <strong>Formato:</strong> Primera letra nombre(MAYÚS) + primera letra apellido(minúscula) + cédula + *<br>
-            <em style="opacity:.7;">Ej: Juan Pérez, CI 12345678 → <strong>Jp12345678*</strong></em>
-        </div>
+                    <label class="premium-label" style="margin-top:14px;">Contraseña</label>
+                    <div style="position:relative;">
+                        <input type="password" id="login-password" class="premium-input" placeholder="Tu contraseña" style="padding-right:44px;font-size:.85rem;letter-spacing:.5px;" onkeydown="if(event.key==='Enter') loginDocente()">
+                        <button type="button" onclick="togglePasswordVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;">
+                            <i id="pwd-toggle-icon" class="bi bi-eye"></i>
+                        </button>
+                    </div>
 
-        <div class="login-footer">
-            <p><i class="bi bi-lock-fill me-1"></i>Acceso restringido — Instituto Superior Centuria 2026</p>
-        </div>
-    </div>
-</div>
+                    <button id="btn-login" class="premium-btn" onclick="loginDocente()">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel
+                    </button>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- MODAL REGISTRO DOCENTE                                     -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<div id="modal-registro" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
-    <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(24px);border-radius:20px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);">
-        <h3 style="color:#fff;font-size:1rem;font-weight:700;text-align:center;margin-bottom:4px;">
-            <i class="bi bi-person-plus me-2" style="color:var(--dorado);"></i>Registrar Docente/Académico
-        </h3>
-        <p style="color:rgba(255,255,255,.4);font-size:.65rem;text-align:center;margin-bottom:18px;">Los datos se guardan solo en esta PC</p>
+                    <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;">
+                        <button onclick="abrirRecuperar()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-question-circle me-1"></i>¿Olvidaste tu contraseña?
+                        </button>
+                        <span style="color:rgba(255,255,255,.15);">|</span>
+                        <button onclick="mostrarRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-person-plus me-1"></i>Registrarse
+                        </button>
+                    </div>
 
-        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;">Cédula</label>
-        <input type="text" id="reg-cedula" class="login-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'');verificarCedulaRegistro()">
+                    <hr class="premium-separator">
 
-        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Nombre</label>
-        <input type="text" id="reg-nombre" class="login-input" placeholder="Ej: JUAN" style="text-transform:uppercase;font-size:.85rem;">
-
-        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Apellido</label>
-        <input type="text" id="reg-apellido" class="login-input" placeholder="Ej: PÉREZ" style="text-transform:uppercase;font-size:.85rem;">
-
-        <label style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:4px;margin-top:12px;">Rol</label>
-        <select id="reg-rol" class="login-input" style="font-size:.85rem;cursor:pointer;">
-            <option value="docente">Docente</option>
-            <option value="academico">Académico</option>
-            <option value="admin">Administrador</option>
-        </select>
-
-        <div style="background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.2);border-radius:10px;padding:10px;margin-top:14px;">
-            <p style="color:rgba(255,255,255,.6);font-size:.65rem;text-align:center;">
-                <i class="bi bi-key me-1"></i>
-                La contraseña se genera automáticamente: <strong style="color:#fff;">Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *</strong>
-            </p>
-        </div>
-
-        <div id="reg-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:10px;text-align:center;margin-top:12px;">
-            <p style="color:#ef9a9a;font-size:.7rem;"><i class="bi bi-exclamation-circle me-1"></i><span id="reg-error-text">Error</span></p>
-        </div>
-        <div id="reg-exito" style="display:none;background:rgba(0,177,64,.12);border:1px solid rgba(0,177,64,.3);border-radius:10px;padding:10px;text-align:center;margin-top:12px;">
-            <p style="color:#81C784;font-size:.7rem;"><i class="bi bi-check-circle me-1"></i><span id="reg-exito-text">Registrado correctamente</span></p>
-        </div>
-
-        <button onclick="registrarDocente()" style="width:100%;padding:12px;margin-top:16px;background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));color:#fff;border:none;border-radius:12px;font-family:Montserrat;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:.3s;">
-            <i class="bi bi-person-check me-2"></i>Registrar
-        </button>
-        <button onclick="cerrarRegistro()" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.75rem;cursor:pointer;font-family:Montserrat;transition:.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
-            Cerrar
-        </button>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- HEADER INSTITUCIONAL                                       -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<div class="institutional-header" style="position:fixed;top:0;left:0;right:0;z-index:50;padding:10px 30px;background:linear-gradient(135deg,#003d19 0%,#007A33 100%);">
-    <div style="display:flex;align-items:center;justify-content:space-between;max-width:1400px;margin:0 auto;">
-        <div style="display:flex;align-items:center;gap:12px;">
-            <img src="../logo_centuria_blanco_1.png" alt="Logo Centuria" style="height:32px;">
-            <div>
-                <h1 style="font-size:14px;margin:0;color:#fff;font-weight:600;letter-spacing:1px;">Instituto Superior Centuria</h1>
-                <p style="font-size:10px;margin:0;color:rgba(255,255,255,.7);letter-spacing:1px;">Panel de Control Docente — Sociología</p>
-            </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <span id="docente-badge" style="color:rgba(255,255,255,.8);font-size:11px;font-weight:500;"></span>
-            <a href="../index.html" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.12);padding:6px 14px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:6px;transition:.2s;">
-                <i class="bi bi-house-door"></i> Inicio
-            </a>
-            <button onclick="cerrarSesion()" style="background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);color:#ef9a9a;padding:6px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:.2s;font-family:Montserrat;">
-                <i class="bi bi-box-arrow-right me-1"></i>Salir
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- SIDEBAR                                                    -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<aside class="sidebar-glass text-white w-72 fixed inset-y-0 left-0 z-20 transform md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between"
-       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" style="top:52px;">
-    <div>
-        <div class="p-5 border-b border-white/10 flex items-center gap-3">
-            <img src="../logo_centuria_blanco_1.png" alt="Logo" style="height:36px;">
-            <div>
-                <h2 class="font-bold text-sm tracking-wide">Sociología</h2>
-                <span class="text-[10px] text-emerald-300/60 font-medium tracking-widest uppercase">Panel Docente</span>
+                    <div class="premium-alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Formato de contraseña: Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                    </div>
+                </div>
             </div>
         </div>
 
-        <nav class="p-4 space-y-1.5">
-            <button @click="activeTab='live'" :class="activeTab==='live' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-broadcast text-base" :class="activeTab==='live'?'text-emerald-400':''"></i>
-                <span>Monitoreo en Vivo</span>
-                <span class="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm" id="sidebar-active-badge">0</span>
-            </button>
-            <button @click="activeTab='history'" :class="activeTab==='history' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-file-earmark-text text-base" :class="activeTab==='history'?'text-blue-400':''"></i>
-                <span>Exámenes Entregados</span>
-            </button>
-            <button @click="activeTab='analytics'" :class="activeTab==='analytics' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-pie-chart text-base" :class="activeTab==='analytics'?'text-violet-400':''"></i>
-                <span>Métricas y Carreras</span>
-            </button>
-            <button @click="activeTab='attendance'" :class="activeTab==='attendance' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-clipboard-check text-base" :class="activeTab==='attendance'?'text-amber-400':''"></i>
-                <span>Control de Asistencia</span>
-            </button>
-            <button @click="activeTab='progress'" :class="activeTab==='progress' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-bar-chart-steps text-base" :class="activeTab==='progress'?'text-orange-400':''"></i>
-                <span>Marcador de Grupos</span>
-            </button>
-            <button @click="activeTab='calendar'" :class="activeTab==='calendar' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
-                <i class="bi bi-calendar3 text-base" :class="activeTab==='calendar'?'text-cyan-400':''"></i>
-                <span>Calendario Docente</span>
-            </button>
-            <a href="documentos.html" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-400 hover:bg-white/5 hover:text-slate-200" style="text-decoration:none;">
-                <i class="bi bi-file-earmark-richtext text-base text-amber-400"></i>
-                <span>Documentos del Docente</span>
-                <i class="bi bi-box-arrow-up-right ml-auto text-[10px]" style="color:rgba(255,255,255,.3);"></i>
-            </a>
-        </nav>
+        <!-- PASO 2: Registro -->
+        <div id="login-step-2" style="display:none;">
+            <div class="login-card">
+                <div class="login-card-body">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-person-plus me-2"></i>Crear Cuenta</h2>
+                        <p>Complete sus datos para acceder a la plataforma</p>
+                    </div>
+
+                    <div id="reg-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;color:#ef9a9a;font-size:.75rem;padding:10px 14px;margin-bottom:14px;text-align:center;">
+                        <i class="bi bi-exclamation-circle me-1"></i><span id="reg-error-text">Error</span>
+                    </div>
+                    <div id="reg-exito" style="display:none;background:rgba(0,177,64,.12);border:1px solid rgba(0,177,64,.3);border-radius:10px;color:#81C784;font-size:.75rem;padding:10px 14px;margin-bottom:14px;text-align:center;">
+                        <i class="bi bi-check-circle me-1"></i><span id="reg-exito-text">Registrado</span>
+                    </div>
+
+                    <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'');verificarCedulaRegistro()">
+
+                    <label class="premium-label" style="margin-top:12px;">Nombre <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-nombre" class="premium-input" placeholder="Ej: JUAN" style="text-transform:uppercase;font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Apellido <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-apellido" class="premium-input" placeholder="Ej: PÉREZ" style="text-transform:uppercase;font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Correo electrónico</label>
+                    <input type="email" id="reg-email" class="premium-input" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Teléfono</label>
+                    <input type="text" id="reg-telefono" class="premium-input" placeholder="0981 123456" style="font-size:.85rem;">
+
+                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:10px 14px;margin:16px 0 12px;">
+                        <p style="color:rgba(255,255,255,.6);font-size:.68rem;text-align:center;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            El administrador asignará su <strong style="color:var(--dorado);">rol</strong> y <strong style="color:var(--dorado);">asignatura</strong> después del registro.
+                        </p>
+                    </div>
+
+                    <button id="btn-registrar" class="premium-btn" onclick="registrarUsuario()">
+                        <i class="bi bi-person-check me-2"></i>Crear mi cuenta
+                    </button>
+                    <button class="premium-btn-ghost" onclick="volverLogin()" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.75rem;cursor:pointer;font-family:Montserrat;">
+                        <i class="bi bi-arrow-left me-1"></i>Volver al login
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="p-4 border-t border-white/10">
-        <button onclick="cerrarSesion()" class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all text-xs py-3 rounded-xl border border-white/10 font-medium">
-            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-        </button>
-    </div>
-</aside>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- MAIN CONTENT                                               -->
+<!-- PANEL PRINCIPAL                                            -->
 <!-- ═══════════════════════════════════════════════════════════ -->
-<main class="flex-1 md:pl-72 flex flex-col min-h-screen transition-all duration-300" style="padding-top:52px;">
+<main class="flex-1 min-h-screen transition-all duration-300" :class="{ 'md:pl-72': sidebarOpen }">
 
-    <!-- Header bar -->
-    <header class="header-glass h-14 px-6 flex items-center justify-between sticky top-[52px] z-10 shadow-sm">
-        <div class="flex items-center gap-4">
-            <button @click="sidebarOpen=!sidebarOpen" class="text-slate-400 hover:text-slate-700 focus:outline-none transition-colors">
+    <!-- HEADER -->
+    <header class="header-glass sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl hover:bg-slate-100 transition">
                 <i class="bi bi-list text-lg"></i>
             </button>
             <div>
-                <h1 class="text-sm font-bold text-slate-900">Evaluación Parcial: <span class="text-emerald-700" id="header-materia">Sociología General</span></h1>
-                <p class="text-[10px] text-slate-400 font-medium tracking-wide" id="header-grupo">Periodo Lectivo 2026</p>
+                <h1 class="text-sm font-bold text-slate-800">Panel Docente/Académico</h1>
+                <p class="text-[10px] text-slate-400 font-medium">Sociología — Instituto Superior Centuria</p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button @click="showImport=!showImport" class="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-medium transition-all shadow-sm hover:shadow">
-                <i class="bi bi-cloud-upload text-emerald-600"></i> <span>Módulo de Carga</span>
-            </button>
-            <button onclick="renderAll()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-all" title="Forzar sincronización">
-                <i class="bi bi-arrow-clockwise text-xs"></i>
+        <div class="flex items-center gap-3">
+            <span id="docente-badge" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold">Cargando...</span>
+            <button onclick="cerrarSesion()" class="p-2 rounded-xl hover:bg-rose-50 text-rose-500 transition" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
             </button>
         </div>
     </header>
 
-    <!-- Content wrapper -->
-    <div class="flex flex-row flex-1 overflow-hidden">
-        <div class="p-6 flex-1 space-y-6 max-w-[1600px] w-full mx-auto overflow-y-auto custom-scrollbar">
+    <div class="flex">
+        <!-- SIDEBAR -->
+        <aside x-show="sidebarOpen" x-transition class="sidebar-glass w-72 min-h-[calc(100vh-60px)] fixed md:sticky top-[60px] p-4 space-y-1 z-20">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Mi Cuenta</p>
 
-            <!-- ===== IMPORT MODULE ===== -->
-            <div x-show="showImport" x-transition class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-xl space-y-5 animate-fade">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-emerald-50 p-2.5 rounded-xl"><i class="bi bi-cloud-upload text-emerald-600 text-sm"></i></div>
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-900">Pasarela de Sincronización de Archivos</h3>
-                            <p class="text-xs text-slate-500">Carga masiva de matrices de respuestas generadas por los alumnos.</p>
-                        </div>
-                    </div>
-                    <button @click="showImport=false" class="text-slate-400 hover:text-slate-600 transition-colors p-1"><i class="bi bi-x-lg"></i></button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-5 items-start bg-slate-50 p-5 rounded-xl border border-dashed border-slate-200">
+            <button @click="activeTab='perfil'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='perfil' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-person-circle text-sm"></i> Mi Perfil
+            </button>
+
+            <button @click="activeTab='datos'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='datos' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-card-list text-sm"></i> Datos Personales
+            </button>
+
+            <button @click="activeTab='emergencia'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='emergencia' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-heart-pulse text-sm"></i> Contacto de Emergencia
+            </button>
+
+            <hr class="border-white/10 my-2">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Académico</p>
+
+            <button @click="activeTab='live'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='live' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-camera-video text-sm"></i> Monitoreo
+                <span id="sidebar-active-badge" class="ml-auto bg-rose-500/20 text-rose-300 text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+
+            <button @click="activeTab='analytics'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='analytics' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-bar-chart text-sm"></i> Métricas
+            </button>
+
+            <button @click="activeTab='attendance'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='attendance' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-clipboard-check text-sm"></i> Asistencia
+            </button>
+
+            <button @click="activeTab='progress'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='progress' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-trophy text-sm"></i> Marcador
+            </button>
+
+            <hr class="border-white/10 my-2">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Herramientas</p>
+
+            <button @click="activeTab='calendar'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='calendar' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-calendar3 text-sm"></i> Calendario
+            </button>
+
+            <a href="documentos.html" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5 text-white/60 hover:bg-white/5 hover:text-white">
+                <i class="bi bi-file-earmark-text text-sm"></i> Documentos
+                <i class="bi bi-box-arrow-up-right ml-auto text-[9px]"></i>
+            </a>
+
+            <button @click="activeTab='config'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='config' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-gear text-sm"></i> Configuración
+            </button>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <div class="flex-1 p-6 max-w-6xl mx-auto">
+
+            <!-- ===== MI PERFIL ===== -->
+            <div x-show="activeTab==='perfil'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4">Mi Perfil</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Paquetes de respuestas (.json)</label>
-                            <input type="file" id="import-file" accept=".json" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 file:shadow-sm cursor-pointer" multiple onchange="updateSelectedFilesLabel()">
-                            <p id="selected-files-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Resultados CSV (.csv)</label>
-                            <input type="file" id="import-csv" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-violet-600 file:text-white hover:file:bg-violet-700 file:shadow-sm cursor-pointer" onchange="updateSelectedCSVLabel()">
-                            <p id="selected-csv-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Configuración Datos_asistencia.txt</label>
-                            <input type="file" id="config-file" accept=".txt" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:shadow-sm cursor-pointer" onchange="updateSelectedConfigLabel()">
-                            <p id="selected-config-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Registro de asistencia (.txt)</label>
-                            <input type="file" id="attendance-file" accept=".txt,.csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-700 file:shadow-sm cursor-pointer" onchange="updateSelectedAttendanceLabel()">
-                            <p id="selected-attendance-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
+                        <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-5 text-center">
+                            <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold mx-auto mb-3" id="profile-avatar">?</div>
+                            <h4 class="font-bold text-sm" id="profile-name">Cargando...</h4>
+                            <p class="text-[10px] text-slate-500" id="profile-cedula">CI: ---</p>
+                            <span class="inline-block mt-2 text-[9px] font-bold px-3 py-1 rounded-full" id="profile-rol-badge" style="background:#E0F2F1;color:#007A33;">Sin asignar</span>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-4 justify-between text-right">
-                        <button onclick="procesarTodo()" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5">
-                            <i class="bi bi-play-fill me-1"></i> Procesar Archivos
-                        </button>
-                        <button onclick="limpiarResultados()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-medium transition-all border border-rose-100">
-                            Limpiar Historial
-                        </button>
+                    <div class="space-y-3">
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Asignatura</span><span class="font-semibold text-sm" id="profile-asignatura">Sin asignar</span></div>
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Carrera</span><span class="font-semibold text-sm" id="profile-carrera">Sin asignar</span></div>
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Estado</span><span class="font-semibold text-sm text-emerald-600">Activo</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- ===== KPI CARDS ===== -->
-            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div class="space-y-1">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Examen en Curso</span>
-                        <h3 id="active-count" class="text-3xl font-bold text-rose-600 tracking-tight">0</h3>
-                        <p class="text-[11px] text-rose-500 font-medium"><span class="inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping me-1"></span> Alumnos respondiendo</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-rose-50 to-rose-100 p-3.5 rounded-xl text-rose-500"><i class="bi bi-person-video3 text-xl"></i></div>
+            <!-- ===== DATOS PERSONALES ===== -->
+            <div x-show="activeTab==='datos'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4">Datos Personales</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo</label><input type="text" id="datos-nombre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Nombre"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Cédula</label><input type="text" id="datos-cedula" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" disabled></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Correo</label><input type="email" id="datos-email" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="correo@ejemplo.com"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Teléfono</label><input type="text" id="datos-telefono" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="0981 123456"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Fecha de Nacimiento</label><input type="date" id="datos-nacimiento" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Dirección</label><input type="text" id="datos-direccion" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Barrio, Ciudad"></div>
                 </div>
-                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div class="space-y-1">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Evaluados</span>
-                        <h3 id="total-count" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3>
-                        <p class="text-[11px] text-slate-500">Exámenes consolidados</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-3.5 rounded-xl text-slate-600"><i class="bi bi-file-earmark-text text-xl"></i></div>
+                <button onclick="guardarDatosPersonales()" class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+            </div>
+
+            <!-- ===== CONTACTO DE EMERGENCIA ===== -->
+            <div x-show="activeTab==='emergencia'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4"><i class="bi bi-heart-pulse text-rose-500 me-2"></i>Contacto de Emergencia</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Nombre del Contacto</label><input type="text" id="emerg-nombre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Nombre completo"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Parentesco</label><select id="emerg-parentesco" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"><option value="">Seleccionar...</option><option>Padre</option><option>Madre</option><option>Hermano/a</option><option>Cónyuge</option><option>Otro</option></select></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Teléfono</label><input type="text" id="emerg-telefono" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="0981 123456"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Sangre</label><select id="emerg-sangre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"><option value="">Seleccionar...</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+                    <div class="md:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase">Alergias / Condiciones Médicas</label><textarea id="emerg-alergias" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" rows="3" placeholder="Describa alergias o condiciones relevantes..."></textarea></div>
                 </div>
-                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div class="space-y-1">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rendimiento Promedio</span>
-                        <h3 id="avg-score" class="text-3xl font-bold text-emerald-600 tracking-tight">-</h3>
-                        <p class="text-[11px] text-emerald-500 font-medium">Media aritmética global</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-3.5 rounded-xl text-emerald-600"><i class="bi bi-calculator text-xl"></i></div>
-                </div>
-                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div class="space-y-1">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Auto-refrescar</span>
-                        <div class="flex items-center gap-3 pt-1">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="auto-refresh" onchange="toggleAutoRefresh()" class="sr-only peer">
-                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </label>
-                            <span class="text-xs font-medium text-slate-600">5s</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400">Sincronización en segundo plano</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-3.5 rounded-xl text-amber-600"><i class="bi bi-lightning text-xl"></i></div>
-                </div>
-            </section>
+                <button onclick="guardarEmergencia()" class="mt-4 bg-rose-500 text-white px-6 py-2 rounded-xl text-xs font-semibold hover:bg-rose-600 transition">
+                    <i class="bi bi-heart me-1"></i>Guardar Contacto de Emergencia
+                </button>
+            </div>
 
-            <!-- ===== TOOLBAR ===== -->
-            <section class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap gap-3 items-center justify-between">
-                <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[300px]">
-                    <div class="relative flex-1 min-w-[240px]">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"><i class="bi bi-search text-xs"></i></span>
-                        <input type="text" id="search-input" placeholder="Buscar por cédula, nombre o carrera..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all" oninput="renderAll()">
+            <!-- ===== CONFIGURACIÓN ===== -->
+            <div x-show="activeTab==='config'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4"><i class="bi bi-gear me-2"></i>Configuración de la Plataforma</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Tema Oscuro</p><p class="text-[10px] text-slate-400">Cambiar apariencia de la plataforma</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" onchange="toggleTemaOscuro()"><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
                     </div>
-                    <select id="career-filter" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-slate-600 font-medium" onchange="renderAll()">
-                        <option value="">Todas las carreras</option>
-                    </select>
-                    <select id="sort-select" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-slate-600 font-medium" onchange="renderAll()">
-                        <option value="nombre">Nombre</option>
-                        <option value="apellido">Apellido</option>
-                        <option value="ci">Cédula</option>
-                        <option value="puntaje">Puntaje</option>
-                        <option value="carrera">Carrera</option>
-                        <option value="intento">Nro. Intento</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="exportPanelPDF()" class="bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 shadow-sm hover:shadow">
-                        <i class="bi bi-file-pdf"></i> PDF Resumen
-                    </button>
-                </div>
-            </section>
-
-            <!-- ===== TABS CONTENT ===== -->
-            <div class="flex gap-6">
-                <div class="flex-1 min-w-0 space-y-6">
-
-                    <!-- LIVE TABLE -->
-                    <div x-show="activeTab==='live'||activeTab==='history'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
-                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <span class="flex h-2.5 w-2.5 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span></span>
-                                <h3 class="font-bold text-sm text-slate-900">Estudiantes en Sesión Activa</h3>
-                            </div>
-                            <span class="text-[11px] text-slate-400 font-medium bg-slate-50 px-2.5 py-1 rounded-full">Tiempo real</span>
-                        </div>
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse" id="active-table">
-                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
-                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
-                                    <th class="py-3.5 px-5 font-semibold">Estudiante</th>
-                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Intento</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Estado</th>
-                                </tr></thead>
-                                <tbody id="active-students" class="divide-y divide-slate-100 text-xs text-slate-700"></tbody>
-                            </table>
-                        </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Notificaciones</p><p class="text-[10px] text-slate-400">Recibir alertas de actividad</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" checked><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
                     </div>
-
-                    <!-- DELIVERED TABLE -->
-                    <div x-show="activeTab==='live'||activeTab==='history'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
-                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <div class="bg-emerald-50 text-emerald-600 p-1.5 rounded-lg text-xs"><i class="bi bi-check-all"></i></div>
-                                <h3 class="font-bold text-sm text-slate-900">Exámenes Asentados y Finalizados</h3>
-                            </div>
-                            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium" id="delivered-count-badge">0 entregas</span>
-                        </div>
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse" id="delivered-table">
-                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
-                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
-                                    <th class="py-3.5 px-5 font-semibold">Estudiante</th>
-                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Puntaje 1</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Puntaje 2</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Fecha</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Estado</th>
-                                    <th class="py-3.5 px-5 font-semibold text-center">Acta</th>
-                                </tr></thead>
-                                <tbody id="students-list" class="divide-y divide-slate-100 text-xs text-slate-700">
-                                    <tr><td colspan="8" class="py-10 text-center text-slate-400"><i class="bi bi-inbox text-2xl text-slate-300 mb-2 block"></i>Use el módulo de carga para registrar envíos.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- ANALYTICS -->
-                    <div x-show="activeTab==='analytics'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5 animate-fade">
-                        <div class="border-b border-slate-100 pb-4">
-                            <h3 class="font-bold text-sm text-slate-900">Distribución y Rendimiento por Carrera</h3>
-                            <p class="text-xs text-slate-500 mt-1">Métricas acumuladas del examen actual.</p>
-                        </div>
-                        <div id="stats-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-                    </div>
-
-                    <!-- ATTENDANCE -->
-                    <div x-show="activeTab==='attendance'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
-                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <div class="bg-amber-50 text-amber-600 p-1.5 rounded-lg text-xs"><i class="bi bi-clipboard-check"></i></div>
-                                <h3 class="font-bold text-sm text-slate-900">Registro de Asistencia</h3>
-                            </div>
-                            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium" id="attendance-count-badge">0 registros</span>
-                        </div>
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse" id="attendance-table">
-                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
-                                    <th class="py-3.5 px-5 font-semibold">Marca Temporal</th>
-                                    <th class="py-3.5 px-5 font-semibold">Nombre y Apellido</th>
-                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
-                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
-                                </tr></thead>
-                                <tbody id="attendance-body" class="divide-y divide-slate-100 text-xs text-slate-700">
-                                    <tr><td colspan="4" class="py-10 text-center text-slate-400"><i class="bi bi-clipboard text-2xl text-slate-300 mb-2 block"></i>Use el módulo de carga para importar registros.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- PROGRESS -->
-                    <div x-show="activeTab==='progress'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade space-y-4">
-                        <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Marcador de Grupos</h3>
-                        <p class="text-xs text-slate-500">Seguimiento del avance por grupos y unidades de Sociología.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-emerald-700" id="prog-total">0</p><p class="text-[11px] text-emerald-600 font-medium mt-1">Grupos Activos</p></div>
-                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-blue-700" id="prog-avance">0%</p><p class="text-[11px] text-blue-600 font-medium mt-1">Avance General</p></div>
-                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-amber-700" id="prog-unidad">U1</p><p class="text-[11px] text-amber-600 font-medium mt-1">Unidad Actual</p></div>
-                        </div>
-                    </div>
-
-                    <!-- CALENDAR -->
-                    <div x-show="activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade space-y-4">
-                        <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Calendario Docente</h3>
-                        <p class="text-xs text-slate-500">Planificación de exámenes y actividades de Sociología.</p>
-                        <div id="calendario-contenido" class="text-center py-8 text-slate-400"><i class="bi bi-calendar3 text-3xl text-slate-300 mb-2 block"></i>Próximamente</div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Auto-refresh (5s)</p><p class="text-[10px] text-slate-400">Actualizar datos automáticamente</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="auto-refresh" class="sr-only peer" onchange="toggleAutoRefresh()"><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
                     </div>
                 </div>
+            </div>
 
-                <!-- EXAM DETAIL PANEL -->
-                <div id="exam-detail-panel" class="hidden w-[420px] flex-shrink-0">
-                    <div class="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden sticky top-24">
-                        <div class="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-800 to-emerald-900 text-white flex items-center justify-between">
-                            <div class="flex items-center gap-2.5">
-                                <i class="bi bi-person-check text-emerald-300 text-sm"></i>
-                                <h3 class="font-bold text-sm tracking-wide">Auditoría del Examen</h3>
-                            </div>
-                            <button onclick="cerrarPanel()" class="text-white/60 hover:text-white transition-all cursor-pointer p-1"><i class="bi bi-x-lg"></i></button>
-                        </div>
-                        <div id="exam-detail" class="p-5 space-y-4 text-xs max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
-                            <div class="text-center py-12 text-slate-400 space-y-3">
-                                <div class="text-4xl text-slate-300"><i class="bi bi-person-check"></i></div>
-                                <p class="font-medium max-w-[200px] mx-auto">Seleccione un alumno de la lista para revisar sus datos.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- ===== MONITOREO (tabs anteriores) ===== -->
+            <div x-show="activeTab==='live'||activeTab==='analytics'||activeTab==='attendance'||activeTab==='progress'||activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade text-center py-12 text-slate-400">
+                <i class="bi bi-inbox text-3xl text-slate-300 mb-3 block"></i>
+                <p class="text-sm font-medium">Módulo en desarrollo</p>
+                <p class="text-[10px] mt-1">Próximamente disponible</p>
             </div>
         </div>
     </div>
 </main>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- AUTH + PANEL SCRIPT                                        -->
+<!-- MODAL RECUPERAR CONTRASEÑA                                -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="modal-recuperar" class="modal-overlay">
+    <div class="login-card" style="max-width:440px;">
+        <div class="login-card-body">
+            <h3 style="color:#fff;font-size:1rem;font-weight:700;text-align:center;margin-bottom:16px;">
+                <i class="bi bi-key me-2" style="color:var(--dorado);"></i>Recuperar Contraseña
+            </h3>
+            <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+                <p style="color:var(--dorado-claro);font-size:.72rem;text-align:center;line-height:1.6;">
+                    <strong>Tu contraseña se genera automáticamente:</strong><br>
+                    Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                </p>
+            </div>
+            <label class="premium-label">Cédula</label>
+            <input type="text" id="recuperar-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+            <button onclick="buscarContrasena()" class="premium-btn" style="margin-top:16px;">
+                <i class="bi bi-search me-2"></i>Buscar
+            </button>
+            <div id="recuperar-paso2" style="display:none;margin-top:16px;background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.25);border-radius:14px;padding:20px;text-align:center;">
+                <p style="color:rgba(255,255,255,.5);font-size:.7rem;margin-bottom:8px;">Tu contraseña es:</p>
+                <div id="recuperar-password" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:14px;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:2px;font-family:monospace;cursor:pointer;" onclick="copiarContrasena()">---</div>
+                <p style="color:rgba(255,255,255,.35);font-size:.6rem;margin-top:8px;">Haz clic para copiar</p>
+            </div>
+            <div id="recuperar-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:12px;text-align:center;margin-top:12px;">
+                <p style="color:#ef9a9a;font-size:.75rem;">Cédula no encontrada</p>
+            </div>
+            <button onclick="cerrarRecuperar()" style="width:100%;margin-top:16px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.78rem;cursor:pointer;font-family:Montserrat;">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════ -->
 <script>
-// === LOCAL STORAGE BACKEND (SIN NUBE) ===
+// === LOCAL STORAGE ===
 const USERS_KEY = 'sociologia_users';
 const STORAGE_KEY = 'sociologia_teacherRecords';
 const STUDENT_RESULTS_KEY = 'socioResults';
 const ATTENDANCE_KEY = 'sociologia_attendanceRecords';
+const PERFIL_KEY = 'sociologia_perfil';
+const EMERGENCIA_KEY = 'sociologia_emergencia';
 
-// Base de datos local de usuarios (cédula → {nombre, apellido, rol, password})
-function getUsersDB() {
-    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
-    catch { return {}; }
-}
-
-function saveUsersDB(db) {
-    localStorage.setItem(USERS_KEY, JSON.stringify(db));
-}
-
-// Registrar usuario local (docente/académico)
-function registrarUsuarioLocal(cedula, nombre, apellido, rol) {
+function getUsersDB() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; } }
+function saveUsersDB(db) { localStorage.setItem(USERS_KEY, JSON.stringify(db)); }
+function buscarUsuario(cedula) { const db = getUsersDB(); return db[cedula] || null; }
+function registrarUsuarioLocal(cedula, nombre, apellido, email, telefono, rol) {
     const db = getUsersDB();
-    if (db[cedula]) return false; // Ya existe
     const cedulaLimpia = cedula.replace(/\./g, '');
-    const primeraNombre = nombre.charAt(0).toUpperCase();
-    const primeraApellido = apellido.charAt(0).toLowerCase();
-    const password = primeraNombre + primeraApellido + cedulaLimpia + '*';
-    db[cedula] = { nombre, apellido, rol, password, fechaRegistro: new Date().toISOString() };
+    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+    db[cedula] = { nombre, apellido, email, telefono, rol, password, fechaRegistro: new Date().toISOString() };
     saveUsersDB(db);
-    return true;
 }
+function readArrayStorage(key) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : []; } catch { return []; } }
 
-// Buscar usuario por cédula
-function buscarUsuario(cedula) {
-    const db = getUsersDB();
-    return db[cedula] || null;
-}
-
-// === SESSION GUARD (1hr inactivity) ===
+// === SESSION GUARD ===
 let lastActivity = Date.now();
-const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour
+const INACTIVITY_LIMIT = 60 * 60 * 1000;
 function resetActivity() { lastActivity = Date.now(); }
 ['click','keydown','mousemove','scroll','touchstart'].forEach(evt => document.addEventListener(evt, resetActivity, {passive:true}));
 setInterval(() => {
     if (document.getElementById('login-overlay').classList.contains('hidden') && (Date.now() - lastActivity > INACTIVITY_LIMIT)) {
-        if (confirm('Tu sesión expirará por inactividad. ¿Deseas continuar?')) { resetActivity(); }
-        else { cerrarSesion(); }
+        if (confirm('Tu sesión expirará por inactividad. ¿Deseas continuar?')) { resetActivity(); } else { cerrarSesion(); }
     }
 }, 60000);
 
@@ -656,560 +457,163 @@ setInterval(() => {
 function togglePasswordVisibility() {
     const inp = document.getElementById('login-password');
     const icon = document.getElementById('pwd-toggle-icon');
-    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
-    else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; } else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
 }
 
-// === LOGIN: Cédula + Contraseña (LOCAL) ===
+// === LOGIN ===
 async function loginDocente() {
     const cedula = document.getElementById('login-cedula').value.trim();
     const password = document.getElementById('login-password').value;
     const errorDiv = document.getElementById('login-error');
     const errorText = document.getElementById('login-error-text');
     const btn = document.getElementById('btn-login');
-
-    if (!cedula || !password) {
-        errorText.textContent = 'Debes ingresar cédula y contraseña.';
-        errorDiv.classList.add('show'); return;
-    }
-
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
-    btn.disabled = true;
-    errorDiv.classList.remove('show');
-
+    if (!cedula || !password) { errorText.textContent = 'Debes ingresar cédula y contraseña.'; errorDiv.classList.add('show'); return; }
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...'; btn.disabled = true; errorDiv.classList.remove('show');
     try {
-        // 1) Buscar usuario en base de datos local
         const usuario = buscarUsuario(cedula);
-
-        if (!usuario) {
-            errorText.textContent = 'Cédula no registrada. Contacte al administrador.';
-            errorDiv.classList.add('show');
-            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
-            btn.disabled = false;
-            return;
-        }
-
-        // 2) Verificar contraseña
-        if (password !== usuario.password) {
-            errorText.textContent = 'Contraseña incorrecta. Intenta nuevamente.';
-            errorDiv.classList.add('show');
-            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
-            btn.disabled = false;
-            return;
-        }
-
-        // 3) Verificar que sea docente o académico
-        if (usuario.rol !== 'docente' && usuario.rol !== 'academico' && usuario.rol !== 'admin') {
-            errorText.textContent = 'Acceso no autorizado. Solo docentes y académicos.';
-            errorDiv.classList.add('show');
-            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
-            btn.disabled = false;
-            return;
-        }
-
-        // 4) Guardar sesión
+        if (!usuario) { errorText.textContent = 'Cédula no registrada. Regístrese primero.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
+        if (password !== usuario.password) { errorText.textContent = 'Contraseña incorrecta.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
         const nombreCompleto = usuario.nombre + ' ' + usuario.apellido;
         sessionStorage.setItem('teacher_cedula', cedula);
         sessionStorage.setItem('teacher_nombre', nombreCompleto);
         sessionStorage.setItem('teacher_session_active', '1');
-        sessionStorage.setItem('userRole', usuario.rol);
+        sessionStorage.setItem('userRole', usuario.rol || 'docente');
         sessionStorage.setItem('current_cedula', cedula);
         sessionStorage.setItem('current_nombre', nombreCompleto);
-
-        // Mostrar badge del docente
         document.getElementById('docente-badge').textContent = nombreCompleto + ' (CI: ' + cedula + ')';
-
-        // 5) Ocultar login, mostrar panel
         document.getElementById('login-overlay').classList.add('hidden');
-
-        // 6) Inicializar panel
-        initPanel();
-
-    } catch (e) {
-        console.error('Error de autenticación:', e);
-        errorText.textContent = 'Error inesperado. Intenta nuevamente.';
-        errorDiv.classList.add('show');
-        btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
-        btn.disabled = false;
-    }
+        cargarPerfil(cedula);
+    } catch (e) { console.error(e); errorText.textContent = 'Error inesperado.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; }
 }
 
-// === LOGOUT ===
-function cerrarSesion() {
-    sessionStorage.clear();
-    localStorage.removeItem('userRole');
-    window.location.href = '../index.html';
-}
+// === REGISTRO ===
+function mostrarRegistro() { document.getElementById('login-step-1').style.display = 'none'; document.getElementById('login-step-2').style.display = 'block'; }
+function volverLogin() { document.getElementById('login-step-2').style.display = 'none'; document.getElementById('login-step-1').style.display = 'block'; }
 
-// === REGISTRO DOCENTE LOCAL ===
-function abrirRegistro() {
-    document.getElementById('modal-registro').style.display = 'flex';
-    document.getElementById('reg-cedula').value = '';
-    document.getElementById('reg-nombre').value = '';
-    document.getElementById('reg-apellido').value = '';
-    document.getElementById('reg-rol').value = 'docente';
-    document.getElementById('reg-error').style.display = 'none';
-    document.getElementById('reg-exito').style.display = 'none';
-    document.getElementById('reg-cedula').focus();
-}
-
-// Verificar cédula al escribir
 function verificarCedulaRegistro() {
     const cedula = document.getElementById('reg-cedula').value.trim();
-    if (cedula.length < 5) return; // Esperar a que tenga suficientes dígitos
-    
+    if (cedula.length < 5) return;
     const usuario = buscarUsuario(cedula);
     if (usuario) {
-        // Cargar datos existentes
         document.getElementById('reg-nombre').value = usuario.nombre;
         document.getElementById('reg-apellido').value = usuario.apellido;
-        document.getElementById('reg-rol').value = usuario.rol;
-        
-        // Mostrar aviso
-        const exitoDiv = document.getElementById('reg-exito');
-        const exitoText = document.getElementById('reg-exito-text');
-        const nombreUpper = usuario.nombre.toUpperCase();
-        const apellidoUpper = usuario.apellido.toUpperCase();
+        document.getElementById('reg-email').value = usuario.email || '';
+        document.getElementById('reg-telefono').value = usuario.telefono || '';
         const cedulaLimpia = cedula.replace(/\./g, '');
-        const password = nombreUpper.charAt(0) + apellidoUpper.charAt(0).toLowerCase() + cedulaLimpia + '*';
-        
-        exitoText.innerHTML = `
-            <strong>Usuario ya registrado.</strong> Datos cargados.<br><br>
-            <strong>Tu contraseña:</strong>
-            <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${password}</span>
-        `;
-        exitoDiv.style.display = 'block';
+        const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+        document.getElementById('reg-exito').innerHTML = '<i class="bi bi-check-circle me-1"></i>Ya registrado. Tu contraseña: <strong>' + password + '</strong>';
+        document.getElementById('reg-exito').style.display = 'block';
         document.getElementById('reg-error').style.display = 'none';
     } else {
-        // Limpiar campos si es nuevo
         document.getElementById('reg-nombre').value = '';
         document.getElementById('reg-apellido').value = '';
         document.getElementById('reg-exito').style.display = 'none';
     }
 }
 
-function cerrarRegistro() {
-    document.getElementById('modal-registro').style.display = 'none';
-}
-
-function registrarDocente() {
+function registrarUsuario() {
     const cedula = document.getElementById('reg-cedula').value.trim();
     const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
     const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
-    const rol = document.getElementById('reg-rol').value;
+    const email = document.getElementById('reg-email').value.trim();
+    const telefono = document.getElementById('reg-telefono').value.trim();
     const errorDiv = document.getElementById('reg-error');
-    const errorText = document.getElementById('reg-error-text');
     const exitoDiv = document.getElementById('reg-exito');
-    const exitoText = document.getElementById('reg-exito-text');
-
-    errorDiv.style.display = 'none';
-    exitoDiv.style.display = 'none';
-
-    if (!cedula) {
-        errorText.textContent = 'Ingresa tu cédula.';
-        errorDiv.style.display = 'block';
-        return;
-    }
-
-    // Verificar si ya existe en la base de datos local
-    const usuarioExistente = buscarUsuario(cedula);
-    
-    if (usuarioExistente) {
-        // Cargar datos existentes en los campos
-        document.getElementById('reg-nombre').value = usuarioExistente.nombre;
-        document.getElementById('reg-apellido').value = usuarioExistente.apellido;
-        document.getElementById('reg-rol').value = usuarioExistente.rol;
-
-        // Calcular contraseña con el nombre existente
-        const nombreUpper = usuarioExistente.nombre.toUpperCase();
-        const apellidoUpper = usuarioExistente.apellido.toUpperCase();
-        const cedulaLimpia = cedula.replace(/\./g, '');
-        const password = nombreUpper.charAt(0) + apellidoUpper.charAt(0).toLowerCase() + cedulaLimpia + '*';
-
-        exitoText.innerHTML = `
-            <strong>Ya estás registrado.</strong><br>
-            Cargando tus datos existentes...<br><br>
-            <strong>Tu contraseña es:</strong><br>
-            <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${password}</span><br><br>
-            <span style="font-size:.6rem;opacity:.7;">Copia tu contraseña e ingresa al panel.</span>
-        `;
-        exitoDiv.style.display = 'block';
-        return;
-    }
-
-    // Nuevo registro
-    if (!nombre || !apellido) {
-        errorText.textContent = 'Completa nombre y apellido.';
-        errorDiv.style.display = 'block';
-        return;
-    }
-
+    errorDiv.style.display = 'none'; exitoDiv.style.display = 'none';
+    if (!cedula || !nombre || !apellido) { document.getElementById('reg-error-text').textContent = 'Completa cédula, nombre y apellido.'; errorDiv.style.display = 'block'; return; }
+    if (buscarUsuario(cedula)) { document.getElementById('reg-error-text').textContent = 'Esta cédula ya está registrada.'; errorDiv.style.display = 'block'; return; }
+    registrarUsuarioLocal(cedula, nombre, apellido, email, telefono, 'sin_asignar');
     const cedulaLimpia = cedula.replace(/\./g, '');
-    const primeraNombre = nombre.charAt(0).toUpperCase();
-    const primeraApellido = apellido.charAt(0).toLowerCase();
-    const passwordGenerada = primeraNombre + primeraApellido + cedulaLimpia + '*';
-
-    registrarUsuarioLocal(cedula, nombre, apellido, rol);
-
-    exitoText.innerHTML = `
-        <strong>Registrado correctamente.</strong><br><br>
-        <strong>Tu contraseña es:</strong><br>
-        <span style="font-family:monospace;font-size:.85rem;background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px;">${passwordGenerada}</span><br><br>
-        <span style="font-size:.6rem;opacity:.7;">Guárdala, no se puede recuperar.</span>
-    `;
+    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+    exitoDiv.innerHTML = '<i class="bi bi-check-circle me-1"></i><strong>Registrado.</strong> Tu contraseña: <strong>' + password + '</strong>';
     exitoDiv.style.display = 'block';
 }
 
-// === INIT PANEL ===
-function initPanel() {
-    renderAll();
-    // Bind events
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.btn-generar-acta')) {
-            const cedula = e.target.closest('[data-cedula]')?.dataset.cedula;
-            if (cedula) generarActa(cedula);
-        }
-        if (e.target.closest('#btn-cerrar-panel')) cerrarPanel();
-    });
-}
-
-// === DATA MANAGEMENT ===
-function readArrayStorage(key) {
-    try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : []; }
-    catch { return []; }
-}
-
-function normalizeRecord(r) {
-    if (!r || typeof r !== 'object') return null;
-    const score = parseFloat(r.score ?? r.puntaje ?? 0) || 0;
-    const total = parseFloat(r.puntajeTotal ?? 30) || 30;
-    const attempt = parseInt(r.attempt ?? r.intento ?? 1, 10) || 1;
-    const ci = (r.ci || r.cedula || '').toString().replace(/\D/g, '');
-    return {
-        ...r, cedula: ci, nombre: (r.name || r.nombre || '').trim(),
-        puntaje: score, puntajeTotal: total, intento: attempt,
-        fecha: r.date || r.fecha || '', hora: r.time || r.hora || '',
-        respuesta: r.rawAnswers || r.respuesta || '',
-        carrera: r.carrera || '', estado: r.estado || ''
-    };
-}
-
-function mergeRecords(records) {
-    const map = new Map();
-    records.forEach(r => {
-        const n = normalizeRecord(r);
-        if (!n) return;
-        const key = [n.cedula||'x', n.intento, n.fecha, n.hora, n.puntaje].join('|');
-        map.set(key, { ...(map.get(key)||{}), ...n });
-    });
-    return Array.from(map.values());
-}
-
-function loadRecords() { return mergeRecords([...readArrayStorage(STORAGE_KEY), ...readArrayStorage(STUDENT_RESULTS_KEY)]); }
-
-// === RENDER ALL ===
-function renderAll() {
-    const records = loadRecords();
-    const search = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
-    const career = document.getElementById('career-filter')?.value || '';
-    const sort = document.getElementById('sort-select')?.value || 'nombre';
-
-    let filtered = records.filter(r => {
-        const matchSearch = (r.cedula||'').toLowerCase().includes(search) || (r.nombre||'').toLowerCase().includes(search) || (r.carrera||'').toLowerCase().includes(search);
-        const matchCareer = !career || r.carrera === career;
-        return matchSearch && matchCareer;
-    });
-
-    filtered.sort((a,b) => {
-        if (['nombre','apellido','carrera'].includes(sort)) return (a[sort]||'').localeCompare(b[sort]||'');
-        if (sort==='ci') return (a.cedula||0)-(b.cedula||0);
-        if (sort==='puntaje') return (b.puntaje||0)-(a.puntaje||0);
-        if (sort==='intento') return (a.intento||0)-(b.intento||0);
-        return 0;
-    });
-
-    const active = filtered.filter(r => r.estado === 'rendiendo');
-    const delivered = filtered.filter(r => r.estado !== 'rendiendo');
-
-    // Active students
-    const activeTbody = document.getElementById('active-students');
-    if (activeTbody) {
-        activeTbody.innerHTML = active.length ? active.map(r => `
-            <tr class="hover:bg-slate-50/80 cursor-pointer" onclick="showExamDetail(${escapeJSON(r)})">
-                <td class="py-3 px-5 font-mono font-semibold">${escapeHtml(r.cedula)}</td>
-                <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
-                <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera)}</td>
-                <td class="py-3 px-5 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Intento ${r.intento}</span></td>
-                <td class="py-3 px-5 text-center"><span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Escribiendo...</span></td>
-            </tr>`).join('') : '<tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="bi bi-hourglass text-xl text-slate-300 mb-1 block"></i>No hay alumnos respondiendo</td></tr>';
+// === RECUPERAR CONTRASEÑA ===
+function abrirRecuperar() { document.getElementById('modal-recuperar').classList.add('show'); document.getElementById('recuperar-cedula').value = ''; document.getElementById('recuperar-paso2').style.display = 'none'; document.getElementById('recuperar-error').style.display = 'none'; }
+function cerrarRecuperar() { document.getElementById('modal-recuperar').classList.remove('show'); }
+function buscarContrasena() {
+    const cedula = document.getElementById('recuperar-cedula').value.trim();
+    if (!cedula) { alert('Ingresa tu cédula.'); return; }
+    const usuario = buscarUsuario(cedula);
+    if (usuario) {
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+        document.getElementById('recuperar-password').textContent = password;
+        document.getElementById('recuperar-paso2').style.display = 'block';
+        document.getElementById('recuperar-error').style.display = 'none';
+    } else {
+        document.getElementById('recuperar-error').style.display = 'block';
+        document.getElementById('recuperar-paso2').style.display = 'none';
     }
+}
+function copiarContrasena() {
+    const pwd = document.getElementById('recuperar-password').textContent;
+    navigator.clipboard.writeText(pwd).then(() => { alert('Contraseña copiada: ' + pwd); });
+}
 
-    // Delivered
-    const deliveredTbody = document.getElementById('students-list');
-    if (deliveredTbody) {
-        deliveredTbody.innerHTML = delivered.length ? delivered.map(r => {
-            const pct = r.puntajeTotal > 0 ? Math.round((r.puntaje / r.puntajeTotal) * 100) : 0;
-            const aprobado = pct >= 60;
-            return `
-            <tr class="hover:bg-slate-50/80 cursor-pointer" onclick="showExamDetail(${escapeJSON(r)})">
-                <td class="py-3 px-5 font-mono font-semibold">${escapeHtml(r.cedula)}</td>
-                <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
-                <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera)}</td>
-                <td class="py-3 px-5 text-center font-bold ${aprobado?'text-emerald-600':'text-rose-600'}">${r.puntaje}/${r.puntajeTotal}</td>
-                <td class="py-3 px-5 text-center text-slate-500">${r.intento}</td>
-                <td class="py-3 px-5 text-center text-slate-400 text-[10px]">${r.fecha||'-'} ${r.hora||''}</td>
-                <td class="py-3 px-5 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${aprobado?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${aprobado?'APROBADO':'REPROBADO'}</span></td>
-                <td class="py-3 px-5 text-center"><button class="btn-generar-acta text-emerald-600 hover:text-emerald-800 text-xs font-semibold" data-cedula="${escapeHtml(r.cedula)}"><i class="bi bi-file-pdf"></i> Acta</button></td>
-            </tr>`;
-        }).join('') : '<tr><td colspan="8" class="py-10 text-center text-slate-400"><i class="bi bi-inbox text-2xl text-slate-300 mb-2 block"></i>Sin exámenes registrados.</td></tr>';
+// === PERFIL ===
+function cargarPerfil(cedula) {
+    const usuario = buscarUsuario(cedula);
+    if (!usuario) return;
+    document.getElementById('profile-avatar').textContent = usuario.nombre.charAt(0);
+    document.getElementById('profile-name').textContent = usuario.nombre + ' ' + usuario.apellido;
+    document.getElementById('profile-cedula').textContent = 'CI: ' + cedula;
+    document.getElementById('profile-rol-badge').textContent = usuario.rol === 'sin_asignar' ? 'Sin asignar' : usuario.rol;
+    document.getElementById('profile-asignatura').textContent = usuario.asignatura || 'Sin asignar';
+    document.getElementById('profile-carrera').textContent = usuario.carrera || 'Sin asignar';
+    document.getElementById('datos-nombre').value = usuario.nombre + ' ' + usuario.apellido;
+    document.getElementById('datos-cedula').value = cedula;
+    document.getElementById('datos-email').value = usuario.email || '';
+    document.getElementById('datos-telefono').value = usuario.telefono || '';
+    // Cargar datos personales guardados
+    const perfil = readArrayStorage(PERFIL_KEY).find(p => p.cedula === cedula);
+    if (perfil) {
+        document.getElementById('datos-nacimiento').value = perfil.nacimiento || '';
+        document.getElementById('datos-direccion').value = perfil.direccion || '';
     }
-
-    // Counters
-    const el = id => document.getElementById(id);
-    if (el('active-count')) el('active-count').textContent = active.length;
-    if (el('total-count')) el('total-count').textContent = delivered.length;
-    if (el('sidebar-active-badge')) el('sidebar-active-badge').textContent = active.length;
-    if (el('delivered-count-badge')) el('delivered-count-badge').textContent = delivered.length + ' entregas';
-
-    // Average score
-    const scores = delivered.filter(r => r.puntaje > 0).map(r => (r.puntaje / r.puntajeTotal) * 100);
-    if (el('avg-score')) el('avg-score').textContent = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) + '%' : '-';
-
-    // Career filter
-    populateCareerFilter(records);
-    computeStats(delivered);
+    // Cargar emergencia
+    const emergencia = readArrayStorage(EMERGENCIA_KEY).find(e => e.cedula === cedula);
+    if (emergencia) {
+        document.getElementById('emerg-nombre').value = emergencia.nombre || '';
+        document.getElementById('emerg-parentesco').value = emergencia.parentesco || '';
+        document.getElementById('emerg-telefono').value = emergencia.telefono || '';
+        document.getElementById('emerg-sangre').value = emergencia.sangre || '';
+        document.getElementById('emerg-alergias').value = emergencia.alergias || '';
+    }
 }
 
-function populateCareerFilter(records) {
-    const sel = document.getElementById('career-filter');
-    if (!sel) return;
-    const current = sel.value;
-    const careers = [...new Set(records.map(r => r.carrera).filter(Boolean))].sort();
-    sel.innerHTML = '<option value="">Todas las carreras</option>' + careers.map(c => `<option value="${escapeHtml(c)}" ${c===current?'selected':''}>${escapeHtml(c)}</option>`).join('');
+function guardarDatosPersonales() {
+    const cedula = sessionStorage.getItem('current_cedula');
+    const datos = readArrayStorage(PERFIL_KEY);
+    const idx = datos.findIndex(d => d.cedula === cedula);
+    const nuevo = { cedula, nacimiento: document.getElementById('datos-nacimiento').value, direccion: document.getElementById('datos-direccion').value };
+    if (idx >= 0) datos[idx] = { ...datos[idx], ...nuevo }; else datos.push(nuevo);
+    localStorage.setItem(PERFIL_KEY, JSON.stringify(datos));
+    alert('Datos personales guardados.');
 }
 
-function computeStats(records) {
-    const container = document.getElementById('stats-container');
-    if (!container) return;
-    const groups = {};
-    records.forEach(r => {
-        const c = r.carrera || 'Sin carrera';
-        if (!groups[c]) groups[c] = { count:0, total:0, passed:0, failed:0 };
-        groups[c].count++;
-        const pct = r.puntajeTotal > 0 ? (r.puntaje / r.puntajeTotal) * 100 : 0;
-        groups[c].total += pct;
-        if (pct >= 60) groups[c].passed++; else groups[c].failed++;
-    });
-    container.innerHTML = Object.entries(groups).map(([carrera, s]) => `
-        <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-5 space-y-2">
-            <h4 class="font-bold text-sm text-slate-900">${escapeHtml(carrera)}</h4>
-            <div class="flex justify-between text-xs text-slate-500"><span>Alumnos:</span><span class="font-bold text-slate-800">${s.count}</span></div>
-            <div class="flex justify-between text-xs text-slate-500"><span>Promedio:</span><span class="font-bold text-emerald-600">${s.count?Math.round(s.total/s.count):0}%</span></div>
-            <div class="flex justify-between text-xs text-slate-500"><span>Aprobados:</span><span class="font-bold text-emerald-600">${s.passed}</span></div>
-            <div class="flex justify-between text-xs text-slate-500"><span>Reprobados:</span><span class="font-bold text-rose-600">${s.failed}</span></div>
-        </div>`).join('') || '<p class="text-xs text-slate-400 text-center col-span-2 py-8">Sin datos de rendimiento aún.</p>';
+function guardarEmergencia() {
+    const cedula = sessionStorage.getItem('current_cedula');
+    const datos = readArrayStorage(EMERGENCIA_KEY);
+    const idx = datos.findIndex(d => d.cedula === cedula);
+    const nuevo = { cedula, nombre: document.getElementById('emerg-nombre').value, parentesco: document.getElementById('emerg-parentesco').value, telefono: document.getElementById('emerg-telefono').value, sangre: document.getElementById('emerg-sangre').value, alergias: document.getElementById('emerg-alergias').value };
+    if (idx >= 0) datos[idx] = { ...datos[idx], ...nuevo }; else datos.push(nuevo);
+    localStorage.setItem(EMERGENCIA_KEY, JSON.stringify(datos));
+    alert('Contacto de emergencia guardado.');
 }
 
-// === EXAM DETAIL ===
-function showExamDetail(record) {
-    const panel = document.getElementById('exam-detail-panel');
-    const detail = document.getElementById('exam-detail');
-    if (!panel || !detail) return;
-    panel.classList.remove('hidden');
+// === LOGOUT ===
+function cerrarSesion() { sessionStorage.clear(); window.location.href = '../index.html'; }
 
-    const pct = record.puntajeTotal > 0 ? Math.round((record.puntaje / record.puntajeTotal) * 100) : 0;
-    const aprobado = pct >= 60;
-
-    detail.innerHTML = `
-        <div class="space-y-3">
-            <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4">
-                <div class="w-10 h-10 rounded-full ${aprobado?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'} flex items-center justify-center font-bold text-sm">${(record.nombre||'?').charAt(0)}</div>
-                <div><p class="font-bold text-sm text-slate-900">${escapeHtml(record.nombre)}</p><p class="text-[10px] text-slate-500">CI: ${escapeHtml(record.cedula)}</p></div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Carrera</span><span class="font-semibold">${escapeHtml(record.carrera||'-')}</span></div>
-                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Intento</span><span class="font-semibold">${record.intento}</span></div>
-                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Fecha</span><span class="font-semibold">${record.fecha||'-'}</span></div>
-                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Hora</span><span class="font-semibold">${record.hora||'-'}</span></div>
-            </div>
-            <div class="text-center p-4 rounded-xl ${aprobado?'bg-emerald-50 border border-emerald-200':'bg-rose-50 border border-rose-200'}">
-                <p class="text-3xl font-bold ${aprobado?'text-emerald-700':'text-rose-700'}">${pct}%</p>
-                <p class="text-xs font-bold ${aprobado?'text-emerald-600':'text-rose-600'} mt-1">${aprobado?'APROBADO':'REPROBADO'}</p>
-                <p class="text-[10px] text-slate-500 mt-1">${record.puntaje}/${record.puntajeTotal} puntos</p>
-            </div>
-            ${record.respuesta ? `<div class="bg-slate-50 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-600 mb-2">RESPUESTAS:</p><div class="text-[10px] text-slate-600 whitespace-pre-wrap max-h-48 overflow-y-auto custom-scrollbar">${escapeHtml(String(record.respuesta))}</div></div>` : ''}
-        </div>`;
-}
-
-function cerrarPanel() {
-    const panel = document.getElementById('exam-detail-panel');
-    if (panel) panel.classList.add('hidden');
-}
-
-// === AUTO REFRESH ===
+// === CONFIG ===
+function toggleTemaOscuro() { document.body.classList.toggle('dark'); }
 let autoRefreshInterval = null;
 function toggleAutoRefresh() {
     const on = document.getElementById('auto-refresh')?.checked;
     if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
-    if (on) autoRefreshInterval = setInterval(renderAll, 5000);
+    if (on) autoRefreshInterval = setInterval(() => {}, 5000);
 }
-
-// === IMPORT MODULE ===
-function updateSelectedFilesLabel() {
-    const f = document.getElementById('import-file');
-    document.getElementById('selected-files-label').textContent = f?.files.length ? f.files.length + ' archivo(s) seleccionado(s)' : 'Ningún archivo seleccionado';
-}
-function updateSelectedCSVLabel() {
-    const f = document.getElementById('import-csv');
-    document.getElementById('selected-csv-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
-}
-function updateSelectedConfigLabel() {
-    const f = document.getElementById('config-file');
-    document.getElementById('selected-config-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
-}
-function updateSelectedAttendanceLabel() {
-    const f = document.getElementById('attendance-file');
-    document.getElementById('selected-attendance-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
-}
-
-async function procesarTodo() {
-    let imported = 0;
-    // JSON files
-    const jsonFiles = document.getElementById('import-file')?.files;
-    if (jsonFiles) {
-        for (const file of jsonFiles) {
-            try {
-                const text = await file.text();
-                const data = JSON.parse(text);
-                const items = Array.isArray(data) ? data : [data];
-                const existing = readArrayStorage(STORAGE_KEY);
-                const merged = mergeRecords([...existing, ...items]);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-                imported += items.length;
-            } catch(e) { console.error('Error importing JSON:', e); }
-        }
-    }
-    // CSV
-    const csvFile = document.getElementById('import-csv')?.files[0];
-    if (csvFile) {
-        try {
-            const text = await csvFile.text();
-            const lines = text.split('\n').filter(l => l.trim());
-            const existing = readArrayStorage(STORAGE_KEY);
-            const newRecords = [];
-            for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(';').map(c => c.trim().replace(/^"|"$/g, ''));
-                if (cols.length >= 2) {
-                    newRecords.push({ cedula: cols[1], nombre: cols[2]||'', puntaje: parseFloat(cols[0])||0, carrera: cols[3]||'', intento: parseInt(cols[4])||1, fecha: cols[5]||'', respuesta: cols[6]||'', estado: 'entregado' });
-                }
-            }
-            const merged = mergeRecords([...existing, ...newRecords]);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-            imported += newRecords.length;
-        } catch(e) { console.error('Error importing CSV:', e); }
-    }
-    // Attendance
-    const attFile = document.getElementById('attendance-file')?.files[0];
-    if (attFile) {
-        try {
-            const text = await attFile.text();
-            const lines = text.split('\n').filter(l => l.trim());
-            const attRecords = [];
-            for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split('\t').map(c => c.trim());
-                if (cols.length >= 3) attRecords.push({ marcaTemporal: cols[0], nombre: cols[1], cedula: cols[2], carrera: cols[3]||'' });
-            }
-            localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attRecords));
-            renderAttendance();
-        } catch(e) { console.error('Error importing attendance:', e); }
-    }
-
-    if (imported > 0 || attFile) {
-        alert('Importación completada. ' + imported + ' registros de examen importados.');
-        renderAll();
-    } else {
-        alert('Selecciona al menos un archivo para procesar.');
-    }
-}
-
-function limpiarResultados() {
-    if (!confirm('¿Eliminar todos los resultados registrados?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STUDENT_RESULTS_KEY);
-    renderAll();
-}
-
-// === ATTENDANCE ===
-function renderAttendance() {
-    const records = readArrayStorage(ATTENDANCE_KEY);
-    const tbody = document.getElementById('attendance-body');
-    const badge = document.getElementById('attendance-count-badge');
-    if (badge) badge.textContent = records.length + ' registros';
-    if (!tbody) return;
-    tbody.innerHTML = records.length ? records.map(r => `
-        <tr class="hover:bg-slate-50/80">
-            <td class="py-3 px-5 text-[10px]">${escapeHtml(r.marcaTemporal||'-')}</td>
-            <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
-            <td class="py-3 px-5 font-mono">${escapeHtml(r.cedula)}</td>
-            <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera||'-')}</td>
-        </tr>`).join('') : '<tr><td colspan="4" class="py-10 text-center text-slate-400">Sin registros de asistencia.</td></tr>';
-}
-
-// === PDF EXPORT ===
-function exportPanelPDF() {
-    const main = document.querySelector('main');
-    if (!main) return;
-    html2canvas(main, { scale: 2, useCORS: true }).then(canvas => {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('l', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('Panel_Docente_Sociologia_' + new Date().toISOString().slice(0,10) + '.pdf');
-    });
-}
-
-// === GENERATE ACTA ===
-function generarActa(cedula) {
-    const records = loadRecords().filter(r => r.cedula === cedula);
-    if (!records.length) return alert('No se encontraron registros para esta cédula.');
-    const r = records[0];
-    const pct = r.puntajeTotal > 0 ? Math.round((r.puntaje / r.puntajeTotal) * 100) : 0;
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html><head><title>Acta - ${r.nombre}</title>
-        <style>body{font-family:Montserrat,sans-serif;padding:40px;color:#2D2D2D;}h1{font-size:18px;text-align:center;}h2{font-size:14px;color:#007A33;}table{width:100%;border-collapse:collapse;margin:16px 0;}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}th{background:#f5f5f5;}.score{font-size:24px;font-weight:bold;color:${pct>=60?'#007A33':'#dc2626'};text-align:center;padding:20px;}</style></head><body>
-        <h1>Instituto Superior Centuria</h1>
-        <h2 style="text-align:center;">Acta de Evaluación — Sociología</h2>
-        <p><strong>Alumno:</strong> ${r.nombre}</p><p><strong>Cédula:</strong> ${r.cedula}</p><p><strong>Carrera:</strong> ${r.carrera||'-'}</p>
-        <p><strong>Fecha:</strong> ${r.fecha||'-'} ${r.hora||''}</p><p><strong>Intento:</strong> ${r.intento}</p>
-        <div class="score">${r.puntaje}/${r.puntajeTotal} (${pct}%) — ${pct>=60?'APROBADO':'REPROBADO'}</div>
-        <p style="text-align:center;margin-top:40px;font-size:11px;color:#999;">Generado por Campus Virtual Centuria</p>
-        </body></html>`);
-    win.document.close(); win.print();
-}
-
-// === HELPERS ===
-function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
-function escapeJSON(obj) { return JSON.stringify(obj).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
-
-// === AUTO-INIT: Check session on load ===
-window.addEventListener('DOMContentLoaded', () => {
-    const active = sessionStorage.getItem('teacher_session_active');
-    const cedula = sessionStorage.getItem('teacher_cedula');
-    if (active && cedula) {
-        document.getElementById('login-overlay').classList.add('hidden');
-        document.getElementById('docente-badge').textContent = (sessionStorage.getItem('teacher_nombre')||'Docente') + ' (CI: ' + cedula + ')';
-        initPanel();
-    }
-    renderAttendance();
-});
 </script>
-
-<!-- Session guard (optional, from Campus Virtual) -->
-<script>
-// Simple session guard inline (no external dependency needed)
-</script>
-
 </body>
 </html>

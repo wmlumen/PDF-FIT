@@ -453,10 +453,14 @@
                 <div id="step-2-register">
                     <div class="premium-alert-warn">
                         <i class="bi bi-exclamation-triangle me-1"></i>
-                        Cédula no registrada. Complete sus datos <strong>una única vez</strong> para acceder.
+                        Complete sus datos <strong>una única vez</strong> para acceder a la plataforma.
                     </div>
 
                     <div class="row g-3">
+                        <div class="col-12">
+                            <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
+                            <input type="text" class="premium-input" id="reg-cedula" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;text-align:center;" oninput="this.value=this.value.replace(/\./g,'')">
+                        </div>
                         <div class="col-6">
                             <label class="premium-label">Nombre <span style="color:#ef5350;">*</span></label>
                             <input type="text" class="premium-input" id="reg-nombre" placeholder="Ej: JUAN" style="text-transform:uppercase; font-size:.85rem;" required>
@@ -470,37 +474,14 @@
                             <input type="email" class="premium-input" id="reg-email" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
                         </div>
                         <div class="col-12">
-                            <label class="premium-label">Grado académico <span style="color:#ef5350;">*</span></label>
-                            <select class="premium-select" id="reg-grado" required onchange="cargarCarrerasPorGrado()">
-                                <option value="" selected disabled>Selecciona tu grado...</option>
-                                <option value="Grado">Grado (Licenciatura / Ingeniería)</option>
-                                <option value="Especialización">Especialización</option>
-                                <option value="Maestría">Maestría</option>
-                                <option value="Doctorado">Doctorado</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="premium-label">Carrera / Programa <span style="color:#ef5350;">*</span></label>
-                            <select class="premium-select" id="reg-carrera" required disabled>
-                                <option value="" selected disabled>Primero selecciona un grado...</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="premium-label">Sección <span style="color:#ef5350;">*</span></label>
-                            <select class="premium-select" id="reg-seccion" required>
-                                <option value="" selected disabled>Selecciona tu sección...</option>
-                                <option value="VL 026">VL 026</option>
-                                <option value="S026">S026</option>
-                                <option value="MJ026">MJ026</option>
-                                <option value="IC026">IC026</option>
-                                <option value="Otro">Otro</option>
-                            </select>
+                            <label class="premium-label">Teléfono</label>
+                            <input type="text" class="premium-input" id="reg-telefono" placeholder="0981 123456" style="font-size:.85rem;">
                         </div>
                     </div>
 
-                    <div style="background:rgba(0,177,64,.08);border:1px solid rgba(0,177,64,.2);border-left:3px solid var(--verde-medio);border-radius:10px;color:var(--verde-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
+                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
                         <i class="bi bi-info-circle me-1"></i>
-                        Al registrarte, tu contraseña se genera automáticamente. Consulta en <strong>"¿Olvidaste tu contraseña?"</strong> para verla.
+                        El administrador asignará su <strong>rol</strong> y <strong>asignatura</strong> después del registro.
                     </div>
 
                     <button id="btn-registrar" class="premium-btn mt-3" onclick="registrarYAcceder()">
@@ -710,32 +691,28 @@
                 .catch(e => { hideLoading('btn-buscar'); showLoginError("Error de conexión. Revisa tu internet."); console.error(e); });
         }
 
-        // ═══ PASO 2: Registro de alumno nuevo ═══
+        // ═══ PASO 2: Registro de usuario nuevo ═══
         function registrarYAcceder(){
+            const cedula = cedulaActual;
             const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
             const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
             const email = document.getElementById('reg-email').value.trim();
-            const grado = document.getElementById('reg-grado').value;
-            const carrera = document.getElementById('reg-carrera').value;
-            const seccion = document.getElementById('reg-seccion').value;
-            if(!nombre || !apellido || !grado || !carrera || !seccion){ alert("Completa NOMBRE, APELLIDO, GRADO, CARRERA y SECCIÓN."); return; }
+            const telefono = document.getElementById('reg-telefono')?.value.trim() || '';
+            if(!cedula || !nombre || !apellido){ alert("Completa CÉDULA, NOMBRE y APELLIDO."); return; }
             showLoading('btn-registrar');
             const nombreCompleto = nombre + ' ' + apellido;
-            const carreraCompleta = grado + ' en ' + carrera;
             fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
-                action:'registrar_alumno', cedula:cedulaActual, nombre:nombreCompleto,
-                nombre_separado:{nombre,apellido}, email, grado, carrera:carreraCompleta, seccion,
-                observacion:'Registrado desde Portal Principal'
+                action:'registrar_alumno', cedula, nombre:nombreCompleto,
+                nombre_separado:{nombre,apellido}, email, telefono,
+                grado:'', carrera:'', seccion:'',
+                observacion:'Registrado desde Portal Principal — pendiente de asignación'
             })})
             .then(r => r.json())
             .then(data => {
                 hideLoading('btn-registrar');
-                sessionStorage.setItem('current_cedula', cedulaActual);
+                sessionStorage.setItem('current_cedula', cedula);
                 sessionStorage.setItem('current_nombre', nombreCompleto);
                 sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre,apellido}));
-                sessionStorage.setItem('current_grado', grado);
-                sessionStorage.setItem('current_carrera', carreraCompleta);
-                sessionStorage.setItem('current_seccion', seccion);
                 sessionStorage.setItem('rol', 'alumno');
                 mostrarCursos(null);
             })
