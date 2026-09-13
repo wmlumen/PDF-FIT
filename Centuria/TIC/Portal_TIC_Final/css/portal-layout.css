@@ -1,0 +1,29 @@
+/* Estructura compartida por todas las hojas del curso. */
+.portal-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: start; }
+.portal-layout > .sidebar { width: 100%; padding-inline: 0; position: sticky !important; top: 0; height: 100dvh !important; max-height: 100dvh !important; overflow-y: auto; }
+.portal-layout > .content { width: 100%; min-width: 0; min-height: 0 !important; padding: 20px 28px !important; }
+.portal-layout.menu-hidden { grid-template-columns: minmax(0, 1fr); }
+.portal-layout > .sidebar[hidden] { display: none !important; }
+.portal-menu-toggle { position: fixed; top: 96px; left: 240px; z-index: 100; display: grid; place-items: center; width: 24px; height: 44px; margin: 0; padding: 0; border: 1px solid #007A33; border-left: 0; border-radius: 0 7px 7px 0; background: white; color: #005c26; font: 700 24px/1 'Segoe UI', sans-serif; cursor: pointer; box-shadow: 2px 1px 5px rgb(0 0 0 / 12%); }
+.menu-hidden .portal-menu-toggle { left: 0; }
+.portal-menu-toggle:hover { background: #E6F4EA; }
+.portal-menu-toggle:focus-visible { outline: 3px solid #007A33; outline-offset: 3px; }
+.portal-layout #top-user-bar { position: static !important; flex-wrap: wrap; gap: 12px !important; }
+.portal-layout #top-user-bar > div { min-width: 0; }
+.portal-layout .page-title { margin-top: 0; margin-bottom: 20px !important; overflow-wrap: anywhere; }
+.portal-layout .section-card { margin-bottom: 20px; padding: 20px; }
+.portal-layout .table-responsive { overflow-x: auto; }
+.portal-layout img { max-width: 100%; }
+@media (max-width: 767px) {
+    .portal-menu-toggle { left: 0; top: 50%; }
+    .portal-layout { grid-template-columns: minmax(0, 1fr); }
+    .portal-layout > .sidebar { position: static !important; height: auto !important; max-height: 45dvh !important; }
+    .portal-layout > .content { padding: 16px !important; }
+    .portal-layout #top-user-bar > div { flex-wrap: wrap; }
+    .portal-layout .section-card { padding: 14px; }
+}
+@media print {
+    .portal-layout { display: block; }
+    .portal-layout > .sidebar, .portal-menu-toggle { display: none !important; }
+    .portal-layout > .content { padding: 0 !important; }
+}

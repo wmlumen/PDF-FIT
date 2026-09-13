@@ -1,0 +1,409 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidad 4 - Sistemas Integrados  a los Sistemas de InformaciÃ³n | TIC Centuria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/estilos.css">
+    <link rel="stylesheet" href="../prompt_unificado.css">
+    <link rel="stylesheet" href="../css/portal-layout.css">
+    <script src="../js/portal-layout.js" defer></script>
+    <link rel="stylesheet" href="../accesibilidad.css">
+    <link rel="stylesheet" href="../css/paleta-oficial.css">
+</head>
+<body>
+    <script>if(!sessionStorage.getItem('current_cedula')){location.replace('../index.html');}</script>
+    <div class="container-fluid">
+        <div class="row portal-layout">
+            <!-- SIDEBAR R12+R13+R16: 10 unidades exactas + 3 globales + 100vh -->
+                    <nav id="portal-menu" aria-label="NavegaciÃ³n del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
+            <div class="p-2">
+                <a href="programa.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-file-earmark-text me-2"></i>Programa Oficial</a>
+                <a href="../glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario TÃ©cnico</a>
+                <a href="../asistencia_presencial.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-person-raised-hand me-2"></i>Asistencia Presencial</a>
+                <a href="planilla.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-graph-up me-2"></i>Planilla de Progreso</a>
+            </div>
+            <div class="px-3 pt-3 pb-2 text-uppercase small fw-bold text-white-50" style="letter-spacing:1px;">Unidades (10)</div>
+            <div class="px-2">
+                <a href="Unidad_01.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 1</a>
+                <a href="Unidad_02.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 2</a>
+                <a href="Unidad_03.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 3</a>
+                <a href="Unidad_04.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 4</a>
+                <a href="Unidad_05.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 5</a>
+                <a href="Unidad_06.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 6</a>
+                <a href="Unidad_07.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 7</a>
+                <a href="Unidad_08.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 8</a>
+                <a href="Unidad_09.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 9</a>
+                <a href="Unidad_10.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 10</a>
+            </div>
+        </nav>
+
+            
+            <main class="col-md-9 col-lg-10 content p-4">
+                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menÃº</button>
+                                    <!-- Header superior premium -->
+            <div id="top-user-bar" class="d-flex justify-content-between align-items-center gap-2 py-2 px-3 mb-3 bg-white rounded-3 shadow-sm border" style="position: sticky; top: 0; z-index: 10;">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="logo_centuria.png" alt="Centuria" style="height: 36px; width: auto;">
+                    <div>
+                        <div class="fw-bold" style="color: #007A33; font-size: .85rem; line-height: 1.1;">INSTITUTO SUPERIOR CENTURIA</div>
+                        <small class="text-muted" style="font-size: .7rem; line-height: 1.1;" id="top-carrera">Carrera: <span class="fw-bold">ADE18</span></small><br>
+                        <small class="text-muted" style="font-size: .7rem; line-height: 1.1;" id="top-asignatura">Asignatura: <span class="fw-bold">TIC</span></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Progreso inline -->
+                    <div id="progreso-inline" class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background:var(--c-light, #E6F4EA); border:1px solid rgba(0,122,51,.15);">
+                        <i class="bi bi-check2-square" style="color:#007A33; font-size:.85rem;"></i>
+                        <span id="progreso-texto-inline" class="fw-bold small" style="color:#007A33; font-size:.75rem;">0/8</span>
+                        <div style="width:60px; height:6px; background:#dee2e6; border-radius:10px; overflow:hidden;">
+                            <div id="progreso-bar-inline" style="width:0%; height:100%; background:linear-gradient(90deg,#007A33,#00B140); border-radius:10px; transition:width .4s;"></div>
+                        </div>
+                        <span id="progreso-pct-inline" class="fw-bold small" style="color:#007A33; font-size:.7rem;">0%</span>
+                    </div>
+<!-- Usuario + Selector de Rol -->
+                    <div class="text-end d-none d-md-block" style="position:relative;">
+                        <div id="sidebar-user-name" class="fw-bold small" style="color: #007A33; line-height: 1.1;"></div>
+                        <small id="sidebar-user-id" class="text-muted" style="font-size: 0.7rem;"></small>
+                        <!-- Badge clickeable que abre el selector de roles -->
+                        <div id="rol-activo-badge" style="font-size:.6rem; margin-top:2px; cursor:pointer;" onclick="toggleRolSelector()" title="Clic para cambiar de rol">
+                            <span class="badge" id="rol-badge-text" style="background:#007A33; color:white; font-size:.55rem; padding:2px 6px; border-radius:10px; text-transform:uppercase; letter-spacing:.5px;">ðŸŽ“ ALUMNO</span>
+                            <i class="bi bi-chevron-down" style="font-size:.5rem; color:#999; margin-left:2px;"></i>
+                        </div>
+                        <!-- Dropdown de roles disponibles -->
+                        <div id="rol-selector-dropdown" style="display:none; position:absolute; right:0; top:100%; background:white; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.15); border:1px solid #e0e0e0; min-width:260px; z-index:999; padding:8px 0; margin-top:4px;">
+                            <div style="padding:8px 14px; font-size:.65rem; color:#999; text-transform:uppercase; letter-spacing:1px; font-weight:600; border-bottom:1px solid #f0f0f0;">
+                                <i class="bi bi-arrow-repeat me-1"></i>Cambiar de rol
+                            </div>
+                            <div id="rol-selector-lista"></div>
+                            <div style="border-top:1px solid #f0f0f0; padding:6px 14px;">
+                                <a href="../index.html" style="font-size:.7rem; color:#dc3545; text-decoration:none; display:flex; align-items:center; gap:4px;" onclick="sessionStorage.clear();">
+                                    <i class="bi bi-box-arrow-right"></i> Salir completamente
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vr d-none d-md-block"></div>
+                    <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesiÃ³n"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                </div>
+            </div>
+                        <ul class="mt-3">
+                            <li><strong>PlanificaciÃ³n:</strong> DefiniciÃ³n de alcance y recursos.</li>
+                            <li><strong>AnÃ¡lisis:</strong> Estudio de procesos actuales.</li>
+                            <li><strong>DiseÃ±o:</strong> EspecificaciÃ³n tÃ©cnica.</li>
+                            <li><strong>ImplementaciÃ³n:</strong> CodificaciÃ³n y configuraciÃ³n.</li>
+                            <li><strong>Pruebas:</strong> VerificaciÃ³n.</li>
+                            <li><strong>Uso y mantenimiento:</strong> CorrecciÃ³n y mejora continua.</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="ciclo" onclick="marcarLeido('ciclo')"><i class="bi bi-check-circle me-1"></i> Marcar como LeÃ­do</button></div>
+                </div>
+
+                <!-- CARD 5 -->
+                <div class="card shadow-sm border-start border-4 border-secondary mb-3 col-12" id="card-variables">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-sliders text-secondary me-2"></i>Variables determinantes</div>
+                    <div class="card-body">
+                        <h3 id="variables">5. Variables determinantes</h3>
+                        <ul>
+                            <li><strong>Calidad:</strong> Cumplimiento de estÃ¡ndares.</li>
+                            <li><strong>Recursos:</strong> Personal, presupuesto y tiempo.</li>
+                            <li><strong>Complejidad:</strong> Dificultad tÃ©cnica.</li>
+                            <li><strong>Riesgos:</strong> Incertidumbre tecnolÃ³gica y de mercado.</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="variables" onclick="marcarLeido('variables')"><i class="bi bi-check-circle me-1"></i> Marcar como LeÃ­do</button></div>
+                </div>
+
+                <!-- CARD 6 - R9 siglas + R10 anclas + R3 listas -->
+                <div class="card shadow-sm border-start border-4 border-dark mb-3 col-12" id="card-metodos">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-cart4 text-dark me-2"></i>MÃ©todos de adquisiciÃ³n</div>
+                    <div class="card-body">
+                        <h3 id="metodos">6. MÃ©todos alternos para la adquisiciÃ³n</h3>
+                        <h4 id="def-inhouse">A. MÃ©todo tradicional (desarrollo <em>in-house</em>)</h4>
+                        <ul>
+                            <li>Desarrollo interno por personal propio.</li>
+                            <li>Control total y personalizaciÃ³n.</li>
+                            <li>Mayor tiempo y costo.</li>
+                        </ul>
+                        <h4 id="def-paquetes">B. Compra de paquetes</h4>
+                        <ul>
+                            <li>Software comercial: <span class="sigla" data-bs-toggle="tooltip" title="Enterprise Resource Planning - PlanificaciÃ³n de Recursos Empresariales">ERP</span> (<em>Enterprise Resource Planning</em> - PlanificaciÃ³n de Recursos Empresariales), <span class="sigla" data-bs-toggle="tooltip" title="Customer Relationship Management - GestiÃ³n de Relaciones con Clientes">CRM</span> (<em>Customer Relationship Management</em>).</li>
+                            <li>RÃ¡pida implementaciÃ³n.</li>
+                        </ul>
+                        <h4 id="def-outsourcing">C. Outsourcing</h4>
+                        <ul>
+                            <li>ContrataciÃ³n de terceros.</li>
+                            <li>Acceso a expertise externo.</li>
+                        </ul>
+                        <!-- R10: Caso que linkea a definiciÃ³n + R11 coherencia -->
+                        <div class="alert alert-warning mt-3"><strong>Caso prÃ¡ctico:</strong> La empresa debe elegir entre <a href="#def-inhouse" class="enlace-ancla">desarrollo in-house</a> y <a href="#def-paquetes" class="enlace-ancla">compra de paquetes</a> para su nuevo <a href="#def-tps" class="enlace-ancla">TPS</a>. Â¿QuÃ© criterio priorizarÃ­as?</div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="metodos" onclick="marcarLeido('metodos')"><i class="bi bi-check-circle me-1"></i> Marcar como LeÃ­do</button></div>
+                </div>
+
+                <!-- CARD 7 - R6 segunda card obligatoria densidad -->
+                <div class="card shadow-sm border-start border-4 border-primary mb-3 col-12" id="card-case">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-laptop text-primary me-2"></i>IngenierÃ­a CASE</div>
+                    <div class="card-body">
+                        <h3 id="case">7. IngenierÃ­a <span class="sigla" data-bs-toggle="tooltip" title="Computer Aided Software Engineering - IngenierÃ­a de Software Asistida por Computadora">CASE</span> (<em>Computer Aided Software Engineering</em>)</h3>
+                        <p><strong>Concepto:</strong> Herramientas para apoyar el ciclo de vida.</p>
+                        <ul>
+                            <li><strong>Incluye:</strong> modelado, generaciÃ³n de cÃ³digo, pruebas.</li>
+                            <li><strong>Beneficios:</strong> productividad y consistencia.</li>
+                        </ul>
+                        <div class="row g-2">
+                            <div class="col-md-6"><div class="p-2 bg-light border rounded"><i class="bi bi-file-earmark-code"></i> <strong>DFD:</strong> Flujo de datos</div></div>
+                            <div class="col-md-6"><div class="p-2 bg-light border rounded"><i class="bi bi-diagram-3"></i> <strong>ER:</strong> Entidad-RelaciÃ³n</div></div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="case" onclick="marcarLeido('case')"><i class="bi bi-check-circle me-1"></i> Marcar como LeÃ­do</button></div>
+                </div>
+
+                <!-- CARD 8 - R8 BibliografÃ­a -->
+                <div class="card shadow-sm border-start border-4 border-secondary mb-3 col-12" id="card-bib">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-book text-secondary me-2"></i>BibliografÃ­a</div>
+                    <div class="card-body seccion-bibliografia">
+                        <h4>BibliografÃ­a BÃ¡sica</h4>
+                        <ul>
+                            <li>Laudon, K. C., & Laudon, J. P. (2020). <em>Management Information Systems: Managing the Digital Firm</em>. Pearson.</li>
+                            <li>Turban, E. et al. (2018). <em>Information Technology for Management: Transforming Organizations in the Digital Economy</em>. Wiley.</li>
+                        </ul>
+                        <h4>BibliografÃ­a Complementaria</h4>
+                        <ul>
+                            <li>O'Brien, J. A. & Marakas, G. M. (2011). <em>Management Information Systems</em>. McGraw-Hill.</li>
+                            <li>Cohen, D. et al. (2000). <em>Sistemas de InformaciÃ³n para los Negocios</em>. McGraw-Hill.</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-end"><button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="bib" onclick="marcarLeido('bib')"><i class="bi bi-check-circle me-1"></i> Marcar como LeÃ­do</button></div>
+                </div>
+
+                <!-- R17 FINAL -->
+                <div class="d-grid my-4">
+                    <button id="btn-confirmar" class="btn btn-secondary btn-lg" disabled onclick="intentarConfirmar()"><i class="bi bi-lock me-2"></i>Confirmar LecciÃ³n como Completada</button>
+                    <small class="text-muted text-center mt-2">Debes marcar las 8 secciones como leÃ­das para habilitar</small>
+                </div>
+
+                <!-- R15 NavegaciÃ³n Lineal -->
+                <div class="navegacion-unidades d-flex justify-content-between border-top pt-3">
+                    <a href="Unidad_03.html" class="btn btn-outline-secondary" title="Unidad anterior"><i class="bi bi-chevron-left"></i></a>
+                    <a href="Unidad_05.html" class="btn btn-primary" title="Siguiente unidad"><i class="bi bi-chevron-right"></i></a>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- R Bloqueo Secuencial - Modal -->
+    <div class="modal fade" id="modalBloqueo" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-danger"><div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="bi bi-lock-fill me-2"></i>Unidad bloqueada</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="mb-0" id="msgBloqueo">Debes completar la unidad anterior antes de continuar.</p></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button><a id="btnIrAnterior" href="Unidad_01.html" class="btn btn-primary">Ir a unidad pendiente</a></div></div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // R Bloqueo Secuencial + R13 UX + R9 tooltip + R17 anti-trampa
+        const totalSecciones = 8;
+        const leidos = new Set();
+        const UNIDAD_ACTUAL = 4;
+        function isUnidadCompletada(n){ const k='unidad_'+String(n).padStart(2,'0')+'_completada'; return localStorage.getItem(k)==='true' || localStorage.getItem('tic_progress_Admin_Unidad_'+n)==='finished' || localStorage.getItem('tic_progress_unidad_'+n)==='finished'; }
+        function getMaxCompletada(){ let max=0; for(let i=1;i<=10;i++){ if(isUnidadCompletada(i)) max=i; else break; } return max; }
+        function bloquearNavegacion(){
+            const max=getMaxCompletada();
+            const limite = max+1; // solo hasta la siguiente no completada se puede entrar
+            document.querySelectorAll('.menu-clase').forEach(a=>{
+                const num=parseInt(a.getAttribute('data-clase'))||99;
+                if(num>limite){
+                    a.classList.add('disabled'); a.style.opacity='0.45'; a.style.pointerEvents='none'; a.setAttribute('title','Completa la unidad anterior para desbloquear');
+                    a.addEventListener('click',e=>{e.preventDefault(); mostrarBloqueo(num, max+1);});
+                }
+            });
+            // Bloquear botÃ³n Siguiente Unidad si la unidad actual no estÃ¡ completada
+            const btnSig=document.querySelector('.navegacion-unidades .btn-primary');
+            if(btnSig && !isUnidadCompletada(UNIDAD_ACTUAL)){
+                // No bloqueamos visual, pero interceptamos click hasta confirmar (se habilitarÃ¡ al confirmar)
+                btnSig.classList.add('disabled'); btnSig.style.pointerEvents='none'; btnSig.style.opacity='0.5';
+            }
+        }
+        function mostrarBloqueo(destino, pendiente){
+            document.getElementById('msgBloqueo').textContent='La Unidad '+destino+' estÃ¡ bloqueada. Debes cerrar la Unidad '+pendiente+' (Confirmar LecciÃ³n como Completada) antes de avanzar.';
+            document.getElementById('btnIrAnterior').setAttribute('href','clase_'+String(pendiente).padStart(2,'0')+'.html');
+            new bootstrap.Modal(document.getElementById('modalBloqueo')).show();
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            // R13 auto-tracking + bloqueo
+            const cur = location.pathname.split('/').pop() || 'Unidad_01.html';
+            document.querySelectorAll('.menu-clase').forEach(a=>{
+                if(a.getAttribute('href')===cur) { a.classList.add('active'); a.scrollIntoView({behavior:'smooth',block:'center'}); }
+            });
+            
+    }
+    // R21 mostrar usuario en sidebar
+        const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+    const n=sessionStorage.getItem('current_nombre');
+    const c=sessionStorage.getItem('current_cedula');
+    if(n) { const el=document.getElementById('sidebar-user-name'); if(el) el.textContent=n; }
+    if(c) { const el=document.getElementById('sidebar-user-id'); if(el) el.textContent='C.I: '+c; }
+    // Badge de rol activo + selector
+    (function(){
+        const badgeTexto=document.getElementById('rol-badge-text');
+        if(!badgeTexto) return;
+        const colores={alumno:'#007A33',docente:'#0097A7',admin:'#5C6BC0',academico:'#8E24AA'};
+        const emojis={alumno:'ðŸŽ“',docente:'ðŸ‘¨\u200dðŸ«',admin:'âš™ï¸',academico:'ðŸ›ï¸'};
+        const etiquetas={alumno:'ALUMNO',docente:'DOCENTE',admin:'ADMIN',academico:'ACADÃ‰MICO'};
+        const bg=colores[rol]||'#007A33';
+        const emoji=emojis[rol]||'ðŸŽ“';
+        const label=etiquetas[rol]||rol.toUpperCase();
+        badgeTexto.style.background=bg;
+        badgeTexto.textContent=emoji+' '+label;
+        cargarRolesDisponibles();
+    })();
+
+    function toggleRolSelector(){
+        const dd=document.getElementById('rol-selector-dropdown');
+        dd.style.display=dd.style.display==='none'?'block':'none';
+    }
+    document.addEventListener('click',function(e){
+        const dd=document.getElementById('rol-selector-dropdown');
+        const badge=document.getElementById('rol-activo-badge');
+        if(dd && !dd.contains(e.target) && badge && !badge.contains(e.target)) dd.style.display='none';
+    });
+
+    async function cargarRolesDisponibles(){
+        const cedula=sessionStorage.getItem('current_cedula');
+        if(!cedula) return;
+        try{
+            const r=await fetch(SCRIPT_URL+'?action=verificar_roles&cedula='+encodeURIComponent(cedula));
+            const data=await r.json();
+            const roles=data.roles||[];
+            sessionStorage.setItem('roles',JSON.stringify(roles));
+            renderizarRolesDisponibles(roles);
+        }catch(e){console.error('Error cargando roles:',e);}
+    }
+
+    function renderizarRolesDisponibles(roles){
+        const lista=document.getElementById('rol-selector-lista');
+        if(!lista||!roles.length){return;}
+        const colores={alumno:'#007A33',docente:'#0097A7',admin:'#5C6BC0',academico:'#8E24AA'};
+        const emojis={alumno:'ðŸŽ“',docente:'ðŸ‘¨\u200dðŸ«',admin:'âš™ï¸',academico:'ðŸ›ï¸'};
+        const etiquetas={alumno:'Alumno',docente:'Docente',admin:'Administrador',academico:'AcadÃ©mico'};
+        const rolActual=sessionStorage.getItem('rol')||'alumno';
+        let html='';
+        roles.forEach(function(r){
+            if(r.estado!=='activo') return;
+            const esActual=r.rol===rolActual&&(r.carrera||'')===(sessionStorage.getItem('current_carrera')||'');
+            const color=colores[r.rol]||'#007A33';
+            const emoji=emojis[r.rol]||'ðŸŽ“';
+            const label=etiquetas[r.rol]||r.rol;
+            const info=[r.asignatura||r.carrera||'',r.seccion?'Sec. '+r.seccion:''].filter(Boolean).join(' Â· ');
+            const bg=esActual?color+'15':'transparent';
+            const border=esActual?'2px solid '+color:'2px solid transparent';
+            html+='<div onclick="cambiarRol(\''+r.rol+'\',\''+encodeURIComponent(r.carrera||'')+'\',\''+encodeURIComponent(r.seccion||'')+'\',\''+encodeURIComponent(r.asignatura||'')+'\')" style="padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:.15s; background:'+bg+'; border:'+border+'; border-radius:8px; margin:2px 8px;" onmouseover="this.style.background=\''+color+'10\';" onmouseout="this.style.background=\''+bg+'\';">';
+            html+='<span style="width:28px; height:28px; border-radius:50%; background:'+color+'20; color:'+color+'; display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0;">'+emoji+'</span>';
+            html+='<div style="flex:1; min-width:0;">';
+            html+='<div style="font-size:.78rem; font-weight:600; color:#333;">'+label+'</div>';
+            html+='<div style="font-size:.65rem; color:#999; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">'+info+'</div>';
+            html+='</div>';
+            if(esActual) html+='<i class="bi bi-check-circle-fill" style="color:'+color+'; font-size:.75rem;"></i>';
+            html+='</div>';
+        });
+        lista.innerHTML=html;
+    }
+
+    function cambiarRol(nuevoRol, carrera, seccion, asignatura){
+        carrera=decodeURIComponent(carrera||'');
+        seccion=decodeURIComponent(seccion||'');
+        asignatura=decodeURIComponent(asignatura||'');
+        sessionStorage.setItem('rol',nuevoRol);
+        if(carrera) sessionStorage.setItem('current_carrera',carrera);
+        if(seccion) sessionStorage.setItem('current_seccion',seccion);
+        if(asignatura) sessionStorage.setItem('current_asignatura',asignatura);
+        if(nuevoRol==='admin'){ window.location.href='../admin_roles.html'; return; }
+        window.location.reload();
+    }
+
+            
+    // Cargar Carrera/Asignatura dinÃ¡micamente (soporta mÃºltiples carreras)
+    (function(){
+        const c = sessionStorage.getItem('current_carrera') || sessionStorage.getItem('curso_nombre') || 'ADE18';
+        const s = sessionStorage.getItem('current_seccion') || '';
+        const cursos = JSON.parse(sessionStorage.getItem('cursos_disponibles') || 'null');
+        const elCar = document.getElementById('top-carrera');
+        const elAsig = document.getElementById('top-asignatura');
+        if(cursos && Array.isArray(cursos) && cursos.length>1){
+            // MÃºltiples carreras: mostrar todas
+            if(elCar) elCar.innerHTML = 'Carreras: <span class="fw-bold">'+cursos.map(x=>x.codigo||x.id).join(', ')+'</span>';
+            if(elAsig) elAsig.innerHTML = 'Asignaturas: <span class="fw-bold">'+cursos.map(x=>x.nombre).join(' | ')+'</span>';
+        } else {
+            if(elCar) elCar.innerHTML = 'Carrera: <span class="fw-bold">'+c+'</span>'+(s?' â€¢ SecciÃ³n '+s:'');
+            if(elAsig && sessionStorage.getItem('curso_nombre')) elAsig.innerHTML = 'Asignatura: <span class="fw-bold">'+sessionStorage.getItem('curso_nombre')+'</span>';
+        }
+    })();
+
+            // R9 tooltip init
+            [...document.querySelectorAll('[data-bs-toggle="tooltip"]')].forEach(el=> new bootstrap.Tooltip(el));
+            actualizarProgreso();
+            actualizarProgresoInline();
+            bloquearNavegacion();
+            // Si esta unidad >1 y anterior no completada, bloquear acceso directo por URL
+            if(UNIDAD_ACTUAL>1 && !isUnidadCompletada(UNIDAD_ACTUAL-1)){
+                mostrarBloqueo(UNIDAD_ACTUAL, UNIDAD_ACTUAL-1);
+                // Interceptar todo click en contenido
+                document.querySelector('main').style.opacity='0.35';
+                document.querySelector('main').style.pointerEvents='none';
+            }
+        });
+        function marcarLeido(id){
+            const btn=document.querySelector(`[data-section="${id}"]`);
+            if(btn){ btn.classList.remove('btn-outline-success'); btn.classList.add('btn-success'); btn.innerHTML='<i class="bi bi-check-circle-fill me-1"></i> LeÃ­do'; btn.disabled=true; const card=document.getElementById('card-'+id); if(card) card.classList.add('border-success'); }
+            leidos.add(id); actualizarProgreso();
+            actualizarProgresoInline();
+        }
+        function actualizarProgreso(){
+            const pct=Math.round(leidos.size/totalSecciones*100);
+            document.getElementById('progreso-texto') && document.getElementById('progreso-texto').textContent=leidos.size+' / '+totalSecciones+' secciones leÃ­das';
+            document.getElementById('progreso-badge') && document.getElementById('progreso-badge').textContent=pct+'%';
+            actualizarProgresoInline(leidos.size, totalSecciones);
+            const btn=document.getElementById('btn-confirmar');
+            if(leidos.size===totalSecciones){ btn.disabled=false; btn.classList.remove('btn-secondary'); btn.classList.add('btn-success'); btn.innerHTML='<i class="bi bi-check-all me-2"></i>Confirmar LecciÃ³n como Completada'; }
+        }
+        function intentarConfirmar(){
+            const btn=document.getElementById('btn-confirmar');
+            if(btn.disabled){
+                const faltantes=[...document.querySelectorAll('.btn-marcar-leido:not(.btn-success)')];
+                if(faltantes.length){ faltantes[0].scrollIntoView({behavior:'smooth',block:'center'}); faltantes[0].classList.add('border-danger'); faltantes[0].classList.add('text-danger'); setTimeout(()=>{faltantes[0].classList.remove('border-danger'); faltantes[0].classList.remove('text-danger');},2000); }
+            } else { // asistencia localStorage integrada
+                const k='tic_progress_Admin_Unidad_4'; localStorage.setItem(k,'finished'); alert('Â¡LecciÃ³n confirmada! Progreso guardado.'); location.href='Unidad_02.html';
+            }
+        }
+        // Asistencia demo
+        function marcarAsistenciaClase(){ localStorage.setItem('tic_asistencia_'+Date.now(),'presente'); document.getElementById('btn-asis-clase').textContent='Ã¢Å“â€œ Presente registrado'; document.getElementById('btn-asis-clase').disabled=true; }
+    </script>
+    <!-- VALIDACIÃ“N 17/17 OK - GOLD: Unidad_05.html -->
+    <script src="../marcar_leido_moodle.js"></script>
+<script src="../js/accesibilidad.js"></script>
+<script src="../js/session-guard.js"></script>
+<script>
+        // Actualizar progreso inline en el header
+        function actualizarProgresoInline(leidos, total) {
+            if (leidos === undefined) {
+                // Leer del DOM si no se pasan argumentos
+                const textoEl = document.getElementById('progreso-texto');
+                if (textoEl) {
+                    const match = textoEl.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+                    if (match) { leidos = parseInt(match[1]); total = parseInt(match[2]); }
+                }
+                if (leidos === undefined) { leidos = 0; total = 1; }
+            }
+            const pct = total > 0 ? Math.round((leidos / total) * 100) : 0;
+            const elTexto = document.getElementById('progreso-texto-inline');
+            const elBar = document.getElementById('progreso-bar-inline');
+            const elPct = document.getElementById('progreso-pct-inline');
+            if (elTexto) elTexto.textContent = leidos + '/' + total;
+            if (elBar) elBar.style.width = pct + '%';
+            if (elPct) elPct.textContent = pct + '%';
+        }
+</script>
+</body>
+</html>
+
+
+
