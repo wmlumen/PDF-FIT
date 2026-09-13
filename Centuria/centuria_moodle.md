@@ -2,7 +2,6 @@
 
 > **Archivo de referencia para cualquier IA que trabaje en este proyecto.**
 > **Última actualización:** 2026-09-13 19:50 (sesión Docker 80/443)
-> **Repositorio:** `https://github.com/wmlumen/PDF-FIT.git`
 > **Ruta raíz:** `C:\Users\HP 250 G10\Documents\GITHUT\Centuria`
 
 ---
@@ -537,12 +536,6 @@ docker exec -i moodle_web php /var/www/html/import_indicators.php 3
 5. **¿Integrar portal standalone完全mente en Moodle o mantener separado?** → Decisión del usuario.
 
 ---
-
-## 14. CONTACTO Y REPOSITORIO
-
-- **GitHub:** `https://github.com/wmlumen/PDF-FIT.git`
-- **Rama principal:** `master`
-- **Usuario GitHub:** `wmlumen`
 
 ---
 
