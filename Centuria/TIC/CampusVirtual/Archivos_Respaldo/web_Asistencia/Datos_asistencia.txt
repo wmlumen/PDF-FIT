@@ -1,0 +1,43 @@
+# ============================================
+# DATOS DE ASISTENCIA - INSTITUTO SUPERIOR CENTURIA
+# ============================================
+# Archivo de configuracion para el sistema de asistencia.
+# 1. Copiar este archivo a Datos_asistencia.txt
+# 2. Completar con tus datos reales
+# 3. NO subir Datos_asistencia.txt a GitHub (esta en .gitignore)
+#
+# IMPORTANTE: Este archivo .example NO tiene datos reales.
+# Es solo una plantilla.
+
+# === DATOS DEL DOCENTE ===
+name.docente=NOMBRE_DEL_DOCENTE
+cedula.docente=NUMERO_CEDULA
+
+# === CREDENCIALES DE ACCESO ===
+cedula.panel.docente=NUMERO_CEDULA
+teacher.password=CONTRASENA_SEGURA
+
+# === SEGURIDAD ===
+# API Secret para validar requests al Google Apps Script
+# Debe coincidir con API_SECRET en el archivo .gs
+api.secret=TU_API_SECRET_AQUI
+
+# === CONFIGURACION DE ASISTENCIA ===
+# URL publica de la pagina de asistencia (GitHub Pages)
+asistencia.public.url=https://TU_USUARIO.github.io/Asistencia/asistencia.html
+# Web App de Google Apps Script (para escritura POST directa)
+asistencia.api.url=https://script.google.com/macros/s/TU_ID_DE_WEB_APP/exec
+# Link de Google Sheets asistencia (PLANILLA OFICIAL)
+link.asistencia=https://docs.google.com/spreadsheets/d/TU_SHEET_ID/edit
+# CSV publico de la hoja de asistencia
+asistencia.csv.url=https://docs.google.com/spreadsheets/d/e/TU_ID_CSV/pub?output=csv
+
+# === CARRERAS Y SECCIONES ===
+asistencia.carreras=CARRERA 1|CARRERA 2|CARRERA 3
+asistencia.secciones=SECCION 1|SECCION 2|SECCION 3
+
+# ============================================
+# FORMATO: clave=valor
+# Los espacios alrededor del signo = son opcionales
+# Guardar como UTF-8 para caracteres especiales
+# ============================================

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 07: Informática Contable (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #311b92; --accent: #4527a0; --bg: #ede7f6; --white: #ffffff; --text: #333; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #f3e5f5; border: 1px solid #7b1fa2; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #7b1fa2; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #f3e5f5; border: 1px solid #9575cd; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #2d3436; color: #a29bfe; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #7b1fa2; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f3e5f5; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD VI: Informática Contable</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Organización de Archivos y Trazabilidad Transaccional</p></header>
+        <section><h2>1. La Profesión Ante el Algoritmo</h2><p>El experto en informática contable no es un mero "cargador de datos". Su rol es el de un **Arquitecto de Sistemas de Información**, capaz de diseñar y auditar la estructura donde se almacena el patrimonio de la organización. En esta unidad, descendemos al nivel de los archivos para comprender cómo se organiza la información financiera de forma persistente y segura.</p>
+        <p>Hoy, el profesional debe certificar que los archivos del sistema cumplen con las normas locales de auditoría y con las exigencias de almacenamiento a largo plazo que impone la ley.</p></section>
+        <section class="reading-box"><h3>📜 Dictamen Técnico (Fowler Newton p.4)</h3><p>"Ciertos problemas de la contabilidad computarizada surgen de la confusión entre lo que es un archivo maestro y un archivo de movimientos. El perito debe dominar la distinción para asegurar que el sistema no permita cambios en las cuentas maestras que alteren la validez de los movimientos históricos. El control de los archivos electrónicos es, hoy en día, el control de la empresa misma."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: ORGANIZACIÓN DE ARCHIVOS -->
+    <div class="page">
+        <h2>2. Jerarquía de Datos: Maestro vs Transaccional</h2>
+        <h3>2.1 Archivos Maestros (Permanent Files)</h3><p>Son el corazón referencial del sistema. Contienen datos que no deberían cambiar con frecuencia. Un error en un archivo maestro es un "error sistémico" que se propaga a todo el balance.</p>
+        <p><strong>Ejemplos Críticos:</strong></p><ul><li>**Plan de Cuentas:** Define la estructura del reporte.</li><li>**Padrón de Clientes/Proveedores:** Contiene RUCs y Nombres legales.</li><li>**Baja de Activos:** Registro de bienes de uso.</li></ul>
+        <h3>2.2 Archivos Transaccionales (Journal Files)</h3><p>Contienen el flujo diario. Son dinámicos y voluminosos. Deben estar vinculados estrictamente al Maestro mediante una **Llave Foránea (Foreign Key)**. Ejemplo: Cada factura en el archivo transaccional debe tener un RUC que exista en el Maestro de Proveedores.</p>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: CONCEPTOS DE BASES DE DATOS -->
+    <div class="page">
+        <h2>3. Anatomía del Registro Contable Digital</h2>
+        <p>Para sistematizar la contabilidad, debemos entender cómo se compone un registro en la base de datos.</p>
+        <h3>3.1 Campos, Registros y Llaves</h3><ul><li>**Campo (Field):** La unidad mínima (ej: Fecha, Monto, ID_Cuenta).</li><li>**Registro (Record):** El conjunto de campos de un asiento (ej: El renglón 1 del Diario).</li><li>**Llave Primaria (Primary Key):** El ID único que impide que dos asientos tengan el mismo número.</li><li>**Índice:** Estructura que acelera la búsqueda (ej: Buscar todas las compras de un solo proveedor en segundos).</li></ul>
+        <div class="technical-box"><strong>📌 PRO-TIP AUDITORÍA:</strong> Si el sistema permite un Registro sin Llave Primaria, estamos ante un sistema vulnerable a la duplicidad de información.</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: TRAZABILIDAD Y SIFEN -->
+    <div class="page">
+        <h2>4. Trazabilidad y Seguridad de Archivos</h2>
+        <p>En el entorno de la **Facturación Electrónica (SIFEN)**, la trazabilidad no es opcional; es una exigencia técnica del fisco paraguayo.</p>
+        <h3>4.1 El Log de Auditoría (Journaling)</h3><p>Todo sistema profesional debe guardar un archivo oculto (Log) que registre: 1. Quién entró. 2. A qué hora. 3. Qué dato cambió. 4. Cuál era el valor anterior. Esto es lo que permite al perito reconstruir la historia tras un fraude interno.</p>
+        <h3>4.2 Resguardo y Backup</h3><p>El profesional debe definir una política de **Backup de 3 Niveles:** Local (Diario), Offsite (Semanal) y Cloud (Permanente). Según la normativa, los registros contables electrónicos deben conservarse por al menos 5 años legalmente y 10 años técnicamente.</p>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO DE DISEÑO DE ARCHIVOS -->
+    <div class="page">
+        <h2>5. Laboratorio: Diseño de un Esquema de Maestro de Cuentas</h2>
+        <p>En este ejercicio, usted diseñará la estructura de una tabla Maestra para un Plan de Cuentas profesional.</p>
+        <div class="snippet">// Estructura SQL del Maestro de Cuentas:<br>CREATE TABLE Plan_Cuentas (<br>&nbsp;&nbsp;&nbsp;&nbsp;CTA_ID INT PRIMARY KEY,<br>&nbsp;&nbsp;&nbsp;&nbsp;CTA_Nombre VARCHAR(100),<br>&nbsp;&nbsp;&nbsp;&nbsp;CTA_Tipo VARCHAR(20), // Activo, Pasivo, etc.<br>&nbsp;&nbsp;&nbsp;&nbsp;CTA_Nivel INT, // 1, 2, 3, 4, 5<br>&nbsp;&nbsp;&nbsp;&nbsp;CTA_Saldo_Inicial PYG_DECIMAL<br>);</div>
+        <h3>📊 Dataset de Validación de Integridad (Dataset VI)</h3>
+        <table><thead><tr><th>Transacción ID</th><th>RUC Proveniente</th><th>Monto Bruto</th><th>Estado en Maestro</th></tr></thead><tbody><tr><td>TRX-001</td><td>80011223-4</td><td>1.500.000</td><td>VÁLIDO ✅</td></tr><tr><td>TRX-002</td><td>99999999-0</td><td>2.300.000</td><td>INVÁLIDO (No existe) ❌</td></tr><tr><td>TRX-003</td><td>80100998-1</td><td>12.850.000</td><td>VÁLIDO ✅</td></tr></tbody></table>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: El Perito de Archivos</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- EL SISTEMA PERMITE CAMBIAR EL NOMBRE DE UNA CUENTA CON SALDO:</strong> Es un riesgo grave de auditoría. Advierte a la gerencia. El nombre de la cuenta en el Maestro no debe alterarse sin un proceso de migración o ajuste formal.</p><p><strong>- SE HAN BORRADO REGISTROS DEL ARCHIVO TRANSACCIONAL:</strong> Revisa el <em>Log de Auditoría</em>. Si el sistema no tiene Log, estás ante una falla de control crítico. Utiliza las tablas de <em>Journaling</em> de la base de datos para intentar una recuperación de emergencia.</p><p><strong>- EL REPORTE DEIVA NO COINCIDE CON EL DIARIO:</strong> Probable error de vinculación de archivos. Verifica si el campo "ID_IMPUESTO" en el transaccional está apuntando correctamente a la tasa del Maestro.</p></section>
+        <h3>📝 Cuestionario de Especialización en Archivos</h3><ol><li>¿Cuál es la función de una Llave Primaria en un archivo de Plan de Cuentas?</li><li>Explique qué sucedería si borramos un proveedor del Maestro pero mantenemos sus facturas en el Transaccional.</li><li>Describa los 3 niveles de backup recomendados para un estudio contable moderno en Paraguay.</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Informática Aplicada • Material Académico</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

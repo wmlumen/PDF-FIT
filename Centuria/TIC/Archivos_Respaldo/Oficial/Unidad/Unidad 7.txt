@@ -1,0 +1,1269 @@
+La **Unidad VII** del programa ADE18 es **“Tecnologías de Apoyo a la Toma de Decisiones”**. El programa incluye sistemas transaccionales, proceso de toma de decisiones, DSS, GDSS, diseño de salas, casos de aplicación, inteligencia artificial y sistemas expertos. 
+
+A continuación, el material desarrollado manteniendo esa estructura y con orientación universitaria hacia Administración.
+
+# UNIDAD VII — TECNOLOGÍAS DE APOYO A LA TOMA DE DECISIONES
+
+**Asignatura:** Tecnología de la Información y la Comunicación
+**Código:** ADE18
+**Carrera:** Administración
+**Unidad:** VII
+**Enfoque:** Sistemas de información, análisis y toma de decisiones empresariales
+
+---
+
+# 1. INTRODUCCIÓN: DE REGISTRAR DATOS A TOMAR DECISIONES
+
+Las organizaciones generan diariamente grandes cantidades de datos:
+
+* ventas;
+* compras;
+* pagos;
+* inventarios;
+* movimientos bancarios;
+* clientes;
+* proveedores;
+* costos;
+* asistencia;
+* producción;
+* reclamos;
+* operaciones administrativas.
+
+Registrar estos datos es necesario, pero no suficiente.
+
+El verdadero valor aparece cuando la organización puede convertirlos en **información útil para tomar decisiones**.
+
+Por ejemplo:
+
+Un sistema registra que durante seis meses las ventas fueron:
+
+**Enero:** G. 120 millones
+**Febrero:** G. 125 millones
+**Marzo:** G. 118 millones
+**Abril:** G. 110 millones
+**Mayo:** G. 103 millones
+**Junio:** G. 95 millones
+
+Los registros representan información histórica.
+
+Pero la administración necesita responder preguntas de mayor nivel:
+
+**¿Por qué están disminuyendo las ventas?**
+
+**¿Continuará la tendencia?**
+
+**¿Qué productos están provocando la caída?**
+
+**¿Qué sucedería si reducimos los precios?**
+
+**¿Conviene aumentar la publicidad?**
+
+**¿Qué decisión debería tomar la gerencia?**
+
+Las tecnologías de apoyo a las decisiones permiten avanzar desde el simple registro de operaciones hacia el **análisis, comparación, simulación y evaluación de alternativas**.
+
+---
+
+# 2. PLATAFORMA DE SISTEMAS TRANSACCIONALES
+
+Los **Sistemas de Procesamiento de Transacciones (TPS)** registran las operaciones rutinarias de una organización.
+
+Ejemplos:
+
+* venta realizada;
+* factura emitida;
+* compra registrada;
+* pago recibido;
+* salario abonado;
+* producto ingresado;
+* transferencia realizada;
+* inscripción de un estudiante;
+* reserva confirmada.
+
+Cada operación genera datos.
+
+Por ejemplo:
+
+**VENTA**
+
+Cliente: María González
+Producto: Notebook
+Cantidad: 1
+Precio: G. 4.500.000
+Sucursal: San Lorenzo
+Fecha: 08/09/2026
+Vendedor: Juan López
+
+Una venta individual puede tener poco valor para una decisión estratégica.
+
+Pero miles de operaciones acumuladas permiten analizar:
+
+* productos más vendidos;
+* clientes principales;
+* horarios de mayor venta;
+* sucursales con mejor rendimiento;
+* evolución mensual;
+* comportamiento de precios;
+* niveles de inventario.
+
+Por esta razón, los sistemas transaccionales constituyen una importante **fuente de datos para sistemas de apoyo gerencial y de decisiones**.
+
+---
+
+# 3. DEL TPS A LA DECISIÓN
+
+Podemos representar el proceso de la siguiente manera:
+
+**TRANSACCIONES**
+
+↓
+
+**DATOS**
+
+↓
+
+**BASE DE DATOS**
+
+↓
+
+**PROCESAMIENTO Y ANÁLISIS**
+
+↓
+
+**INFORMACIÓN**
+
+↓
+
+**ALTERNATIVAS**
+
+↓
+
+**DECISIÓN**
+
+↓
+
+**ACCIÓN**
+
+Ejemplo:
+
+**TPS:** registra 25.000 ventas.
+
+↓
+
+**Análisis:** identifica caída del 18 % en determinada categoría.
+
+↓
+
+**DSS:** compara posibles estrategias.
+
+↓
+
+**Gerente:** selecciona una alternativa.
+
+↓
+
+**Empresa:** implementa la decisión.
+
+La tecnología no necesariamente toma la decisión final.
+
+Su función principal puede ser **mejorar la calidad de la información disponible para quien debe decidir**.
+
+---
+
+# 4. EL PROCESO DE TOMA DE DECISIONES
+
+Tomar una decisión significa seleccionar una alternativa entre diferentes posibilidades para alcanzar un objetivo o resolver un problema.
+
+En administración, las decisiones pueden relacionarse con:
+
+* inversiones;
+* contratación;
+* producción;
+* marketing;
+* financiamiento;
+* inventario;
+* expansión;
+* proveedores;
+* precios;
+* tecnología.
+
+Una decisión empresarial debería apoyarse en información relevante y no exclusivamente en intuición.
+
+---
+
+# 5. ETAPAS DEL PROCESO DE DECISIÓN
+
+Un proceso de decisión puede estructurarse en varias etapas.
+
+## 5.1. Identificación del problema
+
+Primero debemos reconocer que existe una situación que requiere intervención.
+
+Ejemplo:
+
+**Las ventas disminuyeron un 20 %.**
+
+Pero detectar el síntoma no significa conocer el problema.
+
+La disminución podría deberse a:
+
+* aumento de precios;
+* nuevos competidores;
+* falta de inventario;
+* mala atención;
+* cambios en los consumidores;
+* problemas económicos;
+* publicidad insuficiente.
+
+---
+
+## 5.2. Recolección de información
+
+Se obtienen datos relacionados con el problema.
+
+Por ejemplo:
+
+* ventas históricas;
+* precios;
+* inventarios;
+* clientes;
+* competidores;
+* costos;
+* campañas;
+* reclamos.
+
+---
+
+## 5.3. Análisis
+
+Los datos son procesados para identificar:
+
+* tendencias;
+* patrones;
+* relaciones;
+* anomalías;
+* causas posibles.
+
+---
+
+## 5.4. Generación de alternativas
+
+Se identifican diferentes opciones.
+
+Ejemplo:
+
+**Alternativa A:** reducir precios.
+
+**Alternativa B:** aumentar publicidad.
+
+**Alternativa C:** introducir nuevos productos.
+
+**Alternativa D:** cerrar productos poco rentables.
+
+---
+
+## 5.5. Evaluación de alternativas
+
+Se estudian:
+
+* costos;
+* beneficios;
+* riesgos;
+* recursos;
+* impacto;
+* tiempo;
+* viabilidad.
+
+---
+
+## 5.6. Selección
+
+La administración elige la alternativa considerada más conveniente.
+
+---
+
+## 5.7. Implementación
+
+La decisión se transforma en acciones concretas.
+
+---
+
+## 5.8. Evaluación
+
+Finalmente se analizan los resultados.
+
+Una decisión administrativa no termina cuando se selecciona una alternativa.
+
+Debe comprobarse:
+
+**¿Funcionó?**
+
+---
+
+# 6. TIPOS DE DECISIONES
+
+## Decisiones estructuradas
+
+Son repetitivas y poseen reglas relativamente claras.
+
+Ejemplo:
+
+Si el inventario baja del mínimo establecido, generar una orden de reposición.
+
+Pueden automatizarse con mayor facilidad.
+
+---
+
+## Decisiones semiestructuradas
+
+Una parte puede resolverse mediante reglas o análisis, pero otra requiere juicio humano.
+
+Ejemplo:
+
+Determinar cuánto inventario comprar para los próximos tres meses.
+
+El sistema puede proporcionar:
+
+* ventas históricas;
+* tendencias;
+* costos;
+* proyecciones.
+
+Pero el gerente puede considerar factores adicionales.
+
+---
+
+## Decisiones no estructuradas
+
+Son complejas, poco frecuentes y no poseen una solución predeterminada.
+
+Ejemplos:
+
+* ingresar a un nuevo mercado;
+* adquirir otra empresa;
+* cambiar el modelo de negocio;
+* realizar una inversión estratégica.
+
+En estas decisiones la experiencia y el juicio directivo tienen un papel importante.
+
+---
+
+# 7. SISTEMAS DE APOYO A LA TOMA DE DECISIONES — DSS
+
+**DSS** significa:
+
+**Decision Support System**
+
+o
+
+**Sistema de Apoyo a la Toma de Decisiones.**
+
+Es un sistema diseñado para proporcionar información, modelos y herramientas analíticas que ayuden a las personas a evaluar problemas y alternativas.
+
+Su finalidad fundamental es **apoyar al decisor**.
+
+---
+
+# 8. CARACTERÍSTICAS DE LOS DSS
+
+Un DSS puede:
+
+* integrar información;
+* consultar datos;
+* analizar tendencias;
+* comparar alternativas;
+* realizar simulaciones;
+* generar escenarios;
+* utilizar modelos;
+* presentar información gráficamente;
+* responder preguntas del tipo “¿qué pasaría si...?”.
+
+Una característica importante es la **interactividad**.
+
+El usuario puede modificar determinadas variables y observar cómo cambian los resultados.
+
+---
+
+# 9. ANÁLISIS “WHAT-IF”
+
+Una de las herramientas conceptuales más importantes es el análisis:
+
+**What if? — ¿Qué pasaría si...?**
+
+Ejemplo:
+
+Una empresa vende un producto a:
+
+**Precio:** G. 100.000
+**Ventas:** 1.000 unidades
+
+La gerencia desea analizar:
+
+**¿Qué sucedería si reducimos el precio un 10 % y las ventas aumentan un 25 %?**
+
+Un sistema de apoyo puede calcular diferentes escenarios antes de implementar la decisión.
+
+Otros ejemplos:
+
+**¿Qué ocurre si el dólar aumenta 15 %?**
+
+**¿Qué sucede si las ventas disminuyen 20 %?**
+
+**¿Qué ocurre si contratamos cinco vendedores adicionales?**
+
+**¿Qué sucede si aumentamos la inversión publicitaria?**
+
+El DSS permite explorar posibles consecuencias.
+
+---
+
+# 10. ANÁLISIS DE SENSIBILIDAD
+
+El análisis de sensibilidad estudia cómo cambia un resultado cuando se modifica una o varias variables.
+
+Por ejemplo:
+
+Una empresa analiza su utilidad modificando el precio:
+
+**Precio A:** G. 80.000
+**Precio B:** G. 90.000
+**Precio C:** G. 100.000
+**Precio D:** G. 110.000
+
+El objetivo es comprender qué variables tienen mayor influencia sobre los resultados.
+
+---
+
+# 11. ANÁLISIS DE ESCENARIOS
+
+Una organización puede construir diferentes escenarios futuros.
+
+### Escenario optimista
+
+* aumento de ventas;
+* reducción de costos;
+* crecimiento económico.
+
+### Escenario probable
+
+* comportamiento esperado según información disponible.
+
+### Escenario pesimista
+
+* caída de ventas;
+* aumento de costos;
+* dificultades económicas.
+
+Esto permite preparar decisiones antes de que ocurran determinadas situaciones.
+
+---
+
+# 12. COMPONENTES CONCEPTUALES DE UN DSS
+
+Un DSS puede integrar varios elementos.
+
+### Datos
+
+Información interna y externa.
+
+### Modelos
+
+Representaciones matemáticas, financieras, estadísticas o lógicas.
+
+### Software
+
+Herramientas para realizar cálculos, consultas y simulaciones.
+
+### Interfaz
+
+Permite al usuario interactuar con el sistema.
+
+### Usuario decisor
+
+Persona responsable de analizar los resultados y tomar decisiones.
+
+---
+
+# 13. CASO DE APLICACIÓN DE UN DSS
+
+## Supermercados Centuria
+
+La empresa debe decidir dónde abrir una nueva sucursal.
+
+Tiene tres posibles ubicaciones:
+
+**San Lorenzo**
+
+**Luque**
+
+**Fernando de la Mora**
+
+La decisión considera:
+
+* población;
+* alquiler;
+* competencia;
+* tránsito;
+* ingresos promedio;
+* distancia de proveedores;
+* costo de instalación;
+* ventas estimadas.
+
+Un DSS podría permitir asignar valores a estas variables y comparar las alternativas.
+
+El gerente podría preguntar:
+
+**¿Qué ubicación obtiene mejores resultados?**
+
+Después:
+
+**¿Qué sucede si el alquiler aumenta 20 %?**
+
+Después:
+
+**¿Qué sucede si las ventas son 15 % menores de lo esperado?**
+
+El sistema permite analizar múltiples escenarios antes de comprometer recursos.
+
+---
+
+# 14. DSS NO SIGNIFICA DECISIÓN AUTOMÁTICA
+
+Debe diferenciarse:
+
+**Sistema que APOYA una decisión**
+
+de
+
+**Sistema que TOMA automáticamente una decisión.**
+
+Un DSS proporciona elementos para decidir.
+
+La responsabilidad administrativa continúa perteneciendo al decisor cuando la decisión requiere intervención humana.
+
+Por ejemplo, un sistema puede indicar:
+
+**“La alternativa B presenta mayor rentabilidad proyectada.”**
+
+Pero el gerente puede considerar además:
+
+* riesgos;
+* reputación;
+* legislación;
+* impacto social;
+* estrategia empresarial.
+
+La tecnología aumenta la capacidad de análisis, pero no elimina automáticamente la responsabilidad humana.
+
+---
+
+# 15. SISTEMAS DE APOYO A DECISIONES EN GRUPO — GDSS
+
+**GDSS** significa:
+
+**Group Decision Support System.**
+
+Son sistemas diseñados para facilitar procesos de decisión donde participan varias personas.
+
+Son especialmente útiles cuando una decisión requiere:
+
+* diferentes conocimientos;
+* diferentes departamentos;
+* discusión;
+* evaluación conjunta;
+* votación;
+* generación de alternativas;
+* consenso.
+
+---
+
+# 16. CARACTERÍSTICAS DE LOS GDSS
+
+Un GDSS puede permitir:
+
+* compartir documentos;
+* presentar información;
+* registrar propuestas;
+* generar ideas;
+* realizar votaciones;
+* clasificar alternativas;
+* comparar opiniones;
+* colaborar a distancia;
+* documentar decisiones.
+
+Ejemplo:
+
+Una empresa debe seleccionar un nuevo sistema ERP.
+
+Participan:
+
+* gerente general;
+* gerente financiero;
+* responsable de tecnología;
+* administración;
+* recursos humanos;
+* compras.
+
+Cada área puede evaluar diferentes aspectos de las propuestas.
+
+---
+
+# 17. VENTAJAS DE LOS GDSS
+
+Entre sus posibles ventajas:
+
+* participación de múltiples especialistas;
+* mayor cantidad de alternativas;
+* registro del proceso;
+* colaboración;
+* estructuración de reuniones;
+* reducción de determinadas barreras geográficas;
+* posibilidad de analizar diferentes opiniones.
+
+---
+
+# 18. DESVENTAJAS Y LIMITACIONES DE LOS GDSS
+
+También pueden aparecer dificultades:
+
+* resistencia al uso de tecnología;
+* información insuficiente;
+* conflictos entre participantes;
+* dependencia tecnológica;
+* problemas de conectividad;
+* exceso de información;
+* mala configuración del proceso;
+* costos de implementación.
+
+La existencia de tecnología no garantiza una buena decisión grupal.
+
+---
+
+# 19. DISEÑO DE SALAS PARA GDSS
+
+Tradicionalmente, los GDSS podían implementarse mediante salas especialmente equipadas.
+
+Una sala de decisión puede disponer de:
+
+* computadoras;
+* pantalla principal;
+* conectividad;
+* software colaborativo;
+* sistemas de votación;
+* herramientas de presentación.
+
+Actualmente muchas de estas funciones pueden realizarse también mediante plataformas digitales y ambientes virtuales.
+
+El principio continúa siendo el mismo:
+
+**utilizar tecnología para estructurar y mejorar el proceso de decisión colectiva.**
+
+---
+
+# 20. USOS PRÁCTICOS DE GDSS
+
+Puede utilizarse para:
+
+* planificación estratégica;
+* elaboración presupuestaria;
+* selección de proveedores;
+* evaluación de proyectos;
+* selección de tecnología;
+* gestión de riesgos;
+* planificación de inversiones;
+* resolución de problemas complejos.
+
+---
+
+# 21. CASO DE APLICACIÓN DE GDSS
+
+Una universidad debe seleccionar una nueva plataforma académica.
+
+Existen cuatro propuestas.
+
+Participan representantes de:
+
+* Dirección;
+* Administración;
+* Docencia;
+* Secretaría;
+* Informática;
+* estudiantes.
+
+Se establecen criterios:
+
+**Costo — 20 %**
+
+**Funcionalidad — 25 %**
+
+**Facilidad de uso — 15 %**
+
+**Seguridad — 15 %**
+
+**Soporte — 10 %**
+
+**Escalabilidad — 15 %**
+
+Cada participante evalúa las alternativas.
+
+El sistema consolida las puntuaciones y genera un resultado.
+
+Esto no significa que la plataforma con mayor puntuación deba seleccionarse automáticamente.
+
+El resultado constituye información para apoyar la decisión colectiva.
+
+---
+
+# 22. INTELIGENCIA ARTIFICIAL
+
+La Inteligencia Artificial incorpora técnicas que permiten que los sistemas realicen tareas asociadas con capacidades como:
+
+* reconocimiento;
+* clasificación;
+* predicción;
+* generación;
+* procesamiento de lenguaje;
+* identificación de patrones;
+* recomendaciones;
+* resolución de determinados problemas.
+
+Dentro del contexto empresarial, puede utilizarse como apoyo para:
+
+* pronosticar demanda;
+* detectar fraude;
+* analizar clientes;
+* automatizar procesos;
+* realizar recomendaciones;
+* clasificar documentos;
+* asistir al usuario;
+* analizar grandes volúmenes de información.
+
+---
+
+# 23. IA Y TOMA DE DECISIONES
+
+Supongamos que una institución posee información histórica de miles de clientes.
+
+Un sistema puede analizar:
+
+* compras;
+* frecuencia;
+* preferencias;
+* comportamiento;
+* historial.
+
+A partir de estos datos podría generar:
+
+**Predicción:** probabilidad de compra.
+
+**Clasificación:** segmento de cliente.
+
+**Recomendación:** producto potencialmente interesante.
+
+**Alerta:** comportamiento anormal.
+
+Estos resultados pueden apoyar decisiones comerciales.
+
+---
+
+# 24. SISTEMAS EXPERTOS
+
+Un **sistema experto** busca representar conocimiento especializado para proporcionar recomendaciones o conclusiones dentro de un dominio determinado.
+
+Tradicionalmente utiliza:
+
+### Base de conocimiento
+
+Contiene conocimientos y reglas del dominio.
+
+### Motor de inferencia
+
+Aplica reglas para obtener conclusiones.
+
+### Interfaz
+
+Permite interactuar con el usuario.
+
+---
+
+# 25. EJEMPLO SIMPLIFICADO DE SISTEMA EXPERTO
+
+Supongamos un sistema para evaluación financiera.
+
+Reglas:
+
+**SI** liquidez es baja
+**Y** endeudamiento es alto
+**ENTONCES** riesgo financiero elevado.
+
+Otra regla:
+
+**SI** liquidez es alta
+**Y** endeudamiento es bajo
+**ENTONCES** situación financiera favorable.
+
+El sistema recibe información, aplica reglas y produce una recomendación o conclusión.
+
+---
+
+# 26. BENEFICIOS DE LOS SISTEMAS EXPERTOS
+
+Pueden contribuir a:
+
+* conservar conocimiento especializado;
+* proporcionar respuestas consistentes;
+* apoyar personal menos experimentado;
+* automatizar determinados análisis;
+* reducir tiempos;
+* disponibilizar conocimiento de forma más amplia.
+
+---
+
+# 27. COSTOS Y LIMITACIONES
+
+El desarrollo y mantenimiento de estos sistemas puede implicar:
+
+* adquisición del conocimiento;
+* especialistas;
+* desarrollo;
+* validación;
+* actualización;
+* infraestructura;
+* capacitación;
+* mantenimiento.
+
+Además, el conocimiento puede cambiar.
+
+Un sistema basado en conocimientos desactualizados puede producir recomendaciones inadecuadas.
+
+---
+
+# 28. SHELL PARA SISTEMAS EXPERTOS
+
+Un **Shell** es una herramienta o entorno que proporciona componentes necesarios para construir sistemas expertos sin tener que desarrollar toda la infraestructura desde cero.
+
+El desarrollador incorpora principalmente:
+
+* conocimiento;
+* reglas;
+* relaciones;
+* criterios.
+
+El entorno proporciona mecanismos para procesarlos.
+
+---
+
+# 29. SELECCIÓN DE APLICACIONES PARA SISTEMAS EXPERTOS
+
+No todos los problemas justifican un sistema experto.
+
+Una aplicación resulta más apropiada cuando:
+
+* existe conocimiento especializado identificable;
+* existen reglas o criterios relativamente claros;
+* el problema se presenta repetidamente;
+* el conocimiento puede representarse;
+* existe valor económico u operativo en automatizar el análisis.
+
+---
+
+# 30. DEL TPS A LA INTELIGENCIA
+
+Podemos observar una evolución conceptual:
+
+**TPS**
+
+¿Qué ocurrió?
+
+↓
+
+**MIS**
+
+¿Qué está ocurriendo en la organización?
+
+↓
+
+**DSS**
+
+¿Qué pasaría si modificamos determinadas variables?
+
+↓
+
+**GDSS**
+
+¿Qué alternativa debería evaluar un grupo?
+
+↓
+
+**IA / SISTEMAS EXPERTOS**
+
+¿Qué patrones, predicciones o recomendaciones puede generar el sistema?
+
+Esta progresión permite comprender que las tecnologías empresariales pueden utilizar los datos en diferentes niveles de análisis.
+
+---
+
+# 31. CASO INTEGRADOR — DISTRIBUIDORA PARAGUAYA
+
+Una distribuidora posee 12.000 clientes y realiza aproximadamente 3.000 operaciones por día.
+
+La gerencia observa una reducción de rentabilidad.
+
+## Nivel 1 — TPS
+
+El sistema registra:
+
+* ventas;
+* compras;
+* pagos;
+* inventarios.
+
+## Nivel 2 — Información gerencial
+
+Se identifica:
+
+* reducción del margen;
+* aumento de costos;
+* productos de baja rotación.
+
+## Nivel 3 — DSS
+
+Se simulan alternativas:
+
+**A:** aumentar precios 5 %.
+
+**B:** cambiar proveedores.
+
+**C:** eliminar productos poco rentables.
+
+**D:** aumentar volumen de compra para negociar descuentos.
+
+## Nivel 4 — GDSS
+
+Administración, Finanzas, Ventas y Compras analizan conjuntamente las alternativas.
+
+## Nivel 5 — IA
+
+Un modelo analiza datos históricos y genera una predicción de demanda por producto.
+
+La decisión final puede integrar todos estos elementos.
+
+---
+
+# 32. ACTIVIDAD PRÁCTICA — “USTED ES EL GERENTE”
+
+## Situación
+
+Una empresa dispone de G. 500 millones para invertir.
+
+Tiene tres alternativas:
+
+### Proyecto A
+
+Nueva sucursal.
+
+### Proyecto B
+
+Plataforma de comercio electrónico.
+
+### Proyecto C
+
+Modernización del sistema logístico.
+
+Cada grupo deberá definir criterios para evaluar las alternativas.
+
+Como mínimo:
+
+* inversión;
+* rentabilidad esperada;
+* riesgo;
+* tiempo;
+* impacto estratégico.
+
+Luego deberá asignar una puntuación de **1 a 5** a cada alternativa.
+
+Finalmente responder:
+
+**1. ¿Qué alternativa seleccionaron?**
+
+**2. ¿Qué criterios tuvieron mayor peso?**
+
+**3. ¿Cambiaría la decisión si el presupuesto disminuyera 30 %?**
+
+**4. ¿Qué información adicional necesitan?**
+
+**5. ¿Qué parte de la decisión puede realizar un sistema y qué parte corresponde al gerente?**
+
+---
+
+# 33. DESAFÍO “WHAT-IF”
+
+Una empresa vende mensualmente:
+
+**5.000 unidades**
+
+Precio:
+
+**G. 100.000**
+
+Costo unitario:
+
+**G. 70.000**
+
+La gerencia considera reducir el precio a:
+
+**G. 90.000**
+
+Se estima que las ventas podrían aumentar a:
+
+**7.000 unidades.**
+
+Calcule para ambos escenarios:
+
+**Ingresos = Precio × Cantidad**
+
+**Costo = Costo unitario × Cantidad**
+
+**Resultado simplificado = Ingresos − Costos**
+
+Luego responda:
+
+**¿Qué alternativa parece más conveniente según estos datos?**
+
+**¿Es suficiente esta información para tomar la decisión definitiva?**
+
+El objetivo no es solamente realizar el cálculo.
+
+El estudiante debe comprender que una decisión requiere interpretar el resultado y considerar otras variables.
+
+---
+
+# 34. DEBATE
+
+## “¿Debe una empresa permitir que una Inteligencia Artificial tome decisiones importantes sin intervención humana?”
+
+Dividir la clase en dos grupos.
+
+### Grupo A
+
+Defenderá una mayor automatización de decisiones.
+
+### Grupo B
+
+Defenderá la necesidad de mantener intervención humana.
+
+Analizar:
+
+* velocidad;
+* costos;
+* errores;
+* sesgos;
+* responsabilidad;
+* transparencia;
+* experiencia;
+* datos;
+* consecuencias.
+
+---
+
+# 35. PENSAMIENTO CRÍTICO
+
+Una empresa implementa un sistema de Inteligencia Artificial.
+
+Después de seis meses el gerente afirma:
+
+> “Ya no necesito analizar los resultados. El sistema me dice qué decisión tomar.”
+
+Analice críticamente esta afirmación.
+
+Una recomendación tecnológica puede estar condicionada por:
+
+* calidad de los datos;
+* modelo utilizado;
+* variables consideradas;
+* información faltante;
+* contexto;
+* errores;
+* cambios del entorno.
+
+Por ello, el administrador debe desarrollar la capacidad de **interpretar críticamente la información proporcionada por los sistemas**.
+
+---
+
+# 36. SÍNTESIS DE LA UNIDAD
+
+La tecnología puede apoyar diferentes etapas de la decisión:
+
+**DATOS**
+
+↓
+
+**INFORMACIÓN**
+
+↓
+
+**ANÁLISIS**
+
+↓
+
+**ALTERNATIVAS**
+
+↓
+
+**SIMULACIÓN**
+
+↓
+
+**RECOMENDACIÓN**
+
+↓
+
+**DECISIÓN**
+
+↓
+
+**ACCIÓN**
+
+↓
+
+**EVALUACIÓN**
+
+La competencia profesional fundamental no consiste simplemente en saber utilizar una herramienta.
+
+Consiste en saber:
+
+**qué información necesitamos,**
+
+**qué preguntas debemos realizar,**
+
+**cómo interpretar los resultados**
+
+y
+
+**cómo utilizar la tecnología para tomar mejores decisiones.**
+
+---
+
+# 37. EVALUACIÓN — SELECCIÓN MÚLTIPLE
+
+### 1.
+
+¿Cuál es la función principal de un TPS?
+
+**A.** Registrar transacciones operativas.
+**B.** Diseñar páginas web.
+**C.** Sustituir a los gerentes.
+**D.** Crear redes inalámbricas.
+
+### 2.
+
+¿Qué caracteriza principalmente a un DSS?
+
+**A.** Solamente almacena documentos.
+
+**B.** Apoya el análisis y evaluación de alternativas.
+
+**C.** Solamente registra ventas.
+
+**D.** Administra exclusivamente redes.
+
+### 3.
+
+Una empresa modifica el precio dentro de un modelo para observar cómo afecta la utilidad. Está realizando:
+
+**A.** Análisis What-if.
+**B.** Mantenimiento de hardware.
+**C.** Diseño de red.
+**D.** Procesamiento de texto.
+
+### 4.
+
+¿Cuál es un ejemplo de decisión semiestructurada?
+
+**A.** Registrar automáticamente una venta.
+
+**B.** Determinar cuánto inventario comprar utilizando datos y juicio gerencial.
+
+**C.** Imprimir una factura.
+
+**D.** Guardar una contraseña.
+
+### 5.
+
+Un GDSS está especialmente orientado a:
+
+**A.** Decisiones grupales.
+
+**B.** Reparación de computadoras.
+
+**C.** Creación de dominios.
+
+**D.** Instalación de impresoras.
+
+### 6.
+
+¿Cuál es una posible ventaja de un GDSS?
+
+**A.** Elimina todos los conflictos.
+
+**B.** Permite estructurar y apoyar decisiones donde participan varias personas.
+
+**C.** Garantiza decisiones correctas.
+
+**D.** Elimina la necesidad de información.
+
+### 7.
+
+Un sistema que utiliza conocimientos y reglas especializadas para generar recomendaciones corresponde a:
+
+**A.** Sistema experto.
+
+**B.** Switch.
+
+**C.** Sistema operativo.
+
+**D.** DNS.
+
+### 8.
+
+¿Qué función cumple tradicionalmente el motor de inferencia de un sistema experto?
+
+**A.** Imprimir documentos.
+
+**B.** Aplicar conocimiento y reglas para obtener conclusiones.
+
+**C.** Proporcionar conexión Wi-Fi.
+
+**D.** Almacenar físicamente el servidor.
+
+### 9.
+
+¿Cuál de las siguientes afirmaciones es más correcta respecto de un DSS?
+
+**A.** Siempre sustituye al gerente.
+
+**B.** Garantiza que toda decisión sea correcta.
+
+**C.** Proporciona herramientas e información para apoyar al decisor.
+
+**D.** Solo puede utilizarse para decisiones financieras.
+
+### 10.
+
+Una IA predice que las ventas disminuirán 15 % el próximo trimestre. ¿Cuál debería ser la actitud más apropiada del administrador?
+
+**A.** Ejecutar inmediatamente cualquier recomendación sin analizarla.
+
+**B.** Ignorar el resultado porque fue generado por una computadora.
+
+**C.** Analizar la predicción, los datos, el contexto y otras variables antes de decidir.
+
+**D.** Considerar la predicción como una certeza absoluta.
+
+## CLAVE DE RESPUESTAS
+
+**1-A | 2-B | 3-A | 4-B | 5-A | 6-B | 7-A | 8-B | 9-C | 10-C**
+
+Este contenido cubre los temas que el programa exige para la Unidad VII, incluyendo **DSS, GDSS, casos de aplicación, inteligencia artificial, sistemas expertos, sus beneficios y costos, Shell y selección de aplicaciones**. 
+
+Además, refuerza uno de los objetivos centrales de ADE18: que el estudiante pueda **analizar herramientas tecnológicas de apoyo para la toma de decisiones en los negocios**. 

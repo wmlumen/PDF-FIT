@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta de Calificaciones — Maestría</title>
+    <style>
+        @page { size: A4 portrait; margin: 20mm 25mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; color: #000; background: #f5f5f5; }
+        .page { width: 210mm; min-height: 297mm; margin: 20mm auto; background: #fff; padding: 25mm 30mm; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header .cod { font-size: 10pt; color: #444; margin-bottom: 10px; }
+        .header h2 { font-size: 14pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .body-text { text-align: justify; margin-bottom: 15px; font-size: 11pt; }
+        .body-text strong { font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10pt; }
+        th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; text-align: center; }
+        td.num { text-align: center; width: 40px; }
+        td.ci { text-align: center; width: 100px; }
+        td.cal { text-align: center; width: 60px; }
+        td.letra { text-align: center; width: 100px; }
+        .footer { margin-top: 20px; text-align: justify; font-size: 10pt; }
+        .footer p { margin-bottom: 10px; }
+        .firmas { display: flex; justify-content: space-between; margin-top: 60px; }
+        .firma { text-align: center; width: 30%; }
+        .firma .line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; }
+        .firma .name { font-weight: bold; font-size: 10pt; }
+        .firma .role { font-size: 9pt; color: #444; }
+
+        /* Formulario de edición */
+        .edit-panel { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #fff; padding: 20px; overflow-y: auto; z-index: 100; font-family: 'Segoe UI', sans-serif; font-size: 12px; }
+        .edit-panel h3 { font-size: 14px; margin-bottom: 15px; color: #81C784; }
+        .edit-panel label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin: 10px 0 4px; }
+        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 8px 10px; border: 1px solid #333; border-radius: 6px; background: #16213e; color: #fff; font-size: 12px; }
+        .edit-panel textarea { resize: vertical; min-height: 60px; }
+        .edit-panel .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; font-size: 12px; }
+        .edit-panel .btn-primary { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
+        .edit-panel .btn-danger { background: #e74c3c; color: #fff; }
+        .edit-panel .btn-print { background: #3498db; color: #fff; }
+        .edit-panel .student-row { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+        .edit-panel .student-row input { margin-bottom: 4px; }
+        .edit-panel .student-row .remove-btn { background: #e74c3c; color: #fff; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 10px; float: right; }
+        .page { margin-left: 300px; }
+
+        @media print {
+            .edit-panel { display: none !important; }
+            .page { margin: 0; box-shadow: none; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PANEL DE EDICIÓN -->
+<div class="edit-panel" id="editPanel">
+    <h3>📋 Acta de Calificaciones</h3>
+
+    <label>Código del documento</label>
+    <input type="text" id="inp-codigo" value="CEN-AS-MAGP-006" oninput="actualizar()">
+
+    <label>Programa</label>
+    <input type="text" id="inp-programa" value="MAESTRÍA EN ADMINISTRACIÓN Y GESTIÓN PÚBLICA" oninput="actualizar()">
+
+    <label>Sección</label>
+    <input type="text" id="inp-seccion" value="" placeholder="Ej: A" oninput="actualizar()">
+
+    <label>Materia</label>
+    <input type="text" id="inp-materia" value="PLANIFICACIÓN ESTRATÉGICA EN EL SECTOR PÚBLICO" oninput="actualizar()">
+
+    <label>Ciudad</label>
+    <input type="text" id="inp-ciudad" value="Asunción" oninput="actualizar()">
+
+    <label>Mes</label>
+    <input type="text" id="inp-mes" value="Agosto" oninput="actualizar()">
+
+    <label>Año</label>
+    <input type="text" id="inp-ano" value="2026" oninput="actualizar()">
+
+    <label>Hora</label>
+    <input type="text" id="inp-hora" value="18:00" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:15px 0;">
+
+    <label>Estudiantes</label>
+    <div id="students-container"></div>
+    <button class="btn btn-primary" onclick="addStudent()">+ Agregar Estudiante</button>
+
+    <hr style="border-color:#333;margin:15px 0;">
+
+    <label>Presidente del Acta</label>
+    <input type="text" id="inp-presidente" value="" placeholder="Nombre completo" oninput="actualizar()">
+
+    <label>Secretario</label>
+    <input type="text" id="inp-secretario" value="" placeholder="Nombre completo" oninput="actualizar()">
+
+    <label>Vocal</label>
+    <input type="text" id="inp-vocal" value="" placeholder="Nombre completo" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:15px 0;">
+
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-danger" onclick="cerrar()">✕ Cerrar</button>
+</div>
+
+<!-- DOCUMENTO -->
+<div class="page" id="acta-page">
+    <div class="header">
+        <p class="cod">CÓDIGO: <span id="doc-codigo">CEN-AS-MAGP-006</span></p>
+        <h2>ACTA N° ……/20……</h2>
+    </div>
+
+    <div class="body-text">
+        En la ciudad de <strong><span id="doc-ciudad">Asunción</span></strong>, República del Paraguay siendo las <strong><span id="doc-hora">18:00</span></strong> horas del día……… del mes de <strong><span id="doc-mes">Agosto</span></strong> del año <strong><span id="doc-ano">2.026</span></strong>, se procede a las evaluaciones de los estudiantes del Programa de <strong><span id="doc-programa">MAESTRÍA EN ADMINISTRACIÓN Y GESTIÓN PÚBLICA</span></strong>, Sección <strong><span id="doc-seccion">………</span></strong> de la materia <strong><span id="doc-materia">PLANIFICACIÓN ESTRATÉGICA EN EL SECTOR PÚBLICO</span></strong>; con el siguiente resultado:
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:40px;">N°</th>
+                <th>Apellidos y Nombres</th>
+                <th style="width:100px;">C.I. N°</th>
+                <th style="width:50px;">Calificación</th>
+                <th style="width:100px;">Letra</th>
+            </tr>
+        </thead>
+        <tbody id="acta-tbody">
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Los alumnos evaluados cumplieron con el reglamento académico, por cuanto procede en derecho a completar esta acta que consta de 1 (una) hoja, no tiene tachadura, ni enmienda ni espacios en blanco y se ha cerrado adecuadamente. En el acto procedí a examinar un total de <strong><span id="doc-total">…</span></strong> (<strong><span id="doc-total-let">…………………</span></strong>) alumnos.</p>
+    </div>
+
+    <div class="firmas">
+        <div class="firma">
+            <div class="line">
+                <p class="name" id="doc-firma1">………………………</p>
+                <p class="role">Presidente/a del Acta</p>
+            </div>
+        </div>
+        <div class="firma">
+            <div class="line">
+                <p class="name" id="doc-firma2">………………………</p>
+                <p class="role">Secretario/a</p>
+            </div>
+        </div>
+        <div class="firma">
+            <div class="line">
+                <p class="name" id="doc-firma3">………………………</p>
+                <p class="role">Vocal</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Estudiantes de ejemplo
+let students = [
+    { nombre: 'AGUIRRE BENITEZ, Eva Margarita', ci: '4231795', cal: 3, letra: 'Bueno' },
+    { nombre: 'ALVARENGA PEZOA, Leonida', ci: '6033732', cal: 3, letra: 'Bueno' },
+    { nombre: 'ALVAREZ CABRERA, María Ermelinda', ci: '2475204', cal: 5, letra: 'Sobresaliente' },
+    { nombre: 'ARZAMENDIA ROA, Cynthia Carolina', ci: '2147143', cal: 3, letra: 'Bueno' },
+    { nombre: 'BOBADILLA MORA, Natalia Elizabeth', ci: '3767390', cal: 2, letra: 'Aprobado' },
+];
+
+const calLetra = { 5: 'Sobresaliente', 4: 'Distinguido', 3: 'Bueno', 2: 'Aprobado', 1: 'Reprobado' };
+
+function renderStudents() {
+    const tbody = document.getElementById('acta-tbody');
+    const container = document.getElementById('students-container');
+    tbody.innerHTML = '';
+    container.innerHTML = '';
+
+    students.forEach((s, i) => {
+        // Tabla del acta
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="num">${i+1}</td><td>${s.nombre}</td><td class="ci">${s.ci}</td><td class="cal">${s.cal}</td><td class="letra">${s.letra}</td>`;
+        tbody.appendChild(tr);
+
+        // Panel de edición
+        const div = document.createElement('div');
+        div.className = 'student-row';
+        div.innerHTML = `
+            <button class="remove-btn" onclick="removeStudent(${i})">✕</button>
+            <input type="text" value="${s.nombre}" placeholder="Apellidos y Nombres" oninput="students[${i}].nombre=this.value;actualizar()">
+            <div style="display:flex;gap:6px;">
+                <input type="text" value="${s.ci}" placeholder="C.I." style="width:40%;" oninput="students[${i}].ci=this.value;actualizar()">
+                <select style="width:30%;" onchange="students[${i}].cal=parseInt(this.value);students[${i}].letra=calLetra[this.value];actualizar()">
+                    <option value="5" ${s.cal==5?'selected':''}>5</option>
+                    <option value="4" ${s.cal==4?'selected':''}>4</option>
+                    <option value="3" ${s.cal==3?'selected':''}>3</option>
+                    <option value="2" ${s.cal==2?'selected':''}>2</option>
+                    <option value="1" ${s.cal==1?'selected':''}>1</option>
+                </select>
+                <input type="text" value="${s.letra}" placeholder="Letra" style="width:30%;" oninput="students[${i}].letra=this.value;actualizar()">
+            </div>`;
+        container.appendChild(div);
+    });
+
+    document.getElementById('doc-total').textContent = students.length;
+}
+
+function addStudent() {
+    students.push({ nombre: '', ci: '', cal: 3, letra: 'Bueno' });
+    renderStudents();
+}
+
+function removeStudent(i) {
+    students.splice(i, 1);
+    renderStudents();
+}
+
+function actualizar() {
+    document.getElementById('doc-codigo').textContent = document.getElementById('inp-codigo').value;
+    document.getElementById('doc-ciudad').textContent = document.getElementById('inp-ciudad').value;
+    document.getElementById('doc-hora').textContent = document.getElementById('inp-hora').value;
+    document.getElementById('doc-mes').textContent = document.getElementById('inp-mes').value;
+    document.getElementById('doc-ano').textContent = document.getElementById('inp-ano').value;
+    document.getElementById('doc-programa').textContent = document.getElementById('inp-programa').value;
+    document.getElementById('doc-seccion').textContent = document.getElementById('inp-seccion').value || '………';
+    document.getElementById('doc-materia').textContent = document.getElementById('inp-materia').value;
+    document.getElementById('doc-firma1').textContent = document.getElementById('inp-presidente').value || '………………………';
+    document.getElementById('doc-firma2').textContent = document.getElementById('inp-secretario').value || '………………………';
+    document.getElementById('doc-firma3').textContent = document.getElementById('inp-vocal').value || '………………………';
+    document.getElementById('doc-total-let').textContent = numberToWords(students.length);
+    renderStudents();
+}
+
+function numberToWords(n) {
+    const ones = ['','un','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte'];
+    if (n <= 20) return ones[n] || n;
+    if (n < 30) return 'veinti' + (ones[n-20] || '');
+    return n.toString();
+}
+
+function cerrar() { window.close(); }
+
+// Cargar datos de session si existen
+window.addEventListener('DOMContentLoaded', () => {
+    const ced = sessionStorage.getItem('teacher_nombre');
+    if (ced) document.getElementById('inp-presidente').value = ced;
+    renderStudents();
+});
+</script>
+
+</body>
+</html>

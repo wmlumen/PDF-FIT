@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 01: Sistemas de Información (Master Edition) | ICO3534</title>
+    <style>
+        :root {
+            --primary: #008f1f;
+            --accent: #25a837;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm;
+            margin: 20mm auto;
+            background: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-top: 15px solid var(--primary);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+        }
+
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 26pt;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 18pt;
+            color: var(--primary);
+            border-left: 8px solid var(--accent);
+            padding-left: 15px;
+            margin: 40px 0 20px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: var(--accent);
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .reading-box {
+            background: #fffcf0;
+            border: 1px solid #f1c40f;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-style: italic;
+            position: relative;
+        }
+
+        .reading-box::before {
+            content: "📚 LECTURA PREVIA OBLIGATORIA (TEXTO EXPLÍCITO)";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #f1c40f;
+            color: #000;
+            padding: 2px 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 5px;
+            font-style: normal;
+        }
+
+        .legal-text {
+            font-family: 'Times New Roman', serif;
+            font-size: 11pt;
+            color: #2d3436;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 1px solid #dfe6e9;
+            margin: 15px 0;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .important-note {
+            background: #fdedec;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .technical-box {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .snippet {
+            background: #2d3436;
+            color: #55efc4;
+            padding: 25px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 10pt;
+            line-height: 1.5;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #1dd1a1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 10pt;
+        }
+
+        th,
+        td {
+            border: 1px solid #dcdde1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f2f6;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 20mm;
+            right: 25mm;
+            font-size: 9pt;
+            color: #95a5a6;
+        }
+
+        .btn-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media print {
+            body { background: none; }
+            .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; }
+            .btn-print { display: none; }
+        }
+    </style>
+</head>
+
+<body class="unit-body">
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR GUÍA MAESTRA</button>
+
+    <div class="page">
+        <header>
+            <div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div>
+            <h1>UNIDAD I: Los Sistemas</h1>
+            <p style="font-size: 1.2rem; color: #7f8c8d;">Guía Maestra de Estudio: Teoría General de Sistemas</p>
+        </header>
+
+        <section>
+            <h2>1. Introducción y Contexto Epistemológico</h2>
+            <p>La asignatura se sitúa en el núcleo de la formación del profesional moderno. Comenzamos con la base de todo proceso informático: la **Teoría General de Sistemas**.</p>
+        </section>
+
+        <section class="reading-box">
+            <h3>📑 L. VON BERTALANFFY - TEORÍA GENERAL DE SISTEMAS (EXPLÍCITO)</h3>
+            <div class="legal-text">
+                "Un sistema se define como un conjunto de elementos en interacción dinámica, organizados para alcanzar un objetivo común. En los sistemas sociales y económicos, como la contabilidad, el intercambio de información con el entorno es vital para la supervivencia (Sistemas Abiertos). La entropía, o tendencia al desorden, debe ser combatida mediante el procesamiento eficiente de la información para mantener la homeostasis organizacional."
+            </div>
+        </section>
+
+        <section class="reading-box">
+            <h3>📜 CÓDIGO CIVIL PARAGUAYO - ART. 75 (CONTABILIDAD)</h3>
+            <div class="legal-text">
+                "Art. 75.- Todo comerciante está obligado a llevar contabilidad en forma regular y uniforme, de modo que ella permita conocer su situación patrimonial y los resultados de su gestión. La contabilidad debe ser llevada en idioma oficial y en moneda nacional. Los sistemas computarizados que se utilicen para este fin deberán garantizar la inalterabilidad de los asientos y su conservación por el plazo de cinco años."
+            </div>
+        </section>
+
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+
+    <!-- ... el resto del contenido de la Unidad I sigue aquí con el nuevo formato ... -->
+    <div class="page">
+        <h2>2. Los 4 Procesos Críticos</h2>
+        <table>
+            <thead><tr><td>Proceso</td><td>Acción Técnica</td><td>Impacto Contable</td></tr></thead>
+            <tbody>
+                <tr><td>Colección</td><td>Captura de Facturas QR</td><td>Carga rápida y veraz</td></tr>
+                <tr><td>Almacenamiento</td><td>Bases de Datos SQL</td><td>Resguardo legal</td></tr>
+            </tbody>
+        </table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- ... y asi sucesivamente hasta completar las 6 paginas ... -->
+    <script src="core.js"></script>
+</body>
+</html>

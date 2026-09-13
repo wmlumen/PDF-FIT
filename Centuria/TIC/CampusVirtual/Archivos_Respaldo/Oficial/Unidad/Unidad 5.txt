@@ -1,0 +1,220 @@
+Unidad V: Tecnologías de la Información. Hardware y Software
+Esta unidad introduce los fundamentos de las tecnologías de información, abordando los conceptos básicos de hardware (la parte física) y software (la parte lógica) de los sistemas computacionales.
+
+1. La computadora: definición, componentes básicos y clasificación
+Definición de computadora
+Una computadora (también llamada ordenador o computador) es una máquina electrónica capaz de recibir, procesar y almacenar datos, así como de ejecutar instrucciones programadas para realizar tareas específicas de manera automática y rápida.
+
+Características fundamentales:
+Electrónica: Utiliza circuitos y componentes electrónicos para operar
+
+Programable: Puede ejecutar diferentes conjuntos de instrucciones
+
+Automática: Realiza procesos sin intervención humana constante
+
+Versátil: Puede realizar múltiples tipos de tareas
+
+Rápida: Procesa información a velocidades muy altas
+
+Componentes básicos de una computadora
+Los componentes de una computadora se dividen en dos grandes categorías: hardware (parte física) y software (parte lógica).
+
+A. Hardware básico
+El hardware básico incluye todos aquellos elementos indispensables para el correcto funcionamiento del equipo. Sin ellos, la computadora no puede operar.
+
+Componentes principales del hardware:
+Componente	Función	Descripción
+Unidad Central de Procesamiento (CPU)	Procesamiento de instrucciones	Es el "cerebro" del sistema. Ejecuta las instrucciones del software y realiza cálculos 
+Memoria RAM	Almacenamiento temporal	Guarda datos temporalmente mientras el sistema está en uso. Se borra al apagar el equipo 
+Memoria ROM	Almacenamiento permanente básico	Contiene instrucciones esenciales para el arranque del sistema 
+Placa madre (Motherboard)	Conexión de componentes	Placa base que conecta todos los componentes entre sí 
+Dispositivos de entrada	Captura de datos	Teclado, ratón, escáner, micrófono, cámara 
+Dispositivos de salida	Presentación de resultados	Monitor, impresora, altavoces, proyectores 
+Dispositivos de almacenamiento	Guardado permanente	Disco duro (HDD), disco sólido (SSD), unidades ópticas 
+Fuente de alimentación	Suministro de energía	Convierte la corriente eléctrica en la energía que necesita el sistema 
+Arquitectura básica de una computadora:
+text
+┌─────────────────────────────────────────────────────┐
+│                    COMPUTADORA                       │
+│  ┌───────────────────────────────────────────────┐  │
+│  │              CPU (Procesador)                  │  │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────────────┐  │  │
+│  │  │Registro │ │   ALU   │ │Unidad de Control│  │  │
+│  │  │         │ │(Unidad   │ │   (CU)          │  │  │
+│  │  │         │ │Aritmético-│ │                 │  │  │
+│  │  │         │ │Lógica)   │ │                 │  │  │
+│  │  └─────────┘ └─────────┘ └─────────────────┘  │  │
+│  └───────────────────────────────────────────────┘  │
+│           ↕              ↕              ↕          │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐   │
+│  │  Memoria    │ │ Dispositivos│ │ Dispositivos│   │
+│  │  Principal  │ │  de Entrada │ │  de Salida  │   │
+│  │  (RAM)      │ │             │ │             │   │
+│  └─────────────┘ └─────────────┘ └─────────────┘   │
+│           ↕                                        │
+│  ┌─────────────┐                                   │
+│  │  Memoria    │                                   │
+│  │  Secundaria │                                   │
+│  │  (Disco)    │                                   │
+│  └─────────────┘                                   │
+└─────────────────────────────────────────────────────┘
+B. Hardware complementario
+El hardware complementario incluye dispositivos que realizan funciones específicas más allá de las básicas, no estrictamente necesarias para el funcionamiento mínimo de la computadora.
+
+Ejemplos:
+
+Tarjetas de red
+
+Tarjetas de sonido
+
+Tarjetas gráficas dedicadas
+
+Unidades de backup
+
+Scanners
+
+Cámaras web
+
+Joysticks y gamepads
+
+Clasificación de las computadoras
+Las computadoras pueden clasificarse según diferentes criterios:
+
+A. Por tamaño y capacidad de procesamiento:
+Tipo	Características	Uso típico
+Supercomputadoras	Máxima capacidad de procesamiento, costo muy elevado	Investigación científica, simulaciones complejas, clima
+Mainframes	Gran capacidad, soportan múltiples usuarios simultáneos	Grandes empresas, bancos, instituciones gubernamentales
+Minicomputadoras	Capacidad intermedia, múltiples usuarios	Empresas medianas, universidades
+Microcomputadoras	Tamaño reducido, un usuario a la vez	Uso personal, oficinas, hogares
+B. Por tipo de uso:
+Tipo	Descripción	Ejemplos
+Computadoras personales (PC)	Para uso individual	Desktop, laptop
+Servidores	Proveen servicios a otras computadoras	Servidores web, de archivos, de bases de datos
+Dispositivos móviles	Portátiles, con batería	Smartphones, tablets
+Computadoras embebidas	Integradas en otros dispositivos	Electrodomésticos, automóviles, sistemas industriales
+C. Por arquitectura:
+Analógicas: Trabajan con señales continuas (poco comunes actualmente)
+
+Digitales: Trabajan con valores discretos (binarios: 0 y 1)
+
+Híbridas: Combinan características de ambas
+
+2. Concepto de software
+Definición
+El software (también llamado logicial, soporte lógico o programática) es el conjunto de programas, instrucciones, reglas, documentación y datos asociados que forman parte de las operaciones de un sistema de computación.
+
+Definiciones clave:
+"Conjunto de los componentes lógicos necesarios que hace posible la realización de tareas específicas, en contraposición a los componentes físicos que son llamados hardware."
+
+"El conjunto de programas, instrucciones y reglas informáticas para ejecutar ciertas tareas en una computadora." (Real Academia Española)
+
+"Todo componente intangible (y no físico) que forma parte de dispositivos, como computadoras, teléfonos móviles o tabletas y que permite su funcionamiento."
+
+Características del software:
+Intangible: No tiene forma física, es lógico
+
+Instruccional: Consiste en instrucciones que el hardware ejecuta
+
+Funcional: Permite realizar tareas específicas
+
+Dependiente del hardware: Necesita hardware para ejecutarse
+
+Modificable: Puede actualizarse y mejorarse
+
+Requerido: Sin software, el hardware es inútil
+
+Relación entre hardware y software:
+Aspecto	Hardware	Software
+Naturaleza	Físico, tangible	Lógico, intangible 
+Componentes	Circuitos, chips, dispositivos	Programas, instrucciones, datos 
+Durabilidad	Se desgasta con el tiempo	No se desgasta, pero puede volverse obsoleto
+Modificación	Requiere reemplazo físico	Puede actualizarse fácilmente
+Función	Ejecuta instrucciones	Proporciona instrucciones 
+Dependencia	No funciona sin software	No funciona sin hardware 
+Tipos de software
+El software se clasifica en tres categorías principales:
+
+1. Software de sistema
+Es el software más esencial, que actúa como intermediario principal entre el usuario y el hardware. Su objetivo es vincular adecuadamente al usuario con el sistema informático, aislándolo de los detalles internos del hardware.
+
+Funciones principales:
+
+Gestionar los recursos del hardware
+
+Proveer una interfaz para el usuario
+
+Dar soporte a otros programas
+
+Controlar dispositivos y periféricos
+
+Ejemplos:
+
+Tipo	Descripción	Ejemplos concretos
+Sistemas operativos	Gestionan todos los recursos del sistema	Windows, macOS, Linux, Android, iOS
+Controladores de dispositivos (Drivers)	Permiten la comunicación con hardware específico	Driver de impresora, driver de tarjeta gráfica
+Utilitarios del sistema	Herramientas de mantenimiento y optimización	Antivirus, desfragmentadores, limpiadores de disco
+Herramientas de diagnóstico	Verifican el estado del sistema	Herramientas de monitoreo, test de memoria
+2. Software de programación
+Es el conjunto de herramientas que permiten al programador desarrollar programas informáticos, usando diferentes alternativas y lenguajes de programación, de una manera práctica.
+
+Funciones principales:
+
+Crear nuevos programas y aplicaciones
+
+Modificar software existente
+
+Depurar y probar código
+
+Traducir código a lenguaje máquina
+
+Ejemplos:
+
+Herramienta	Función	Ejemplos
+Editores de código	Escribir y editar programas	Visual Studio Code, Sublime Text, Notepad++
+Compiladores	Traducir código a lenguaje máquina	GCC, Clang, javac
+Intérpretes	Ejecutar código línea por línea	Python, Ruby, JavaScript
+Depuradores (Debuggers)	Detectar y corregir errores	GDB, Visual Studio Debugger
+Entornos de desarrollo (IDE)	Suite completa de herramientas	Visual Studio, Eclipse, IntelliJ IDEA
+Enlazadores (Linkers)	Unir módulos de código	Linker de C++, ld
+3. Software de aplicación
+Son programas diseñados para realizar una o más tareas específicas, aprovechando las capacidades del sistema informático para desempeñar cualquier tipo de tareas ajenas a su mantenimiento y funcionamiento básico.
+
+Características:
+
+Orientados al usuario final
+
+Realizan tareas específicas y concretas
+
+Se ejecutan sobre el software de sistema
+
+Pueden ser automáticos o asistidos
+
+Ejemplos por categoría:
+
+Categoría	Función	Ejemplos
+Ofimática	Tareas de oficina y productividad	Microsoft Office, Google Workspace, LibreOffice
+Navegación web	Acceder a internet	Chrome, Firefox, Safari, Edge
+Multimedia	Reproducir y editar audio/video	VLC, Windows Media Player, Adobe Premiere
+Comunicación	Mensajería y videoconferencia	WhatsApp, Zoom, Skype, Slack
+Educación	Aprendizaje y enseñanza	Plataformas LMS, software educativo
+Negocios	Gestión empresarial	ERP, CRM, software contable
+Diseño	Creación gráfica y modelado	Adobe Photoshop, AutoCAD, CorelDRAW
+Videojuegos	Entretenimiento interactivo	Juegos de PC, consolas, móviles
+Seguridad	Protección del sistema	Antivirus, firewalls, antimalware
+Clasificación adicional del software
+Por modelo de licencia:
+Tipo	Características	Ejemplos
+Software propietario	Licencia restringida, código cerrado	Windows, Microsoft Office, Adobe Photoshop
+Software libre (Open Source)	Código abierto, modificable	Linux, LibreOffice, GIMP
+Freeware	Gratuito pero no necesariamente abierto	Skype, Adobe Reader
+Shareware	Versión de prueba gratuita	Antivirus, utilitarios
+SaaS (Software as a Service)	Software en la nube, por suscripción	Google Workspace, Salesforce, Office 365
+Por plataforma:
+Software de escritorio: Se instala en computadoras personales
+
+Software web: Se ejecuta en navegadores
+
+Software móvil: Para smartphones y tablets
+
+Software embebido: Integrado en dispositivos específicos
+

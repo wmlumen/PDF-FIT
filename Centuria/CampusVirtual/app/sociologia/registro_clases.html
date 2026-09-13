@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Clases — Campus Virtual Centuria</title>
+    <style>
+        @page { size: A4 portrait; margin: 20mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 10pt; color: #000; background: #f0f0f0; }
+        .page { width: 210mm; min-height: 297mm; margin: 20mm auto; background: #fff; padding: 20mm 25mm; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+
+        .cod { text-align: right; font-size: 8pt; color: #666; margin-bottom: 6px; }
+        .title { text-align: center; font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+
+        .header-fields { font-size: 10pt; margin-bottom: 12px; line-height: 2; }
+        .header-fields .field { display: flex; gap: 4px; }
+        .header-fields .label { font-weight: bold; white-space: nowrap; }
+        .header-fields .value { flex: 1; border-bottom: 1px solid #999; min-height: 16px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+        th, td { border: 1px solid #000; padding: 5px 6px; vertical-align: top; }
+        th { background: #e0e0e0; font-weight: bold; text-align: center; font-size: 8pt; text-transform: uppercase; }
+        td.num { text-align: center; width: 30px; }
+        td.fecha { width: 80px; text-align: center; }
+        td.hora { width: 70px; text-align: center; }
+        td.temas { min-width: 200px; }
+        td.horas { text-align: center; width: 50px; }
+        td.firma { text-align: center; width: 80px; }
+
+        .footer { margin-top: 15px; font-size: 9pt; }
+        .footer .firma-area { display: flex; justify-content: flex-end; margin-top: 40px; }
+        .footer .firma-area .firma { text-align: center; width: 250px; }
+        .footer .firma-area .firma .line { border-top: 1px solid #000; margin-top: 50px; padding-top: 4px; }
+
+        /* Edit Panel */
+        .edit-panel { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #fff; padding: 14px; overflow-y: auto; z-index: 100; font-family: 'Segoe UI', sans-serif; font-size: 10px; }
+        .edit-panel h3 { font-size: 12px; margin-bottom: 10px; color: #81C784; }
+        .edit-panel label { display: block; font-size: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin: 6px 0 2px; }
+        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 5px 7px; border: 1px solid #333; border-radius: 4px; background: #16213e; color: #fff; font-size: 10px; }
+        .edit-panel .btn { display: block; width: 100%; padding: 7px; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; margin-top: 6px; font-size: 10px; }
+        .edit-panel .btn-primary { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
+        .edit-panel .btn-print { background: #3498db; color: #fff; }
+        .edit-panel .btn-close { background: #e74c3c; color: #fff; }
+        .edit-panel .btn-add { background: #f39c12; color: #fff; }
+        .edit-panel .clase-row { background: #16213e; border: 1px solid #333; border-radius: 5px; padding: 6px; margin-bottom: 5px; }
+        .edit-panel .clase-row .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .edit-panel .clase-row .row-header span { font-weight: 700; color: #81C784; font-size: 9px; }
+        .edit-panel .clase-row .remove-btn { background: #e74c3c; color: #fff; border: none; border-radius: 3px; padding: 1px 5px; cursor: pointer; font-size: 8px; }
+        .page { margin-left: 290px; }
+
+        @media print {
+            .edit-panel { display: none !important; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+    <h3>📅 Registro de Clases</h3>
+
+    <label>Código</label>
+    <input type="text" id="inp-codigo" value="" oninput="actualizar()">
+
+    <label>Asignatura</label>
+    <input type="text" id="inp-asignatura" value="" oninput="actualizar()">
+
+    <label>Semestre</label>
+    <input type="text" id="inp-semestre" value="1er Semestre 2026" oninput="actualizar()">
+
+    <label>Carrera / Programa</label>
+    <select id="inp-carrera" onchange="actualizar()">
+        <option value="Licenciatura / Ingeniería">Grado</option>
+        <option value="Especialización">Especialización</option>
+        <option value="Maestría en Administración y Gestión Pública" selected>Maestría</option>
+        <option value="Doctorado">Doctorado</option>
+    </select>
+
+    <label>Sección</label>
+    <input type="text" id="inp-seccion" value="" oninput="actualizar()">
+
+    <label>Docente</label>
+    <input type="text" id="inp-docente" value="" oninput="actualizar()">
+
+    <label>Año</label>
+    <input type="text" id="inp-ano" value="2026" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:8px 0;">
+
+    <label>Clases registradas</label>
+    <div id="clases-container"></div>
+    <button class="btn btn-add" onclick="addClase()">+ Agregar Clase</button>
+
+    <hr style="border-color:#333;margin:8px 0;">
+
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
+</div>
+
+<!-- DOCUMENTO -->
+<div class="page" id="registro-page">
+    <div class="cod">CÓDIGO: <span id="doc-codigo">……………</span></div>
+    <div class="title">REGISTRO DE CLASES Y ASISTENCIA DOCENTE</div>
+
+    <div class="header-fields">
+        <div class="field"><span class="label">ASIGNATURA:</span><span class="value" id="doc-asignatura">………………………………………………………………………</span></div>
+        <div class="field"><span class="label">SEMESTRE:</span><span class="value" id="doc-semestre">………………………………………………………………………</span></div>
+        <div class="field"><span class="label">CARRERA:</span><span class="value" id="doc-carrera">………………………………………………</span>
+            <span class="label" style="margin-left:40px;">Sección:</span><span class="value" id="doc-seccion" style="max-width:120px;">……………</span>
+        </div>
+        <div class="field"><span class="label">DOCENTE:</span><span class="value" id="doc-docente">………………………………………………………………………</span></div>
+        <div class="field"><span class="label">AÑO:</span><span class="value" id="doc-ano">………………………………………………………………………</span></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:30px;">N°</th>
+                <th colspan="2" style="width:80px;">Fecha</th>
+                <th colspan="2" style="width:70px;">Hora</th>
+                <th>Temas Desarrollados</th>
+                <th style="width:50px;">Total<br>Horas</th>
+                <th style="width:80px;">Firma del<br>Docente</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th style="width:40px;">DD</th>
+                <th style="width:40px;">MM</th>
+                <th style="width:35px;">Inicio</th>
+                <th style="width:35px;">Final</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="registro-tbody"></tbody>
+    </table>
+
+    <div class="footer">
+        <div class="firma-area">
+            <div class="firma">
+                <div class="line">
+                    <strong id="doc-firma">………………………</strong><br>
+                    <span style="font-size:8pt;">Firma y sello del Docente</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let clases = [
+    { dd:'01', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Presentación de la asignatura. Fundamentos teóricos de la Planificación Estratégica.', horas:2 },
+    { dd:'08', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'El Proceso General de la Planificación. Fases del diagnóstico y programación.', horas:2 },
+    { dd:'15', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Tareas inherentes al proceso de la Planificación Estratégica General.', horas:2 },
+    { dd:'22', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Las 4 etapas de la Planificación Estratégica. Etapa filosófica y analítica.', horas:2 },
+    { dd:'29', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'La Planificación Estratégica y el pueblo. Gestión de asuntos de interés público.', horas:2 },
+];
+
+function renderClases() {
+    const tbody = document.getElementById('registro-tbody');
+    const container = document.getElementById('clases-container');
+    tbody.innerHTML = '';
+    container.innerHTML = '';
+
+    clases.forEach((c, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="num">${i+1}</td>
+            <td class="fecha">${c.dd}</td>
+            <td class="fecha">${c.mm}</td>
+            <td class="hora">${c.h_inicio}</td>
+            <td class="hora">${c.h_final}</td>
+            <td class="temas">${c.temas}</td>
+            <td class="horas">${c.horas}</td>
+            <td class="firma"></td>`;
+        tbody.appendChild(tr);
+
+        const div = document.createElement('div');
+        div.className = 'clase-row';
+        div.innerHTML = `
+            <div class="row-header"><span>Clase ${i+1}</span><button class="remove-btn" onclick="removeClase(${i})">✕</button></div>
+            <div style="display:flex;gap:3px;">
+                <input type="text" value="${c.dd}" placeholder="DD" style="width:15%;" oninput="clases[${i}].dd=this.value;renderClases()">
+                <input type="text" value="${c.mm}" placeholder="MM" style="width:15%;" oninput="clases[${i}].mm=this.value;renderClases()">
+                <input type="text" value="${c.h_inicio}" placeholder="Inicio" style="width:25%;" oninput="clases[${i}].h_inicio=this.value;renderClases()">
+                <input type="text" value="${c.h_final}" placeholder="Final" style="width:25%;" oninput="clases[${i}].h_final=this.value;renderClases()">
+                <input type="number" value="${c.horas}" placeholder="Hrs" style="width:20%;" oninput="clases[${i}].horas=parseInt(this.value)||0;renderClases()">
+            </div>
+            <textarea placeholder="Temas desarrollados" rows="2" oninput="clases[${i}].temas=this.value;renderClases()">${c.temas}</textarea>`;
+        container.appendChild(div);
+    });
+}
+
+function addClase() { clases.push({ dd:'', mm:'', h_inicio:'', h_final:'', temas:'', horas:2 }); renderClases(); }
+function removeClase(i) { clases.splice(i, 1); renderClases(); }
+
+function actualizar() {
+    document.getElementById('doc-codigo').textContent = document.getElementById('inp-codigo').value || '……………';
+    document.getElementById('doc-asignatura').textContent = document.getElementById('inp-asignatura').value || '………………………………………………………………………';
+    document.getElementById('doc-semestre').textContent = document.getElementById('inp-semestre').value;
+    document.getElementById('doc-carrera').textContent = document.getElementById('inp-carrera').value;
+    document.getElementById('doc-seccion').textContent = document.getElementById('inp-seccion').value || '……………';
+    document.getElementById('doc-docente').textContent = document.getElementById('inp-docente').value || '………………………………………………………………………';
+    document.getElementById('doc-ano').textContent = document.getElementById('inp-ano').value;
+    renderClases();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const profesor = sessionStorage.getItem('teacher_nombre');
+    if (profesor) document.getElementById('inp-docente').value = profesor;
+    const prog = sessionStorage.getItem('docente_programa');
+    if (prog) {
+        const sel = document.getElementById('inp-carrera');
+        for (let o of sel.options) { if (o.value.toLowerCase().includes(prog)) { sel.value = o.value; break; } }
+    }
+    actualizar();
+});
+</script>
+
+</body>
+</html>

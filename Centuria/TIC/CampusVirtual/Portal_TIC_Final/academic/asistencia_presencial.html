@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistencia Presencial - TIC Centuria</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .auth-card { max-width: 500px; margin: 80px auto; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: none; }
+        .auth-header { background: #1e2b3c; color: white; padding: 30px; text-align: center; }
+        .auth-body { background: white; padding: 40px; }
+        .logo-icon { font-size: 3.5rem; color: #3498db; margin-bottom: 15px; }
+        .btn-custom { border-radius: 30px; padding: 12px; font-weight: bold; letter-spacing: 1px; transition: 0.3s; }
+        .btn-custom:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .form-floating input { border-radius: 10px; border: 1px solid #ddd; }
+        
+        #step-2-register, #step-2-returning, #step-3-success { display: none; }
+        
+        .success-animation { font-size: 5rem; color: #2ecc71; text-align: center; animation: popIn 0.5s ease-out forwards; }
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    </style>
+    <link rel="stylesheet" href="./accesibilidad.css">
+    <link rel="stylesheet" href="./paleta-oficial.css">
+</head>
+<body>
+
+    <!-- Botón Volver -->
+    <a href="index.html" class="btn btn-dark position-absolute top-0 start-0 m-4 shadow-sm" style="border-radius: 20px;">
+        <i class="bi bi-arrow-left"></i> Volver al Portal
+    </a>
+
+    <div class="container">
+        <div class="card auth-card">
+            <div class="auth-header">
+                <i class="bi bi-clock-history logo-icon text-warning"></i>
+                <h3 class="fw-bold mb-0">Asistencia Presencial</h3>
+                <p class="mb-0 mt-2 opacity-75">Instituto Superior Centuria</p>
+            </div>
+            <div class="auth-body">
+                
+                <!-- PASO 1: Ingreso de Cédula -->
+                <div id="step-1-cedula">
+                    <p class="text-center text-muted mb-4">Ingresa tu número de Cédula de Identidad para iniciar.</p>
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control fw-bold fs-5 text-center" id="inp-cedula" oninput="this.value=this.value.replace(/\./g, '')" placeholder="SIN PUNTOS">
+                        <label for="inp-cedula">Cédula de Identidad</label>
+                    </div>
+                    <button class="btn btn-primary w-100 btn-custom" id="btn-buscar" onclick="verificarCedula()">Buscar / Continuar <i class="bi bi-arrow-right ms-2"></i></button>
+                </div>
+
+                <!-- PASO 2: Registro por primera vez -->
+                <div id="step-2-register">
+                    <div class="alert alert-warning text-center small fw-bold mb-4">
+                        <i class="bi bi-exclamation-triangle"></i> Cédula no registrada. Por favor, completa tus datos una única vez.
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <input type="text" class="form-control" id="reg-nombre" placeholder="Nombre">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control" id="reg-apellido" placeholder="Apellido">
+                        </div>
+                        <div class="col-12">
+                            <input type="email" class="form-control" id="reg-email" placeholder="Correo Electrónico">
+                        </div>
+                        <div class="col-12">
+                            <input type="text" class="form-control" id="reg-obs-new" placeholder="Observación (Opcional)">
+                        </div>
+                    </div>
+                    <button class="btn btn-success w-100 btn-custom" id="btn-registrar" onclick="registrarYMarcar()"><i class="bi bi-person-check ms-2"></i> Registrar y Marcar Asistencia</button>
+                    <button class="btn btn-link w-100 mt-2 text-muted text-decoration-none" onclick="volverPaso1()">Volver</button>
+                </div>
+
+                <!-- PASO 2: Usuario Recurrente -->
+                <div id="step-2-returning">
+                    <div class="text-center mb-4">
+                        <h4 class="fw-bold text-dark">Hola, <span id="out-nombre" class="text-primary"></span>!</h4>
+                        <p class="text-muted">Tu cédula ya está registrada. Solo necesitamos tu confirmación.</p>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control" id="inp-obs" placeholder="Observación">
+                        <label for="inp-obs">Observación (Opcional, ej. "Llegué tarde")</label>
+                    </div>
+                    <button class="btn btn-success w-100 btn-custom fs-5" id="btn-marcar" onclick="marcarAsistencia()"><i class="bi bi-check-circle ms-2"></i> Confirmar Asistencia Hoy</button>
+                    <button class="btn btn-link w-100 mt-3 text-muted text-decoration-none" onclick="volverPaso1()">No soy yo (Volver)</button>
+                </div>
+
+                <!-- PASO 3: Éxito -->
+                <div id="step-3-success">
+                    <div class="success-animation"><i class="bi bi-check-circle-fill"></i></div>
+                    <h3 class="text-center fw-bold mt-4 text-success">¡Asistencia Registrada!</h3>
+                    <p class="text-center text-muted mt-2">La fecha, hora y tu observación han sido guardadas en el sistema del docente con éxito.</p>
+                    <button class="btn btn-outline-secondary w-100 btn-custom mt-4" onclick="location.reload()">Registrar otro Alumno</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+        let cedulaActual = '';
+
+        function showLoading(btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn) {
+                btn.dataset.original = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+                btn.disabled = true;
+            }
+        }
+
+        function hideLoading(btnId) {
+            let btn = document.getElementById(btnId);
+            if(btn && btn.dataset.original) {
+                btn.innerHTML = btn.dataset.original;
+                btn.disabled = false;
+            }
+        }
+
+        function verificarCedula() {
+            let cedula = document.getElementById('inp-cedula').value.trim();
+            if(!cedula) { alert("Debes ingresar una cédula"); return; }
+            cedulaActual = cedula;
+
+            showLoading('btn-buscar');
+
+            fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula))
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading('btn-buscar');
+                    document.getElementById('step-1-cedula').style.display = 'none';
+                    if(data.existe) {
+                        document.getElementById('out-nombre').innerText = data.nombre;
+                        document.getElementById('step-2-returning').style.display = 'block';
+                    } else {
+                        document.getElementById('step-2-register').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    hideLoading('btn-buscar');
+                    alert("Error de conexión con la Base de Datos. Asegúrate de tener internet.");
+                    console.error(error);
+                });
+        }
+
+        function registrarYMarcar() {
+            
+
+            showLoading('btn-registrar');
+
+            
+            let nom = document.getElementById('reg-nombre').value.trim().toUpperCase();
+            let email = document.getElementById('reg-email').value.trim();
+            let carr = document.getElementById('reg-carrera').value;
+            let sec = document.getElementById('reg-seccion').value;
+            let obs = document.getElementById('reg-obs-new') ? document.getElementById('reg-obs-new').value.trim() : '';
+
+            if(!nom || !carr || !sec) { alert("Completa NOMBRE COMPLETO, CARRERA y SECCIÓN."); return; }
+
+            let payload = {
+                action: 'registrar_alumno',
+                cedula: cedulaActual,
+                nombre: nom,
+                email: email,
+                carrera: carr,
+                seccion: sec,
+                observacion: obs
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading('btn-registrar');
+                mostrarExito();
+            })
+            .catch(error => {
+                hideLoading('btn-registrar');
+                alert("Ocurrió un error al registrar en Google Sheets.");
+            });
+        }
+
+        function marcarAsistencia() {
+            let obs = document.getElementById('inp-obs').value.trim();
+            showLoading('btn-marcar');
+
+            let payload = {
+                action: 'marcar_asistencia',
+                cedula: cedulaActual,
+                observacion: obs
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading('btn-marcar');
+                mostrarExito();
+            })
+            .catch(error => {
+                hideLoading('btn-marcar');
+                alert("Error al marcar asistencia en la Base de Datos.");
+            });
+        }
+
+        function mostrarExito() {
+            document.getElementById('step-2-register').style.display = 'none';
+            document.getElementById('step-2-returning').style.display = 'none';
+            document.getElementById('step-3-success').style.display = 'block';
+        }
+
+        function volverPaso1() {
+            document.getElementById('step-2-register').style.display = 'none';
+            document.getElementById('step-2-returning').style.display = 'none';
+            document.getElementById('step-1-cedula').style.display = 'block';
+        }
+    </script>
+<script src="./accesibilidad.js"></script>
+<script src="./session-guard.js"></script>
+</body>
+</html>

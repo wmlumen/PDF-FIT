@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Final - Sociología - Instituto Superior Centuria</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: var(--font-body);
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: var(--font-title);
+            color: var(--color-secondary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .institutional-header {
+            text-align: center;
+            border-bottom: 3px solid var(--color-primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .institutional-header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .institutional-header .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .exam-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .info-box {
+            border: 1px solid #e2e8f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: var(--color-primary);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .student-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .data-field {
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            border-left: 6px solid var(--color-primary);
+            padding-left: 20px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f7f7f7;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-number {
+            background: var(--color-primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .points-badge {
+            margin-left: auto;
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .question {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .question strong {
+            color: var(--color-primary);
+        }
+
+        .options {
+            margin-left: 25px;
+            margin-top: 5px;
+        }
+
+        .option {
+            margin-bottom: 5px;
+        }
+
+        .answer-line {
+            border-bottom: 1px dashed #999;
+            display: inline-block;
+            min-width: 120px;
+            height: 1.2em;
+            margin: 0 5px;
+        }
+
+        .long-answer-lines {
+            margin-top: 10px;
+        }
+
+        .long-answer-lines .line {
+            border-bottom: 1px solid #ccc;
+            height: 28px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .true-false-options {
+            display: inline-flex;
+            gap: 15px;
+            margin-left: 10px;
+        }
+
+        .tf-box {
+            border: 1px solid #ccc;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .instructions {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .instructions ul {
+            margin: 5px 0 0 20px;
+            padding: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 20px; }
+            .instructions { background: white; border: 1px solid #ccc; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="institutional-header">
+            <h1>Instituto Superior <span style="color: #dc2626;">Centuria</span></h1>
+            <div class="subtitle">Excelencia Académica</div>
+        </div>
+
+        <div class="exam-info">
+            <div class="info-box">
+                <span class="info-label">Carrera</span>
+                Ingeniería Comercial / Contabilidad
+            </div>
+            <div class="info-box">
+                <span class="info-label">Asignatura</span>
+                Sociología
+            </div>
+            <div class="info-box">
+                <span class="info-label">Docente</span>
+                Lic. Christhian Keim
+            </div>
+            <div class="info-box">
+                <span class="info-label">Evaluación</span>
+                Examen Final — 40 Puntos
+            </div>
+        </div>
+
+        <div class="student-data">
+            <div>
+                <strong>Apellido y Nombre:</strong>
+                <div class="data-field"></div>
+            </div>
+            <div>
+                <strong>Fecha:</strong>
+                <div class="data-field"></div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <strong>Instrucciones Generales:</strong>
+            <ul>
+                <li>Lea atentamente cada consigna antes de responder.</li>
+                <li>Escriba con letra clara y legible.</li>
+                <li>No se permite el uso de material de consulta.</li>
+                <li>Las respuestas deben basarse en los contenidos desarrollados en las Unidades 1 a 6.</li>
+            </ul>
+        </div>
+
+        <!-- SECCIÓN 1: VERDADERO Y FALSO -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">1</span>
+                <span>Verdadero y Falso</span>
+                <span class="points-badge">16 Puntos (1 c/u)</span>
+            </div>
+            <p class="question">Marque con una <strong>X</strong> la opción correcta. Corrija las falsas con la información textual del material.</p>
+            <br>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>1.</strong> Augusto Comte definió la sociología como el estudio de las leyes fundamentales de los fenómenos sociales.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>2.</strong> Según Comte, la Dinámica Social estudia el individuo, la familia y la sociedad como organismo de cooperación.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>3.</strong> Herbert Spencer acuñó el término "supervivencia del más apto" y veía la sociedad como un organismo que evoluciona.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>4.</strong> Émile Durkheim se centró en el estudio de los "hechos sociales" como elementos internos y voluntarios para el individuo.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>5.</strong> Max Weber enfatizó la importancia de la "acción social" y la comprensión (Verstehen) de los motivos de los actores.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>6.</strong> La sociología analiza hechos sociales que existen por encima del individuo y ejercen presión sobre él.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>7.</strong> La mirada económica clásica supone actores racionales que buscan maximizar utilidad, mientras que la mirada sociológica agrega cultura, prestigio y confianza.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>8.</strong> La socialización primaria ocurre en la escuela y el trabajo, donde aprendemos roles específicos.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>9.</strong> La cultura material se refiere a bienes tangibles creados por una sociedad, como la tecnología y el software contable.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>10.</strong> La solidaridad orgánica, según Durkheim, se basa en la similitud de tareas entre los miembros de una sociedad.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>11.</strong> El grupo secundario es una asociación formal y utilitaria orientada a metas, como una empresa.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>12.</strong> La "mala fe", según Sartre, ocurre cuando un individuo asume plenamente la responsabilidad de sus decisiones éticas.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>13.</strong> La libertad negativa es la capacidad de autodeterminación y proyecto de vida, mientras que la libertad positiva es la ausencia de interferencia externa.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>14.</strong> El conflicto social, desde la perspectiva de Marx y Dahrendorf, es una consecuencia inevitable de la desigualdad de poder o recursos.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>15.</strong> La movilidad social horizontal implica el ascenso o descenso de clase social por mérito propio.
+            </div>
+
+            <div class="question">
+                <span class="true-false-options"><span class="tf-box">V</span> <span class="tf-box">F</span></span>
+                <strong>16.</strong> La modernización implica la transición de sociedades tradicionales a sociedades industriales, burocráticas y tecnológicas.
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: COMPLETAR -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">2</span>
+                <span>Complete con la palabra clave</span>
+                <span class="points-badge">10 Puntos (1 c/u)</span>
+            </div>
+            <p class="question">Escriba el término exacto extraído de los materiales de estudio.</p>
+            <br>
+
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 15px; margin-bottom:12px; font-size:0.95rem; font-weight:600; color:#1e293b;">
+                Palabras clave a utilizar: <span style="color:var(--color-primary)">Agencia — afectiva — capital — Dinámica — hechos — Modernización — Orgánica — Positivo — proletariado — socialización</span>
+            </div>
+
+            <div class="question">
+                <strong>1.</strong> Augusto Comte dividió la sociología en ________ Social y Dinámica Social.
+            </div>
+
+            <div class="question">
+                <strong>2.</strong> La ley de los tres estados de Comte son: Teológico, Metafísico y ________.
+            </div>
+
+            <div class="question">
+                <strong>3.</strong> Karl Marx centró su análisis en el conflicto de clases entre la burguesía y el ________.
+            </div>
+
+            <div class="question">
+                <strong>4.</strong> Según Durkheim, los ________ sociales son conductas colectivas que presionan al individuo.
+            </div>
+
+            <div class="question">
+                <strong>5.</strong> Los recursos obtenidos por redes de confianza se denominan ________ social.
+            </div>
+
+            <div class="question">
+                <strong>6.</strong> Weber clasificó la acción social en racional con arreglo a fines, racional con arreglo a valores, ________ y tradicional.
+            </div>
+
+            <div class="question">
+                <strong>7.</strong> El proceso de internalizar la cultura de un grupo se llama ________.
+            </div>
+
+            <div class="question">
+                <strong>8.</strong> La cohesión basada en la interdependencia mutua, según Durkheim, se denomina Solidaridad ________.
+            </div>
+
+            <div class="question">
+                <strong>9.</strong> La capacidad de los individuos para actuar independientemente y tomar decisiones libres se denomina ________ Humana.
+            </div>
+
+            <div class="question">
+                <strong>10.</strong> La transición de sociedades tradicionales a industriales o tecnológicas se denomina ________.
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: COMPARAR -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">3</span>
+                <span>Compare</span>
+                <span class="points-badge">6 Puntos (2 c/u)</span>
+            </div>
+            <br>
+
+            <div class="question">
+                <strong>1.</strong> Compare la <strong>Estática Social</strong> y la <strong>Dinámica Social</strong> según Augusto Comte. (2 Pts)
+                <div class="long-answer-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <strong>2.</strong> Compare la <strong>Libertad Negativa</strong> y la <strong>Libertad Positiva</strong> según Isaiah Berlin, incluyendo ejemplos comerciales o contables. (2 Pts)
+                <div class="long-answer-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <strong>3.</strong> Compare la <strong>Solidaridad Mecánica</strong> y la <strong>Solidaridad Orgánica</strong> según Émile Durkheim. (2 Pts)
+                <div class="long-answer-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: DEFINIR -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">4</span>
+                <span>Defina</span>
+                <span class="points-badge">2 Puntos (1 c/u)</span>
+            </div>
+            <br>
+
+            <div class="question">
+                <strong>1.</strong> Defina <strong>Sociología</strong>. (1 Pt)
+                <div class="long-answer-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <strong>2.</strong> Defina <strong>Mala Fe</strong> según Jean-Paul Sartre. (1 Pt)
+                <div class="long-answer-lines">
+                    <div class="line"></div>
+                    <div class="line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: SELECCIÓN MÚLTIPLE -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">5</span>
+                <span>Selección Múltiple</span>
+                <span class="points-badge">6 Puntos (1 c/u)</span>
+            </div>
+            <p class="question">Seleccione la alternativa correcta y marque con una <strong>X</strong>.</p>
+            <br>
+
+            <div class="question">
+                <strong>1.</strong> ¿Cuál de los siguientes pensadores aplicó la teoría de la evolución de Darwin a la sociedad?
+                <div class="options">
+                    <div class="option">a) Karl Marx</div>
+                    <div class="option">b) Émile Durkheim</div>
+                    <div class="option">c) Herbert Spencer</div>
+                    <div class="option">d) Max Weber</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="question">
+                <strong>2.</strong> ¿Qué campo de la sociología estudia mercados, consumo, confianza e informalidad?
+                <div class="options">
+                    <div class="option">a) Sociología del Trabajo</div>
+                    <div class="option">b) Sociología Económica</div>
+                    <div class="option">c) Sociología Fiscal y Contable</div>
+                    <div class="option">d) Sociología de las Organizaciones</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="question">
+                <strong>3.</strong> ¿En qué etapa de la socialización se forma la identidad básica y el lenguaje?
+                <div class="options">
+                    <div class="option">a) Socialización Secundaria</div>
+                    <div class="option">b) Socialización Primaria</div>
+                    <div class="option">c) Socialización Terciaria</div>
+                    <div class="option">d) Socialización Organizacional</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="question">
+                <strong>4.</strong> ¿Cuál de las siguientes es una condición social para la libertad según el material de estudio?
+                <div class="options">
+                    <div class="option">a) Autoritarismo político</div>
+                    <div class="option">b) Seguridad Jurídica</div>
+                    <div class="option">c) Desigualdad económica</div>
+                    <div class="option">d) Monopolio estatal</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="question">
+                <strong>5.</strong> ¿Qué tipo de conflicto genera cambio estructural, como una nueva constitución tras protestas masivas?
+                <div class="options">
+                    <div class="option">a) Conflicto Reprimido</div>
+                    <div class="option">b) Conflicto Canalizado</div>
+                    <div class="option">c) Conflicto Transformador</div>
+                    <div class="option">d) Conflicto Laboral</div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="question">
+                <strong>6.</strong> ¿Qué sociólogo se centró en el estudio de los "hechos sociales" como elementos externos y coercitivos?
+                <div class="options">
+                    <div class="option">a) Max Weber</div>
+                    <div class="option">b) Karl Marx</div>
+                    <div class="option">c) Émile Durkheim</div>
+                    <div class="option">d) Vilfredo Pareto</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; font-size: 0.8rem; color: #666;">
+            Instituto Superior Centuria — Sociología — Examen Final 2026
+        </div>
+    </div>
+</body>
+</html>

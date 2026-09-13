@@ -1,0 +1,976 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Virtual Centuria — Portal Académico Institucional</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-oscuro: #007A33;
+            --verde-medio: #00B140;
+            --verde-claro: #E6F4EA;
+            --verde-hover: #81C784;
+            --texto-oscuro: #2D2D2D;
+            --dorado: #C5A55A;
+            --dorado-claro: #D4B96A;
+            --plateado: #B0BEC5;
+            --blanco: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--blanco);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ── Fondo premium: degradado sutil + textura ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(0,177,64,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(129,199,132,.1) 0%, transparent 50%),
+                linear-gradient(160deg, #003d19 0%, #007A33 35%, #005c26 65%, #003d19 100%);
+            z-index: -2;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.03)'/%3E%3C/svg%3E");
+            z-index: -1;
+        }
+
+        /* ── Contenedor principal ── */
+        .premium-wrapper {
+            width: 100%;
+            max-width: 520px;
+            padding: 20px;
+            animation: fadeInUp .8s cubic-bezier(.16,1,.3,1);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Hero: Logo + Título ── */
+        .premium-hero {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .premium-logo {
+            height: 130px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 20px rgba(0,0,0,.4));
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .premium-hero h1 {
+            font-weight: 200;
+            letter-spacing: 6px;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            text-shadow: 0 2px 12px rgba(0,0,0,.3);
+            margin-bottom: 4px;
+        }
+        .premium-hero .subtitle {
+            font-weight: 400;
+            font-size: .78rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--dorado);
+            margin-bottom: 16px;
+        }
+        .premium-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 0 auto;
+        }
+        .premium-divider .line {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--dorado), transparent);
+        }
+        .premium-divider .diamond {
+            width: 8px;
+            height: 8px;
+            background: var(--dorado);
+            transform: rotate(45deg);
+        }
+
+        /* ── Card Login: Glassmorphism premium ── */
+        .premium-card {
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow:
+                0 8px 32px rgba(0,0,0,.25),
+                inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .premium-card-body {
+            padding: 36px 40px 40px;
+        }
+
+        /* ── Borde dorado sutil arriba ── */
+        .premium-card::before {
+            content: '';
+            display: block;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--dorado), var(--verde-hover), var(--dorado), transparent);
+        }
+
+        /* ── Texto de encabezado del card ── */
+        .card-greeting {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .card-greeting h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .card-greeting p {
+            font-size: .75rem;
+            color: rgba(255,255,255,.5);
+            letter-spacing: .5px;
+        }
+
+        /* ── Formularios premium ── */
+        .premium-label {
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dorado);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .premium-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px;
+            color: var(--blanco);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: .95rem;
+            letter-spacing: 1px;
+            transition: .3s;
+            outline: none;
+        }
+        .premium-input::placeholder {
+            color: rgba(255,255,255,.35);
+            font-weight: 400;
+            letter-spacing: 0;
+        }
+        .premium-input:focus {
+            border-color: var(--dorado);
+            box-shadow: 0 0 0 3px rgba(197,165,90,.2);
+            background: rgba(255,255,255,.12);
+        }
+        .premium-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px;
+            color: var(--blanco);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            font-size: .85rem;
+            transition: .3s;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .premium-select option { background: #1a3d26; color: #fff; }
+        .premium-select:focus {
+            border-color: var(--dorado);
+            box-shadow: 0 0 0 3px rgba(197,165,90,.2);
+        }
+
+        /* ── Botón principal premium ── */
+        .premium-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
+            color: var(--blanco);
+            border: none;
+            border-radius: 14px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: .35s cubic-bezier(.16,1,.3,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,.15) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: .5s;
+        }
+        .premium-btn:hover::before { transform: translateX(100%); }
+        .premium-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0,122,51,.4);
+        }
+        .premium-btn:active { transform: translateY(0); }
+        .premium-btn:disabled {
+            opacity: .5;
+            transform: none !important;
+            cursor: not-allowed;
+        }
+
+        /* ── Botón secundario ── */
+        .premium-btn-ghost {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: rgba(255,255,255,.6);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            font-size: .82rem;
+            letter-spacing: .5px;
+            cursor: pointer;
+            transition: .25s;
+        }
+        .premium-btn-ghost:hover {
+            background: rgba(255,255,255,.08);
+            color: var(--blanco);
+            border-color: rgba(255,255,255,.3);
+        }
+
+        /* ── Alertas ── */
+        .premium-alert-info {
+            background: rgba(0,177,64,.12);
+            border: 1px solid rgba(0,177,64,.25);
+            border-left: 3px solid var(--verde-medio);
+            border-radius: 10px;
+            color: var(--verde-claro);
+            font-size: .78rem;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+        }
+        .premium-alert-warn {
+            background: rgba(197,165,90,.1);
+            border: 1px solid rgba(197,165,90,.25);
+            border-left: 3px solid var(--dorado);
+            border-radius: 10px;
+            color: var(--dorado-claro);
+            font-size: .78rem;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+        /* ── Separador ── */
+        .premium-separator {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+            margin: 20px 0;
+        }
+
+        /* ── Footer institucional ── */
+        .premium-footer {
+            text-align: center;
+            margin-top: 28px;
+            padding: 0 20px;
+        }
+        .premium-footer .institution {
+            font-size: .65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.35);
+            margin-bottom: 4px;
+        }
+        .premium-footer .motto {
+            font-size: .6rem;
+            font-style: italic;
+            color: var(--dorado);
+            opacity: .6;
+            letter-spacing: 1px;
+        }
+        .premium-footer .year {
+            font-size: .55rem;
+            color: rgba(255,255,255,.2);
+            margin-top: 6px;
+        }
+
+        /* ── Animación de carga ── */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .loading-shimmer {
+            background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,.15) 50%, transparent 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        #step-2-register { display: none; }
+
+        /* ── Cursos paso 3 ── */
+        .premium-curso-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 14px;
+            color: var(--blanco);
+            cursor: pointer;
+            transition: .25s;
+            text-decoration: none;
+        }
+        .premium-curso-btn:hover {
+            background: rgba(255,255,255,.12);
+            border-color: var(--dorado);
+            transform: translateY(-2px);
+        }
+        .curso-icon-premium {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
+            color: var(--blanco);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 540px) {
+            .premium-card-body { padding: 28px 24px 32px; }
+            .premium-hero h1 { font-size: 1.2rem; letter-spacing: 3px; }
+            .premium-logo { height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="premium-wrapper">
+        <!-- ═══ Hero Institucional ═══ -->
+        <div class="premium-hero">
+            <img src="images/logo_centuria_blanco_1.png" alt="Instituto Superior Centuria" class="premium-logo">
+            <h1>Campus Virtual Centuria</h1>
+            <p class="subtitle">Portal Académico Institucional</p>
+            <div class="premium-divider">
+                <div class="line"></div>
+                <div class="diamond"></div>
+                <div class="line"></div>
+            </div>
+        </div>
+
+        <!-- ═══ Card de Acceso ═══ -->
+        <div class="premium-card">
+            <div class="premium-card-body">
+
+                <!-- PASO 1: Cédula + Contraseña -->
+                <div id="step-1-cedula">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-shield-lock me-2" style="color:var(--dorado);"></i>Acceso Seguro</h2>
+                        <p>Ingrese su cédula y contraseña para acceder</p>
+                    </div>
+
+                    <div id="login-error" style="background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-left:3px solid #ef5350;border-radius:10px;color:#ef9a9a;font-size:.78rem;padding:12px 14px;margin-bottom:16px;display:none;text-align:center;">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        <span id="login-error-text">Cédula o contraseña incorrecta</span>
+                    </div>
+
+                    <label class="premium-label">Cédula de Identidad</label>
+                    <input type="text" class="premium-input text-center" id="inp-cedula"
+                           oninput="this.value=this.value.replace(/\./g, '')"
+                           placeholder="SIN PUNTOS" style="font-size:1.1rem; letter-spacing:3px;">
+
+                    <label class="premium-label" style="margin-top:14px;">Contraseña</label>
+                    <div style="position:relative;">
+                        <input type="password" class="premium-input" id="inp-password"
+                               placeholder="Tu contraseña" style="font-size:.85rem;letter-spacing:.5px;padding-right:44px;"
+                               onkeydown="if(event.key==='Enter') verificarCedula()">
+                        <button type="button" onclick="togglePassword()"
+                                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;"
+                                title="Mostrar/ocultar contraseña">
+                            <i id="pwd-icon" class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <button id="btn-buscar" class="premium-btn mt-4" onclick="verificarCedula()">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Portal
+                    </button>
+
+                    <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;">
+                        <button onclick="abrirRecuperarContrasena()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-question-circle me-1"></i>¿Olvidaste tu contraseña?
+                        </button>
+                        <span style="color:rgba(255,255,255,.15);">|</span>
+                        <button onclick="mostrarRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;transition:.2s;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-person-plus me-1"></i>Registrarse
+                        </button>
+                    </div>
+
+                    <hr class="premium-separator">
+
+                    <div class="premium-alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Espacio académico oficial del Instituto Superior Centuria. Acceda a clases, materiales y evaluaciones.
+                    </div>
+                </div>
+
+                <!-- PASO 2: Registro -->
+                <div id="step-2-register">
+                    <div class="premium-alert-warn">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Complete sus datos <strong>una única vez</strong> para acceder a la plataforma.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
+                            <input type="text" class="premium-input" id="reg-cedula" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;text-align:center;" oninput="this.value=this.value.replace(/\./g,'')">
+                        </div>
+                        <div class="col-6">
+                            <label class="premium-label">Nombre <span style="color:#ef5350;">*</span></label>
+                            <input type="text" class="premium-input" id="reg-nombre" placeholder="Ej: JUAN" style="text-transform:uppercase; font-size:.85rem;" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="premium-label">Apellido <span style="color:#ef5350;">*</span></label>
+                            <input type="text" class="premium-input" id="reg-apellido" placeholder="Ej: PÉREZ" style="text-transform:uppercase; font-size:.85rem;" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="premium-label">Correo electrónico</label>
+                            <input type="email" class="premium-input" id="reg-email" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
+                        </div>
+                        <div class="col-12">
+                            <label class="premium-label">Teléfono</label>
+                            <input type="text" class="premium-input" id="reg-telefono" placeholder="0981 123456" style="font-size:.85rem;">
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        El administrador asignará su <strong>rol</strong> y <strong>asignatura</strong> después del registro.
+                    </div>
+
+                    <button id="btn-registrar" class="premium-btn mt-3" onclick="registrarYAcceder()">
+                        <i class="bi bi-person-check me-2"></i>Guardary Acceder
+                    </button>
+                    <button class="premium-btn-ghost mt-2" onclick="volverPaso1()">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </button>
+                </div>
+
+                <!-- PASO 3: Selección de curso -->
+                <div id="step-3-cursos" style="display:none;">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-mortarboard me-2" style="color:var(--dorado);"></i>Bienvenido/a</h2>
+                        <p id="curso-nombre-alumno" style="font-weight:600; color:var(--blanco); font-size:.9rem;"></p>
+                        <p id="curso-info-alumno" style="margin-top:4px;"></p>
+                    </div>
+
+                    <div id="lista-cursos" class="d-grid gap-2 mb-3"></div>
+
+                    <button class="premium-btn-ghost" onclick="cerrarSesionCursos()">
+                        <i class="bi bi-arrow-left me-1"></i>Cambiar de usuario
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ═══ Footer Protocolar ═══ -->
+        <div class="premium-footer">
+            <p class="institution">Instituto Superior Centuria</p>
+            <p class="motto">"Formando líderes con tecnología y excelencia"</p>
+            <p class="year">© 2026 — Sistema Académico Digital v2.0</p>
+        </div>
+    </div>
+
+    <script>
+        // ═══ CARRERAS POR GRADO ═══
+        const carrerasPorGrado = {
+            'Grado': ['Administración de Empresas','Contabilidad','Administración Aduanera','Administración y Gestión Pública','Ingeniería Comercial'],
+            'Especialización': ['Auditoría Financiera','Gestión Tributaria','Logística y Comercio Internacional','Dirección de Empresas'],
+            'Maestría': ['Administración y Gestión Pública','Gerencia Empresarial','Educación Superior'],
+            'Doctorado': ['Ciencias Sociales con mención en Administración','Educación con mención en Gestión Educativa']
+        };
+        function cargarCarrerasPorGrado(){
+            const grado = document.getElementById('reg-grado').value;
+            const select = document.getElementById('reg-carrera');
+            select.innerHTML = '';
+            if(!grado || !carrerasPorGrado[grado]){
+                select.innerHTML = '<option value="" selected disabled>Primero selecciona un grado...</option>';
+                select.disabled = true;
+                return;
+            }
+            select.innerHTML = '<option value="" selected disabled>Selecciona tu carrera...</option>';
+            carrerasPorGrado[grado].forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                select.appendChild(opt);
+            });
+            select.disabled = false;
+        }
+
+        // ═══ CONEXIÓN ═══
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+        let cedulaActual = '';
+        let rolesActuales = [];   // Todos los roles de la cédula
+
+        function showLoading(btnId){
+            const btn = document.getElementById(btnId);
+            if(btn){ btn.dataset.original = btn.innerHTML; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Conectando...'; btn.disabled = true; }
+        }
+        function hideLoading(btnId){
+            const btn = document.getElementById(btnId);
+            if(btn && btn.dataset.original){ btn.innerHTML = btn.dataset.original; btn.disabled = false; }
+        }
+
+        // ═══ TOGGLE PASSWORD ═══
+        function togglePassword(){
+            const inp = document.getElementById('inp-password');
+            const icon = document.getElementById('pwd-icon');
+            if(inp.type==='password'){ inp.type='text'; icon.className='bi bi-eye-slash'; }
+            else { inp.type='password'; icon.className='bi bi-eye'; }
+        }
+
+        // ═══ MOSTRAR ERROR LOGIN ═══
+        function showLoginError(msg){
+            const div = document.getElementById('login-error');
+            const txt = document.getElementById('login-error-text');
+            txt.textContent = msg;
+            div.style.display = 'block';
+        }
+        function hideLoginError(){
+            document.getElementById('login-error').style.display = 'none';
+        }
+
+        // ═══ BASE DE DATOS LOCAL ═══
+        const USERS_KEY = 'centuria_users';
+        function getUsersDB() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; } }
+        function saveUsersDB(db) { localStorage.setItem(USERS_KEY, JSON.stringify(db)); }
+        function buscarUsuarioLocal(cedula) { const db = getUsersDB(); return db[cedula] || null; }
+        function registrarUsuarioLocal(cedula, nombre, apellido, email, telefono) {
+            const db = getUsersDB();
+            const cedulaLimpia = cedula.replace(/\./g, '');
+            const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+            db[cedula] = { nombre, apellido, email, telefono, rol: 'sin_asignar', password, fechaRegistro: new Date().toISOString() };
+            saveUsersDB(db);
+        }
+
+        // ═══ PASO 1: Verificar cédula + contraseña (LOCAL) ═══
+        function verificarCedula(){
+            const cedula = document.getElementById('inp-cedula').value.trim();
+            const password = document.getElementById('inp-password').value;
+            if(!cedula){ showLoginError("Debes ingresar tu cédula."); return; }
+            if(!password){ showLoginError("Debes ingresar tu contraseña."); return; }
+            cedulaActual = cedula;
+            hideLoginError();
+            showLoading('btn-buscar');
+
+            // Buscar en base de datos local
+            const usuario = buscarUsuarioLocal(cedula);
+
+            if(!usuario){
+                // No registrado → paso 2 (registro)
+                hideLoading('btn-buscar');
+                document.getElementById('step-1-cedula').style.display = 'none';
+                document.getElementById('step-2-register').style.display = 'block';
+                return;
+            }
+
+            // Verificar contraseña
+            if(password !== usuario.password){
+                hideLoading('btn-buscar');
+                showLoginError("Contraseña incorrecta.");
+                return;
+            }
+
+            // Contraseña correcta → guardar datos
+            sessionStorage.setItem('current_cedula', cedula);
+            sessionStorage.setItem('current_nombre', usuario.nombre + ' ' + usuario.apellido);
+            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:usuario.nombre,apellido:usuario.apellido}));
+            sessionStorage.setItem('rol', usuario.rol || 'alumno');
+
+            hideLoading('btn-buscar');
+            mostrarCursos(null);
+        }
+
+        // ═══ PASO 2: Registro de usuario nuevo (LOCAL) ═══
+        function registrarYAcceder(){
+            const cedula = cedulaActual;
+            const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
+            const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
+            const email = document.getElementById('reg-email').value.trim();
+            const telefono = document.getElementById('reg-telefono')?.value.trim() || '';
+            if(!cedula || !nombre || !apellido){ alert("Completa CÉDULA, NOMBRE y APELLIDO."); return; }
+
+            // Verificar si ya existe
+            const existente = buscarUsuarioLocal(cedula);
+            if(existente){
+                // Ya existe → cargar datos y entrar
+                sessionStorage.setItem('current_cedula', cedula);
+                sessionStorage.setItem('current_nombre', existente.nombre + ' ' + existente.apellido);
+                sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:existente.nombre,apellido:existente.apellido}));
+                sessionStorage.setItem('rol', existente.rol || 'alumno');
+                mostrarCursos(null);
+                return;
+            }
+
+            // Registrar nuevo
+            registrarUsuarioLocal(cedula, nombre, apellido, email, telefono);
+            sessionStorage.setItem('current_cedula', cedula);
+            sessionStorage.setItem('current_nombre', nombre + ' ' + apellido);
+            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre,apellido}));
+            sessionStorage.setItem('rol', 'alumno');
+            mostrarCursos(null);
+        }
+
+        function volverPaso1(){
+            document.getElementById('step-2-register').style.display = 'none';
+            document.getElementById('step-1-cedula').style.display = 'block';
+        }
+
+        function mostrarRegistro(){
+            document.getElementById('step-1-cedula').style.display = 'none';
+            document.getElementById('step-2-register').style.display = 'block';
+        }
+
+        // ═══ PASO 2.5: Selector de roles (cuando hay múltiples) ═══
+        function mostrarSelectorRoles(roles){
+            document.getElementById('step-1-cedula').style.display = 'none';
+            document.getElementById('step-2-register').style.display = 'none';
+            document.getElementById('step-3-cursos').style.display = 'none';
+
+            let paso = document.getElementById('step-2-roles');
+            if(!paso){
+                paso = document.createElement('div');
+                paso.id = 'step-2-roles';
+                paso.innerHTML = `
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-person-gear me-2" style="color:var(--dorado);"></i>Selecciona tu acceso</h2>
+                        <p id="roles-nombre-alumno" style="font-weight:600; color:var(--blanco); font-size:.9rem;"></p>
+                        <p style="font-size:.7rem; color:rgba(255,255,255,.45); margin-top:4px;">Tu cédula tiene múltiples roles. Elige con cuál deseas ingresar:</p>
+                    </div>
+                    <div id="lista-roles" class="d-grid gap-2 mb-3"></div>
+                    <button class="premium-btn-ghost" onclick="cerrarSesionRoles()">
+                        <i class="bi bi-arrow-left me-1"></i>Cambiar de usuario
+                    </button>`;
+                document.querySelector('.premium-card-body').appendChild(paso);
+            }
+            paso.style.display = 'block';
+            document.getElementById('roles-nombre-alumno').textContent = sessionStorage.getItem('current_nombre') || '';
+
+            const colores = {
+                'alumno':  'linear-gradient(135deg, #00B140, #007A33)',
+                'docente': 'linear-gradient(135deg, #0097A7, #006064)',
+                'admin':   'linear-gradient(135deg, #5C6BC0, #283593)',
+                'academico': 'linear-gradient(135deg, #8E24AA, #4A148C)'
+            };
+            const iconos = {
+                'alumno':  'bi-mortarboard',
+                'docente': 'bi-easel',
+                'admin':   'bi-gear-wide-connected',
+                'academico': 'bi-building'
+            };
+            const etiquetas = {
+                'alumno':  'Alumno',
+                'docente': 'Docente',
+                'admin':   'Administrador',
+                'academico': 'Académico'
+            };
+
+            const lista = document.getElementById('lista-roles');
+            lista.innerHTML = '';
+            roles.forEach(r => {
+                const btn = document.createElement('button');
+                btn.className = 'premium-curso-btn';
+                const color = colores[r.rol] || colores['alumno'];
+                const icono = iconos[r.rol] || 'bi-person';
+                const label = etiquetas[r.rol] || r.rol;
+                btn.innerHTML = `
+                    <div class="curso-icon-premium" style="background:${color};">
+                        <i class="bi ${icono}"></i>
+                    </div>
+                    <div class="text-start flex-grow-1">
+                        <div class="fw-bold" style="font-size:.88rem;">${label}</div>
+                        <small style="color:rgba(255,255,255,.45); font-size:.72rem;">
+                            ${r.asignatura || r.carrera || 'Instituto'} ${r.seccion ? '• Sección ' + r.seccion : ''}
+                        </small>
+                    </div>
+                    <i class="bi bi-chevron-right" style="color:rgba(255,255,255,.3);"></i>`;
+                btn.onclick = () => seleccionarRol(r);
+                lista.appendChild(btn);
+            });
+        }
+
+        function seleccionarRol(rol){
+            sessionStorage.setItem('rol', rol.rol);
+            sessionStorage.setItem('current_carrera', rol.carrera || '');
+            sessionStorage.setItem('current_seccion', rol.seccion || '');
+            sessionStorage.setItem('current_asignatura', rol.asignatura || '');
+
+            // Cerrar selector de roles
+            const pasoRoles = document.getElementById('step-2-roles');
+            if(pasoRoles) pasoRoles.style.display = 'none';
+
+            // Admin va al panel de gestión de roles
+            if(rol.rol === 'admin'){
+                window.location.href = 'admin_roles.html';
+                return;
+            }
+
+            // Resto: ir a selección de cursos con el rol filtrado
+            mostrarCursos(null, rol.rol, rol.carrera);
+        }
+
+        function cerrarSesionRoles(){
+            sessionStorage.clear();
+            const pasoRoles = document.getElementById('step-2-roles');
+            if(pasoRoles) pasoRoles.style.display = 'none';
+            document.getElementById('step-1-cedula').style.display = 'block';
+            document.getElementById('inp-cedula').value = '';
+            rolesActuales = [];
+        }
+
+        // ═══ PASO 3: Selección de curso ═══
+        function mostrarCursos(cursosDirectos, rolFiltro, carreraFiltro){
+            document.getElementById('step-1-cedula').style.display = 'none';
+            document.getElementById('step-2-register').style.display = 'none';
+            const pasoRoles = document.getElementById('step-2-roles');
+            if(pasoRoles) pasoRoles.style.display = 'none';
+
+            const paso3 = document.getElementById('step-3-cursos');
+            paso3.style.display = 'block';
+
+            const nombre = sessionStorage.getItem('current_nombre') || 'Usuario';
+            const rol = rolFiltro || sessionStorage.getItem('rol') || 'alumno';
+            const emojiRol = {alumno:'🎓', docente:'👨‍🏫', admin:'⚙️', academico:'🏛️'};
+            document.getElementById('curso-nombre-alumno').textContent = nombre + ' ' + (emojiRol[rol] || '');
+
+            const infoDiv = document.getElementById('curso-info-alumno');
+            const carrera = carreraFiltro || sessionStorage.getItem('current_carrera') || '';
+            const seccion = sessionStorage.getItem('current_seccion') || '';
+            infoDiv.innerHTML = ['Rol: ' + rol.toUpperCase(), carrera, seccion?'Sec. '+seccion:''].filter(Boolean).join(' • ');
+            infoDiv.style.cssText = 'font-size:.7rem; color:rgba(255,255,255,.45);';
+
+            const lista = document.getElementById('lista-cursos');
+            if(cursosDirectos && Array.isArray(cursosDirectos) && cursosDirectos.length>0){ renderCursos(cursosDirectos); return; }
+
+            const ced = sessionStorage.getItem('current_cedula');
+            fetch(SCRIPT_URL + '?action=listar_cursos&cedula=' + encodeURIComponent(ced) + '&rol=' + encodeURIComponent(rol) + '&carrera=' + encodeURIComponent(carreraFiltro||''))
+                .then(r=>r.json())
+                .then(data=>{
+                    if(data && Array.isArray(data.cursos) && data.cursos.length>0){
+                        // Agregar Sociología si no viene del API
+                        const tieneSociologia = data.cursos.some(c => (c.id||'').toLowerCase().includes('soc'));
+                        if(!tieneSociologia){
+                            data.cursos.push({id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol});
+                        }
+                        sessionStorage.setItem('cursos_disponibles', JSON.stringify(data.cursos));
+                        renderCursos(data.cursos);
+                    } else {
+                        renderCursos([
+                            {id:'TIC',nombre:'TIC - Tecnología de la Información y Comunicación',codigo:'ADE18',seccion:sessionStorage.getItem('current_seccion')||'',color:'#00B140',icono:'bi-laptop',rol:rol},
+                            {id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol}
+                        ]);
+                    }
+                })
+                .catch(()=>{ renderCursos([
+                    {id:'TIC',nombre:'TIC - Tecnología de la Información y Comunicación',codigo:'ADE18',seccion:sessionStorage.getItem('current_seccion')||'',color:'#00B140',icono:'bi-laptop',rol:rol},
+                    {id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol}
+                ]); });
+        }
+
+        function renderCursos(cursos){
+            const lista = document.getElementById('lista-cursos');
+            lista.innerHTML = '';
+            cursos.forEach(c=>{
+                const btn = document.createElement('button');
+                btn.className = 'premium-curso-btn';
+                const badgeRol = c.rol && c.rol !== 'alumno' ?
+                    '<span class="badge ms-2" style="background:rgba(255,255,255,.15); font-size:.6rem; font-weight:500;">'+c.rol.toUpperCase()+'</span>' : '';
+                btn.innerHTML = `
+                    <div class="curso-icon-premium" style="background:linear-gradient(135deg, ${c.color||'#00B140'}, ${c.color||'#007A33'});">
+                        <i class="bi ${c.icono||'bi-book'}"></i>
+                    </div>
+                    <div class="text-start flex-grow-1">
+                        <div class="fw-bold" style="font-size:.88rem;">${c.nombre} ${badgeRol}</div>
+                        <small style="color:rgba(255,255,255,.45); font-size:.72rem;">${c.codigo||''} ${c.seccion?'• Sección '+c.seccion:''}</small>
+                    </div>
+                    <i class="bi bi-chevron-right" style="color:rgba(255,255,255,.3);"></i>`;
+                btn.onclick = ()=> seleccionarCurso(c);
+                lista.appendChild(btn);
+            });
+        }
+
+        function seleccionarCurso(curso){
+            sessionStorage.setItem('curso_actual', curso.id);
+            sessionStorage.setItem('curso_nombre', curso.nombre);
+            sessionStorage.setItem('curso_codigo', curso.codigo||'');
+            if(curso.rol) sessionStorage.setItem('rol', curso.rol);
+            fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify({action:'registrar_acceso_curso',cedula:sessionStorage.getItem('current_cedula'),curso:curso.id,nombre_curso:curso.nombre,rol:sessionStorage.getItem('rol')})}).catch(()=>{});
+
+            // Redirigir según el curso seleccionado
+            const cursoId = (curso.id || '').toLowerCase();
+            const rol = sessionStorage.getItem('rol') || 'alumno';
+
+            if(cursoId.includes('sociolog') || cursoId === 'sociologia'){
+                // Sociología → panel docente o student panel de Sociología
+                if(rol === 'docente' || rol === 'admin' || rol === 'academico'){
+                    window.location.href = 'sociologia/teacher_panel.html';
+                } else {
+                    window.location.href = 'sociologia/teacher_panel.html'; // Por ahora, mismo panel
+                }
+            } else {
+                // TIC y otros → portal de materiales
+                window.location.href = 'Materiales_Clases/programa.html?curso=' + encodeURIComponent(curso.id);
+            }
+        }
+
+        function cerrarSesionCursos(){
+            sessionStorage.clear();
+            document.getElementById('step-3-cursos').style.display='none';
+            document.getElementById('step-1-cedula').style.display='block';
+            document.getElementById('inp-cedula').value='';
+            rolesActuales = [];
+        }
+
+        window.addEventListener('load', () => {
+            const ced = sessionStorage.getItem('current_cedula');
+            const curso = sessionStorage.getItem('curso_actual');
+            if(ced && !curso) mostrarCursos(null);
+        });
+    </script>
+
+    <!-- ═══ MODAL RECUPERAR CONTRASEÑA ═══ -->
+    <div id="modal-recuperar" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;">
+        <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-radius:24px;padding:36px 32px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:fadeInUp .5s cubic-bezier(.16,1,.3,1);">
+            <div style="text-align:center;margin-bottom:20px;">
+                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.4rem;color:#fff;">
+                    <i class="bi bi-key"></i>
+                </div>
+                <h3 style="color:#fff;font-weight:700;font-size:1rem;letter-spacing:1px;">Recuperar Contraseña</h3>
+                <p style="color:rgba(255,255,255,.45);font-size:.72rem;margin-top:4px;">Ingresa tu cédula para ver tu contraseña</p>
+            </div>
+
+            <div id="recuperar-paso1">
+                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+                    <p style="color:var(--dorado-claro);font-size:.72rem;text-align:center;line-height:1.6;">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        <strong>Tu contraseña se genera automáticamente con este formato:</strong><br><br>
+                        <span style="font-size:.8rem;color:#fff;">Primera letra nombre(<span style="color:#81C784;">MAYÚS</span>) + primera letra apellido(<span style="color:#81C784;">minúscula</span>) + cédula(sin puntos) + <span style="color:#C5A55A;">*</span></span><br><br>
+                        <span style="font-size:.68rem;opacity:.6;">Ej: <strong>J</strong>uan <strong>P</strong>érez, CI 12345678 → <span style="color:#fff;font-family:monospace;font-weight:700;">Jp12345678*</span></span>
+                    </p>
+                </div>
+
+                <label style="font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dorado);display:block;margin-bottom:5px;">Cédula de Identidad</label>
+                <input type="text" id="recuperar-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+                <button onclick="buscarContrasena()" class="premium-btn" style="margin-top:16px;">
+                    <i class="bi bi-search me-2"></i>Buscar mi contraseña
+                </button>
+            </div>
+
+            <div id="recuperar-paso2" style="display:none;">
+                <div id="recuperar-resultado" style="background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.25);border-radius:14px;padding:20px;text-align:center;">
+                    <p style="color:rgba(255,255,255,.5);font-size:.7rem;margin-bottom:8px;">Tu contraseña es:</p>
+                    <div id="recuperar-password" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:14px;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:2px;font-family:monospace;cursor:pointer;transition:.2s;" onclick="copiarContrasena()" title="Clic para copiar">
+                        ---
+                    </div>
+                    <p style="color:rgba(255,255,255,.35);font-size:.6rem;margin-top:8px;">Haz clic para copiar</p>
+                    <p id="recuperar-copiado" style="color:var(--verde-hover);font-size:.7rem;font-weight:600;margin-top:4px;display:none;">✓ Copiado al portapapeles</p>
+                </div>
+                <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:12px;margin-top:14px;">
+                    <p style="color:var(--dorado-claro);font-size:.68rem;text-align:center;line-height:1.5;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Recordá:</strong> Tu contraseña se genera con tu nombre y cédula.<br>
+                        Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                    </p>
+                </div>
+            </div>
+
+            <div id="recuperar-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:12px;text-align:center;margin-top:12px;">
+                <p style="color:#ef9a9a;font-size:.75rem;"><i class="bi bi-exclamation-circle me-1"></i><span id="recuperar-error-text">Cédula no encontrada</span></p>
+            </div>
+
+            <button onclick="cerrarRecuperar()" style="width:100%;margin-top:16px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.78rem;cursor:pointer;font-family:Montserrat;transition:.2s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.3)'" onmouseout="this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.15)'">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ═══ RECUPERAR CONTRASEÑA (LOCAL) ═══
+        function abrirRecuperarContrasena(){
+            document.getElementById('modal-recuperar').style.display = 'flex';
+            document.getElementById('recuperar-paso1').style.display = 'block';
+            document.getElementById('recuperar-paso2').style.display = 'none';
+            document.getElementById('recuperar-error').style.display = 'none';
+            document.getElementById('recuperar-cedula').value = '';
+            document.getElementById('recuperar-cedula').focus();
+        }
+        function cerrarRecuperar(){
+            document.getElementById('modal-recuperar').style.display = 'none';
+        }
+        function buscarContrasena(){
+            const cedula = document.getElementById('recuperar-cedula').value.trim();
+            if(!cedula){ alert('Ingresa tu cédula.'); return; }
+
+            // Buscar en base de datos local
+            const usuario = buscarUsuarioLocal(cedula);
+
+            if(usuario){
+                const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+                document.getElementById('recuperar-password').textContent = password;
+                document.getElementById('recuperar-paso1').style.display = 'none';
+                document.getElementById('recuperar-paso2').style.display = 'block';
+                document.getElementById('recuperar-error').style.display = 'none';
+            } else {
+                document.getElementById('recuperar-error').style.display = 'block';
+                document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada. Regístrese primero.';
+                document.getElementById('recuperar-paso2').style.display = 'none';
+            }
+        }
+        function copiarContrasena(){
+            const pwd = document.getElementById('recuperar-password').textContent;
+            navigator.clipboard.writeText(pwd).then(()=>{
+                alert('Contraseña copiada: ' + pwd);
+            });
+        }
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarRecuperar(); });
+    </script>
+</body>
+</html>

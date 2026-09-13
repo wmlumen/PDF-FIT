@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilla de Progreso - TIC Centuria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/estilos.css">
+    <link rel="stylesheet" href="../prompt_unificado.css">
+    <style>
+        :root{ --centuria-green:#007A33; --centuria-green-dark:#005c26; --centuria-green-light:#E6F4EA; --centuria-hover:#81C784; --centuria-black:#333333; }
+        body{ font-family:'Montserrat',sans-serif; background:#f8f9fa; }
+        .grade-card{ transition:all .2s; border-radius:12px; border:none; }
+        .grade-card:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,99,65,.12) !important; }
+        .progress{ height:28px; border-radius:20px; background:#e9ecef; }
+        .progress-bar{ font-weight:700; }
+        .scale-box{ border-radius:10px; font-size:.85rem; text-align:center; padding:12px 8px; border:1px solid #dee2e6; transition:.2s; }
+        .scale-box:hover{ transform:scale(1.03); }
+        .scale-active{ background:#007A33 !important; color:white !important; border-color:#007A33 !important; transform:scale(1.05); font-weight:700; box-shadow:0 4px 12px rgba(0,99,65,.25); }
+        input[type="number"]{ font-weight:700; color:var(--centuria-black); }
+        .navbar-centuria{ background:#007A33 !important; }
+        .card-header{ font-family:'Montserrat',sans-serif; }
+        .table thead th{ font-family:'Montserrat',sans-serif; font-weight:600; letter-spacing:.3px; }
+        .btn-outline-primary{ color:#007A33; border-color:#007A33; }
+        .btn-outline-primary:hover, .btn-check:checked + .btn-outline-primary{ background:#007A33; border-color:#007A33; color:white; }
+        .text-primary{ color:#007A33 !important; }
+        .bg-primary{ background-color:#007A33 !important; }
+        .border-primary{ border-color:#007A33 !important; }
+    </style>
+    <link rel="stylesheet" href="../css/portal-layout.css">
+    <script src="../js/portal-layout.js" defer></script>
+    <link rel="stylesheet" href="../accesibilidad.css">
+    <link rel="stylesheet" href="../css/paleta-oficial.css">
+</head>
+<body>
+    <script>if(!sessionStorage.getItem('current_cedula')){location.replace('../index.html');}</script>
+<div class="container-fluid">
+    <div class="row portal-layout">
+        <!-- Sidebar Verde Centuria -->
+                        <nav id="portal-menu" aria-label="NavegaciÃ³n del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
+            <div class="p-2">
+                <a href="programa.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-file-earmark-text me-2"></i>Programa Oficial</a>
+                <a href="../glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario TÃ©cnico</a>
+                <a href="../asistencia_presencial.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-person-raised-hand me-2"></i>Asistencia Presencial</a>
+                <a href="planilla.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-graph-up me-2"></i>Planilla de Progreso</a>
+            </div>
+            <div class="px-3 pt-3 pb-2 text-uppercase small fw-bold text-white-50" style="letter-spacing:1px;">Unidades (10)</div>
+            <div class="px-2">
+                <a href="Unidad_01.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 1</a>
+                <a href="Unidad_02.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 2</a>
+                <a href="Unidad_03.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 3</a>
+                <a href="Unidad_04.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 4</a>
+                <a href="Unidad_05.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 5</a>
+                <a href="Unidad_06.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 6</a>
+                <a href="Unidad_07.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 7</a>
+                <a href="Unidad_08.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 8</a>
+                <a href="Unidad_09.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 9</a>
+                <a href="Unidad_10.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 10</a>
+            </div>
+        </nav>
+
+        <!-- Main -->
+        
+            <main class="col-md-9 col-lg-10 content p-4" style="background:#f8f9fa; min-height:100vh;">
+                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menÃº</button>
+                        <!-- Header superior: Izq Logo+Instituto+Carrera+Asignatura | Der Nombre+CÃ©dula+Salir -->
+            <div id="top-user-bar" class="d-flex justify-content-between align-items-center gap-3 py-2 px-3 mb-3 bg-white rounded-3 shadow-sm border" style="position: sticky; top: 0; z-index: 10;">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="logo_centuria.png" alt="Centuria" style="height: 40px; width: auto;">
+                    <div>
+                        <div class="fw-bold" style="color: #007A33; font-size: 0.95rem; line-height: 1.1;">INSTITUTO SUPERIOR CENTURIA</div>
+                        <small class="text-muted" style="font-size: 0.75rem; line-height: 1.1;" id="top-carrera">Carrera: <span class="fw-bold">ADE18</span></small><br>
+                        <small class="text-muted" style="font-size: 0.75rem; line-height: 1.1;" id="top-asignatura">Asignatura: <span class="fw-bold">TIC - TecnologÃ­a de la InformaciÃ³n y ComunicaciÃ³n</span></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <div id="sidebar-user-name" class="fw-bold small" style="color: #007A33; line-height: 1.1;"></div>
+                        <small id="sidebar-user-id" class="text-muted" style="font-size: 0.75rem;"></small>
+                    </div>
+                    <div class="vr"></div>
+                    <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesiÃ³n"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                </div>
+            </div>
+            <!-- Header con logo y toggle -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center bg-white rounded-3 shadow-sm p-2 px-3 mb-3 border-start border-4" style="border-color:#007A33 !important;">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="logo_centuria.png" alt="Centuria" style="height:36px;" class="d-none d-md-block">
+                    <div>
+                        <h1 class="h4 fw-bold mb-0" style="color:#007A33; font-family:'Montserrat';">Panel de EvaluaciÃ³n y Progreso</h1>
+                        <small class="text-muted">TIC â€¢ Plan ADE18 â€¢ 10% Trabajos + 40% Parciales + 50% Final</small>
+                    </div>
+                </div>
+                <div class="btn-group shadow-sm mt-2 mt-md-0" role="group">
+                    <input type="radio" class="btn-check" name="vistas" id="btn-alumno" autocomplete="off" checked onchange="toggleView('alumno')">
+                    <label class="btn btn-sm fw-bold" for="btn-alumno" style="border-color:#007A33; color:#007A33;"><i class="bi bi-person-badge me-1"></i> Mi Progreso</label>
+                    <input type="radio" class="btn-check" name="vistas" id="btn-docente" autocomplete="off" onchange="toggleView('docente')">
+                    <label class="btn btn-sm fw-bold" for="btn-docente" style="border-color:#007A33; color:#007A33;"><i class="bi bi-briefcase me-1"></i> Vista Docente</label>
+                </div>
+            </div>
+
+            <!-- VISTA ALUMNO -->
+            <div id="vista-alumno">
+<section class="card border-0 shadow-sm mb-4" aria-labelledby="titulo-asistencias">
+ <div class="card-body">
+  <h2 id="titulo-asistencias" class="h5">Asistencia por dÃ­a de clase</h2>
+  <p class="small text-muted">Fechas registradas por el docente y dÃ­as con asistencia presencial de tu carrera y secciÃ³n. Las ausencias sin justificar se calculan al finalizar el dÃ­a.</p>
+  <p id="asistencia-resumen" role="status">Cargando asistenciasâ€¦</p>
+  <button type="button" id="asistencia-recargar" class="btn btn-sm btn-outline-primary">Actualizar asistencias</button>
+  <div class="table-responsive"><table class="table"><thead><tr><th>Fecha</th><th>Estado</th><th>Origen de la fecha</th></tr></thead><tbody id="asistencia-detalle"></tbody></table></div>
+ </div>
+</section>
+
+                <div class="alert d-flex align-items-center shadow-sm border-0 mb-4" style="background:#E6F4EA; border-left:4px solid #007A33 !important;">
+                    <i class="bi bi-info-circle-fill fs-4 me-3" style="color:#007A33;"></i>
+                    <div><h6 class="fw-bold mb-1" style="color:#007A33;">Tus calificaciones oficiales</h6><p class="mb-0 small text-muted">Datos en tiempo real desde Google Sheets. <strong style="color:#007A33;">Asistencia mÃ­nima 80% (4/5 pts)</strong> para derecho a final.</p></div>
+                </div>
+
+                <!-- 3 tarjetas resumen -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #007A33 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">TRABAJOS / ASISTENCIA</small><h3 class="fw-bold mb-0" style="color:#007A33;">5 <small class="text-muted fs-6">/ 5 pts</small></h3><small class="text-muted">10% nota final</small></div><div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-calendar-check fs-4" style="color:#007A33;"></i></div></div><span class="badge mt-2" style="background:#007A33;">Al DÃ­a</span></div></div></div>
+                    <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #ffc107 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">PARCIALES</small><h3 class="fw-bold mb-0">17 <small class="text-muted fs-6">/ 20 pts</small></h3><small class="text-muted">40% nota final</small></div><div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-pencil-square fs-4 text-warning"></i></div></div></div></div></div>
+                    <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #198754 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">EXAMEN FINAL</small><h3 class="fw-bold mb-0">22 <small class="text-muted fs-6">/ 25 pts</small></h3><small class="text-muted">50% nota final</small></div><div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-award fs-4 text-success"></i></div></div></div></div></div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold mb-0" style="color:#007A33;">Progreso total</h6><span class="badge" style="background:#007A33;">88%</span></div>
+                        <div class="progress" style="height:22px;"><div id="bar-total-alumno" class="progress-bar progress-bar-striped progress-bar-animated" style="width:88%; background:#007A33;">88%</div></div>
+                        <div class="d-flex justify-content-between small text-muted mt-2"><span>0 pts</span><span>50 pts</span></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card grade-card h-100 border-0 shadow-sm text-center"><div class="card-body p-2">
+                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle" style="width:56px;height:56px; background:#E6F4EA;"><i class="bi bi-calendar-check fs-3" style="color:#007A33;"></i></div>
+                                <h6 class="fw-bold">Trabajos / Asistencia (10%)</h6>
+                                <p class="small text-muted">5 pts = 10%</p>
+                                <div class="input-group input-group-sm justify-content-center">
+                                    <input type="number" id="inp-asis" class="form-control text-center fw-bold" readonly value="5" style="max-width:70px;"> <span class="input-group-text">/5</span>
+                                </div>
+                                <div id="alerta-asis" class="small fw-bold mt-2" style="display:none; color:#dc3545;"><i class="bi bi-exclamation-triangle"></i> <4 pts pierdes derecho a final</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card grade-card h-100 border-0 shadow-sm text-center"><div class="card-body p-2">
+                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10" style="width:56px;height:56px;"><i class="bi bi-pencil-square fs-3 text-warning"></i></div>
+                                <h6 class="fw-bold">Parciales (40%)</h6>
+                                <p class="small text-muted">10+10 pts</p>
+                                <div class="row g-2 justify-content-center">
+                                    <div class="col-5"><label class="small text-muted">P1</label><input type="number" id="inp-par1" class="form-control text-center fw-bold" readonly value="8"></div>
+                                    <div class="col-5"><label class="small text-muted">P2</label><input type="number" id="inp-par2" class="form-control text-center fw-bold" readonly value="9"></div>
+                                </div>
+                                <small class="text-muted">Acumulado: <strong id="out-parciales">17</strong>/20</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card grade-card h-100 border-0 shadow-sm text-center"><div class="card-body p-2">
+                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10" style="width:56px;height:56px;"><i class="bi bi-award fs-3 text-success"></i></div>
+                                <h6 class="fw-bold">Examen Final (50%)</h6>
+                                <p class="small text-muted">25 pts = 50%</p>
+                                <div class="input-group input-group-sm justify-content-center">
+                                    <input type="number" id="inp-final" class="form-control text-center fw-bold" readonly value="22" style="max-width:70px;"> <span class="input-group-text">/25</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow rounded-4 overflow-hidden mb-4">
+                    <div class="row g-0">
+                        <div class="col-md-8 p-4">
+                            <h5 class="fw-bold mb-3" style="font-family:'Montserrat'; color:#007A33;">Escala Oficial Centuria</h5>
+                            <div class="row g-2">
+                                <div class="col"><div id="sc-1" class="scale-box"><strong>1</strong><br>0-69%</div></div>
+                                <div class="col"><div id="sc-2" class="scale-box"><strong>2</strong><br>70-77%</div></div>
+                                <div class="col"><div id="sc-3" class="scale-box"><strong>3</strong><br>78-85%</div></div>
+                                <div class="col"><div id="sc-4" class="scale-box scale-active"><strong>4</strong><br>86-93%</div></div>
+                                <div class="col"><div id="sc-5" class="scale-box"><strong>5</strong><br>94-100%</div></div>
+                            </div>
+                            <div class="progress mt-4" style="height:30px;"><div id="bar-total" class="progress-bar progress-bar-striped progress-bar-animated" style="width:88%; background:#007A33;">88%</div></div>
+                        </div>
+                        <div class="col-md-4 text-white d-flex flex-column justify-content-center align-items-center p-4 text-center" style="background:#007A33;">
+                            <small class="text-white-50 text-uppercase fw-bold" style="letter-spacing:1px;">CalificaciÃ³n Final</small>
+                            <div id="out-nota" class="display-1 fw-bold my-2">4</div>
+                            <h5 id="out-estado" class="fw-bold">Distinguido</h5>
+                            <p id="out-pts" class="mb-0 small opacity-75">44 / 50 pts (88%)</p>
+                            <span class="badge bg-white mt-2" style="color:#007A33;">Aprobado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA DOCENTE -->
+            <div id="vista-docente" style="display:none;">
+<section class="card border-0 shadow-sm mb-4"><div class="card-body">
+<h2 class="h5">Fechas de clase y justificaciones</h2>
+<p class="small text-muted">Registrar una fecha establece un dÃ­a de clase; cada alumno debe tener su asistencia registrada para figurar presente.</p>
+<label for="asistencia-clave" class="form-label">Clave de gestiÃ³n docente</label>
+<input id="asistencia-clave" type="password" class="form-control mb-3" autocomplete="off">
+<form id="form-clase" class="row g-2 mb-4">
+<div class="col-md-4"><label for="clase-fecha">Fecha de clase</label><input id="clase-fecha" type="date" class="form-control" required></div>
+<div class="col-md-4"><label for="clase-carrera">Carrera (igual a RegistroAlumnos)</label><input id="clase-carrera" class="form-control" required maxlength="300"></div>
+<div class="col-md-4"><label for="clase-seccion">SecciÃ³n (igual a RegistroAlumnos)</label><input id="clase-seccion" class="form-control" required maxlength="300"></div>
+<div class="col-12"><button class="btn btn-success" type="submit">Registrar fecha de clase</button></div>
+</form>
+<form id="form-justificar" class="row g-2">
+<div class="col-md-4"><label for="justificar-cedula">CÃ©dula del alumno</label><input id="justificar-cedula" class="form-control" required></div>
+<div class="col-md-4"><label for="justificar-fecha">Fecha de ausencia</label><input id="justificar-fecha" type="date" class="form-control" required></div>
+<div class="col-md-4"><label for="justificar-motivo">Motivo aprobado por el docente</label><input id="justificar-motivo" class="form-control" required maxlength="300"></div>
+<div class="col-12"><button class="btn btn-success" type="submit">Justificar ausencia</button></div>
+</form>
+<p id="asistencia-gestion-estado" class="mt-3" role="status"></p>
+</div></section>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="fw-bold mb-1" style="color:#007A33; font-family:'Montserrat';"><i class="bi bi-people me-2"></i>Planilla General de Alumnos</h3>
+                        <p class="text-muted small mb-0">Monitoreo grupal â€¢ Alumnos en riesgo <span class="badge bg-danger">Asistencia &lt;4</span> â€¢ Exportar actas</p>
+                    </div>
+                    <span class="badge bg-light text-dark border"><span id="lbl-alumnos">0</span> alumnos â€¢ <span id="badge-rol">Rol: Docente</span></span>
+                </div>
+                <div class="alert border-0 shadow-sm d-flex align-items-center" style="background:#E6F4EA; border-left:4px solid #007A33 !important;" id="gsheet-error" style="display:none;">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="color:#007A33;"></i><span class="small">Error Sheets: Compartir â†’ <strong>Cualquier persona con el enlace</strong></span>
+                </div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                        <div class="input-group" style="max-width:300px;"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input type="text" id="filtro-planilla" class="form-control form-control-sm" placeholder="Buscar por cÃ©dula o nombre..."></div>
+                        <button class="btn btn-sm text-white" style="background:#007A33;" onclick="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i>Exportar Acta a Excel</button>
+                    </div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background:#007A33; color:white;"><tr><th>CÃ©dula</th><th>Nombre</th><th class="text-center">Asist.<br><small>10%</small></th><th class="text-center">P1<br><small>20%</small></th><th class="text-center">P2<br><small>20%</small></th><th class="text-center">Final<br><small>50%</small></th><th class="text-center">%</th><th class="text-center">Nota</th></tr></thead>
+                            <tbody id="tabla-alumnos-real"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    const currentUser = sessionStorage.getItem('current_cedula');
+    if(currentUser){
+        const el1=document.getElementById('sidebar-user-name'); if(el1) el1.innerText=sessionStorage.getItem('current_nombre')||'Alumno';
+        const el2=document.getElementById('sidebar-user-id'); if(el2) el2.innerText="C.I: "+currentUser;
+    }
+    const inputs=document.querySelectorAll('.calc-input');
+    function calcularNota(){
+        let asis=parseInt(document.getElementById('inp-asis').value)||0;
+        let p1=parseInt(document.getElementById('inp-par1').value)||0;
+        let p2=parseInt(document.getElementById('inp-par2').value)||0;
+        let fin=parseInt(document.getElementById('inp-final').value)||0;
+        if(asis>5) asis=5; if(p1>10) p1=10; if(p2>10) p2=10; if(fin>25) fin=25;
+        document.getElementById('alerta-asis').style.display=(asis<4)?'block':'none';
+        document.getElementById('out-parciales').innerText=p1+p2;
+        let total=asis+p1+p2+fin; let pct=Math.round(total/50*100);
+        document.getElementById('out-pts').innerText=total+" / 50 ("+pct+"%)";
+        let bar=document.getElementById('bar-total'); bar.style.width=pct+'%'; bar.innerText=pct+'%';
+        let bar2=document.getElementById('bar-total-alumno'); if(bar2){ bar2.style.width=pct+'%'; bar2.innerText=pct+'%'; }
+        for(let i=1;i<=5;i++) document.getElementById('sc-'+i).classList.remove('scale-active');
+        let nota=1,estado="Insuficiente",color="bg-danger";
+        if(pct>=94){ nota=5; estado="Sobresaliente"; color="bg-success"; document.getElementById('sc-5').classList.add('scale-active'); }
+        else if(pct>=86){ nota=4; estado="Distinguido"; color="bg-success"; document.getElementById('sc-4').classList.add('scale-active'); }
+        else if(pct>=78){ nota=3; estado="Bueno"; color="bg-primary"; document.getElementById('sc-3').classList.add('scale-active'); }
+        else if(pct>=70){ nota=2; estado="Aprobado"; color="bg-secondary"; document.getElementById('sc-2').classList.add('scale-active'); }
+        else document.getElementById('sc-1').classList.add('scale-active');
+        if(asis<4){ nota=1; estado="Reprobado (Asistencia)"; }
+        document.getElementById('out-nota').innerText=nota; document.getElementById('out-estado').innerText=estado;
+        bar.className=`progress-bar progress-bar-striped progress-bar-animated ${color}`;
+        if(bar2) bar2.className=`progress-bar progress-bar-striped progress-bar-animated ${color}`;
+    }
+    inputs.forEach(i=>i.addEventListener('input',calcularNota));
+    const sheetId='1TRxrgXIojONTrszwF9cmgJn75qx-zUbacjRzwrT8xeo';
+    const gSheetUrl='https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+    function loadGoogleSheetsData(){
+        fetch(gSheetUrl).then(r=>r.json()).then(data=>{
+            const tbody=document.getElementById('tabla-alumnos-real'); tbody.innerHTML='';
+            let c=0;
+            data.forEach(row=>{
+                let ced=row.cedula, nom=row.nombre, a=parseFloat(row.asistencia)||0, p1=parseFloat(row.parcial1)||0, p2=parseFloat(row.parcial2)||0, f=parseFloat(row.final)||0;
+                let tot=a+p1+p2+f, pct=Math.round(tot/50*100);
+                let nota=1, bg="bg-danger", abg="bg-danger";
+                if(a>=4) abg="bg-success";
+                if(pct>=94) nota=5,bg="bg-success"; else if(pct>=86) nota=4,bg="bg-success"; else if(pct>=78) nota=3,bg="bg-warning text-dark"; else if(pct>=70) nota=2,bg="bg-secondary";
+                if(a<4) nota=1;
+                let tr=document.createElement('tr'); if(a<4) tr.className="table-danger";
+                tr.innerHTML=`<td>${ced}</td><td class="fw-bold">${nom}</td><td class="text-center"><span class="badge ${abg}">${a}</span></td><td class="text-center">${p1}</td><td class="text-center">${p2}</td><td class="text-center">${f}</td><td class="text-center fw-bold ${nota===1?'text-danger':''}">${pct}%</td><td class="text-center"><span class="badge ${bg}">${nota}</span></td>`;
+                tbody.appendChild(tr); c++;
+                if(currentUser && ced===currentUser){
+                    document.getElementById('inp-asis').value=a; document.getElementById('inp-par1').value=p1; document.getElementById('inp-par2').value=p2; document.getElementById('inp-final').value=f; calcularNota();
+                }
+            });
+            document.getElementById('lbl-alumnos').innerText=c;
+        }).catch(e=>{ console.error(e); document.getElementById('gsheet-error').style.display='flex'; });
+    }
+    window.addEventListener('load',()=>{ if(!sessionStorage.getItem('current_cedula')) location.replace('../index.html'); loadGoogleSheetsData(); calcularNota(); });
+    function isDocente(){ const c=sessionStorage.getItem('current_cedula'); const r=sessionStorage.getItem('rol'); return c==='20262026' || r==='docente'; }
+    function actualizarBadgeRol(){ const b=document.getElementById('badge-rol'); if(b){ b.textContent=isDocente()?'Rol: Docente':'Rol: Alumno'; b.className=isDocente()?'badge bg-danger':'badge bg-success'; } const r=document.getElementById('btn-docente'); const l=document.querySelector('label[for="btn-docente"]'); if(!isDocente()&&r){ r.disabled=true; if(l){ l.classList.add('opacity-50'); l.title='Acceso docente restringido'; } } }
+    function exportarExcel(){ const t=document.getElementById('tabla-alumnos-real'); if(!t||t.rows.length===0){ alert('No hay datos para exportar.'); return; } let csv='Cedula,Nombre,Asistencia,Parcial1,Parcial2,Final,Porcentaje,Nota\n'; for(let row of t.rows){ csv+=[...row.cells].map(td=>'"'+td.innerText.replace(/"/g,'""')+'"').join(',')+'\n'; } const b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='Acta_TIC_'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); URL.revokeObjectURL(u); }
+    function toggleView(view){ if(view==='docente' && !isDocente()){ alert('Acceso docente restringido. Solo cÃ©dula 20262026 o rol docente.'); document.getElementById('btn-alumno').checked=true; return; } document.getElementById('vista-alumno').style.display=(view==='alumno'?'block':'none'); document.getElementById('vista-docente').style.display=(view==='docente'?'block':'none'); }
+    window.addEventListener('load', actualizarBadgeRol);
+    // Filtro docente
+    document.addEventListener('DOMContentLoaded',()=>{ const f=document.getElementById('filtro-planilla'); if(f){ f.addEventListener('input',()=>{ const q=f.value.toLowerCase(); document.querySelectorAll('#tabla-alumnos-real tr').forEach(tr=>{ tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none'; }); }); } });
+</script>
+<script src="../asistencia-planilla.js"></script>
+<script src="../js/accesibilidad.js"></script>
+<script src="../js/session-guard.js"></script>
+</body>
+</html>

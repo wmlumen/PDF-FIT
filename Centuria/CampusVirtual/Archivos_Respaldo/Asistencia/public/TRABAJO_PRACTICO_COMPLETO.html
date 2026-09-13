@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajo Práctico Completo - Sociología - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="student-premium.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --green-primary: #0a4d2a;
+            --green-dark: #073a20;
+            --green-light: #d4edda;
+            --green-accent: #10b981;
+        }
+
+        body { font-family: 'Inter', sans-serif; }
+
+        #doc-content {
+            padding: 2rem 2.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            text-align: center;
+            padding: 60px 40px;
+            position: relative;
+        }
+        .cover-page .cover-line {
+            width: 120px;
+            height: 4px;
+            background: var(--green-primary);
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+        .cover-page .cover-line-thick {
+            width: 200px;
+            height: 6px;
+            background: var(--green-primary);
+            margin: 25px auto;
+            border-radius: 3px;
+        }
+        .cover-page h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: var(--green-primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .cover-page h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 20px;
+            color: #555;
+            font-weight: 400;
+            margin-bottom: 30px;
+        }
+        .cover-page .cover-institution {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .cover-page .cover-badge {
+            display: inline-block;
+            background: var(--green-primary);
+            color: white;
+            padding: 6px 24px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+        .cover-fields {
+            max-width: 500px;
+            margin: 30px auto 0;
+            text-align: left;
+        }
+        .cover-fields p {
+            margin-bottom: 18px;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            align-items: baseline;
+        }
+        .cover-fields .label {
+            font-weight: 700;
+            min-width: 140px;
+            color: var(--green-primary);
+        }
+        .cover-fields .field-line {
+            flex: 1;
+            border-bottom: 1.5px solid #999;
+            margin-left: 8px;
+            min-height: 20px;
+        }
+        .cover-fields .field-line.filled {
+            border-bottom-color: var(--green-primary);
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* TOC Page */
+        .toc-page { padding: 30px 40px; }
+        .toc-page h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--green-primary);
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--green-light);
+            padding-bottom: 12px;
+        }
+        .toc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dotted #ddd;
+            font-size: 14px;
+            color: #333;
+        }
+        .toc-item .toc-num {
+            font-weight: 700;
+            color: var(--green-primary);
+            min-width: 30px;
+        }
+        .toc-item .toc-pag {
+            font-weight: 600;
+            color: var(--green-primary);
+            font-size: 12px;
+        }
+        .toc-item:hover {
+            background: #f0fdf4;
+            cursor: pointer;
+        }
+
+        /* Unit sections */
+        .unit-section {
+            margin-bottom: 40px;
+            page-break-before: always;
+            padding-top: 20px;
+        }
+        .unit-section:first-of-type { page-break-before: avoid; }
+        .unit-section h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--green-primary);
+            border-bottom: 3px solid var(--green-light);
+            padding-bottom: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .unit-section h3 .unit-badge {
+            display: inline-block;
+            background: var(--green-primary);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+        .question-item {
+            margin-bottom: 60px;
+            padding-left: 20px;
+            border-left: 3px solid var(--green-light);
+        }
+        .question-item .q-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--green-primary);
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .question-item .q-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a202c;
+            line-height: 1.5;
+            display: inline;
+        }
+        .question-item .q-sub {
+            font-weight: 400;
+            color: #555;
+            font-size: 13px;
+            display: block;
+            margin-top: 6px;
+            padding-left: 36px;
+        }
+        .answer-space {
+            margin-top: 16px;
+            margin-left: 36px;
+            min-height: 60px;
+            border-bottom: 1.5px dashed #ccc;
+        }
+        .answer-space-lg {
+            min-height: 120px;
+        }
+
+        /* Conclusion page */
+        .conclusion-page {
+            page-break-before: always;
+            padding: 40px;
+            text-align: center;
+        }
+        .conclusion-page h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            color: var(--green-primary);
+            margin-bottom: 30px;
+        }
+        .conclusion-page .conclusion-line {
+            width: 80px;
+            height: 3px;
+            background: var(--green-accent);
+            margin: 0 auto 30px;
+            border-radius: 2px;
+        }
+        .conclusion-content {
+            text-align: left;
+            min-height: 300px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            background: #fafdfa;
+            position: relative;
+        }
+        .conclusion-content::before {
+            content: '\201C';
+            font-family: 'Playfair Display', serif;
+            font-size: 80px;
+            color: var(--green-light);
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            line-height: 1;
+        }
+        .conclusion-content p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 16px;
+            min-height: 30px;
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .conclusion-content p:last-child { border-bottom: none; }
+
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            #doc-content { padding: 0 !important; max-width: 100%; }
+            .no-print { display: none !important; }
+            .unit-section { page-break-before: always; }
+            .unit-section:first-of-type { page-break-before: avoid; }
+            .page-header { display: none; }
+            .premium-container { padding: 0; }
+            .premium-card { box-shadow: none; border: none; }
+            .premium-card-body { padding: 0; }
+        }
+
+        @media (max-width: 768px) {
+            #doc-content { padding: 1.5rem !important; }
+            .cover-page { padding: 30px 20px; }
+            .cover-page h1 { font-size: 24px; }
+            .cover-fields .label { min-width: 100px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header no-print">
+        <img class="page-header-logo" src="logo_centuria_blanco_1.png" alt="Centuria">
+        <h1><i class="fas fa-graduation-cap"></i> Trabajo Práctico Completo</h1>
+        <p>Sociología — Instituto Superior Centuria</p>
+        <div class="header-nav">
+            <a href="https://wmlumen.github.io/Asistencia/"><i class="fas fa-arrow-left"></i> Volver al Inicio</a>
+            <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.85);font-weight:600;">
+                <i class="fas fa-file-alt"></i> Documento Universitario
+            </span>
+            <button onclick="exportWord()"><i class="fas fa-file-word"></i> Exportar a Word</button>
+        </div>
+    </header>
+
+    <div class="premium-container">
+        <div class="premium-card" style="margin-bottom:24px;">
+            <div class="premium-card-body" style="padding:0;">
+                <div id="doc-content" style="font-family: 'Inter', Arial, sans-serif; color: #000; background-color: #fff;">
+
+                    <!-- ============ CARÁTULA ============ -->
+                    <div class="cover-page">
+                        <p class="cover-institution">Instituto Superior</p>
+                        <h1>Centuria</h1>
+                        <div class="cover-line-thick"></div>
+                        <h2>Trabajo Práctico Completo</h2>
+                        <p style="font-size:16px;color:#666;margin-bottom:10px;">Sociología</p>
+                        <div class="cover-badge">MONOGRAFÍA ACADÉMICA</div>
+                        <div class="cover-line"></div>
+
+                        <div class="cover-fields">
+                            <p><span class="label">CARRERA:</span><span class="field-line"></span></p>
+                            <p><span class="label">ALUMNO/A:</span><span class="field-line"></span></p>
+                            <p><span class="label">C.I. N°:</span><span class="field-line"></span></p>
+                            <p><span class="label">FECHA:</span><span class="field-line"></span></p>
+                            <p><span class="label">DOCENTE:</span><span class="field-line filled">Lic. Christhian Keim</span></p>
+                            <p><span class="label">TURNO / SECCIÓN:</span><span class="field-line"></span></p>
+                        </div>
+
+                        <p style="margin-top:50px;font-size:11px;color:#aaa;">
+                            <i class="fas fa-calendar-alt"></i> Año Académico 2026
+                        </p>
+                    </div>
+
+                    <!-- page break after cover -->
+                    <br style="page-break-after: always; clear: both;">
+
+                    <!-- ============ ÍNDICE / TABLA DE CONTENIDOS ============ -->
+                    <div class="toc-page">
+                        <h2>Índice de Contenidos</h2>
+                        <div class="toc-item">
+                            <span><span class="toc-num">1</span> Unidad 1: Introducción a la Sociología</span>
+                            <span class="toc-pag">3</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">2</span> Unidad 2: Definiciones y Campos de la Sociología</span>
+                            <span class="toc-pag">5</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">3</span> Unidad 3: Conducta Humana y Cultura</span>
+                            <span class="toc-pag">7</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">4</span> Unidad 4: El Hombre como Ser Social</span>
+                            <span class="toc-pag">9</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">5</span> Unidad 5: Libertad y Existencia Humana</span>
+                            <span class="toc-pag">11</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">6</span> Unidad 6: Cambio y Conflicto Social</span>
+                            <span class="toc-pag">14</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">7</span> Conclusión</span>
+                            <span class="toc-pag">16</span>
+                        </div>
+                        <div class="toc-item">
+                            <span><span class="toc-num">8</span> Referencias Bibliográficas</span>
+                            <span class="toc-pag">17</span>
+                        </div>
+                    </div>
+
+                    <br style="page-break-after: always; clear: both;">
+
+                    <!-- ============ UNIDAD 1 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 1</span> Introducción a la Sociología</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">¿Qué diferencias existen entre analizar un problema desde el sentido común y desde el pensamiento sociológico?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Explique con sus propias palabras la diferencia entre la Estática y la Dinámica Social.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">¿Por qué Comte coloca a la sociología en la cima de la jerarquía de las ciencias?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">4</span>
+                            <span class="q-text">Análisis de Caso</span>
+                            <span class="q-sub">¿Qué factores sociales, económicos, institucionales o culturales investigaría para explicar el aumento de ventas sin factura en un mercado local mediante relaciones de causalidad?</span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ UNIDAD 2 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 2</span> Definiciones y Campos de la Sociología</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">Explique por qué el "sentido común" dice que la informalidad existe porque "la gente no quiere pagar impuestos", mientras que la sociología pregunta por confianza institucional, desigualdad y cultura económica.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Describa una situación contable donde la presión del grupo pueda llevar a una decisión antiética.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">Analice cómo el capital social puede ayudar o perjudicar una venta, una auditoría o una negociación comercial.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">4</span>
+                            <span class="q-text">Análisis de Caso</span>
+                            <span class="q-sub">¿Qué normas informales, presiones competitivas, desconfianza institucional y desigualdades económicas sostienen la informalidad? ¿Cómo proponer una transición viable hacia la formalización?</span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ UNIDAD 3 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 3</span> Conducta Humana y Cultura</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">¿Por qué el "sentido común" cree que las personas nacen con ciertos comportamientos sociales, mientras que la sociología argumenta que son producto de la socialización?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Ejemplifique una "acción racional con arreglo a fines" dentro del ámbito comercial y contable.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">Análisis de Caso</span>
+                            <span class="q-sub">En una negociación con Japón, ¿cómo la falta de comprensión de la "cultura inmaterial" está arruinando un acuerdo puramente económico?</span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ UNIDAD 4 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 4</span> El Hombre como Ser Social</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">¿Por qué el "sentido común" asume que el individualismo siempre es egoísmo, mientras que la sociología lo ve como un motor de especialización orgánica?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Mencione una ventaja y una desventaja de implementar una cultura puramente colectivista en una empresa comercial o estudio contable.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">Análisis de Caso</span>
+                            <span class="q-sub">¿Cómo la falta de integración "democrática" y la represión del individualismo puede llevar a la empresa al colapso frente a cambios tecnológicos externos?</span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ UNIDAD 5 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 5</span> Libertad y Existencia Humana</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">¿Por qué el "sentido común" excusa a las personas diciendo "no tuvo otra opción", mientras que la perspectiva sociológica/ética exige responsabilidad sobre las acciones?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Explique cómo una burocracia excesiva puede fomentar actos de "mala fe" en profesionales y colaboradores.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">Analice la frase: "En una empresa, la seguridad jurídica es la condición previa para que exista la libertad del profesional y del cliente".</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">4</span>
+                            <span class="q-text">Diferencie entre "Libertad Negativa" y "Libertad Positiva" con ejemplos comerciales y contables.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">5</span>
+                            <span class="q-text">Analice cómo la "mala fe" se manifiesta cuando un contador dice: "Yo solo firmo lo que me traen, no reviso el contenido".</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">6</span>
+                            <span class="q-text">Describa un escenario donde la falta de "pluralismo institucional" en empresas facilite actos de corrupción.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">7</span>
+                            <span class="q-text">Análisis de Caso: Situación de cierre contable irregular</span>
+                            <span class="q-sub">
+                                <strong>7.1</strong> ¿Por qué este acto es un caso de "Mala Fe"?<br><br>
+                                <strong>7.2</strong> Identifique las "condiciones sociales" violadas.<br><br>
+                                <strong>7.3</strong> Como futuro licenciado, ¿qué haría usted?
+                            </span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ UNIDAD 6 ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">UNIDAD 6</span> Cambio y Conflicto Social</h3>
+
+                        <div class="question-item">
+                            <span class="q-num">1</span>
+                            <span class="q-text">¿Por qué el "sentido común" corporativo intenta eliminar todo conflicto, mientras que la sociología sugiere "institucionalizarlo"?</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">2</span>
+                            <span class="q-text">Mencione dos factores culturales que puedan generar resistencia a la implementación de un sistema comercial y contable 100% digitalizado.</span>
+                            <div class="answer-space"></div>
+                        </div>
+
+                        <div class="question-item">
+                            <span class="q-num">3</span>
+                            <span class="q-text">Análisis de Caso (Proyecto Final)</span>
+                            <span class="q-sub">Implementación de IA genera huelga laboral. ¿Cómo analizar este conflicto desde la tensión entre "Modernización" vs. "Estratificación Social"? ¿Cómo resolverlo sin represión institucional?</span>
+                            <div class="answer-space answer-space-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- ============ CONCLUSIÓN ============ -->
+                    <div class="conclusion-page">
+                        <h2>Conclusión</h2>
+                        <div class="conclusion-line"></div>
+                        <div class="conclusion-content">
+                            <p>Redacte aquí las conclusiones generales del trabajo práctico, integrando los conceptos sociológicos estudiados a lo largo de las seis unidades y su aplicación al ámbito comercial, contable y administrativo.</p>
+                            <p>&nbsp;</p>
+                            <p>&nbsp;</p>
+                            <p>&nbsp;</p>
+                            <p>&nbsp;</p>
+                        </div>
+                    </div>
+
+                    <!-- ============ REFERENCIAS BIBLIOGRÁFICAS ============ -->
+                    <div class="unit-section">
+                        <h3><span class="unit-badge">REFERENCIAS</span> Bibliográficas</h3>
+                        <div style="padding-left:20px;font-size:13px;line-height:2.2;color:#555;">
+                            <p>• <strong>Comte, A.</strong> (1842). <em>Curso de Filosofía Positiva</em>. París.</p>
+                            <p>• <strong>Durkheim, É.</strong> (1895). <em>Las Reglas del Método Sociológico</em>. París.</p>
+                            <p>• <strong>Weber, M.</strong> (1922). <em>Economía y Sociedad</em>. Tubinga.</p>
+                            <p>• <strong>Marx, K.</strong> (1867). <em>El Capital</em>. Hamburgo.</p>
+                            <p>• <strong>Spencer, H.</strong> (1876). <em>Principios de Sociología</em>. Londres.</p>
+                            <p>• <strong>Pareto, V.</strong> (1916). <em>Tratado de Sociología General</em>. Florencia.</p>
+                            <p>• <strong>Berger, P. L. &amp; Luckmann, T.</strong> (1966). <em>La Construcción Social de la Realidad</em>. Nueva York.</p>
+                            <p>• <strong>Giddens, A.</strong> (1991). <em>Sociología</em>. Madrid: Alianza Editorial.</p>
+                            <p>• <strong>Bauman, Z.</strong> (2000). <em>Trabajo, Consumismo y Nuevos Pobres</em>. Barcelona: Gedisa.</p>
+                        </div>
+                    </div>
+
+                </div><!-- /doc-content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportWord() {
+            var content = document.getElementById("doc-content").cloneNode(true);
+            
+            // Remove hover effects from TOC items
+            var tocItems = content.querySelectorAll('.toc-item');
+            tocItems.forEach(function(item) {
+                item.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dotted #ccc;font-size:14px;color:#333;';
+            });
+
+            // Get all styles from the document
+            var styleElements = document.querySelectorAll('style');
+            var pageStyles = '';
+            styleElements.forEach(function(el) {
+                pageStyles += el.innerHTML;
+            });
+            
+            // Replace CSS variables with actual colors for MS Word
+            pageStyles = pageStyles.replace(/var\(--green-primary\)/g, '#0a4d2a')
+                                   .replace(/var\(--green-dark\)/g, '#073a20')
+                                   .replace(/var\(--green-light\)/g, '#d4edda')
+                                   .replace(/var\(--green-accent\)/g, '#10b981');
+
+            var docHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">';
+            docHtml += '<head>';
+            docHtml += '<meta charset="utf-8">';
+            docHtml += '<title>Trabajo Práctico Completo - Sociología</title>';
+            docHtml += '<!--[if gte mso 9]>';
+            docHtml += '<xml>';
+            docHtml += '<w:WordDocument>';
+            docHtml += '<w:View>Print</w:View>';
+            docHtml += '<w:Zoom>100</w:Zoom>';
+            docHtml += '<w:DoNotOptimizeForBrowser/>';
+            docHtml += '</w:WordDocument>';
+            docHtml += '</xml>';
+            docHtml += '<![endif]-->';
+            docHtml += '<style>';
+            // Page setup
+            docHtml += '@page { size: A4; margin: 2.5cm 2.5cm 2.5cm 2.5cm; mso-page-orientation: portrait; }';
+            docHtml += '@page Section1 { mso-header-margin: 1.5cm; mso-footer-margin: 1.5cm; }';
+            // Footer with page numbers
+            docHtml += '@page Section1 { mso-footer: f1; }';
+            
+            // Inject the extracted page styles
+            docHtml += pageStyles;
+            
+            docHtml += '</style>';
+            docHtml += '</head>';
+            docHtml += '<body style="font-family: Arial, sans-serif; font-size: 12pt; color: #000; line-height: 1.5;">';
+            
+            // Page number footer
+            docHtml += '<div style="mso-element:footer" id="f1">';
+            docHtml += '<p style="text-align: center; font-size: 10pt; color: #666; border-top: 1px solid #ccc; padding-top: 6px;">';
+            docHtml += 'Instituto Superior Centuria — Sociología — Pág. ';
+            docHtml += '<span style="mso-field-code:\' PAGE \\* MERGEFORMAT\'"></span>';
+            docHtml += ' de ';
+            docHtml += '<span style="mso-field-code:\' NUMPAGES \\* MERGEFORMAT\'"></span>';
+            docHtml += '</p></div>';
+
+            // Get the inner HTML of the cloned content, preserving all styles
+            var innerContent = content.innerHTML;
+            
+            // Replace CSS variables in inline styles as well
+            innerContent = innerContent.replace(/var\(--green-primary\)/g, '#0a4d2a')
+                                       .replace(/var\(--green-dark\)/g, '#073a20')
+                                       .replace(/var\(--green-light\)/g, '#d4edda')
+                                       .replace(/var\(--green-accent\)/g, '#10b981');
+
+            docHtml += innerContent;
+            docHtml += '</body></html>';
+
+            // Create a Blob for download
+            var blob = new Blob(['\uFEFF' + docHtml], { type: 'application/msword;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'Trabajo_Practico_Completo_Sociologia.doc';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Add smooth TOC hover effect removal for print
+        document.addEventListener('DOMContentLoaded', function() {
+            var tocItems = document.querySelectorAll('.toc-item');
+            tocItems.forEach(function(item) {
+                item.addEventListener('mouseenter', function() {
+                    this.style.background = '#f0fdf4';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.background = 'transparent';
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

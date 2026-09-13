@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Resultados - Sociología Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --consulta-deep: #17351f;
+            --consulta-base: #2c5d3d;
+            --consulta-soft: #e7f2ea;
+            --consulta-accent: #b38f43;
+            --consulta-ink: #122018;
+            --consulta-paper: rgba(255, 255, 255, 0.92);
+        }
+
+        body.consulta-body {
+            min-height: 100vh;
+            display: block;
+            background:
+                radial-gradient(circle at top left, rgba(179, 143, 67, 0.18), transparent 30%),
+                radial-gradient(circle at top right, rgba(44, 93, 61, 0.18), transparent 28%),
+                linear-gradient(160deg, #f4f8f4 0%, #ebf3ed 46%, #f8faf8 100%);
+            color: var(--consulta-ink);
+        }
+
+        .consulta-shell {
+            width: min(1120px, calc(100% - 2rem));
+            margin: 0 auto;
+            padding: 2rem 0 3rem;
+        }
+
+        .consulta-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--consulta-deep), var(--consulta-base));
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 24px 60px rgba(23, 53, 31, 0.22);
+        }
+
+        .consulta-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .consulta-brand-logo {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.35rem;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .consulta-brand-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .consulta-hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -8% -45% auto;
+            width: 340px;
+            height: 340px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(179, 143, 67, 0.26), transparent 70%);
+        }
+
+        .consulta-grid {
+            display: grid;
+            grid-template-columns: 380px minmax(0, 1fr);
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            align-items: start;
+        }
+
+        .consulta-panel,
+        .consulta-results {
+            background: var(--consulta-paper);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 26px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .consulta-panel {
+            padding: 1.5rem;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .consulta-results {
+            padding: 1.5rem;
+        }
+
+        .consulta-input {
+            width: 100%;
+            border: 2px solid #d8e4da;
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            font-size: 1.15rem;
+            text-align: center;
+            background: white;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .consulta-input:focus {
+            outline: none;
+            border-color: var(--consulta-base);
+            box-shadow: 0 0 0 5px rgba(44, 93, 61, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .consulta-primary-btn,
+        .consulta-secondary-btn,
+        .consulta-action-btn {
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+
+        .consulta-primary-btn:hover,
+        .consulta-secondary-btn:hover,
+        .consulta-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .consulta-primary-btn {
+            width: 100%;
+            padding: 1rem;
+            color: white;
+            background: linear-gradient(135deg, var(--consulta-base), #3b7a50);
+            box-shadow: 0 14px 28px rgba(44, 93, 61, 0.22);
+        }
+
+        .consulta-secondary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1rem;
+            color: var(--consulta-base);
+            background: rgba(44, 93, 61, 0.08);
+        }
+
+        .consulta-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1rem;
+            color: white;
+            background: linear-gradient(135deg, #1f6d42, #2c5d3d);
+            box-shadow: 0 12px 22px rgba(44, 93, 61, 0.18);
+        }
+
+        .consulta-action-btn.accent {
+            background: linear-gradient(135deg, #9a7a30, var(--consulta-accent));
+            box-shadow: 0 12px 22px rgba(179, 143, 67, 0.18);
+        }
+
+        .consulta-action-btn.dark {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            box-shadow: 0 12px 22px rgba(30, 41, 59, 0.18);
+        }
+
+        .consulta-action-btn.close {
+            background: linear-gradient(135deg, #475569, #64748b);
+            box-shadow: 0 12px 22px rgba(71, 85, 105, 0.18);
+        }
+
+        .metric-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .metric-card {
+            border-radius: 18px;
+            padding: 1rem;
+            background: white;
+            border: 1px solid #edf2ee;
+        }
+
+        .metric-card strong {
+            display: block;
+            font-size: 1.2rem;
+            color: var(--consulta-base);
+        }
+
+        .best-result-card {
+            background: linear-gradient(145deg, #ffffff, #f3f8f4);
+            border: 1px solid #dce9de;
+            border-radius: 24px;
+            padding: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .best-result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #8a6e2b;
+            background: rgba(179, 143, 67, 0.14);
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .attempt-card {
+            border-radius: 20px;
+            padding: 1rem;
+            background: white;
+            border: 1px solid #edf2ee;
+        }
+
+        .attempt-card + .attempt-card {
+            margin-top: 0.9rem;
+        }
+
+        .attempt-card.aprobado {
+            border-left: 5px solid #059669;
+        }
+
+        .attempt-card.reprobado {
+            border-left: 5px solid #dc2626;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .status-pill.aprobado {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pill.reprobado {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loader {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #dce9de;
+            border-top-color: var(--consulta-base);
+            border-radius: 999px;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .empty-state,
+        .loading-state {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .print-sheet {
+            background: white;
+        }
+
+        .cedula-strong {
+            color: #000000;
+            font-weight: 800;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .consulta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .consulta-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .consulta-shell {
+                width: min(100% - 1rem, 1120px);
+                padding-top: 0.75rem;
+            }
+
+            .consulta-brand {
+                align-items: flex-start;
+            }
+
+            .consulta-brand-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .consulta-hero,
+            .consulta-panel,
+            .consulta-results {
+                border-radius: 22px;
+            }
+
+            .metric-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .result-actions {
+                flex-direction: column;
+            }
+
+            .consulta-action-btn,
+            .consulta-secondary-btn {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body.consulta-body {
+                background: white !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .consulta-shell,
+            .consulta-grid,
+            .consulta-results,
+            .best-result-card {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="consulta-body">
+    <div class="consulta-shell">
+        <section class="consulta-hero">
+            <div class="relative z-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <div class="consulta-brand">
+                        <img src="logo_centuria_blanco.png" alt="Logo de Centuria" class="consulta-brand-logo">
+                        <div class="consulta-brand-copy">
+                            <div class="text-sm uppercase tracking-[0.28em] text-green-200">Instituto Superior Centuria</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.18em] text-green-300">Plataforma Académica</div>
+                        </div>
+                    </div>
+                    <h1 class="mt-3 text-3xl font-black tracking-tight md:text-4xl">Consulta de resultados del examen</h1>
+                    <p class="mt-3 max-w-2xl text-sm text-green-100 md:text-base">
+                        El estudiante puede revisar todos sus intentos, identificar su mejor desempeño y descargar un comprobante personal en JPG o PDF, o enviarlo a impresión.
+                    </p>
+                </div>
+                <a href="index.html" class="consulta-secondary-btn no-print">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver al examen</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="consulta-grid">
+            <aside class="consulta-panel no-print">
+                <div id="buscador" class="space-y-5">
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Identificación</div>
+                        <label for="cedula-buscar" class="mt-2 block text-sm font-semibold text-slate-700">Ingrese su cédula de identidad</label>
+                        <input
+                            type="text"
+                            id="cedula-buscar"
+                            class="consulta-input mt-3"
+                            placeholder="Ej: 1234567"
+                        >
+                    </div>
+
+                    <button onclick="buscarResultados()" class="consulta-primary-btn">
+                        <i class="fas fa-search mr-2"></i>
+                        Buscar resultados
+                    </button>
+
+                    <div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                        <div class="font-bold text-slate-700">Qué verá aquí</div>
+                        <ul class="mt-2 space-y-2">
+                            <li>Todos los intentos guardados en este navegador.</li>
+                            <li>Su mejor puntaje resaltado para descarga.</li>
+                            <li>Resumen por secciones y estado final.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="cargando" class="loading-state hidden">
+                    <div class="loader mx-auto mb-4"></div>
+                    <p>Buscando resultados...</p>
+                </div>
+
+                <div id="sin-resultados" class="empty-state hidden">
+                    <i class="fas fa-search text-4xl text-slate-300"></i>
+                    <p class="mt-4 text-base font-semibold text-slate-600">No se encontraron resultados</p>
+                    <p class="mt-2 text-sm">Verifique la cédula e intente nuevamente.</p>
+                    <button onclick="nuevaBusqueda()" class="consulta-secondary-btn mt-4">
+                        <i class="fas fa-rotate-left"></i>
+                        <span>Nueva búsqueda</span>
+                    </button>
+                </div>
+            </aside>
+
+            <main class="consulta-results">
+                <div class="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Panel del estudiante</div>
+                        <h2 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Resultados y mejor rendimiento</h2>
+                    </div>
+                    <button onclick="nuevaBusqueda()" class="consulta-secondary-btn no-print" id="btn-reset" style="display:none;">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Nueva búsqueda</span>
+                    </button>
+                </div>
+
+                <div id="resultados-vacios" class="empty-state">
+                    <i class="fas fa-file-signature text-4xl text-slate-300"></i>
+                    <p class="mt-4 text-base font-semibold text-slate-600">Todavía no hay una consulta activa</p>
+                    <p class="mt-2 text-sm">Ingrese su cédula para cargar los intentos guardados en este navegador.</p>
+                </div>
+
+                <div id="resultados" class="hidden">
+                    <div class="metric-strip">
+                        <div class="metric-card">
+                            <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Intentos</span>
+                            <strong id="metric-intentos">0</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Mejor puntaje</span>
+                            <strong id="metric-mejor">0/30</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Estado</span>
+                            <strong id="metric-estado">-</strong>
+                        </div>
+                    </div>
+
+                    <div id="best-result-print" class="best-result-card print-sheet mt-6">
+                        <div class="best-result-badge">
+                            <i class="fas fa-award"></i>
+                            Mejor resultado
+                        </div>
+
+                        <div class="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Estudiante</div>
+                                <h3 id="best-name" class="mt-2 text-2xl font-black text-slate-900">-</h3>
+                                <p id="best-meta" class="mt-2 text-sm text-slate-600">-</p>
+                            </div>
+                            <div class="rounded-3xl bg-emerald-50 px-5 py-4 text-center">
+                                <div class="text-xs uppercase tracking-[0.2em] text-emerald-700">Puntaje</div>
+                                <div id="best-score" class="mt-1 text-4xl font-black text-emerald-700">0/30</div>
+                                <div id="best-percent" class="text-sm font-bold text-emerald-600">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4">
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Intento</div>
+                                <div id="best-attempt" class="mt-2 text-lg font-bold text-slate-800">-</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Selección múltiple</div>
+                                <div id="best-multiple" class="mt-2 text-lg font-bold text-slate-800">-</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Verdadero/Falso</div>
+                                <div id="best-vf" class="mt-2 text-lg font-bold text-slate-800">-</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 flex items-center justify-between gap-4 border-t border-slate-200 pt-4">
+                            <div>
+                                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Resultado final</div>
+                                <div id="best-status" class="mt-2 status-pill aprobado">-</div>
+                            </div>
+                            <div class="print-only text-right text-xs text-slate-500">
+                                Comprobante generado desde el navegador del estudiante
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-actions no-print">
+                        <button onclick="descargarMejorResultadoJPG()" class="consulta-action-btn">
+                            <i class="fas fa-image"></i>
+                            <span>Descargar JPG</span>
+                        </button>
+                        <button onclick="descargarMejorResultadoPDF()" class="consulta-action-btn accent">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Descargar PDF</span>
+                        </button>
+                        <button onclick="imprimirMejorResultado()" class="consulta-action-btn dark">
+                            <i class="fas fa-print"></i>
+                            <span>Imprimir</span>
+                        </button>
+                        <button onclick="cerrarConsulta()" class="consulta-action-btn close">
+                            <i class="fas fa-xmark"></i>
+                            <span>Cerrar</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-8">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-xl font-black text-slate-900">Historial de intentos</h3>
+                            <div id="student-name-inline" class="text-sm font-semibold text-slate-500"></div>
+                        </div>
+                        <div id="lista-resultados"></div>
+                    </div>
+                </div>
+            </main>
+        </section>
+    </div>
+
+    <script>
+        let currentSearchResults = [];
+        let currentBestResult = null;
+        let currentSearchCedula = '';
+
+        function readStorageArray(key) {
+            try {
+                return JSON.parse(localStorage.getItem(key) || '[]');
+            } catch (error) {
+                console.error(`No se pudo leer ${key}:`, error);
+                return [];
+            }
+        }
+
+        function getStoredResults() {
+            const fromStudent = readStorageArray('socioResults');
+            const fromTeacher = readStorageArray('teacherRecords');
+            const merged = new Map();
+
+            [...fromStudent, ...fromTeacher].forEach(record => {
+                const normalized = normalizeResult(record);
+                const key = [
+                    normalized.ci || 'sin-ci',
+                    normalized.attempt || 1,
+                    normalized.date || '',
+                    normalized.time || '',
+                    normalized.datetime || '',
+                    normalized.score || 0
+                ].join('|');
+                merged.set(key, normalized);
+            });
+
+            return Array.from(merged.values());
+        }
+
+        function normalizeResult(record) {
+            const score = Number(record.score ?? record.puntaje ?? 0) || 0;
+            const total = Number(record.puntajeTotal ?? 30) || 30;
+            const attempt = Number(record.attempt ?? record.intento ?? 1) || 1;
+            const summary = Array.isArray(record.summary) ? record.summary : [];
+
+            return {
+                ...record,
+                ci: String(record.ci ?? record.cedula ?? '').replace(/\D/g, ''),
+                name: record.name || record.nombre || 'Estudiante',
+                score,
+                total,
+                attempt,
+                date: record.date || record.fecha || '',
+                time: record.time || record.hora || '',
+                datetime: record.datetime || '',
+                summary,
+                estado: record.estado || ''
+            };
+        }
+
+        function getPercent(result) {
+            return ((result.score / result.total) * 100).toFixed(0);
+        }
+
+        function formatCedula(value) {
+            const digits = String(value || '').replace(/\D/g, '');
+            if (!digits) return '-';
+            return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function getStatus(result) {
+            return Number(getPercent(result)) >= 60 ? 'aprobado' : 'reprobado';
+        }
+
+        function formatSection(result, index) {
+            if (!result.summary[index]) return '-';
+            return `${result.summary[index].correct}/${result.summary[index].total}`;
+        }
+
+        function setVisibility(id, visible) {
+            document.getElementById(id).classList.toggle('hidden', !visible);
+        }
+
+        function buscarResultados() {
+            const cedula = document.getElementById('cedula-buscar').value.trim().replace(/\D/g, '');
+            if (!cedula) {
+                alert('Por favor ingrese su cédula.');
+                return;
+            }
+
+            currentSearchCedula = cedula;
+            setVisibility('resultados-vacios', false);
+            setVisibility('sin-resultados', false);
+            setVisibility('buscador', false);
+            setVisibility('resultados', false);
+            setVisibility('cargando', true);
+
+            setTimeout(() => {
+                const intentos = getStoredResults()
+                    .filter(result => String(result.ci || '').replace(/\D/g, '') === cedula)
+                    .sort((a, b) => new Date(b.datetime || 0) - new Date(a.datetime || 0));
+
+                setVisibility('cargando', false);
+
+                if (!intentos.length) {
+                    currentSearchResults = [];
+                    currentBestResult = null;
+                    setVisibility('sin-resultados', true);
+                    return;
+                }
+
+                currentSearchResults = intentos;
+                currentBestResult = [...intentos].sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return new Date(b.datetime || 0) - new Date(a.datetime || 0);
+                })[0];
+
+                mostrarResultados(intentos, currentBestResult);
+            }, 500);
+        }
+
+        function mostrarResultados(intentos, mejor) {
+            document.getElementById('metric-intentos').textContent = intentos.length;
+            document.getElementById('metric-mejor').textContent = `${mejor.score}/${mejor.total}`;
+            document.getElementById('metric-estado').textContent = getStatus(mejor).toUpperCase();
+            document.getElementById('student-name-inline').textContent = mejor.name;
+
+            const visibleCedula = mejor.ci || currentSearchCedula;
+
+            document.getElementById('best-name').textContent = mejor.name;
+            document.getElementById('best-meta').innerHTML = `<span class="cedula-strong">C.I. ${formatCedula(visibleCedula)}</span> | ${mejor.date || '-'} ${mejor.time || ''}`.trim();
+            document.getElementById('best-score').textContent = `${mejor.score}/${mejor.total}`;
+            document.getElementById('best-percent').textContent = `${getPercent(mejor)}%`;
+            document.getElementById('best-attempt').textContent = `Intento ${mejor.attempt}`;
+            document.getElementById('best-multiple').textContent = formatSection(mejor, 0);
+            document.getElementById('best-vf').textContent = formatSection(mejor, 1);
+
+            const bestStatus = document.getElementById('best-status');
+            const bestStatusText = getStatus(mejor).toUpperCase();
+            bestStatus.textContent = bestStatusText;
+            bestStatus.className = `mt-2 status-pill ${getStatus(mejor)}`;
+
+            const container = document.getElementById('lista-resultados');
+            container.innerHTML = intentos.map(result => {
+                const percent = getPercent(result);
+                const status = getStatus(result);
+                const statusText = status.toUpperCase();
+
+                return `
+                    <article class="attempt-card ${status}">
+                        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <div class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Intento ${result.attempt}</div>
+                                <div class="mt-1 text-sm text-slate-500">${result.date || '-'} ${result.time || ''}</div>
+                            </div>
+                            <div class="text-left md:text-right">
+                                <div class="text-3xl font-black ${status === 'aprobado' ? 'text-emerald-700' : 'text-red-700'}">${result.score}/${result.total}</div>
+                                <div class="text-sm font-bold ${status === 'aprobado' ? 'text-emerald-600' : 'text-red-600'}">${percent}%</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                            <div class="rounded-2xl bg-slate-50 p-3 text-sm">
+                                <div class="text-xs uppercase tracking-[0.14em] text-slate-500">Selección múltiple</div>
+                                <div class="mt-1 font-bold text-slate-800">${formatSection(result, 0)}</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-3 text-sm">
+                                <div class="text-xs uppercase tracking-[0.14em] text-slate-500">Verdadero/Falso</div>
+                                <div class="mt-1 font-bold text-slate-800">${formatSection(result, 1)}</div>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-3 text-sm">
+                                <div class="text-xs uppercase tracking-[0.14em] text-slate-500">Estado</div>
+                                <div class="mt-2"><span class="status-pill ${status}">${statusText}</span></div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            setVisibility('resultados', true);
+            document.getElementById('btn-reset').style.display = 'inline-flex';
+        }
+
+        function nuevaBusqueda() {
+            currentSearchResults = [];
+            currentBestResult = null;
+            document.getElementById('cedula-buscar').value = '';
+            setVisibility('resultados', false);
+            setVisibility('sin-resultados', false);
+            setVisibility('cargando', false);
+            setVisibility('buscador', true);
+            setVisibility('resultados-vacios', true);
+            document.getElementById('btn-reset').style.display = 'none';
+            document.getElementById('cedula-buscar').focus();
+        }
+
+        async function captureBestResultCanvas() {
+            if (!currentBestResult) {
+                alert('Primero debe buscar sus resultados.');
+                return null;
+            }
+
+            const card = document.getElementById('best-result-print');
+            return html2canvas(card, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                useCORS: true
+            });
+        }
+
+        async function descargarMejorResultadoJPG() {
+            const canvas = await captureBestResultCanvas();
+            if (!canvas) return;
+
+            const link = document.createElement('a');
+            link.download = `mejor_resultado_${currentBestResult.ci}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.96);
+            link.click();
+        }
+
+        async function descargarMejorResultadoPDF() {
+            const canvas = await captureBestResultCanvas();
+            if (!canvas) return;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pageWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const y = Math.max(10, (pageHeight - imgHeight) / 2);
+
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, y, imgWidth, imgHeight);
+            pdf.save(`mejor_resultado_${currentBestResult.ci}.pdf`);
+        }
+
+        function imprimirMejorResultado() {
+            if (!currentBestResult) {
+                alert('Primero debe buscar sus resultados.');
+                return;
+            }
+
+            window.print();
+        }
+
+        function cerrarConsulta() {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('cedula-buscar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') buscarResultados();
+        });
+    </script>
+</body>
+</html>

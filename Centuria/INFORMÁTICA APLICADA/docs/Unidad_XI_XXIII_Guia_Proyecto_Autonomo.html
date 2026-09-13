@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Maestra de Proyecto Autónomo (12 Semanas) | ICO3534</title>
+    <style>
+        :root { --primary: #0a3d62; --accent: #3c6382; --bg: #f8f9fa; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .timeline { border-left: 4px solid var(--accent); padding-left: 20px; margin: 30px 0; }
+        .milestone { margin-bottom: 40px; position: relative; }
+        .milestone::before { content: ''; position: absolute; left: -26px; top: 10px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; }
+        .technical-box { background: #eef2f3; border: 1px solid #7f8c8d; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR GUÍA COMPLETA (12 PÁGINAS)</button>
+    
+    <!-- PÁGINA 1: PORTADA Y ESTRUCTURA DEL PROYECTO -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>Guía Maestra: Proyecto de Ingeniería Contable</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Ejecución Autónoma de Final de Semestre (Unidades XI-XXIII)</p></header>
+        <section><h2>1. Introducción al Proyecto "Empresa Real"</h2><p>Este documento es su hoja de ruta para las últimas 12 semanas del curso. El objetivo es que usted actúe como un **Consultor de Implementación y Auditoría**. Deberá seleccionar una empresa real (o simulada bajo datos reales de Asunción) y aplicar íntegramente los conocimientos de Sistemas, Algoritmia, SIFEN y Auditoría.</p>
+        <p>Este proyecto se divide en 4 fases críticas. Al finalizar, su sistema debe ser capaz de procesar ventas reales conforme a la ley paraguaya sin errores de integridad.</p></section>
+        <div class="technical-box"><h3>🎯 Entregable Final</h3><p>Un **Informe Técnico de Auditoría e Implementación** que incluya: Manuales, Pantallas de Sistemas, Validaciones Algorítmicas de la DNIT y un Dashboard de resultados.</p></div>
+        <div class="page-number">Página 1 de 12</div>
+    </div>
+
+    <!-- PÁGINA 2: SEMANAS 11-12 (FASE DE DIAGNÓSTICO) -->
+    <div class="page">
+        <h2>2. Fase I: Auditoría de Sistemas Existentes (Semanas 11-12)</h2>
+        <div class="timeline">
+            <div class="milestone"><h3>Semana 11: Relevamiento de GIGO</h3><p>Identifique 3 puntos ciegos en la captura de datos de la empresa. Evalúe si existe entropía en el catálogo de cuentas actuales.</p></div>
+            <div class="milestone"><h3>Semana 12: Mapeo de Flujo de Datos</h3><p>Dibuje un diagrama de flujo (Cross-functional) que muestre desde que el cliente paga hasta que el asiento se refleja en el Balance General.</p></div>
+        </div>
+        <div class="page-number">Página 2 de 12</div>
+    </div>
+
+    <!-- PÁGINA 3-11: ESTRUCTURA DE CONTINUIDAD -->
+    <div class="page">
+        <h2>3. Fase II: Implementación y SIFEN (Semanas 13-16)</h2>
+        <p>En este bloque, usted debe diseñar la interfaz de conexión con el **Sistema Integrado de Facturación Electrónica Nacional**.</p>
+        <div class="technical-box"><strong>REQUERIMIENTO TÉCNICO:</strong> Su diseño debe contemplar el manejo de la Firma Digital Cualificada (Ley 6822/21).</div>
+        <p>Siga los pasos contenidos en el KIT SIFEN de la Biblioteca Digital para validar el CDC de sus facturas de prueba.</p>
+        <div class="page-number">Página 3 de 12</div>
+    </div>
+
+    <!-- PÁGINA 12: RESUMEN Y EVALUACIÓN FINAL -->
+    <div class="page">
+        <h2>4. Criterios de Evaluación Final (Semana 23)</h2>
+        <table><thead><tr><th>Criterio</th><th>Puntaje</th><th>Estado de Autonomía</th></tr></thead><tbody><tr><td>Integridad de Datos (No GIGO)</td><td>25%</td><td>Validado por Algoritmos</td></tr><tr><td>Cumplimiento SIFEN/DNIT</td><td>25%</td><td>Facturación Realista</td></tr><tr><td>Uso de Inteligencia Artificial</td><td>25%</td><td>Auditoría de Anomalías</td></tr><tr><td>Calidad del Informe (APA 7)</td><td>25%</td><td>Excelencia Corporativa</td></tr></tbody></table>
+        <div class="footer" style="margin-top:200px; border-top: 1px solid #eee; text-align: center;">
+            <p style="font-weight:bold; color: var(--primary);">CURSO 100% AUTÓNOMO - PROYECTO FINALIZADO</p>
+            <p>© 2026 Centuria • Informática Aplicada • Ingeniería de Calidad</p>
+        </div>
+        <div class="page-number">Página 12 de 12</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

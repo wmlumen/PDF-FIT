@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Estudiante - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="institutional.css">
+    <link rel="stylesheet" href="student-premium.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        .panel-container { max-width: 1280px; margin: 0 auto; }
+        .panel-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .panel-header h1 {
+            font-size: 26px;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+        }
+        .panel-header p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* ---- Course Selector ---- */
+        .course-tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+        .course-tab {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            min-width: 140px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .course-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(59,130,246,0.12);
+        }
+        .course-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+        }
+        .course-tab .tab-sub {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.75;
+            margin-top: 2px;
+        }
+        .course-tab.active .tab-sub { opacity: 0.85; }
+        .course-tab .tab-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--accent, #10b981);
+            color: white;
+            font-size: 8px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        /* ---- Archive toggle ---- */
+        .archive-toggle {
+            text-align: center;
+            margin: 4px 0 16px;
+        }
+        .archive-toggle button {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .archive-toggle button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .archive-toggle button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .archive-courses {
+            display: none;
+        }
+        .archive-courses.show {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* ---- Categorias ---- */
+        .categoria { margin-bottom: 28px; }
+        .categoria-titulo {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .categoria-titulo i {
+            width: 28px; height: 28px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 10px;
+        }
+        .recurso-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .recurso-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .recurso-card .icono {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .recurso-card .info { flex: 1; min-width: 0; }
+        .recurso-card .info .titulo {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .recurso-card .info .subtitulo {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .recurso-card .info .badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+        }
+        .icon-examen { background: #fee2e2; color: #dc2626; }
+        .icon-unidad { background: #dbeafe; color: #2563eb; }
+        .icon-tarjeta { background: #fef3c7; color: #d97706; }
+        .icon-trabajo { background: #d1fae5; color: #059669; }
+        .icon-herramienta { background: #f3e8ff; color: #7c3aed; }
+        .icon-programa { background: #e0e7ff; color: #4338ca; }
+        .badge-examen { background: #fee2e2; color: #dc2626; }
+        .badge-unidad { background: #dbeafe; color: #2563eb; }
+        .badge-tarjeta { background: #fef3c7; color: #d97706; }
+        .badge-trabajo { background: #d1fae5; color: #059669; }
+        .badge-herramienta { background: #f3e8ff; color: #7c3aed; }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .panel-header h1 { font-size: 20px; }
+            .card-grid { grid-template-columns: 1fr; }
+            .course-tab { min-width: 110px; padding: 8px 14px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel-container">
+
+    <!-- Header -->
+    <div class="panel-header">
+        <h1><i class="fas fa-user-graduate" style="color:var(--primary);margin-right:8px;"></i>Panel Estudiante</h1>
+        <p>Instituto Superior Centuria — Mis Cursos</p>
+    </div>
+
+    <!-- Navegacion -->
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
+        <a href="index.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:var(--primary);color:white;"><i class="fas fa-home"></i> Inicio</a>
+        <a href="asistencia.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:white;color:var(--text-secondary);border:1px solid var(--border);"><i class="fas fa-clipboard-check"></i> Asistencia</a>
+        <a href="consultar.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:white;color:var(--text-secondary);border:1px solid var(--border);"><i class="fas fa-search"></i> Mis Resultados</a>
+        <a href="validar.html" style="padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;background:white;color:var(--text-secondary);border:1px solid var(--border);"><i class="fas fa-check-circle"></i> Validar</a>
+    </div>
+
+    <!-- Cursos Activos -->
+    <div class="course-tabs" id="active-courses"></div>
+
+    <!-- Alternar archivos -->
+    <div class="archive-toggle">
+        <button id="btn-archive" onclick="toggleArchived()">📂 Ver cursos anteriores</button>
+    </div>
+    <div class="archive-courses" id="archive-courses"></div>
+
+    <!-- Recursos del curso seleccionado -->
+    <div id="course-content">
+        <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px;margin-bottom:12px;"></i>
+            <p>Cargando cursos...</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:20px 0;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border-light);margin-top:20px;">
+        <i class="fas fa-graduation-cap"></i> Instituto Superior Centuria — Sociología 2026
+    </div>
+</div>
+
+<script>
+// ============================================================
+// DATOS DE CURSOS (hasta 10 activos + 10 anteriores)
+// ============================================================
+var COURSES = [];
+var currentCourseId = null;
+
+// Inicializar cursos desde CONFIG + datos por defecto
+function initCourses() {
+    // Los cursos ahora se cargarán desde script.js o una fuente externa.
+    // Esta función se mantiene para compatibilidad.
+    if (!window.COURSES) {
+        COURSES = [];
+    }
+    renderCourses();
+}
+
+// Renderizar tabs de cursos
+function renderCourses() {
+    var activeContainer = document.getElementById('active-courses');
+    var archiveContainer = document.getElementById('archive-courses');
+    
+    if (!activeContainer) return;
+    
+    var activeCourses = COURSES.filter(function(c) { return c.estado === 'active'; });
+    var archivedCourses = COURSES.filter(function(c) { return c.estado === 'archived'; });
+    
+    var html = '';
+    activeCourses.forEach(function(c, i) {
+        html += '<div class="course-tab' + (i === 0 ? ' active' : '') + '" onclick="selectCourse(\'' + c.id + '\', this)">';
+        html += '   <div>' + c.nombre.split(' - ')[0] + '</div>';
+        html += '   <div class="tab-sub">' + c.periodo + (c.grupos ? ' · ' + c.grupos : '') + '</div>';
+        if (i === 0) html += '   <span class="tab-badge">ACTUAL</span>';
+        html += '</div>';
+    });
+    activeContainer.innerHTML = html;
+    
+    // Cursos archivados
+    var archHtml = '';
+    archivedCourses.forEach(function(c) {
+        archHtml += '<div class="course-tab" onclick="selectCourse(\'' + c.id + '\', this)">';
+        archHtml += '   <div>' + c.nombre.split(' - ')[0] + '</div>';
+        archHtml += '   <div class="tab-sub">' + c.periodo + '</div>';
+        archHtml += '</div>';
+    });
+    archiveContainer.innerHTML = archHtml;
+    
+    // Seleccionar primer curso activo por defecto
+    if (activeCourses.length > 0) {
+        selectCourse(activeCourses[0].id, activeContainer.querySelector('.course-tab'));
+    } else {
+        var courseContent = document.getElementById('course-content');
+        if (courseContent) {
+            courseContent.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><p>No hay cursos disponibles.</p></div>';
+        }
+    }
+}
+
+// Seleccionar curso
+function selectCourse(courseId, el) {
+    currentCourseId = courseId;
+    
+    // Actualizar tabs activas
+    document.querySelectorAll('.course-tab').forEach(function(t) {
+        t.classList.remove('active');
+    });
+    if (el) el.classList.add('active');
+    
+    var course = null;
+    for (var i = 0; i < COURSES.length; i++) {
+        if (COURSES[i].id === courseId) {
+            course = COURSES[i];
+            break;
+        }
+    }
+    
+    if (!course) return;
+    
+    renderCourseContent(course);
+}
+
+// Alternar cursos archivados
+function toggleArchived() {
+    var container = document.getElementById('archive-courses');
+    var btn = document.getElementById('btn-archive');
+    container.classList.toggle('show');
+    btn.classList.toggle('active');
+    if (container.classList.contains('show')) {
+        btn.textContent = '✕ Cerrar cursos anteriores';
+    } else {
+        btn.textContent = '📂 Ver cursos anteriores';
+    }
+}
+
+// Renderizar contenido del curso
+function renderCourseContent(course) {
+    var container = document.getElementById('course-content');
+    if (!container) return;
+    
+    var html = '';
+    
+    // Badge del curso
+    html += '<div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">';
+    html += '   <div><strong style="font-size:16px;">' + course.nombre + '</strong>';
+    html += '   <p style="font-size:12px;opacity:0.85;margin-top:2px;">' + course.periodo + (course.grupos ? ' · ' + course.grupos : '') + '</p></div>';
+    html += '   <span style="background:rgba(255,255,255,0.2);padding:4px 12px;border-radius:20px;font-size:11px;">' + (course.estado === 'active' ? '🟢 En curso' : '📦 Archivado') + '</span>';
+    html += '</div>';
+    
+    // Examenes
+    if (course.examenes && course.examenes.length > 0) {
+        html += renderCategoria('📝', 'Exámenes', course.examenes, 'icon-examen', 'badge-examen', 'EXAMEN');
+    }
+    
+    // Unidades
+    if (course.unidades && course.unidades.length > 0) {
+        html += renderCategoria('📚', 'Material de Estudio', course.unidades, 'icon-unidad', 'badge-unidad', 'UNIDAD');
+    }
+    
+    // Tarjetas
+    if (course.tarjetas && course.tarjetas.length > 0) {
+        html += renderCategoria('🃏', 'Tarjetas de Estudio', course.tarjetas, 'icon-tarjeta', 'badge-tarjeta', 'TARJETAS');
+    }
+    
+    // Trabajos
+    if (course.trabajos && course.trabajos.length > 0) {
+        html += renderCategoria('💼', 'Trabajos Prácticos', course.trabajos, 'icon-trabajo', 'badge-trabajo', 'TP');
+    }
+    
+    // Programa
+    if (course.programa) {
+        html += '<div class="categoria">';
+        html += '   <div class="categoria-titulo"><i class="fas fa-list-check"></i> Programa de Estudios</div>';
+        html += '   <div class="card-grid">';
+        html += '       <a href="' + course.programa.u + '" class="recurso-card">';
+        html += '           <div class="icono icon-programa"><i class="fas fa-scroll"></i></div>';
+        html += '           <div class="info"><div class="titulo">' + course.programa.n + '</div>';
+        html += '               <div class="subtitulo">Plan curricular completo</div>';
+        html += '               <span class="badge" style="background:#e0e7ff;color:#4338ca;">PROGRAMA</span></div>';
+        html += '       </a>';
+        html += '   </div>';
+        html += '</div>';
+    }
+    
+    // Herramientas (always visible)
+    html += '<div class="categoria">';
+    html += '   <div class="categoria-titulo"><i class="fas fa-tools"></i> Herramientas</div>';
+    html += '   <div class="card-grid">';
+    html += '       <a href="lecciones.html" class="recurso-card">';
+    html += '           <div class="icono icon-herramienta"><i class="fas fa-chalkboard-user"></i></div>';
+    html += '           <div class="info"><div class="titulo">Lecciones</div><div class="subtitulo">Resumen de lecciones dictadas</div><span class="badge badge-herramienta">HERRAMIENTA</span></div>';
+    html += '       </a>';
+    html += '       <a href="consultar.html" class="recurso-card">';
+    html += '           <div class="icono icon-herramienta"><i class="fas fa-magnifying-glass-chart"></i></div>';
+    html += '           <div class="info"><div class="titulo">Consultar Resultados</div><div class="subtitulo">Revise sus notas</div><span class="badge badge-herramienta">HERRAMIENTA</span></div>';
+    html += '       </a>';
+    html += '       <a href="validar.html" class="recurso-card">';
+    html += '           <div class="icono icon-herramienta"><i class="fas fa-user-check"></i></div>';
+    html += '           <div class="info"><div class="titulo">Validar Habilitación</div><div class="subtitulo">Verifique si está habilitado para rendir</div><span class="badge badge-herramienta">HERRAMIENTA</span></div>';
+    html += '       </a>';
+    html += '       <a href="asistencia.html" class="recurso-card">';
+    html += '           <div class="icono icon-herramienta"><i class="fas fa-clipboard-list"></i></div>';
+    html += '           <div class="info"><div class="titulo">Registro de Asistencia</div><div class="subtitulo">Registre su asistencia</div><span class="badge badge-herramienta">HERRAMIENTA</span></div>';
+    html += '       </a>';
+    html += '   </div>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function renderCategoria(emoji, titulo, items, iconClass, badgeClass, badgeText) {
+    var html = '<div class="categoria">';
+    html += '   <div class="categoria-titulo"><span>' + emoji + '</span> ' + titulo + '</div>';
+    html += '   <div class="card-grid">';
+    items.forEach(function(item) {
+        html += '       <a href="' + item.u + '" class="recurso-card">';
+        html += '           <div class="icono ' + iconClass + '"><i class="fas ' + getIconForTipo(titulo) + '"></i></div>';
+        html += '           <div class="info"><div class="titulo">' + item.n + '</div>';
+        if (item.d) html += '               <div class="subtitulo">' + item.d + '</div>';
+        html += '               <span class="badge ' + badgeClass + '">' + badgeText + '</span></div>';
+        html += '       </a>';
+    });
+    html += '   </div>';
+    html += '</div>';
+    return html;
+}
+
+function getIconForTipo(titulo) {
+    if (titulo.indexOf('Exámenes') >= 0) return 'fa-file-pen';
+    if (titulo.indexOf('Material') >= 0) return 'fa-book-open';
+    if (titulo.indexOf('Tarjetas') >= 0) return 'fa-layer-group';
+    if (titulo.indexOf('Trabajos') >= 0) return 'fa-file-lines';
+    return 'fa-file';
+}
+
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    // Esperar a que CONFIG esté disponible
+    var checkConfig = setInterval(function() {
+        if (typeof CONFIG !== 'undefined' || window.configLoaded) {
+            clearInterval(checkConfig);
+            initCourses();
+        }
+    }, 100);
+    // Timeout de seguridad
+    setTimeout(function() {
+        clearInterval(checkConfig);
+        if (COURSES.length === 0) initCourses();
+    }, 3000);
+});
+</script>
+
+</body>
+</html>

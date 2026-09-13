@@ -1,0 +1,53 @@
+<!-- Unified Project Prompt: Requirements for each Unit Page -->
+
+1. **Navigation Sidebar**
+   - Include the full navigation menu (Inicio, Glosario, Asistencia, Planilla, Material de Clases header, Programa Oficial, and links to Unidad 1 … Unidad 10).
+   - The link corresponding to the current unit must have the class `menu‑clase active`.
+   - Use relative paths like `clase_01.html`, `clase_02.html`, etc.
+
+2. **Attendance Card**
+   ```html
+   <div class="card shadow-sm border-0 border-start border-4 border-info mb-4" id="card-asistencia-clase">
+       <div class="card-body d-flex justify-content-between align-items-center">
+           <div>
+               <h5 class="fw-bold text-info mb-1"><i class="bi bi-clock-history"></i> Control de Asistencia</h5>
+               <p class="text-muted mb-0 small">Registra tu asistencia virtual a esta unidad para tu historial.</p>
+           </div>
+           <button id="btn-asis-clase" class="btn btn-info text-white fw-bold shadow-sm px-4" onclick="marcarAsistenciaClase()">
+               <i class="bi bi-person-raised-hand me-2"></i> Poner Presente
+           </button>
+       </div>
+   </div>
+   ```
+   - The button calls `marcarAsistenciaClase()` and records the attendance.
+
+3. **Progress / "Marcar como Leído" Section (Regla 17)**
+   ```html
+   <!-- Regla 17: Botón "Marcar como Leído" por sección -->
+   <div class="d-flex justify-content-between align-items-center mb-4">
+       <h5 class="mb-0"><i class="bi bi-check-circle me-2 text-success"></i> Progreso de Lectura</h5>
+       <button class="btn btn-outline-success btn-sm" id="btn-completar-leccion" disabled>
+           <i class="bi bi-check-all me-2"></i> Confirmar Lección como Completada
+       </button>
+   </div>
+   ```
+   - For each content section there must be a button like:
+   ```html
+   <button class="btn btn-outline-success btn-sm btn-marcar-leido" data-section="definiciones" onclick="marcarLeido('definiciones')">Marcar como Leído</button>
+   ```
+   - `marcarLeido(sectionId)` registers the section as read, enables the confirm button when all sections are read, and upon confirmation unlocks the next unit.
+
+4. **Badge (Modalidad de Cursada)**
+   ```html
+   <span class="badge badge-presencial text-white shadow-sm rounded-pill mb-4 d-block" style="width: fit-content; margin: 0 auto;">
+       <i class="bi bi-tags"></i> Modalidad de Cursada: Presencial
+   </span>
+   ```
+   - Only **one** badge per unit page.
+
+5. **General Behaviour**
+   - A unit is considered **completed** after attendance is registered, all "Marcar como Leído" buttons are pressed, and the lesson is confirmed.
+   - Completion activates the next unit link (`menu‑clase active`).
+   - All IDs, classes, and data attributes must match the JavaScript functions `marcarAsistenciaClase()`, `marcarLeido(sectionId)`, etc.
+
+<!-- End of Unified Project Prompt -->

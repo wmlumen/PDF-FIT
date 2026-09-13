@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 03: Procesadores de Texto Profesionales (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #004d40; --accent: #00796b; --bg: #f1f8e9; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #f1f8e9; border: 1px solid #1b5e20; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #1b5e20; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #e0f2f1; border: 1px solid #00796b; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #1e272e; color: #80cbc4; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #00796b; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #e0f2f1; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD III: Procesadores de Texto</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Guía para Informes Técnicos y Auditoría Digital</p></header>
+        <section><h2>1. El Procesador como Sistema de Gestión</h2><p>Lejos de ser una simple herramienta de mecanografía, el procesador de texto (Microsoft Word / Google Docs) es un sistema de gestión documental capaz de estructurar informes legales y auditables. En el contexto de la **Ingeniería Aplicada**, la eficiencia en la producción de informes técnicos es lo que diferencia a un profesional de un auxiliar.</p>
+        <p>El dominio de los procesadores permite que el contador e ingeniero generen documentos que no solo contienen información, sino que transmiten **Autoridad y Claridad Estructural**, reduciendo el riesgo de malinterpretaciones en auditorías externas.</p></section>
+        <section class="reading-box"><h3>📜 Reflexión Técnica (Programa p.2)</h3><p>"Las TICs agrupan las técnicas utilizadas en el tratamiento y la transmisión de informaciones digitales. Su apropiación es vital para producir información veraz y confiable. En el manejo de textos, la 'confiabilidad' se mide por la integridad de la estructura y la trazabilidad de las referencias contenidas en el dictamen profesional."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: DESARROLLO TEÓRICO: ESTILOS Y JERARQUÍAS -->
+    <div class="page">
+        <h2>2. Estructura Lógica de Documentos</h2>
+        <h3>2.1 El Poder de los Estilos de Título</h3><p>La base de un documento profesional son los **Estilos**. Un profesional nunca aplica formato manualmente (negrita, tamaño) a cada título; utiliza la jerarquía H1, H2, H3 para que el sistema "entienda" la estructura del informe.</p>
+        <p><strong>Ventajas de una Estructura Basada en Estilos:</strong></p><ul><li>Generación instantánea de Tablas de Contenido (Índices).</li><li>Uniformidad total en documentos de cientos de páginas.</li><li>Navegación rápida mediante el Panel de Esquema.</li><li>Conversión semántica correcta a formatos PDF y HTML.</li></ul>
+        <h3>2.2 Tipología de Informes Contables</h3><table><thead><tr><th>Tipo de Informe</th><th>Estructura Requerida</th><th>Normativa Asociada</th></tr></thead><tbody><tr><td><strong>Dictamen de Auditoría</strong></td><td>Estructura Rígida / Opinión Profesional.</td><td>Normas Internacionales de Auditoría.</td></tr><tr><td><strong>Informe Pericial</strong></td><td>Técnico / Detallado / Referenciado.</td><td>Código Procesal Civil (Paraguay).</td></tr><tr><td><strong>Manual de Procedimientos</strong></td><td>Jerárquico / Instructivo.</td><td>Control Interno Organizacional.</td></tr></tbody></table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: REFERENCIAS Y CITACIÓN -->
+    <div class="page">
+        <h2>3. Herramientas de Referenciación Avanzada</h2>
+        <p>Un informe técnico profesional debe estar blindado por referencias sólidas. El uso de herramientas de referenciación automática evita el error humano en la citación bibliográfica y legal.</p>
+        <h3>3.1 Gestión de Citas y Bibliografía (APA 7)</h3><p>El procesador de texto permite crear una "Base de Datos de Fuentes". Una vez ingresada la ley o el libro, el sistema genera la cita en el texto y la bibliografía final en el formato solicitado (APA, Vancouver, etc.).</p>
+        <h3>3.2 Referencias Cruzadas y Marcadores</h3><p>Para documentos extensos, las **Referencias Cruzadas** permiten decir: "Véase la Tabla 1 en la página 45". Si la tabla se mueve a la página 50, el sistema actualiza el texto automáticamente, garantizando la integridad del informe.</p>
+        <div class="technical-box"><strong>📌 PRO-TIP:</strong> Utilice marcadores para secciones críticas del dictamen que requieran revisión constante por parte de los socios del estudio.</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: CORRESPONDENCIA MASIVA -->
+    <div class="page">
+        <h2>4. Lógica de Correspondencia Masiva (Mail Merge)</h2>
+        <p>La **Correspondencia Masiva** es la integración de una Base de Datos (normalmente Excel) con un Documento Maestro (Word). Es la herramienta de automatización por excelencia para el contador.</p>
+        <h3>4.1 El Ciclo de la Automatización</h3><p>1. **Origen de Datos:** Listado de clientes, montos adeudados y fechas.<br>2. **Documento Maestro:** La carta con "campos de combinación" (ej: {Nombre_Cliente}).<br>3. **Fusión:** El sistema genera un documento único para cada registro de la base de datos.</p>
+        <div class="snippet">// Lógica Interna de un Campo de Combinación:<br>SI ({Saldo} > 0) ENTONCES <br>&nbsp;&nbsp;&nbsp;&nbsp;"Estimado {Nombre}, su deuda es de {Saldo} PYG." <br>SINO <br>&nbsp;&nbsp;&nbsp;&nbsp;"Estimado {Nombre}, su cuenta está al día." <br>FIN SI</div>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO Y DATASET -->
+    <div class="page">
+        <h2>5. Laboratorio Práctico de Automatización</h2>
+        <p>Utilice el siguiente dataset para simular el envío de notificaciones de cobranza masiva vía Mail Merge.</p>
+        <h3>📊 Dataset de Práctica Profesional</h3>
+        <table><thead><tr><th>RUC / Cédula</th><th>Razón Social</th><th>Saldo (PYG)</th><th>Último Movimiento</th></tr></thead><tbody><tr><td>80011223-4</td><td>Juan Valdez S.A.</td><td>4.500.000</td><td>12/03/2026</td></tr><tr><td>1.442.331</td><td>Marta Ortega</td><td>0</td><td>10/04/2026</td></tr><tr><td>80100998-1</td><td>Construcciones PY</td><td>22.100.000</td><td>15/01/2026</td></tr><tr><td>3.442.112</td><td>Ricardo Gómez</td><td>1.250.000</td><td>05/04/2026</td></tr><tr><td>80044553-0</td><td>Librería El Sol</td><td>0</td><td>11/04/2026</td></tr></tbody></table>
+        <section class="checklist"><h3>🏁 CHECKLIST DE CALIDAD DEL DOCUMENTO</h3><ul><li>[ ] ¿Los títulos tienen aplicados los Estilos H1/H2?</li><li>[ ] ¿Se ha generado la Tabla de Contenidos automática?</li><li>[ ] ¿El Mail Merge funciona con la lógica "Si Saldo > 0"?</li><li>[ ] ¿El archivo tiene la norma de márgenes APA (2.54cm)?</li></ul></section>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: Solución de Errores Documentales</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- MI ÍNDICE MUESTRA TEXTO QUE NO ES TÍTULO:</strong> Tienes un bloque de párrafo configurado accidentalmente con un Estilo de Título. Cámbialo a "Normal" y actualiza el índice.</p><p><strong>- EL MAIL MERGE NO RECONOCE EL EXCEL:</strong> Asegúrate de que el Excel esté cerrado y que la tabla de datos empiece en la celda A1, sin celdas combinadas en el encabezado.</p><p><strong>- LOS NÚMEROS DE PÁGINA NO COINCIDEN CON EL ÍNDICE:</strong> Se debe a saltos de sección manuales. Re-indexe la tabla presionando F9 sobre el área del índice.</p></section>
+        <h3>📝 Evaluación de Competencia Técnica</h3><ol><li>¿Cuál es la diferencia fundamental entre un 'Salto de Página' y un 'Salto de Sección'?</li><li>¿Cómo evitaría que un informe de auditoría pierda el formato al ser abierto en otra computadora? (Pista: PDF vs Incrustar fuentes).</li><li>Describa el algoritmo lógico para decidir si enviar una carta de cobranza o una de agradecimiento mediante Mail Merge.</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Ingeniería Aplicada • Material Académico</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

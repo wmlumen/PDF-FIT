@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        institucional: {
+                            dark: '#1e3f20',   // Verde follaje profundo corporativo
+                            base: '#2c5d3d',   // Color primario original
+                            light: '#e1efe6',  // Fondo suave de contraste
+                            accent: '#b38f43'  // Dorado académico refinado
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Script de configuración - debe cargar primero -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+</head>
+<body class="p-3 md:p-6 pt-10" oncontextmenu="return false;">
+
+<div class="fixed top-0 left-0 right-0 z-40 bg-green-900 text-white text-center text-xs py-2 shadow-md no-print">
+    ${CONFIG.materia} | Grupos habilitados: ${CONFIG.grupo} | Revise su horario asignado
+</div>
+
+<div id="login-screen" class="mx-auto mt-6 grid w-full max-w-6xl gap-5 md:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] animate-fade">
+<div class="order-1 min-w-0 bg-white p-6 rounded-xl shadow-2xl md:col-start-1 md:row-start-1">
+    <div class="text-center mb-5">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <h1 class="text-lg font-bold mt-3">Examen - Sociología</h1>
+        <p class="text-sm text-gray-italic">30 Preguntas | 15 Selección Múltiple + 15 V/F</p>
+    </div>
+    <div class="space-y-3">
+        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 mb-4">
+            <p class="text-sm text-yellow-800 text-center">
+                <i class="fas fa-user-check mr-2"></i>
+                ¿Es su primera vez? <a href="validar.html" class="font-bold underline">Validar aquí</a>
+            </p>
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre y Apellido Completos</label>
+            <input type="text" id="student-name" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: Juan Pérez">
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Cédula de Identidad</label>
+            <input type="text" id="student-id" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: 1234567">
+        </div>
+        <div class="bg-blue-50 p-2 rounded-lg text-xs text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i> Examen: ${CONFIG.tiempo_limite} minutos | ${CONFIG.intentos_maximos} Intentos
+        </div>
+        <button onclick="startExam()" class="w-full btn-centuria py-3 rounded-lg hover:opacity-90 shadow-lg">
+            COMENZAR
+        </button>
+        <div class="mt-4 text-center space-y-2">
+            <a href="consultar.html" class="text-green-600 text-sm hover:underline block">
+                <i class="fas fa-search mr-1"></i> Consultar mis resultados
+            </a>
+            <a href="validar.html" class="text-gray-500 text-xs hover:underline block">
+                <i class="fas fa-check-circle mr-1"></i> Validar mi habilitación
+            </a>
+        </div>
+    </div>
+</div>
+<aside class="order-2 w-full min-w-0 self-start rounded-3xl border border-emerald-200 bg-emerald-50/90 p-5 shadow-lg backdrop-blur md:col-start-2 md:row-start-1">
+    <div class="flex items-start gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-md">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div>
+            <div class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Nota importante</div>
+            <h2 class="mt-1 text-lg font-black text-slate-900">Horario habilitado por grupo</h2>
+            <p class="mt-2 text-sm text-slate-600">Verifique su grupo antes de ingresar al examen. El acceso corresponde al horario asignado.</p>
+        </div>
+    </div>
+    <div class="mt-4 overflow-hidden rounded-2xl border border-emerald-100 bg-white/80 shadow-sm" id="exam-schedule-list">
+        <div class="px-3 py-2 text-sm font-semibold text-slate-700">${CONFIG.fecha_examen}</div>
+    </div>
+</aside>
+</div>
+
+
+<div id="exam-container" class="hidden max-w-4xl mx-auto animate-fade">
+
+<div class="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded-r-lg">
+    <p class="text-sm font-bold text-green-700">Examen de Sociología</p>
+    <p class="text-xs text-gray-600 mt-1">30 Preguntas | Total: 30 puntos</p>
+</div>
+
+<header class="max-w-4xl mx-auto mb-4 text-center border-b-2 pb-3" style="border-color: var(--color-primario);">
+    <div class="flex flex-col items-center mb-1">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <p class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Examen</p>
+    </div>
+    <h2 class="text-lg font-bold mt-1 uppercase text-primary">Sociología</h2>
+</header>
+
+<section class="bg-white border-2 border-gray-200 rounded-lg p-3 mb-4 grid grid-cols-1 md:grid-cols-3 gap-3 shadow-sm">
+    <div class="md:col-span-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Estudiante:</label>
+        <div id="display-name" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Cédula:</label>
+        <div id="display-id" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Fecha:</label>
+        <div id="display-date" class="border-b border-gray-400 h-6"></div>
+    </div>
+    <div class="bg-green-50 p-2 rounded text-center border border-green-200">
+        <label class="text-xs font-bold text-primary uppercase">Tiempo:</label>
+        <div id="timer" class="text-xl font-bold text-red-600 mt-1">${CONFIG.tiempo_limite}:00</div>
+    </div>
+</section>
+
+<!-- SECTION I: Selección Múltiple -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">I</div>
+        <h2 class="text-base font-bold uppercase">Selección Múltiple (15 pts - 1 c/u)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Seleccione la respuesta correcta (1 punto cada una).</p>
+        <div id="section1-questions" class="space-y-4"></div>
+    </div>
+</section>
+
+<!-- SECTION II: Verdadero o Falso -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">II</div>
+        <h2 class="text-base font-bold uppercase">Verdadero o Falso (15 pts - 1 c/u)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Marque V si es verdadero o F si es falso.</p>
+        <div id="section2-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<div class="text-center pb-10">
+    <button onclick="finalizarExamen()" class="bg-red-600 text-white px-10 py-3 rounded-full font-bold text-lg shadow-xl hover:bg-red-700 transition">
+        TERMINÉ
+    </button>
+</div>
+</div>
+
+<div id="result-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-white max-w-lg w-full p-5 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div id="acta-content" class="p-4 border-4 border-double border-gray-300">
+            <div class="text-center border-b-2 border-green-600 pb-3 mb-4">
+                <h2 class="font-title text-xl">ACTA DE EXAMEN</h2>
+                <p class="text-xs uppercase tracking-widest">Instituto Superior Centuria</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <p><strong>Fecha:</strong> <span id="res-date"></span></p>
+                <p><strong>Estudiante:</strong> <span id="res-name" class="uppercase font-bold"></span></p>
+                <p><strong>Cédula:</strong> <span id="res-id"></span></p>
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-base"><strong>Puntaje:</strong> <span id="res-score" class="text-green-600 font-bold text-xl"></span>/30</p></div>
+                        <div><p class="text-base"><strong>Porcentaje:</strong> <span id="res-percent" class="text-green-600 font-bold text-xl"></span>%</p></div>
+                    </div>
+                </div>
+            </div>
+            <div id="results-matrix" class="mt-3 text-xs bg-gray-50 p-2 rounded"></div>
+            <div id="result-note" class="mt-3 text-xs bg-blue-50 text-blue-800 p-3 rounded border border-blue-100"></div>
+            <div class="mt-6 flex justify-between">
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Firma</div>
+                </div>
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Lic. ${CONFIG.name_docente}</div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-3 justify-center">
+            <button onclick="descargarActa()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">
+                <i class="fas fa-download mr-2"></i> Descargar
+            </button>
+            <button onclick="imprimirActa()" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-700">
+                <i class="fas fa-print mr-2"></i> Imprimir
+            </button>
+            <button id="retry-btn" onclick="location.reload()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700">Volver a intentar</button>
+            <button onclick="location.reload()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold text-sm">Salir</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const examData = {
+    // 15 preguntas de selección múltiple
+    section1: [
+        {
+            q: "1. ¿Cuál es el objetivo principal de la sociología?",
+            options: ["Estudiar científicamente la sociedad", "Analizar únicamente la economía", "Investigar la psicología individual", "Estudiar la historia antigua"],
+            answer: 0
+        },
+        {
+            q: "2. ¿Quién es considerado el Padre de la Sociología?",
+            options: ["Max Weber", "Karl Marx", "Augusto Comte", "Ã‰mile Durkheim"],
+            answer: 2
+        },
+        {
+            q: "3. ¿Qué es la Incrustación Social (Embeddedness)?",
+            options: ["La teoría del libre mercado", "La idea de que la economía está sumergida en redes sociales", "Un tipo de organización empresarial", "Un método de investigación"],
+            answer: 1
+        },
+        {
+            q: "4. ¿Qué es la Anomia según Durkheim?",
+            options: ["Un tipo de gobierno", "Estado de falta de normas sociales", "Una enfermedad mental", "Un método de producción"],
+            answer: 1
+        },
+        {
+            q: "5. ¿Qué es la Acción Social según Weber?",
+            options: ["Un movimiento político", "Acción con sentido subjetivo orientada hacia otros", "Trabajo en una fábrica", "Una organización empresarial"],
+            answer: 1
+        },
+        {
+            q: "6. ¿Qué es el Capital Cultural de Bourdieu?",
+            options: ["Dinero en el banco", "Conocimientos y títulos que dan ventaja competitiva", "Propiedad intelectual", "Acciones de una empresa"],
+            answer: 1
+        },
+        {
+            q: "7. ¿Qué tipo de solidaridad predomina en las sociedades modernas?",
+            options: ["Mecánica", "Orgánica", "Feudal", "Religiosa"],
+            answer: 1
+        },
+        {
+            q: "8. ¿Qué son las Normas sociales?",
+            options: ["Reglas y expectativas que guían la conducta", "Leyes económicas", "Tipos de empresas", "Métodos de producción"],
+            answer: 0
+        },
+        {
+            q: "9. ¿Qué es el Homo Economicus?",
+            options: ["Un primate extinto", "Modelo que asume al humano como calculador egoista", "Un tipo de consumidor", "Un agente financiero"],
+            answer: 1
+        },
+        {
+            q: "10. ¿Qué es la Socialización Primaria?",
+            options: ["La educación universitaria", "La infancia en la familia", "La capacitación laboral", "El aprendizaje automático"],
+            answer: 1
+        },
+        {
+            q: "11. ¿Qué es la Estática Social según Comte?",
+            options: ["El estudio del cambio social", "El estudio de las estructuras que mantienen el orden social", "La teoría de la evolución", "El análisis económico"],
+            answer: 1
+        },
+        {
+            q: "12. ¿Qué es la Alienación según Marx?",
+            options: ["Un estado emocional", "El sentimiento del trabajador de sentirse ajeno al producto de su trabajo", "Un tipo de enfermedad", "Una teoría política"],
+            answer: 1
+        },
+        {
+            q: "13. ¿Qué es el Hecho Social según Durkheim?",
+            options: ["Un evento histórico importante", "Maneras de actuar, pensar y sentir externas al individuo con poder coercitivo", "Una decisión política del gobierno", "Un fenómeno natural"],
+            answer: 1
+        },
+        {
+            q: "14. ¿Qué es el Capital Social según Bourdieu?",
+            options: ["El dinero que posee una persona", "Recursos acumulados a través de redes de relaciones que proporcionan ventajas sociales", "Las acciones de una empresa en bolsa", "La propiedad intelectual registrada"],
+            answer: 1
+        },
+        {
+            q: "15. ¿Qué es la cultura en sociología?",
+            options: ["Únicamente las expresiones artísticas", "Conjunto de conocimientos, creencias, normas, valores, símbolos y prácticas compartidas por una sociedad", "La educación formal universitaria", "Exclusivamente la tecnología y los avances científicos"],
+            answer: 1
+        }
+    ],
+    
+    // 15 preguntas de Verdadero o Falso
+    section2: [
+        { q: "1. El sentido común es objetivo y crítico como la sociología.", isTrue: false },
+        { q: "2. La Sociología Comprensiva de Weber busca entender el sentido de las acciones.", isTrue: true },
+        { q: "3. La Globalización solo genera beneficios, nunca conflictos locales.", isTrue: false },
+        { q: "4. El Etnocentrismo consiste en juzgar otras culturas según nuestros propios estándares.", isTrue: true },
+        { q: "5. La Cultura Material se refiere solo a ideas y valores intangibles.", isTrue: false },
+        { q: "6. Las Mores son normas morales graves como no robar.", isTrue: true },
+        { q: "7. La Alienación en Marx significa que el trabajador se siente ajeno a su trabajo.", isTrue: true },
+        { q: "8. La Economía Informal siempre es negativa y debe eliminarse.", isTrue: false },
+        { q: "9. El Relativismo Cultural evalúa una cultura según sus propios estándares.", isTrue: true },
+        { q: "10. Los Folkways son costumbres de rutina como comer con cubiertos.", isTrue: true },
+        { q: "11. La Ley de los Tres Estados de Comte dice que la sociedad evoluciona de lo teológico a lo positivo.", isTrue: true },
+        { q: "12. El Capital Social se refiere únicamente al dinero que tiene una persona.", isTrue: false },
+        { q: "13. La Socialización Secundaria ocurre en la escuela y el trabajo.", isTrue: true },
+        { q: "14. La Cultura No Material incluye objetos físicos como edificios y tecnología.", isTrue: false },
+        { q: "15. El Tipo Ideal de Weber es una construcción conceptual para medir la realidad.", isTrue: true }
+    ]
+};
+
+let currentStudent = { name: '', ci: '', isTest: false, attempts: 0 };
+function getConfigValue(primaryKey, fallbackKey, defaultValue = '') {
+    if (CONFIG && CONFIG[primaryKey] !== undefined) return CONFIG[primaryKey];
+    if (CONFIG && CONFIG[fallbackKey] !== undefined) return CONFIG[fallbackKey];
+    return defaultValue;
+}
+
+function getTimeLimitMinutes() {
+    return Number(getConfigValue('tiempoLimite', 'tiempo_limite', 60)) || 60;
+}
+
+function getMaxAttempts() {
+    return Number(getConfigValue('intentosMaximos', 'intentos_maximos', 2)) || 2;
+}
+
+function getTeacherCedula() {
+    return String(getConfigValue('cedulaDocente', 'cedula_docente', '') || '');
+}
+
+function getTestCedula() {
+    return String(getConfigValue('cedulaPrueba', 'cedula_prueba', '') || '');
+}
+
+function getGoogleFormActionUrl() {
+    const baseUrl = String(getConfigValue('linkGoogleForms', 'link_google_forms', '') || '').trim();
+    if (!baseUrl) return '';
+    return baseUrl.replace('/viewform', '/formResponse').replace('/edit', '/formResponse');
+}
+
+let timeLeft = getTimeLimitMinutes() * 60;
+let timerInterval;
+let examInProgress = { name: '', ci: '', startTime: null, answers: {} };
+let examFinished = false;
+const MAX_ATTEMPTS = getMaxAttempts();
+
+const GOOGLE_FORM_CONFIG = {
+    actionUrl: '',
+    viewUrl: 'https://forms.gle/85XwZKndrapCMPB57',
+    entries: {
+        name: 'entry.326235561',
+        ci: 'entry.1096330657',
+        score: 'entry.411120330',
+        answers: 'entry.1033458255'
+    }
+};
+
+function getAttemptCount(ci) {
+    const attempts = JSON.parse(localStorage.getItem('socioAttempts') || '{}');
+    return attempts[ci] || 0;
+}
+
+function saveAttemptCount(ci, count) {
+    const attempts = JSON.parse(localStorage.getItem('socioAttempts') || '{}');
+    attempts[ci] = count;
+    localStorage.setItem('socioAttempts', JSON.stringify(attempts));
+}
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getDate() {
+    return new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getTime() {
+    return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderSection1() {
+    const container = document.getElementById('section1-questions');
+    examData.section1.forEach((item, idx) => {
+        const preguntaNum = idx + 1;
+        const preguntaTexto = item.q.replace(/^\d+\.\s*/, '');
+        
+        const div = document.createElement('div');
+        div.className = 'pregunta-card mb-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm';
+        div.innerHTML = `
+            <div class="flex items-start gap-3 mb-3">
+                <span class="pregunta-num bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">${preguntaNum}</span>
+                <p class="text-sm font-semibold text-gray-800 flex-1">${preguntaTexto}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-11">
+                ${item.options.map((opt, optIdx) => `
+                    <label class="option-label hover:bg-green-50 cursor-pointer p-3 rounded-lg border transition">
+                        <input type="radio" name="q1_${idx}" value="${optIdx}" class="w-4 h-4 text-green-600">
+                        <span class="text-sm text-gray-700">${opt}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection2() {
+    const container = document.getElementById('section2-questions');
+    examData.section2.forEach((item, idx) => {
+        const preguntaNum = idx + 1;
+        const preguntaTexto = item.q.replace(/^\d+\.\s*/, '');
+        
+        const div = document.createElement('div');
+        div.className = 'pregunta-card flex flex-col md:flex-row items-start md:items-center gap-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm mb-3';
+        div.innerHTML = `
+            <span class="pregunta-num bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">${preguntaNum}</span>
+            <p class="text-sm font-semibold text-gray-800 flex-1">${preguntaTexto}</p>
+            <div class="flex gap-4 flex-shrink-0">
+                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition hover:bg-blue-50">
+                    <input type="radio" name="q2_${idx}" value="V" class="w-4 h-4 text-blue-600">
+                    <span class="font-bold text-blue-600">V</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition hover:bg-red-50">
+                    <input type="radio" name="q2_${idx}" value="F" class="w-4 h-4 text-red-600">
+                    <span class="font-bold text-red-600">F</span>
+                </label>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection3() {
+    if (!examData.section3) return;
+    const container = document.getElementById('section3-questions');
+    if (!container) return;
+    examData.section3.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <label class="font-bold text-sm text-primary">${item}</label>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="3" name="q3_${idx}" placeholder="Responda de forma completa..."></textarea>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function startExam() {
+    const name = document.getElementById('student-name').value.trim();
+    const ci = document.getElementById('student-id').value.trim();
+    
+    if (!name || !ci) {
+        alert('Complete todos los campos');
+        return;
+    }
+    
+    currentStudent = { name, ci, attempts: 0 };
+    
+    if (ci === getTeacherCedula()) {
+        showTeacherPanel();
+        return;
+    }
+    
+    if (ci === getTestCedula()) {
+        currentStudent.isTest = true;
+    }
+    
+    // Verificar intentos
+    const studentAttempts = getAttemptCount(ci);
+    if (studentAttempts >= getMaxAttempts()) {
+        alert(`Ya has completado los ${getMaxAttempts()} intentos permitidos.`);
+        return;
+    }
+    currentStudent.attempts = studentAttempts + 1;
+    saveAttemptCount(ci, currentStudent.attempts);
+    
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('exam-container').classList.remove('hidden');
+    document.getElementById('display-name').textContent = name;
+    document.getElementById('display-id').textContent = ci;
+    document.getElementById('display-date').textContent = getDate();
+    
+    renderSection1();
+    renderSection2();
+    timeLeft = getTimeLimitMinutes() * 60;
+    renderSection3();
+    
+    // Guardar estado de examen activo
+    examInProgress = {
+        name: name,
+        ci: ci,
+        startTime: new Date().toISOString(),
+        answers: {}
+    };
+    saveActiveExam();
+    
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        finalizarExamen();
+        return;
+    }
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    
+    if (timeLeft < 300) {
+        document.getElementById('timer').classList.add('text-red-600');
+    }
+}
+
+function calcularPuntaje() {
+    let score = 0;
+    let s1Correct = 0, s2Correct = 0;
+    
+    // Sección 1: Selección múltiple (15 preguntas)
+    for (let i = 0; i < 15; i++) {
+        const selected = document.querySelector(`input[name="q1_${i}"]:checked`);
+        if (selected && parseInt(selected.value) === examData.section1[i].answer) {
+            score++;
+            s1Correct++;
+        }
+    }
+    
+    // Sección 2: V/F (15 preguntas)
+    for (let i = 0; i < 15; i++) {
+        const selected = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (selected) {
+            const userAnswer = selected.value === 'V';
+            if (userAnswer === examData.section2[i].isTrue) {
+                score++;
+                s2Correct++;
+            }
+        }
+    }
+    
+    return {
+        score: Math.min(score, 30),
+        summary: [
+            { section: 'I. Selección Múltiple', correct: s1Correct, total: 15 },
+            { section: 'II. Verdadero o Falso', correct: s2Correct, total: 15 }
+        ]
+    };
+}
+
+// Contador de veces que presiona TERMINAR
+let intentosTerminar = 0;
+
+function finalizarExamen() {
+    if (examFinished) return;
+    
+    // Verificar preguntas sin responder
+    const sinResponder = verificarPreguntasSinResponder();
+    const totalSinResponder = sinResponder.length;
+    
+    if (totalSinResponder > 0) {
+        if (intentosTerminar === 0) {
+            // PRIMERA VEZ - Mostrar qué falta y filtrar
+            intentosTerminar = 1;
+            
+            // Mostrar mensaje
+            let mensaje = `Tiene ${totalSinResponder} pregunta(s) sin responder:\n\n`;
+            sinResponder.forEach(tipo => {
+                mensaje += `- ${tipo}\n`;
+            });
+            mensaje += `\nSe mostrarán SOLO las preguntas que faltan. Complete las respuestas y presione TERMINAR nuevamente.`;
+            
+            alert(mensaje);
+            
+            // Filtrar y mostrar solo las preguntas sin responder
+            filtrarPreguntasSinResponder();
+            
+            // Scroll a la primera pregunta sin responder
+            const primeraSinResponder = document.querySelector('.pregunta-sin-responder');
+            if (primeraSinResponder) {
+                primeraSinResponder.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Cambiar texto del botón para indicar segunda oportunidad
+            const btnTerminar = document.querySelector('button[onclick="finalizarExamen()"]');
+            if (btnTerminar) {
+                btnTerminar.textContent = 'CONFIRMAR ENTREGA';
+                btnTerminar.classList.remove('bg-red-600');
+                btnTerminar.classList.add('bg-orange-600', 'hover:bg-orange-700');
+            }
+            
+            examFinished = false;
+            return;
+        } else {
+            // SEGUNDA VEZ - Confirmar entrega final
+            const confirmar = confirm(`¿Está seguro que desea entregar el examen con ${totalSinResponder} pregunta(s) sin responder?`);
+            
+            if (!confirmar) {
+                examFinished = false;
+                return;
+            }
+            // Continúa con la entrega
+        }
+    }
+    
+    examFinished = true;
+    clearInterval(timerInterval);
+    
+    if (currentStudent.isTest) {
+        alert('Examen de prueba completado');
+        location.reload();
+        return;
+    }
+    
+    const result = calcularPuntaje();
+    const score = result.score;
+    const percent = ((score / 30) * 100).toFixed(0);
+    
+    document.getElementById('res-name').textContent = currentStudent.name;
+    document.getElementById('res-id').textContent = currentStudent.ci;
+    document.getElementById('res-date').textContent = `${getDate()} ${getTime()}`;
+    document.getElementById('res-score').textContent = score;
+    document.getElementById('res-percent').textContent = percent;
+    
+    let matrixHTML = '';
+    result.summary.forEach(s => {
+        const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '●' : '✗');
+        const color = s.correct === s.total ? 'text-green-600' : (s.correct > 0 ? 'text-yellow-600' : 'text-red-600');
+        matrixHTML += `<div class="flex justify-between border-b py-1 ${color}"><span>${s.section}</span><span>${icon} ${s.correct}/${s.total}</span></div>`;
+    });
+    document.getElementById('results-matrix').innerHTML = matrixHTML;
+    
+    document.getElementById('result-modal').classList.remove('hidden');
+    const saveState = guardarResultado(result);
+    const remainingAttempts = Math.max(0, getMaxAttempts() - currentStudent.attempts);
+    const retryBtn = document.getElementById('retry-btn');
+    retryBtn.classList.toggle('hidden', remainingAttempts === 0);
+
+    const note = `Intento ${currentStudent.attempts} registrado. Se guardan todos los intentos y el docente vera como mejor puntaje ${saveState.bestScore}/30. Intentos restantes: ${remainingAttempts}.`;
+    document.getElementById('result-note').textContent = note;
+    
+    // Resetear contador
+    intentosTerminar = 0;
+}
+
+// Función para verificar preguntas sin responder
+function verificarPreguntasSinResponder() {
+    const sinResponder = [];
+    
+    // Verificar Sección I - Selección Múltiple
+    for (let i = 0; i < 15; i++) {
+        const name = `q1_${i}`;
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+            sinResponder.push(`Sección I - Pregunta ${i + 1}`);
+        }
+    }
+    
+    // Verificar Sección II - Verdadero/Falso
+    for (let i = 0; i < 15; i++) {
+        const name = `q2_${i}`;
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+            sinResponder.push(`Sección II - Pregunta ${i + 1}`);
+        }
+    }
+    
+    return sinResponder;
+}
+
+// Función para filtrar y mostrar solo las preguntas sin responder
+function filtrarPreguntasSinResponder() {
+    // Sección I
+    const section1Container = document.getElementById('section1-questions');
+    const preguntas1 = section1Container.querySelectorAll('.pregunta-card');
+    preguntas1.forEach((preg, idx) => {
+        const name = `q1_${idx}`;
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+            preg.classList.add('pregunta-sin-responder', 'border-red-500', 'bg-red-50');
+            preg.style.display = 'block';
+        } else {
+            preg.style.display = 'none';
+        }
+    });
+    
+    // Sección II
+    const section2Container = document.getElementById('section2-questions');
+    const preguntas2 = section2Container.querySelectorAll('.pregunta-card');
+    preguntas2.forEach((preg, idx) => {
+        const name = `q2_${idx}`;
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        if (!checked) {
+            preg.classList.add('pregunta-sin-responder', 'border-red-500', 'bg-red-50');
+            preg.style.display = 'flex';
+        } else {
+            preg.style.display = 'none';
+        }
+    });
+}
+
+// Función para mostrar todas las preguntas (restaurar vista)
+function mostrarTodasLasPreguntas() {
+    // Sección I
+    const section1Container = document.getElementById('section1-questions');
+    const preguntas1 = section1Container.querySelectorAll('.pregunta-card');
+    preguntas1.forEach((preg) => {
+        preg.classList.remove('pregunta-sin-responder', 'border-red-500', 'bg-red-50');
+        preg.style.display = 'block';
+    });
+    
+    // Sección II
+    const section2Container = document.getElementById('section2-questions');
+    const preguntas2 = section2Container.querySelectorAll('.pregunta-card');
+    preguntas2.forEach((preg) => {
+        preg.classList.remove('pregunta-sin-responder', 'border-red-500', 'bg-red-50');
+        preg.style.display = 'flex';
+    });
+}
+
+function recolectarRespuestas() {
+    // Recolectar respuestas para análisis del docente
+    const rawAnswers = {};
+    for (let i = 0; i < 15; i++) {
+        const sel = document.querySelector(`input[name="q1_${i}"]:checked`);
+        if (sel) rawAnswers[`q1_${i}`] = parseInt(sel.value);
+    }
+    for (let i = 0; i < 15; i++) {
+        const sel = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (sel) rawAnswers[`q2_${i}`] = sel.value;
+    }
+    
+    return rawAnswers;
+}
+
+function crearDetalleParaFormulario(record) {
+    const multiple = examData.section1.map((item, i) => {
+        const opciones = ['A', 'B', 'C', 'D'];
+        const respuesta = record.rawAnswers[`q1_${i}`];
+        const correcta = item.answer;
+        const marcada = respuesta !== undefined ? opciones[respuesta] : 'NR';
+        const estado = respuesta === correcta ? 'OK' : 'MAL';
+        return `I.${i + 1}: ${marcada} | Correcta: ${opciones[correcta]} | ${estado} | ${item.q.replace(/^\d+\.\s*/, '')}`;
+    }).join('\n');
+
+    const verdaderoFalso = examData.section2.map((item, i) => {
+        const respuesta = record.rawAnswers[`q2_${i}`];
+        const correcta = item.isTrue ? 'V' : 'F';
+        const marcada = respuesta || 'NR';
+        const estado = respuesta === correcta ? 'OK' : 'MAL';
+        return `II.${i + 1}: ${marcada} | Correcta: ${correcta} | ${estado} | ${item.q.replace(/^\d+\.\s*/, '')}`;
+    }).join('\n');
+
+    return [
+        `Estudiante: ${record.name}`,
+        `Cedula: ${record.ci}`,
+        `Puntaje: ${record.score}/30`,
+        `Intento: ${record.attempt}`,
+        `Fecha: ${record.date} ${record.time}`,
+        '',
+        'SECCION I - SELECCION MULTIPLE',
+        multiple,
+        '',
+        'SECCION II - VERDADERO/FALSO',
+        verdaderoFalso
+    ].join('\n');
+}
+
+function enviarAGoogleForms(record) {
+    const actionUrl = getGoogleFormActionUrl();
+    if (!actionUrl) {
+        return Promise.reject(new Error('Google Forms no configurado'));
+    }
+
+    const formData = new FormData();
+    formData.append(GOOGLE_FORM_CONFIG.entries.name, record.name);
+    formData.append(GOOGLE_FORM_CONFIG.entries.ci, record.ci);
+    formData.append(GOOGLE_FORM_CONFIG.entries.score, `${record.score}/30`);
+    formData.append(GOOGLE_FORM_CONFIG.entries.answers, crearDetalleParaFormulario(record));
+
+    return fetch(actionUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+    });
+}
+
+// ============================================
+// ENVIAR RESULTADO A GOOGLE SHEETS VÍA API
+// ============================================
+async function enviarResultadoASheet(record) {
+    const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+    const apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+    if (!apiUrl || !apiKey) return;
+
+    try {
+        const params = new URLSearchParams();
+        params.append('apiKey', apiKey);
+        params.append('modo', 'guardar_examen');
+        params.append('studentName', record.name || '');
+        params.append('studentId', record.ci || '');
+        params.append('career', record.carrera || '');
+        params.append('seccion', (typeof getConfigValue === 'function' ? getConfigValue('grupo', 'grupo', '') : ''));
+        params.append('materia', (typeof getConfigValue === 'function' ? getConfigValue('materia', 'materia', '') : ''));
+        params.append('nota', (record.score || '0') + '/' + (record.total || '30'));
+        params.append('tipoExamen', 'Parcial');
+
+        await fetch(apiUrl, {
+            method: 'POST',
+            mode: 'cors',
+            redirect: 'follow',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' },
+            body: params
+        });
+
+        // Marcar como enviado en el record
+        record.googleSheetStatus = 'enviado';
+    } catch (err) {
+        console.warn('Error al enviar resultado a Sheet:', err);
+        record.googleSheetStatus = 'error: ' + err.message;
+    }
+}
+
+function guardarResultado(result) {
+    const rawAnswers = recolectarRespuestas();
+    let allResults = JSON.parse(localStorage.getItem('socioResults') || '[]');
+    const previousBest = allResults
+        .filter(r => r.ci === currentStudent.ci)
+        .sort((a, b) => b.score - a.score)[0];
+
+    const record = {
+        name: currentStudent.name,
+        ci: currentStudent.ci,
+        score: result.score,
+        attempt: currentStudent.attempts,
+        date: getDate(),
+        time: getTime(),
+        datetime: new Date().toISOString(),
+        rawAnswers: rawAnswers,
+        summary: result.summary,
+        googleFormStatus: 'pendiente',
+        carrera: currentStudent.carrera || '',
+        total: getConfigValue('puntajeTotal', 'puntaje_total', 30)
+    };
+
+    let activeExams = JSON.parse(localStorage.getItem('activeExams') || '[]');
+    activeExams = activeExams.filter(e => e.ci !== record.ci);
+    localStorage.setItem('activeExams', JSON.stringify(activeExams));
+
+    allResults.push(record);
+    localStorage.setItem('socioResults', JSON.stringify(allResults));
+
+    enviarResultadoASheet(record);
+
+    
+        enviarAGoogleForms(record)
+
+    
+        .then(() => {
+            const savedResults = JSON.parse(localStorage.getItem('socioResults') || '[]');
+            const idx = savedResults.findIndex(r => r.datetime === record.datetime && r.ci === record.ci);
+            if (idx >= 0) {
+                savedResults[idx].googleFormStatus = 'enviado';
+                localStorage.setItem('socioResults', JSON.stringify(savedResults));
+            }
+        })
+        .catch(() => {
+            const savedResults = JSON.parse(localStorage.getItem('socioResults') || '[]');
+            const idx = savedResults.findIndex(r => r.datetime === record.datetime && r.ci === record.ci);
+            if (idx >= 0) {
+                savedResults[idx].googleFormStatus = 'error';
+                localStorage.setItem('socioResults', JSON.stringify(savedResults));
+            }
+            alert('El examen quedo guardado en este navegador, pero no se pudo enviar a Google Forms. Revise la conexion e intente nuevamente.');
+        });
+
+    const bestScore = Math.max(record.score, previousBest ? previousBest.score : 0);
+    return { record, previousBest, bestScore };
+}
+
+function descargarActa() {
+    const element = document.getElementById('acta-content');
+    html2canvas(element, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        const parts = currentStudent.name.split(' ');
+        link.download = `Acta_Socio_${currentStudent.ci}_${parts[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        setTimeout(() => {
+            if (confirm('¿Desea cerrar la ventana del examen?')) {
+                window.close();
+            }
+        }, 1000);
+    });
+}
+
+function imprimirActa() {
+    window.print();
+    setTimeout(() => {
+        if (confirm('¿Desea cerrar la ventana del examen?')) {
+            window.close();
+        }
+    }, 1500);
+}
+
+function showTeacherPanel() {
+    window.location.href = 'teacher_panel.html';
+}
+
+function toggleAutoRefresh() {
+    // Función reservada para el panel docente standalone
+}
+
+function actualizarPanel() {
+    // Panel docente redirige a teacher_panel.html
+}
+
+// Guardar examen activo
+function saveActiveExam() {
+    let activeExams = JSON.parse(localStorage.getItem('activeExams') || '[]');
+    activeExams = activeExams.filter(e => e.ci !== examInProgress.ci);
+    activeExams.push(examInProgress);
+    localStorage.setItem('activeExams', JSON.stringify(activeExams));
+}
+
+// Actualizar tiempo restante del examen activo
+function updateActiveExamTime() {
+    if (examInProgress.ci) {
+        let activeExams = JSON.parse(localStorage.getItem('activeExams') || '[]');
+        const idx = activeExams.findIndex(e => e.ci === examInProgress.ci);
+        if (idx >= 0) {
+            activeExams[idx].timeLeft = timeLeft;
+            activeExams[idx].lastUpdate = new Date().toISOString();
+            localStorage.setItem('activeExams', JSON.stringify(activeExams));
+        }
+    }
+}
+
+// Modificar updateTimer para actualizar tiempo
+const originalUpdateTimer = updateTimer;
+updateTimer = function() {
+    originalUpdateTimer();
+    if (timeLeft % 10 === 0) {
+        updateActiveExamTime();
+    }
+};
+
+// Función para exportar datos (para el estudiante)
+function exportMyAnswers() {
+    const data = {
+        name: currentStudent.name,
+        ci: currentStudent.ci,
+        exportTime: new Date().toISOString(),
+        timeLeft: timeLeft,
+        answers: {}
+    };
+    
+    // Recolectar respuestas
+    for (let i = 0; i < 10; i++) {
+        const sel = document.querySelector(`input[name="q1_${i}"]:checked`);
+        if (sel) data.answers[`q1_${i}`] = parseInt(sel.value);
+    }
+    for (let i = 0; i < 10; i++) {
+        const sel = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (sel) data.answers[`q2_${i}`] = sel.value;
+    }
+    for (let i = 0; i < 10; i++) {
+        const txt = document.querySelector(`textarea[name="q3_${i}"]`);
+        if (txt) data.answers[`q3_${i}`] = txt.value;
+    }
+    
+    const encoded = btoa(JSON.stringify(data));
+    prompt('Copie este código y envíelo al docente:', encoded);
+}
+
+// Agregar botón de exportar en el examen
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const examContainer = document.getElementById('exam-container');
+        if (examContainer && !document.getElementById('export-btn')) {
+            const exportBtn = document.createElement('button');
+            exportBtn.id = 'export-btn';
+            exportBtn.className = 'no-print bg-blue-600 text-white px-3 py-1 rounded text-xs mt-4';
+            exportBtn.innerHTML = '<i class="fas fa-export mr-1"></i> Exportar respuestas';
+            exportBtn.onclick = exportMyAnswers;
+            exportBtn.style.display = 'none'; // Oculto, se activa con teclado
+            document.body.appendChild(exportBtn);
+        }
+    }, 1000);
+});
+
+
+
+console.log('Examen Sociología - Listo');
+</script>
+
+</body>
+</html>
+

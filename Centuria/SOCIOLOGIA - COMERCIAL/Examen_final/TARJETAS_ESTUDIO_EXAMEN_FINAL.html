@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjetas de Estudio - Examen Final Sociología - Centuria</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --color-accent: #dc2626;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-title);
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-secondary);
+        }
+
+        .page-header .subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .filter-btn {
+            background: #e2e8f0;
+            color: #475569;
+            border: 2px solid transparent;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: #1e7e34;
+        }
+
+        .btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn:hover { background: #1e7e34; transform: translateY(-2px); }
+        .btn.secondary { background: #6c757d; }
+        .btn.secondary:hover { background: #5a6268; }
+        .btn.accent { background: var(--color-accent); }
+        .btn.accent:hover { background: #b91c1c; }
+
+        .counter {
+            background: #e2e8f0;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            max-width: 600px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--color-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .card-scene {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 640px;
+            height: 380px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card.is-flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            border-left: 8px solid var(--color-primary);
+        }
+
+        .card-face.front {
+            background: #ffffff;
+            color: #1e293b;
+        }
+
+        .card-face.back {
+            background: #fffbeb;
+            color: #1e293b;
+            transform: rotateY(180deg);
+            border-left-color: var(--color-accent);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-primary);
+            background: rgba(40, 167, 69, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .card-face.back .card-label {
+            color: var(--color-accent);
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .card-content {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .card-hint {
+            position: absolute;
+            bottom: 16px;
+            font-size: 0.75rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .unit-badge {
+            display: inline-block;
+            margin-top: 15px;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .finish-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 640px;
+            height: 380px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15);
+            text-align: center;
+            padding: 30px;
+            border-left: 8px solid var(--color-primary);
+        }
+
+        .finish-screen h2 {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--color-secondary);
+        }
+
+        .finish-screen p {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .keyboard-hints {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #666;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .key {
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        @media (max-width: 640px) {
+            .card-scene { height: 420px; }
+            .card-content { font-size: 1rem; }
+            .page-header h1 { font-size: 1.3rem; }
+        }
+
+        @media print {
+            body { background: white; align-items: flex-start; }
+            .controls, .progress-bar-container, .keyboard-hints, .card-hint, .finish-screen { display: none !important; }
+            .card-scene {
+                page-break-after: always;
+                height: auto;
+                max-width: 100%;
+                margin-bottom: 30px;
+                perspective: none;
+            }
+            .card {
+                transform: none !important;
+                transform-style: flat;
+                cursor: default;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            .card-face {
+                position: relative;
+                backface-visibility: visible;
+                transform: none !important;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                page-break-inside: avoid;
+            }
+            .card-face.back { transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <h1>Instituto Superior <span style="color: #dc2626;">Centuria</span></h1>
+        <div class="subtitle">Sociología — 60 Tarjetas de Estudio para el Examen Final</div>
+    </div>
+
+    <div class="filter-controls" id="filterControls">
+        <button class="filter-btn active" data-filter="all">Todas (60)</button>
+        <button class="filter-btn" data-filter="Unidad 1">U1 (10)</button>
+        <button class="filter-btn" data-filter="Unidad 2">U2 (10)</button>
+        <button class="filter-btn" data-filter="Unidad 3">U3 (10)</button>
+        <button class="filter-btn" data-filter="Unidad 4">U4 (10)</button>
+        <button class="filter-btn" data-filter="Unidad 5">U5 (10)</button>
+        <button class="filter-btn" data-filter="Unidad 6">U6 (10)</button>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="btnPrev">← Anterior</button>
+        <div class="counter" id="counter">1 / 60</div>
+        <button class="btn" id="btnNext">Siguiente →</button>
+        <button class="btn secondary" id="btnShuffle">Aleatorio</button>
+        <button class="btn accent" id="btnReset">Reiniciar</button>
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="card-scene" id="cardScene">
+        <div class="card" id="flashcard">
+            <div class="card-face front">
+                <span class="card-label">Pregunta</span>
+                <span class="card-number" id="frontNumber">1 / 60</span>
+                <div class="card-content" id="frontContent">Cargando...</div>
+                <span class="card-hint">Haz clic o presiona Espacio para voltear</span>
+            </div>
+            <div class="card-face back">
+                <span class="card-label">Respuesta</span>
+                <span class="card-number" id="backNumber">1 / 60</span>
+                <div class="card-content" id="backContent">Cargando...</div>
+                <span class="unit-badge" id="unitBadge">Unidad 1</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="finish-screen" id="finishScreen">
+        <h2>¡Repaso completado!</h2>
+        <p>Has revisado todas las tarjetas. ¿Listo para el examen final?</p>
+        <button class="btn" onclick="resetDeck()">Volver a empezar</button>
+    </div>
+
+    <div class="keyboard-hints">
+        <span><span class="key">←</span> Anterior</span>
+        <span><span class="key">→</span> Siguiente</span>
+        <span><span class="key">Espacio</span> Voltear</span>
+        <span><span class="key">R</span> Reiniciar</span>
+        <span><span class="key">S</span> Aleatorio</span>
+    </div>
+
+    <script>
+        const cardsData = [
+            // UNIDAD 1
+            { unit: "Unidad 1", q: "¿Quién definió la sociología como el estudio de las leyes fundamentales de los fenómenos sociales?", a: "Augusto Comte." },
+            { unit: "Unidad 1", q: "¿Qué estudia la Estática Social según Comte?", a: "Estudia el individuo, la familia y la sociedad como organismo de cooperación. Fomenta la ley del orden." },
+            { unit: "Unidad 1", q: "¿Qué estudia la Dinámica Social según Comte?", a: "Se ocupa de los cambios sociales y el progreso, estudiando el movimiento de la sociedad." },
+            { unit: "Unidad 1", q: "¿Cuáles son los tres estados según la Ley de los Tres Estados de Comte?", a: "Teológico, Metafísico y Positivo." },
+            { unit: "Unidad 1", q: "¿Qué caracteriza el estado Teológico según Comte?", a: "Explicaciones divinas interpretadas por sacerdotes." },
+            { unit: "Unidad 1", q: "¿Qué caracteriza el estado Positivo según Comte?", a: "Uso del método científico, estudio empírico y relaciones de causalidad." },
+            { unit: "Unidad 1", q: "¿Qué término acuñó Herbert Spencer aplicando la evolución de Darwin a la sociedad?", a: "'Supervivencia del más apto'. Veía la sociedad como un organismo que evoluciona de formas simples a complejas." },
+            { unit: "Unidad 1", q: "¿En qué se centró Émile Durkheim?", a: "En el estudio de los 'hechos sociales' como elementos externos y coercitivos para el individuo." },
+            { unit: "Unidad 1", q: "¿Qué concepto enfatizó Max Weber?", a: "La 'acción social' y la comprensión (Verstehen) de los motivos de los actores." },
+            { unit: "Unidad 1", q: "¿Qué analizó Karl Marx desde la sociología?", a: "El conflicto de clases entre la burguesía y el proletariado, centrándose en las bases materiales de la sociedad." },
+
+            // UNIDAD 2
+            { unit: "Unidad 2", q: "¿Qué es un hecho social según el material?", a: "Formas de actuar, pensar y sentir que existen por encima del individuo y ejercen presión sobre él." },
+            { unit: "Unidad 2", q: "¿Qué estudia la Sociología Económica?", a: "Mercados, consumo, confianza, informalidad, desigualdad y redes comerciales." },
+            { unit: "Unidad 2", q: "¿Qué estudia la Sociología de las Organizaciones?", a: "Empresas, liderazgo, cultura laboral, burocracia, cooperación y conflicto interno." },
+            { unit: "Unidad 2", q: "¿Qué estudia la Sociología del Trabajo?", a: "División del trabajo, jerarquías, precarización, movilidad social y clima laboral." },
+            { unit: "Unidad 2", q: "¿Qué estudia la Sociología Fiscal y Contable?", a: "Normas tributarias, cumplimiento, ética, legitimidad institucional y cultura de pago." },
+            { unit: "Unidad 2", q: "¿Qué es el capital social?", a: "Recursos obtenidos por redes de confianza." },
+            { unit: "Unidad 2", q: "¿Qué es una institución?", a: "Regla social estable que organiza la conducta." },
+            { unit: "Unidad 2", q: "¿Qué es la informalidad?", a: "Actividad económica fuera de regulación plena." },
+            { unit: "Unidad 2", q: "¿Qué es la legitimidad?", a: "Reconocimiento social de una norma o autoridad." },
+            { unit: "Unidad 2", q: "¿Qué es la cultura fiscal?", a: "Valores compartidos sobre impuestos y cumplimiento." },
+
+            // UNIDAD 3
+            { unit: "Unidad 3", q: "¿Qué es la acción social según Max Weber?", a: "Toda conducta humana que tiene un sentido subjetivo y está orientada hacia los demás." },
+            { unit: "Unidad 3", q: "¿Cuáles son los cuatro tipos de acción social según Weber?", a: "Racional con arreglo a fines, racional con arreglo a valores, afectiva y tradicional." },
+            { unit: "Unidad 3", q: "¿Qué es la cultura material?", a: "Bienes tangibles creados por una sociedad: tecnología, oficinas, sistemas ERP y software contable." },
+            { unit: "Unidad 3", q: "¿Qué es la cultura inmaterial?", a: "Creaciones intangibles: lenguaje, creencias, valores morales, normas y leyes." },
+            { unit: "Unidad 3", q: "¿Qué es la socialización primaria?", a: "Ocurre en la niñez (familia). Se forma la identidad básica y el lenguaje." },
+            { unit: "Unidad 3", q: "¿Qué es la socialización secundaria?", a: "Incorporación a sub-mundos institucionales (escuela, trabajo). Aprendemos roles específicos y cultura organizacional." },
+            { unit: "Unidad 3", q: "¿Qué es la cultura según el material?", a: "Diseño general de vida de una sociedad." },
+            { unit: "Unidad 3", q: "¿Qué es la socialización?", a: "Proceso de internalizar la cultura de un grupo." },
+            { unit: "Unidad 3", q: "¿Qué es el etnocentrismo?", a: "Juzgar otras culturas usando los estándares de la propia." },
+            { unit: "Unidad 3", q: "¿Qué tipo de acción social representa una decisión empresarial para maximizar ganancias?", a: "Acción racional con arreglo a fines." },
+
+            // UNIDAD 4
+            { unit: "Unidad 4", q: "¿Qué es una institución social?", a: "Sistema de pautas sociales estandarizadas que regulan el comportamiento." },
+            { unit: "Unidad 4", q: "¿Qué es un grupo secundario?", a: "Asociación formal y utilitaria orientada a metas (Ej. Empresa)." },
+            { unit: "Unidad 4", q: "¿Qué es la solidaridad orgánica según Durkheim?", a: "Cohesión basada en la interdependencia mutua." },
+            { unit: "Unidad 4", q: "¿Qué diferencia hay entre individualismo y egoísmo según la sociología?", a: "La sociología ve el individualismo como un motor de especialización orgánica, no necesariamente como egoísmo." },
+            { unit: "Unidad 4", q: "¿Qué es la solidaridad mecánica según Durkheim?", a: "Cohesión basada en la similitud de tareas y valores entre los miembros." },
+            { unit: "Unidad 4", q: "¿Qué riesgo tiene depender de la 'solidaridad mecánica' en una empresa?", a: "Es peligroso porque se basa en amiguismo y lealtad ciega, no en la especialización profesional." },
+            { unit: "Unidad 4", q: "¿Qué requiere el liderazgo profesional según el material?", a: "Construir 'Solidaridad Orgánica', donde un equipo diverso se integra democráticamente." },
+            { unit: "Unidad 4", q: "¿Qué sucede cuando una empresa penaliza el individualismo y exige obediencia ciega?", a: "Puede llevar al colapso frente a cambios tecnológicos externos por falta de innovación." },
+            { unit: "Unidad 4", q: "¿Por qué el sentido común asume que el individualismo siempre es egoísmo?", a: "Porque no distingue la especialización funcional (individualismo sociológico) del egoísmo moral." },
+            { unit: "Unidad 4", q: "¿Qué ventaja tiene la solidaridad orgánica en el ámbito comercial?", a: "Permite que cada especialista aporte su función específica para el éxito general." },
+
+            // UNIDAD 5
+            { unit: "Unidad 5", q: "¿Qué es la agencia humana?", a: "Capacidad de los individuos para actuar independientemente y tomar decisiones libres, incluso dentro de limitaciones estructurales." },
+            { unit: "Unidad 5", q: "¿Qué es la estructura social?", a: "Las normas, instituciones y condiciones materiales que limitan o facultan las acciones individuales." },
+            { unit: "Unidad 5", q: "¿Qué es la 'mala fe' según Jean-Paul Sartre?", a: "Ocurre cuando un individuo se esconde detrás de su rol, reglas o superiores para evitar la angustia de tomar decisiones éticas." },
+            { unit: "Unidad 5", q: "¿Cuál es la frase clave de Sartre sobre la libertad?", a: "'El hombre está condenado a ser libre.'" },
+            { unit: "Unidad 5", q: "¿Qué es la libertad negativa?", a: "Ausencia de interferencia externa. 'Libertad de...'" },
+            { unit: "Unidad 5", q: "¿Qué es la libertad positiva?", a: "Capacidad de autodeterminación y proyecto. 'Libertad para...'" },
+            { unit: "Unidad 5", q: "¿Qué es la seguridad jurídica?", a: "Normas claras, predecibles y aplicadas equitativamente." },
+            { unit: "Unidad 5", q: "¿Qué es la movilidad social?", a: "Capacidad de cambiar posición socioeconómica por mérito propio." },
+            { unit: "Unidad 5", q: "¿Qué es el determinismo social?", a: "Doctrina de que todos los eventos están predeterminados por causas externas a la voluntad." },
+            { unit: "Unidad 5", q: "¿Cuál es un ejemplo de 'mala fe' en el ámbito contable?", a: "'Yo solo firmo lo que me traen, no reviso el contenido' o 'Solo seguía órdenes del superior'." },
+
+            // UNIDAD 6
+            { unit: "Unidad 6", q: "¿Qué es la estratificación social?", a: "División de la sociedad en capas o estratos desiguales de poder y riqueza." },
+            { unit: "Unidad 6", q: "¿Qué es la movilidad social ascendente?", a: "Cambio a una posición socioeconómica superior (ej. por educación)." },
+            { unit: "Unidad 6", q: "¿Qué es la movilidad social descendente?", a: "Cambio a una posición socioeconómica inferior (ej. por escándalo de fraude contable)." },
+            { unit: "Unidad 6", q: "¿Qué es la movilidad horizontal?", a: "Cambio de lugar o función manteniendo el mismo nivel socioeconómico." },
+            { unit: "Unidad 6", q: "¿Qué es el conflicto reprimido?", a: "Se oculta por imposición jerárquica." },
+            { unit: "Unidad 6", q: "¿Qué es el conflicto canalizado?", a: "Se resuelve vía negociación (ej. paritarias salariales)." },
+            { unit: "Unidad 6", q: "¿Qué es el conflicto transformador?", a: "Genera cambio estructural (ej. nueva constitución tras protestas masivas)." },
+            { unit: "Unidad 6", q: "¿Qué es la modernización?", a: "Transición de sociedades tradicionales a industriales, burocráticas y tecnológicas." },
+            { unit: "Unidad 6", q: "¿Qué es la globalización?", a: "Interdependencia económica, cultural y política global." },
+            { unit: "Unidad 6", q: "¿Cuáles son las dos principales resistencias al cambio mencionadas?", a: "Intereses creados e inercia institucional." }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+        let order = [];
+        let currentFilter = 'all';
+
+        const card = document.getElementById('flashcard');
+        const frontContent = document.getElementById('frontContent');
+        const backContent = document.getElementById('backContent');
+        const frontNumber = document.getElementById('frontNumber');
+        const backNumber = document.getElementById('backNumber');
+        const unitBadge = document.getElementById('unitBadge');
+        const counter = document.getElementById('counter');
+        const progressBar = document.getElementById('progressBar');
+        const cardScene = document.getElementById('cardScene');
+        const finishScreen = document.getElementById('finishScreen');
+
+        function getFilteredIndices() {
+            if (currentFilter === 'all') {
+                return cardsData.map((_, i) => i);
+            }
+            return cardsData.map((c, i) => c.unit === currentFilter ? i : -1).filter(i => i !== -1);
+        }
+
+        function initOrder() {
+            order = getFilteredIndices();
+        }
+
+        function renderCard() {
+            if (order.length === 0 || currentIndex >= order.length) {
+                cardScene.style.display = 'none';
+                finishScreen.style.display = 'flex';
+                return;
+            }
+
+            cardScene.style.display = 'block';
+            finishScreen.style.display = 'none';
+
+            const data = cardsData[order[currentIndex]];
+            frontContent.textContent = data.q;
+            backContent.textContent = data.a;
+            unitBadge.textContent = data.unit;
+            frontNumber.textContent = `${currentIndex + 1} / ${order.length}`;
+            backNumber.textContent = `${currentIndex + 1} / ${order.length}`;
+            counter.textContent = `${currentIndex + 1} / ${order.length}`;
+
+            const progress = ((currentIndex + 1) / order.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            isFlipped = false;
+            card.classList.remove('is-flipped');
+        }
+
+        function flipCard() {
+            if (order.length === 0) return;
+            isFlipped = !isFlipped;
+            card.classList.toggle('is-flipped', isFlipped);
+        }
+
+        function nextCard() {
+            if (currentIndex < order.length) {
+                currentIndex++;
+                renderCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCard();
+            }
+        }
+
+        function shuffleDeck() {
+            for (let i = order.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [order[i], order[j]] = [order[j], order[i]];
+            }
+            currentIndex = 0;
+            renderCard();
+        }
+
+        function resetDeck() {
+            initOrder();
+            currentIndex = 0;
+            renderCard();
+        }
+
+        function setFilter(filterValue) {
+            currentFilter = filterValue;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filterValue) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            resetDeck();
+        }
+
+        // Events
+        card.addEventListener('click', flipCard);
+
+        document.getElementById('btnNext').addEventListener('click', (e) => { e.stopPropagation(); nextCard(); });
+        document.getElementById('btnPrev').addEventListener('click', (e) => { e.stopPropagation(); prevCard(); });
+        document.getElementById('btnShuffle').addEventListener('click', (e) => { e.stopPropagation(); shuffleDeck(); });
+        document.getElementById('btnReset').addEventListener('click', (e) => { e.stopPropagation(); resetDeck(); });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setFilter(btn.dataset.filter);
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+                e.preventDefault();
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            } else if (e.code === 'KeyR') {
+                resetDeck();
+            } else if (e.code === 'KeyS') {
+                shuffleDeck();
+            }
+        });
+
+        // Init
+        initOrder();
+        renderCard();
+    </script>
+</body>
+</html>

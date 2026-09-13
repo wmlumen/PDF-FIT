@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clase 14: Pautas del Trabajo Final de Cátedra | ICO3534</title>
+    <style>
+        :root { --primary: #1e272e; --accent: #f53b57; --highlight: #ffa801; --bg: #f5f6fa; --white: #ffffff; --border: #dcdde1; }
+        body { font-family: 'Outfit', 'Inter', sans-serif; background-color: var(--bg); color: #2f3640; line-height: 1.6; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: var(--white); box-shadow: 0 10px 40px rgba(0,0,0,0.1); box-sizing: border-box; border-top: 15px solid var(--accent); }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { font-size: 18pt; margin: 0; color: var(--primary); }
+        .badge { background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 9pt; font-weight: bold; }
+        .project-guidelines { background-color: #fdf2f2; border: 1px solid var(--accent); padding: 20px; border-radius: 12px; margin-bottom: 25px; }
+        h2 { font-size: 14pt; color: var(--primary); text-transform: uppercase; margin-top: 30px; display: flex; align-items: center; gap: 10px; }
+        .milestone-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 9pt; }
+        .milestone-table th, .milestone-table td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+        .milestone-table th { background: var(--primary); color: white; }
+        .reflection-questions { background: #fff5e6; border-left: 5px solid var(--highlight); padding: 15px; margin: 20px 0; }
+        .lab-activity { border: 2px solid var(--primary); padding: 20px; border-radius: 12px; margin-top: 30px; }
+        footer { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center; font-size: 8pt; color: #718093; }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; } .no-print { display: none; } }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR GUÍA PROYECTO FINAL</button>
+    <div class="page">
+        <header>
+            <h1>Clase 14: Pautas del Trabajo Final de Cátedra</h1>
+            <div class="badge">PROYECTO FINAL | 50% DE NOTA</div>
+        </header>
+
+        <section class="project-guidelines">
+            <strong>🎯 OBJETIVO DEL PROYECTO:</strong>
+            <p>Diseñar e implementar un <strong>Sistema de Información Contable (SIC)</strong> funcional para una PYME paraguaya, integrando herramientas de ofimática avanzada, cumplimiento legal (SET) y protocolos de auditoría.</p>
+        </section>
+
+        <h2>1. Hitos de Entrega</h2>
+        <table class="milestone-table">
+            <thead>
+                <tr>
+                    <th>Fase</th>
+                    <th>Entregable</th>
+                    <th>Fecha Límite</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hito 1: Estructura</strong></td>
+                    <td>Selección de empresa + Catálogo de Cuentas en Excel (Unidades I-V).</td>
+                    <td>Clase 16</td>
+                </tr>
+                <tr>
+                    <td><strong>Hito 2: Legal</strong></td>
+                    <td>Modelo SET (Res. 412/04) + Dashboard de Impuestos (Unidad VII).</td>
+                    <td>Clase 19</td>
+                </tr>
+                <tr>
+                    <td><strong>Hito 3: Auditoría</strong></td>
+                    <td>Matriz de Riesgos + Plan de Backup (Unidad IX).</td>
+                    <td>Clase 21</td>
+                </tr>
+                <tr>
+                    <td><strong>Defensa Final</strong></td>
+                    <td>Exposición grupal + Manual de Usuario.</td>
+                    <td>Clase 23</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>2. Conceptos Clave para el Proyecto</h2>
+        <ul>
+            <li><strong>Integración:</strong> El Excel debe estar vinculado (no solo datos sueltos).</li>
+            <li><strong>Misma Lengua:</strong> Todas las fórmulas deben arrojar resultados en PYG.</li>
+            <li><strong>Seguridad:</strong> El archivo debe poseer protección de celdas por perfiles.</li>
+        </ul>
+
+        <div class="reflection-questions">
+            <strong>❓ PREGUNTAS INICIALES DE PROYECTO</strong>
+            <ol>
+                <li>¿Qué empresa conoces que necesite mejorar su automatización hoy mismo?</li>
+                <li>¿Cómo certificarías que tu dashboard no puede ser alterado fraudulentamente?</li>
+            </ol>
+        </div>
+
+        <section class="lab-activity">
+            <h2>3. Taller: Conformación de Grupos (60 min)</h2>
+            <ol>
+                <li>Formar grupos de máximo 3 integrantes.</li>
+                <li>Seleccionar la empresa (PYME) y definir el problema principal a resolver.</li>
+                <li>Crear la **Estructura de Carpetas del Proyecto** en la nube (Google Drive/Dropbox).</li>
+            </ol>
+        </section>
+
+        <footer>
+            <strong>Lectura Sugerida:</strong> Programa de la Materia - Sección 6 (Evaluación). <br>
+            © 2026 Centuria • Ingeniería Aplicada • 50% Final en Marcha
+        </footer>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

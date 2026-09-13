@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoevaluación Secuencial - Instituto Superior Centuria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        :root {
+            --primary: #0366d6;
+            --primary-dark: #0255a3;
+            --primary-light: #e8f0fe;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container{max-width: 800px;margin:0 auto;}
+
+        .card {
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius) var(--radius) 0 0 !important;
+            padding: 15px 20px;
+        }
+
+        .card-body {padding: 20px;}
+
+        .btn-primary-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+            transition: var(--transition);
+        }
+
+        .btn-primary-custom:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .badge {font-size: 0.85rem;}
+
+        /* Progress bar */
+        .progress {height: 8px; background: var(--border-light); border-radius: 4px; margin-top: 10px;}
+        .progress-bar {height: 100%; background: var(--primary); width: 0%; transition: width 0.3s;}
+
+        /* Result styles */
+        .result-modal {display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1050;}
+        .result-modal .card {width: 90%; max-width: 500px;}
+        .result-modal .close {color: #666; font-size: 2rem;}
+
+        /* Attempt counter */
+        .attempt-counter {font-size: 0.8rem; color: var(--text-secondary);}
+    </style>
+    <link rel="stylesheet" href="./accesibilidad.css">
+    <link rel="stylesheet" href="./paleta-oficial.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-clipboard-check me-2"></i> Autoevaluación Secuencial</h4>
+                <p class="mb-0 attempt-counter" id="attemptCounter">Intento 1 de 2</p>
+            </div>
+            <div class="card-body p-0" id="quizArea">
+                <!-- Quiz content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="resultModal" tabindex="-1">
+        <div class="card text-white">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-trophy me-2"></i> Resultados</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="card-body text-center">
+                <div id="scoreDisplay"></div>
+                <p id="percentageDisplay" class="mt-3"></p>
+                <p id="feedbackDisplay" class="mt-3"></p>
+                
+                <div class="mt-4">
+                    <button onclick="reiniciarAutoevaluacion()" class="btn btn-primary-custom w-100">Realizar nuevo intento</button>
+                    <button onclick="cerrarModal()" class="btn btn-outline-secondary w-100 mt-2">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // CONFIGURACIÓN DE GOOGLE SHEETS
+        const SPREADSHEET_KEY = '1TRxrgXIojONTrszwF9cmgJn75qx-zUbacjRzwrT8xeo'; // ID de tu hoja de Google Sheets
+        const SHEET_API_URL = `https://script.google.com/macros/s/${SPREADSHEET_KEY}/exec`; // URL auto-generada desde tu sheet
+
+        // Preguntas de la autoevaluación (5 preguntas selección múltiple)
+        const preguntas = [
+            {
+                pregunta: "¿Qué significa TIC?",
+                opciones: ["Tecnología de la Información y Comunicación", "Transmisión de Información y Cable", "Tecnología Industrial y Control"],
+                correcta: 0,
+                explicacion: "TIC son las siglas de Tecnología de la Información y Comunicación"
+            },
+            {
+                pregunta: "¿Cuál de los siguientes es un sistema operativo?",
+                opciones: ["Microsoft Word", "Google Chrome", "Windows 10", "Adobe Photoshop"],
+                correcta: 2,
+                explicacion: "Windows 10 es un sistema operativo que gestiona el hardware y software del computador"
+            },
+            {
+                pregunta: "¿Qué dispositivo se usa para conectar redes diferentes?",
+                opciones: ["Monitor", "Router", "Teclado", "Impresora"],
+                correcta: 1,
+                explicacion: "El router interconecta diferentes redes y dirige el tráfico entre ellas"
+            },
+            {
+                pregunta: "¿Cuál es el navegador web más utilizado?",
+                opciones: ["Word", "Excel", "Chrome", "PowerPoint"],
+                correcta: 2,
+                explicacion: "Google Chrome es uno de los navegadores web más populares del mundo"
+            },
+            {
+                pregunta: "¿Qué significa HTTP?",
+                opciones: ["HyperText Transfer Protocol", "High Tech Transfer Protocol", "Hyper Transfer Text Protocol", "Home Tool Transfer Protocol"],
+                correcta: 0,
+                explicacion: "HTTP son las siglas de HyperText Transfer Protocol, el protocolo para transferir páginas web"
+            }
+        ];
+
+        let sistema = null;
+        let currentAttempt = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar sistema de quiz
+            sistema = new AutoevaluacionSistema(preguntas);
+
+            // Mostrar contador de intentos
+            const attemptCounter = document.getElementById('attemptCounter');
+            if (sistema) {
+                attemptCounter.textContent = `Intento ${sistema.intentosRealizados + 1} de ${sistema.intentosMaximos}`;
+            }
+
+            // Cargar y mostrar primera pregunta
+            sistema.iniciarQuiz();
+        });
+    </script>
+<script src="./accesibilidad.js"></script>
+<script src="./session-guard.js"></script>
+</body>
+</html>
+
+<!-- Sistema de Autoevaluación Secuencial -->
+<script>
+class AutoevaluacionSistema {
+    constructor(preguntas) {
+        this.preguntas = preguntas;
+        this.indiceActual = 0;
+        this.respuestasUsuario = [];
+        this.intentos = [];
+        this.intentosMaximos = 2;
+        this.intentosRealizados = 0;
+        this.keyStorage = 'autoevaluacion_secuencial';
+        
+        this.cargarEstado();
+        this.iniciarQuiz();
+    }
+
+    cargarEstado() {
+        const guardado = localStorage.getItem(this.keyStorage);
+        if (guardado) {
+            const datos = JSON.parse(guardado);
+            this.intentos = datos.intentos || [];
+            this.intentosRealizados = this.intentos.length;
+        }
+    }
+
+    guardarEstado() {
+        localStorage.setItem(this.keyStorage, JSON.stringify({
+            intentos: this.intentos
+        }));
+    }
+
+    iniciarQuiz() {
+        if (this.intentosRealizados >= this.intentosMaximos) {
+            this.mostrarResultadosFinales();
+            return;
+        }
+        
+        this.indiceActual = 0;
+        this.respuestasUsuario = [];
+        this.mostrarPregunta();
+    }
+
+    mostrarPregunta() {
+        if (this.indiceActual >= this.preguntas.length) {
+            this.guardarIntento();
+            return;
+        }
+
+        const pregunta = this.preguntas[this.indiceActual];
+        const total = this.preguntas.length;
+        const actual = this.indiceActual + 1;
+        const intentoNum = this.intentosRealizados + 1;
+
+        const feedbackDiv = document.getElementById('quiz-feedback');
+        const accionesDiv = document.getElementById('quiz-acciones');
+        const preguntaDiv = document.getElementById('pregunta-actual');
+
+        if (preguntaDiv) {
+            preguntaDiv.innerHTML = `
+                <div class="quiz-header">
+                    <span class="badge bg-secondary">Intento ${intentoNum} de ${this.intentosMaximos}</span>
+                    <span class="badge bg-primary">Pregunta ${actual} de ${total}</span>
+                </div>
+                <div class="quiz-pregunta mb-3">
+                    <strong>${pregunta.pregunta}</strong>
+                </div>
+                <div class="quiz-opciones">
+                    ${pregunta.opciones.map((op, i) => `
+                        <button class="btn btn-outline-primary btn-block quiz-opcion mb-2" data-index="${i}" onclick="sistema.seleccionarRespuesta(${i})">
+                            <span class="opcion-letra">${String.fromCharCode(65 + i)}</span> ${op}
+                        </button>
+                    `).join('')}
+                </div>
+                <div id="quiz-feedback" class="quiz-feedback mt-3" style="display:none;"></div>
+                <div id="quiz-acciones" class="quiz-acciones" style="display:none;">
+                    <button class="btn btn-success w-100" onclick="sistema.siguientePregunta()">
+                        ${actual < total ? 'Siguiente Pregunta' : 'Enviar Resultados'} <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    seleccionarRespuesta(indice) {
+        this.respuestasUsuario.push(indice);
+        
+        const pregunta = this.preguntas[this.indiceActual];
+        const correcta = indice === pregunta.correcta;
+        const feedback = document.getElementById('quiz-feedback');
+        const acciones = document.getElementById('quiz-acciones');
+        const opciones = document.querySelectorAll('.quiz-opcion');
+
+        // Deshabilitar todas las opciones
+        opciones.forEach(btn => {
+            btn.disabled = true;
+        });
+
+        // Marcar correcta e incorrecta
+        opciones.forEach((btn, i) => {
+            if (i === pregunta.correcta) {
+                btn.classList.add('btn-success');
+                btn.classList.remove('btn-outline-primary');
+            } else if (i === indice) {
+                btn.classList.add('btn-danger');
+                btn.classList.remove('btn-outline-primary');
+            }
+        });
+
+        // Mostrar feedback
+        feedback.style.display = 'block';
+        if (correcta) {
+            feedback.innerHTML = `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> ¡Correcto!</span>`;
+            feedback.className = 'quiz-feedback mb-3 bg-success text-white p-3';
+        } else {
+            feedback.innerHTML = `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Incorrecto</span>`;
+            feedback.className = 'quiz-feedback mb-3 bg-danger text-white p-3';
+        }
+
+        acciones.style.display = 'block';
+    }
+
+    siguientePregunta() {
+        this.indiceActual++;
+        this.mostrarPregunta();
+    }
+
+async guardarIntento() {
+        const correctas = this.respuestasUsuario.filter((_, i) => {
+            const pregunta = this.preguntas[i];
+            return this.respuestasUsuario[i] === pregunta.correcta;
+        }).length;
+        
+        const total = this.preguntas.length;
+        const porcentaje = Math.round((correctas / total) * 100);
+        const fecha = new Date().toLocaleString('es-ES');
+        const nuevoIntento = {
+            fecha: fecha,
+            correctas: correctas,
+            total: total,
+            porcentaje: porcentaje,
+            respuestas: this.respuestasUsuario
+        };
+ 
+        // Guardar en localStorage - solo hasta 2 intentos, guardando la mejor nota
+        if (this.intentos.length < this.intentosMaximos) {
+            this.intentos.push(nuevoIntento);
+        } else {
+            // Si ya hay 2 intentos, solo guardamos si el nuevo es mejor
+            const peorActual = this.intentos.reduce((worst, actual) => 
+                actual.porcentaje < peorActual.porcentaje ? actual : peorActual
+            );
+            if (porcentaje > peorActual.porcentaje) {
+                // Reemplazar la peor nota por la nueva
+                const index = this.intentos.indexOf(peorActual);
+                this.intentos[index] = nuevoIntento;
+            }
+        }
+        this.guardarEstado();
+        this.intentosRealizados = Math.min(this.intentos.length, this.intentosMaximos);
+
+        // Mostrar contador actualizado
+        const attemptCounter = document.getElementById('attemptCounter');
+        if (attemptCounter) {
+            attemptCounter.textContent = `Intento ${this.intentosRealizados + 1} de ${this.intentosMaximos}`;
+        }
+
+        // Enviar a Google Sheets
+        await this.enviarAGoogleSheets(intentoNum, correctas, total, porcentaje, fecha);
+
+        // Mostrar modal de resultados
+        this.mostrarModalResultados(intentoNum, correctas, total, porcentaje);
+
+        // Si ya completó los 2 intentos, no permitir más
+        if (this.intentosRealizados >= this.intentosMaximos) {
+            setTimeout(() => {
+                alert('Has completado todos los intentos disponibles. La autoevaluación ha finalizado.');
+            }, 1000);
+        }
+    }
+
+    mostrarModalResultados() {
+        // Encontrar la mejor nota
+        const mejorIntento = this.intentos.reduce((mejor, actual) => 
+            actual.porcentaje > mejor.porcentaje ? actual : mejor
+        );
+        const porcentajeMejor = mejorIntento ? mejorIntento.porcentaje : 0;
+        const correctasMejor = mejorIntento ? mejorIntento.correctas : 0;
+        const totalMejor = mejorIntento ? mejorIntento.total : this.preguntas.length;
+        
+        const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+        
+        const letra = correctasMejor === totalMejor ? 'Excelente' : correctasMejor >= 3 ? 'Buen intento' : 'Necesitas repasar más';
+        
+        document.getElementById('scoreDisplay').innerHTML = `
+            <h3>${correctasMejor}/${totalMejor} correctas</h3>
+            <p class="lead">${porcentajeMejor}%</p>
+        `;
+        
+        document.getElementById('percentageDisplay').innerHTML = `
+            <p>Mejor desempeño: <strong>${porcentajeMejor}%</strong></p>
+            <p>De <strong>${this.intentos.length}</strong> intentos realizados</p>
+        `;
+        
+        document.getElementById('feedbackDisplay').innerHTML = `
+            <p>El mejor intento fue de <strong>${porcentajeMejor}%</strong> (${correctasMejor}/${totalMejor} correctas)</p>
+            <p>Detalle de todos los intentos:</p>
+            <table class="table table-sm table-bordered mb-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Intento</th>
+                        <th>Fecha</th>
+                        <th>Puntaje</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${this.intentos.map((intento, i) => `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${intento.fecha}</td>
+                            <td>${intento.correctas}/${intento.total}</td>
+                            <td><span class="badge bg-primary">${intento.porcentaje}%</span></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        modal.show();
+    }
+
+    async enviarAGoogleSheets(intentoNum, correctas, total, porcentaje, fecha) {
+        // Si no tiene configuración real, usar modo simulado
+        if (SHEET_API_URL === 'https://script.google.com/macros/s/AKfycbyXk2YdXyLlqN8qRzPqBmMzT0p8vYQQN5aGcEk8y1AWk2q9R8I3sjZ/exec' || API_KEY === 'TU_API_KEY_AQUI') {
+            console.log('Modo simulado: Datos guardados localmente (configure la URL real de Google Sheets)');
+            return;
+        }
+
+        const datos = {
+            timestamp: new Date().toISOString(),
+            intento: intentoNum,
+            correctas: correctas,
+            total: total,
+            porcentaje: porcentaje,
+            fecha: fecha,
+            usuario: 'estudiante_tic',
+            spreadsheet_key: '1TRxrgXIojONTrszwF9cmgJn75qx-zUbacjRzwrT8xeo'
+        };
+
+        try {
+            const response = await fetch(SHEET_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datos)
+            });
+            
+            console.log('Datos enviados a Google Sheets exitosamente');
+        } catch (error) {
+            console.error('Error al enviar a Google Sheets:', error);
+            // En modo offline, los datos ya están en localStorage
+        }
+    }
+
+    mostrarResultadosFinales() {
+        const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+        
+        const ultimoIntento = this.intentos[this.intentos.length - 1];
+        const primeraPregunta = this.preguntas[0];
+        
+        let historial = this.intentos.map((intento, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${intento.fecha}</td>
+                <td>${intento.correctas}/${intento.total}</td>
+                <td><span class="badge bg-primary">${intento.porcentaje}%</span></td>
+            </tr>
+        `).join('');
+
+        document.getElementById('scoreDisplay').innerHTML = `
+            <h3>Autoevaluación Secuencial Completa</h3>
+            <p>Has utilizado todos los ${this.intentosMaximos} intentos disponibles.</p>
+        `;
+        
+        document.getElementById('percentageDisplay').innerHTML = `
+            <p>Mejor puntaje: <strong>${Math.max(...this.intentos.map(i => i.porcentaje))}%</strong></p>
+            <p>Promedio: <strong>${Math.round(this.intentos.reduce((a, b) => a + b.porcentaje, 0) / this.intentos.length)}%</strong></p>
+        `;
+        
+        document.getElementById('feedbackDisplay').innerHTML = `
+            <h5>Historial de intentos:</h5>
+            <table class="table table-sm table-bordered mb-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Intento</th>
+                        <th>Fecha</th>
+                        <th>Puntaje</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${historial}
+                </tbody>
+            </table>
+            <p>La autoevaluación ha finalizado. Puedes reiniciarla si deseas comenzar de nuevo.</p>
+        `;
+        
+        modal.show();
+    }
+
+    reiniciarAutoevaluacion() {
+        // Limpiar localStorage y reiniciar
+        localStorage.removeItem(this.keyStorage);
+        this.intentos = [];
+        this.intentosRealizados = 0;
+        this.indiceActual = 0;
+        this.respuestasUsuario = [];
+        
+        const attemptCounter = document.getElementById('attemptCounter');
+        if (attemptCounter) {
+            attemptCounter.textContent = `Intento 1 de ${this.intentosMaximos}`;
+        }
+        
+        // Recargar la página para reiniciar completamente
+        location.reload();
+    }
+
+    cerrarModal() {
+        const modalElement = document.getElementById('resultModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+    }
+}
+</script>
+
+</html>

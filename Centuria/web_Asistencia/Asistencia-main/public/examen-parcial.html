@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Parcial - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="institutional.css">
+    <link rel="stylesheet" href="student-premium.css">
+    <script src="script.js?v=2"></script>
+    <script>
+    (function() {
+        function checkModule() {
+            if (typeof isModuleEnabled !== 'function') {
+                setTimeout(checkModule, 50);
+                return;
+            }
+            if (!isModuleEnabled('examen_parcial')) {
+                redirigirModuloDeshabilitado();
+            }
+        }
+        checkModule();
+    })();
+    </script>
+    <style>
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2744 50%, #0f1f3a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-overlay.hidden { display: none; }
+
+        .login-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-box img {
+            height: 64px;
+            margin-bottom: 12px;
+        }
+        .login-box h2 {
+            color: var(--text);
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .login-box p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+        .login-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+        .login-error.show { display: block; }
+
+        /* Outer wrapper for main content (page-header + layout) */
+        #mainContent {
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* Two-column layout */
+        .main-layout {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        .main-layout > .left-col {
+            flex: 1;
+            min-width: 0;
+        }
+        .main-layout > .right-col {
+            width: 380px;
+            flex-shrink: 0;
+        }
+
+        /* Recent exam records list */
+        .exam-record {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 12px;
+            transition: var(--transition);
+        }
+        .exam-record:last-child { border-bottom: none; }
+        .exam-record:hover { background: #f8fafc; }
+        .exam-record .record-nombre {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 13px;
+        }
+        .exam-record .record-detalle {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-top: 2px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .exam-record .record-detalle span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .empty-exams {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+        }
+        .empty-exams i { font-size: 32px; margin-bottom: 8px; }
+        .empty-exams p { font-size: 13px; }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .main-layout > .right-col { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <img src="logo_centuria.png" alt="Logo Centuria">
+            <h2>Examen Parcial</h2>
+            <p>Ingresá tu contraseña de estudiante</p>
+            <input type="password" class="premium-input" id="loginPassword" placeholder="Contraseña" onkeypress="if(event.key==='Enter')checkLogin()" style="margin-bottom:12px;">
+            <button class="premium-btn premium-btn-block" onclick="checkLogin()"><i class="fas fa-graduation-cap"></i> Ingresar</button>
+            <div class="login-error" id="loginError">Contraseña incorrecta</div>
+            <div style="margin-top:20px;">
+                <a href="https://wmlumen.github.io/Asistencia/" style="color:var(--text-muted);font-size:12px;text-decoration:none;"><i class="fas fa-home"></i> Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Institucional -->
+    <header class="institutional-header" id="mainHeader" style="display:none;">
+        <div class="header-inner">
+            <div class="header-left">
+                <img src="logo_centuria_blanco_1.png" alt="Logo Centuria">
+                <div>
+                    <h1>Examen Parcial</h1>
+                    <p>Instituto Superior Centuria</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="asistencia.html"><i class="fas fa-check-circle"></i> Asistencia</a>
+                <a href="https://wmlumen.github.io/Asistencia/"><i class="fas fa-home"></i> Inicio</a>
+                <button class="btn-logout" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content (hidden until login) -->
+    <div id="mainContent" style="display:none;">
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1><i class="fas fa-pencil-alt"></i> Examen Parcial Virtual</h1>
+            <p>Complete el formulario para registrar su examen</p>
+            <div class="header-nav">
+                <a href="https://wmlumen.github.io/Asistencia/"><i class="fas fa-arrow-left"></i> Volver al Dashboard</a>
+            </div>
+        </header>
+
+        <!-- Two-column layout -->
+        <div class="premium-container-wide main-layout">
+
+            <!-- Columna izquierda: formulario -->
+            <div class="left-col">
+                <div class="premium-card">
+                    <div class="premium-card-header">
+                        <h2><i class="fas fa-file-alt"></i> Registro de Examen Parcial</h2>
+                    </div>
+                    <div class="premium-card-body">
+                        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                            Completá tus datos para registrar tu examen
+                            <span class="premium-badge premium-badge-yellow">EXAMEN 999 · PRUEBA</span>
+                        </p>
+
+                        <form id="examForm" onsubmit="event.preventDefault(); guardarExamen();">
+                            <div class="premium-form-group">
+                                <label>Cédula <span style="color:var(--danger);">*</span></label>
+                                <input type="text" class="premium-input" id="exam-cedula" placeholder="Ej: 1234567" required
+                                       oninput="this.value = this.value.replace(/\./g,'');"
+                                       onblur="buscarAlumnoExamen(this.value);">
+                                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Ingresá tu número de cédula sin puntos</div>
+                            </div>
+                            <div class="premium-form-group">
+                                <label>Nombre Completo <span style="color:var(--danger);">*</span></label>
+                                <input type="text" class="premium-input" id="exam-nombre" placeholder="Se autocompleta al buscar cédula" disabled>
+                            </div>
+                            <div class="premium-form-row">
+                                <div class="premium-form-group">
+                                    <label>Carrera <span style="color:var(--danger);">*</span></label>
+                                    <input type="text" class="premium-input" id="exam-carrera" placeholder="Se autocompleta al buscar cédula" disabled>
+                                </div>
+                                <div class="premium-form-group">
+                                    <label>Sección <span style="color:var(--danger);">*</span></label>
+                                    <input type="text" class="premium-input" id="exam-seccion" placeholder="Se autocompleta al buscar cédula" disabled>
+                                </div>
+                            </div>
+                            <div class="premium-form-group">
+                                <label>Materia <span style="color:var(--danger);">*</span></label>
+                                <select class="premium-select" id="exam-materia" required>
+                                    <option value="">-- Seleccioná la materia --</option>
+                                    <option value="Sociología">Sociología</option>
+                                    <option value="Contabilidad">Contabilidad</option>
+                                    <option value="Administración">Administración</option>
+                                    <option value="Derecho">Derecho</option>
+                                    <option value="Economía">Economía</option>
+                                    <option value="Matemáticas">Matemáticas</option>
+                                    <option value="Informática">Informática</option>
+                                    <option value="Pedagogía">Pedagogía</option>
+                                    <option value="Psicología">Psicología</option>
+                                    <option value="Comunicación">Comunicación</option>
+                                </select>
+                            </div>
+                            <div class="premium-form-row">
+                                <div class="premium-form-group">
+                                    <label>Nota (opcional)</label>
+                                    <input type="text" class="premium-input" id="exam-nota" placeholder="Ej: 4/5 o 80%">
+                                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Dejalo vacío si aún no tenés la nota</div>
+                                </div>
+                                <div class="premium-form-group">
+                                    <label>Tipo de Examen</label>
+                                    <input type="text" class="premium-input" id="exam-tipo" value="Parcial" disabled style="font-weight:600;">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="premium-btn premium-btn-block" id="btnGuardarExamen" style="margin-top:4px;">
+                                <i class="fas fa-save"></i> Registrar Examen
+                            </button>
+                            <div id="exam-status" class="premium-status" style="display:none;"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha: exámenes registrados hoy -->
+            <div class="right-col">
+                <div class="premium-card">
+                    <div class="premium-card-header" style="display:flex;align-items:center;">
+                        <h2 style="margin:0;"><i class="fas fa-history"></i> Exámenes registrados hoy</h2>
+                        <span style="margin-left:auto;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:white;padding:4px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;white-space:nowrap;" id="exam-count">0</span>
+                    </div>
+                    <div class="premium-card-body" style="padding:12px 16px;" id="exam-recent-list">
+                        <div class="empty-exams">
+                            <i class="fas fa-inbox"></i>
+                            <p>No hay exámenes registrados hoy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /mainContent -->
+
+    <script>
+        let busquedaTimeoutExamen = null;
+
+        // ============================================================
+        // LOGIN
+        // ============================================================
+
+        function checkLogin() {
+            const input = document.getElementById('loginPassword');
+            const error = document.getElementById('loginError');
+            const result = loginStudent(input.value.trim());
+            if (result.ok) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainHeader').style.display = 'flex';
+                document.getElementById('mainContent').style.display = 'flex';
+                cargarExamenesRecientes();
+            } else {
+                error.classList.add('show');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Auto-login si ya hay sesión
+        (function() {
+            if (typeof isStudentSessionActive === 'function' && isStudentSessionActive()) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainHeader').style.display = 'flex';
+                document.getElementById('mainContent').style.display = 'flex';
+                cargarExamenesRecientes();
+            }
+        })();
+
+        // ============================================================
+        // BUSCAR ALUMNO — misma lógica que asistencia.html
+        // (localStorage + API, combinando registros)
+        // ============================================================
+
+        function combinarRegistrosExamen(registros) {
+            const resultado = { nombre: '', carrera: '', seccion: '', totalRegistros: 0 };
+
+            if (!registros || registros.length === 0) return resultado;
+
+            resultado.totalRegistros = registros.length;
+
+            // Construir un mapa de campos con frecuencia
+            const campos = { nombre: {}, carrera: {}, seccion: {} };
+
+            registros.forEach(r => {
+                const nombre = r.Nombre || r.nombre || r.studentName || '';
+                const carrera = r.Carrera || r.carrera || r.career || '';
+                const seccion = r.Seccion || r.seccion || r.section || '';
+
+                if (nombre) campos.nombre[nombre] = (campos.nombre[nombre] || 0) + 1;
+                if (carrera) campos.carrera[carrera] = (campos.carrera[carrera] || 0) + 1;
+                if (seccion) campos.seccion[seccion] = (campos.seccion[seccion] || 0) + 1;
+            });
+
+            // Elegir el valor más frecuente para cada campo
+            const elegirFrecuente = (mapa) => {
+                let max = 0, elegido = '';
+                for (const [valor, count] of Object.entries(mapa)) {
+                    if (count > max) { max = count; elegido = valor; }
+                }
+                return elegido;
+            };
+
+            resultado.nombre = elegirFrecuente(campos.nombre);
+            resultado.carrera = elegirFrecuente(campos.carrera);
+            resultado.seccion = elegirFrecuente(campos.seccion);
+
+            return resultado;
+        }
+
+        async function buscarAlumnoExamen(cedula) {
+            if (!cedula || cedula.trim().length < 3) return;
+            if (busquedaTimeoutExamen) clearTimeout(busquedaTimeoutExamen);
+
+            const cedulaLimpia = cedula.trim().replace(/\./g, '');
+            const status = document.getElementById('exam-status');
+
+            // Mostrar búsqueda
+            if (status) {
+                status.className = 'premium-status info';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Buscando datos del alumno...</span>';
+                status.style.display = 'flex';
+            }
+
+            busquedaTimeoutExamen = setTimeout(async () => {
+                try {
+                    let todosLosRegistros = [];
+
+                    // 1º — Buscar en localStorage (datos de asistencia locales)
+                    try {
+                        const registrosLocales = JSON.parse(localStorage.getItem('attendance_records') || '[]');
+                        const localesFiltrados = registrosLocales.filter(r =>
+                            r.cedula && r.cedula.toString().replace(/\./g, '') === cedulaLimpia
+                        );
+                        if (localesFiltrados.length > 0) {
+                            todosLosRegistros = todosLosRegistros.concat(localesFiltrados);
+                        }
+                    } catch (e) { /* localStorage no disponible */ }
+
+                    // 2º — Buscar en API (registros de asistencia)
+                    try {
+                        const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                        if (apiUrl) {
+                            const resp = await fetch(apiUrl + '?modo=buscar&cedula=' + encodeURIComponent(cedulaLimpia) + '&apiKey=' + encodeURIComponent(typeof getApiKey === 'function' ? getApiKey() : ''));
+                            if (resp.ok) {
+                                const data = await resp.json();
+                                if (data && data.registros && data.registros.length > 0) {
+                                    todosLosRegistros = todosLosRegistros.concat(data.registros);
+                                }
+                            }
+                        }
+                    } catch (apiError) {
+                        console.log('Error al buscar en API:', apiError);
+                    }
+
+                    if (todosLosRegistros.length > 0) {
+                        const datosCombinados = combinarRegistrosExamen(todosLosRegistros);
+
+                        document.getElementById('exam-nombre').value = datosCombinados.nombre.toUpperCase();
+                        document.getElementById('exam-carrera').value = datosCombinados.carrera;
+                        document.getElementById('exam-seccion').value = datosCombinados.seccion;
+
+                        if (status) {
+                            status.className = 'premium-status success';
+                            let msg = '<i class="fas fa-user-check"></i><span>';
+                            if (datosCombinados.nombre) msg += '<strong>' + datosCombinados.nombre.toUpperCase() + '</strong> — ';
+                            msg += 'Encontrados ' + datosCombinados.totalRegistros + ' registro(s). Campos completados automáticamente.</span>';
+                            status.innerHTML = msg;
+                            status.style.display = 'flex';
+                        }
+                    } else {
+                        // No encontrado
+                        document.getElementById('exam-nombre').value = '';
+                        document.getElementById('exam-carrera').value = '';
+                        document.getElementById('exam-seccion').value = '';
+
+                        if (status) {
+                            status.className = 'premium-status info';
+                            status.innerHTML = '<i class="fas fa-info-circle"></i><span>Cédula no encontrada. Completá los datos manualmente.</span>';
+                            status.style.display = 'flex';
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error al buscar alumno:', e);
+                }
+            }, 500);
+        }
+
+        // ============================================================
+        // GUARDAR EXAMEN — envía a hoja Examen999 (prueba)
+        // ============================================================
+
+        async function guardarExamen() {
+            const btn = document.getElementById('btnGuardarExamen');
+            const status = document.getElementById('exam-status');
+            const cedula = document.getElementById('exam-cedula').value.trim().replace(/\./g, '');
+            const nombre = document.getElementById('exam-nombre').value.trim();
+            const carrera = document.getElementById('exam-carrera').value.trim();
+            const seccion = document.getElementById('exam-seccion').value.trim();
+            const materia = document.getElementById('exam-materia').value;
+            const nota = document.getElementById('exam-nota').value.trim();
+            const tipoExamen = document.getElementById('exam-tipo').value.trim();
+
+            if (!cedula || !nombre || !carrera || !seccion || !materia) {
+                status.className = 'premium-status error';
+                status.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Completá todos los campos requeridos (cédula, nombre, carrera, sección, materia).</span>';
+                status.style.display = 'flex';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+            status.style.display = 'none';
+
+            try {
+                const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                const apiKey = (typeof getApiKey === 'function') ? getApiKey() : '';
+
+                // Enviar a hoja Examen999 (prueba)
+                const url = apiUrl + '?' + [
+                    'modo=guardar_examen_999',
+                    'studentName=' + encodeURIComponent(nombre),
+                    'studentId=' + encodeURIComponent(cedula),
+                    'carrera=' + encodeURIComponent(carrera),
+                    'seccion=' + encodeURIComponent(seccion),
+                    'materia=' + encodeURIComponent(materia),
+                    'nota=' + encodeURIComponent(nota),
+                    'tipoExamen=' + encodeURIComponent(tipoExamen),
+                    'apiKey=' + encodeURIComponent(apiKey)
+                ].join('&');
+
+                const resp = await fetch(url, { method: 'POST' });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    status.className = 'premium-status success';
+                    status.innerHTML = '<i class="fas fa-check-circle"></i><span>' + (data.mensaje || 'Examen registrado correctamente') + '</span>';
+                    status.style.display = 'flex';
+
+                    // Limpiar formulario
+                    document.getElementById('exam-cedula').value = '';
+                    document.getElementById('exam-nombre').value = '';
+                    document.getElementById('exam-carrera').value = '';
+                    document.getElementById('exam-seccion').value = '';
+                    document.getElementById('exam-materia').value = '';
+                    document.getElementById('exam-nota').value = '';
+                    document.getElementById('exam-cedula').focus();
+
+                    cargarExamenesRecientes();
+                } else {
+                    status.className = 'premium-status error';
+                    status.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>' + (data.error || 'Error al registrar examen') + '</span>';
+                    status.style.display = 'flex';
+                }
+            } catch(e) {
+                status.className = 'premium-status error';
+                status.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Error de conexión: ' + e.message + '</span>';
+                status.style.display = 'flex';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Registrar Examen';
+        }
+
+        // ============================================================
+        // CARGAR EXÁMENES RECIENTES — desde Examen999
+        // ============================================================
+
+        async function cargarExamenesRecientes() {
+            const list = document.getElementById('exam-recent-list');
+            const count = document.getElementById('exam-count');
+
+            try {
+                const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                if (!apiUrl) return;
+
+                const resp = await fetch(apiUrl + '?modo=examenes_999&apiKey=' + encodeURIComponent(typeof getApiKey === 'function' ? getApiKey() : ''));
+                if (!resp.ok) return;
+
+                const data = await resp.json();
+                const examenes = data.examenes || [];
+
+                // Filtrar solo los de hoy
+                const hoy = new Date();
+                const hoyStr = String(hoy.getDate()).padStart(2, '0') + '/' + String(hoy.getMonth() + 1).padStart(2, '0') + '/' + hoy.getFullYear();
+                const hoyRecords = examenes.filter(e => e.Fecha === hoyStr);
+
+                count.textContent = hoyRecords.length + ' registro' + (hoyRecords.length !== 1 ? 's' : '');
+
+                if (hoyRecords.length === 0) {
+                    list.innerHTML = '<div class="empty-exams"><i class="fas fa-inbox"></i><p>No hay exámenes registrados hoy</p></div>';
+                    return;
+                }
+
+                let html = '';
+                hoyRecords.forEach(r => {
+                    const hora = r.Hora ? r.Hora.substring(0, 5) : '--:--';
+                    html += '<div class="exam-record">';
+                    html += '<div class="record-nombre">' + (r.Nombre || '') + '</div>';
+                    html += '<div class="record-detalle">';
+                    html += '<span><i class="far fa-clock" style="font-size:10px;"></i> ' + hora + '</span>';
+                    html += '<span><i class="fas fa-book" style="font-size:10px;"></i> ' + (r.Materia || '') + '</span>';
+                    if (r.Nota) html += '<span><i class="fas fa-star" style="font-size:10px;"></i> ' + r.Nota + '</span>';
+                    html += '<span class="premium-badge premium-badge-blue">' + (r.TipoExamen || 'Parcial') + '</span>';
+                    html += '</div></div>';
+                });
+                list.innerHTML = html;
+
+            } catch(e) {
+                console.error('Error al cargar exámenes:', e);
+            }
+        }
+    </script>
+</body>
+</html>

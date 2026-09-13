@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjetas de Estudio P1 - Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .font-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Flashcard Flip Logic */
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .card-front {
+            background-color: white;
+            color: var(--color-secondary);
+        }
+
+        .card-back {
+            background-color: var(--color-primary);
+            color: white;
+            transform: rotateY(180deg);
+            flex-direction: column;
+        }
+        .card-back .answer-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <header class="max-w-4xl mx-auto mb-10 text-center border-b-2 pb-6 border-green-500">
+        <div class="font-bold text-3xl tracking-tighter mb-1 font-title text-gray-800">
+            INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span>
+        </div>
+        <h2 class="text-xl font-bold uppercase text-green-600">Tarjetas de Repaso: Primer Parcial</h2>
+        <p class="text-sm text-gray-500 italic">Unidades 1, 2 y 3: Teoría, Economía y Cultura</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+
+        <!-- Flashcard Interface -->
+        <div class="flex flex-col items-center mb-12">
+            <div id="card-counter" class="mb-4 text-sm font-bold text-gray-400 uppercase tracking-widest">Tarjeta 1 de
+                15</div>
+
+            <div class="card-container" id="flashcard" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <p id="question-text" class="text-xl font-bold">Cargando pregunta...</p>
+                    </div>
+                    <div class="card-back">
+                        <span class="answer-label">Respuesta</span>
+                        <p id="answer-text" class="text-lg">Cargando respuesta...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button onclick="prevCard()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition">
+                    <i class="fas fa-arrow-left mr-2"></i> Anterior
+                </button>
+                <button onclick="nextCard()"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition">
+                    Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+            <p class="mt-4 text-xs text-gray-400 italic"><i class="fas fa-mouse-pointer mr-1"></i> Haz clic en la
+                tarjeta para ver la respuesta</p>
+        </div>
+
+        <!-- Navigation by Units -->
+        <div class="flex justify-center gap-2 mb-8">
+            <button onclick="filterByUnit(1)" class="unit-btn px-4 py-2 rounded-full text-sm font-bold bg-red-100 text-red-700 hover:bg-red-200 transition">Unidad 1</button>
+            <button onclick="filterByUnit(2)" class="unit-btn px-4 py-2 rounded-full text-sm font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 transition">Unidad 2</button>
+            <button onclick="filterByUnit(3)" class="unit-btn px-4 py-2 rounded-full text-sm font-bold bg-purple-100 text-purple-700 hover:bg-purple-200 transition">Unidad 3</button>
+            <button onclick="filterByUnit(0)" class="unit-btn px-4 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 transition active">Todas</button>
+        </div>
+
+        <!-- Export Section -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i class="fas fa-file-export text-blue-500"></i> Herramientas de vendeción
+            </h3>
+            <p class="text-sm text-gray-600 mb-6">Usa estos datos para crear tu propio cuestionario en Google:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="copyToClipboard()"
+                    class="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 p-3 rounded-lg hover:bg-blue-100 transition font-bold text-sm">
+                    <i class="fas fa-copy"></i> Copiar para Google Sheets (Tabulado)
+                </button>
+                <button onclick="downloadCSV()"
+                    class="flex items-center justify-center gap-2 bg-gray-50 text-gray-700 border border-gray-200 p-3 rounded-lg hover:bg-gray-100 transition font-bold text-sm">
+                    <i class="fas fa-file-csv"></i> Descargar CSV para Quiz
+                </button>
+            </div>
+
+            <div class="mt-6">
+                <label class="text-xs font-bold text-gray-400 uppercase">Vista previa de datos:</label>
+                <textarea id="data-preview" readonly
+                    class="w-full h-32 mt-2 p-3 text-[10px] font-mono bg-gray-50 border rounded-lg text-gray-500"></textarea>
+            </div>
+        </section>
+
+        <div class="text-center no-print">
+            <a href="../index.html" class="text-gray-400 hover:text-green-600 text-sm font-bold transition">
+                <i class="fas fa-home mr-1"></i> Volver al Dashboard
+            </a>
+        </div>
+    </main>
+
+    <script>
+        const cardsData = [
+            // UNIDAD 1: TEORÍA SOCIOLÓGICA
+            { q: "¿Qué autor es considerado el padre del Positivismo y de la sociología científica?", a: "Augusto Comte." },
+            { q: "¿En qué consiste la Ley de los Tres Estados de Comte?", a: "Teológico (mágico-religioso), Metafísico (filosófico-abstracto) y Positivo (científico-racional)." },
+            { q: "¿Qué es la 'Estática Social' según Comte?", a: "Estudio del orden social: la familia, la cooperación y los vínculos que mantienen la cohesión social." },
+            { q: "¿Qué es la 'Dinámica Social' según Comte?", a: "Estudio del progreso y transformación de la sociedad a través de las fases de la ley de los tres estados." },
+            { q: "¿Cuál es la jerarquía de las ciencias según Comte?", a: "Matemáticas, Astronomía, Física, Química, Biología y Sociología (de lo más simple a lo más complejo)." },
+            { q: "¿Cómo define Durkheim el 'Hecho Social'?", a: "Maneras de actuar, pensar y sentir que son externas al individuo, con poder coercitivo y generalidad en la sociedad." },
+            { q: "¿Cuáles son las características del Hecho Social según Durkheim?", a: "Es externo al individuo, tiene coerción sobre él, es general en la sociedad y trasciende al individuo." },
+            { q: "¿Qué es la 'Solidaridad Mecánica' en Durkheim?", a: "Solidaridad basada en la similitud entre individuos en sociedades tradicionales, con conciencia colectiva fuerte." },
+            { q: "¿Qué es la 'Solidaridad Orgánica' en Durkheim?", a: "Solidaridad basada en la diferenciación e interdependencia funcional en sociedades modernas complejas." },
+            { q: "¿Qué es el 'Suicidio Anómico' según Durkheim?", a: "Suicidio causedo por la falta de regulación social, donde el individuo se siente perdido ante la ausencia de normas." },
+            { q: "¿Qué es el método 'Verstehen' de Max Weber?", a: "La comprensión interpretativa del sentido subjetivo que el actor da a su acción social." },
+            { q: "¿Cuáles son los 4 tipos de Acción Social según Weber?", a: "Racional con fines, Racional con valores, Afectiva y Tradicional." },
+            { q: "¿Qué es la 'Verstehende Soziologie' (Sociología Comprensiva)?", a: "Corriente sociológica que busca comprender e interpretar el significado de las acciones sociales desde la perspectiva del actor." },
+            { q: "¿Qué es la 'Burocracia' según Weber?", a: "Organización racional basada en jerarquía, reglas impersonales, división del trabajo y documentación." },
+            { q: "¿Qué es el 'Tipo Ideal' en Weber?", a: "Construcción teórica que representa los elementos esenciales de un fenómeno social para comprenderlo mejor." },
+            { q: "¿Cuál es el motor de la historia para Karl Marx?", a: "La lucha de clases y el conflicto por el control de los medios de producción económica." },
+            { q: "¿Qué son los 'Medios de Producción' en Marx?", a: "Recursos como tierra, fábricas, herramientas y capital necesarios para producir bienes." },
+            { q: "¿Qué es la 'Plusvalía' según Marx?", a: "Diferencia entre el valor producido por el trabajador y el salario que recibe, que genera la ganancia del capitalista." },
+            { q: "¿Qué es la 'Alienación' en Marx?", a: "Separación del trabajador de su producto, del proceso de trabajo, de su naturaleza humana y de los demás." },
+            { q: "¿Qué es la 'Ideología' según Marx?", a: "Sistema de ideas que justifica la dominación de una clase sobre otra, ocultando la realidad del explotación." },
+
+            // UNIDAD 2: ECONOMÍA Y PERSPECTIVA ECONÓMICA
+            { q: "¿Qué es el 'Homo Economicus'?", a: "Modelo economico que asume el humano es un actor puramente racional que busca maximizar beneficios y minimizar costos." },
+            { q: "¿Qué propone el modelo del 'Homo Sociologicus'?", a: "Que las decisiones económicas están influenciadas por normas sociales, valores, roles y la presión del grupo." },
+            { q: "¿Qué es la 'Incrustación Social' (Embeddedness) de Polanyi?", a: "La idea de que la economía no está aislada, sino sumergida en redes de relaciones sociales, confianza y normas." },
+            { q: "¿Qué es el 'Capital Social' según Putnam?", a: "Recursos como información, favores y oportunidades obtenidos a través de redes de contactos y confianza interpersonal." },
+            { q: "¿Qué es el 'Capital Social' según Bourdieu?", a: "Recursos acumulados por individuos o grupos a través de redes de relaciones duraderas que proporcionan ventajas sociales." },
+            { q: "¿Qué es la 'Elección Racional' en sociología?", a: "Teoría que explica la acción social como resultado de cálculos estratégicos de costos y beneficios por parte de los actores." },
+            { q: "¿Qué es la 'Institución' en sentido sociológico?", a: "Patrones de comportamiento estables, normas, valores y prácticas organizadas que estructuran la vida social." },
+            { q: "¿Qué es el 'Institucionalismo'?", a: "Corriente teórica que enfatiza el papel de las instituciones en dar forma al comportamiento y la organización social." },
+            { q: "¿Qué es la 'Economía Informal'?", a: "Actividades económicas realizadas fuera de los canales oficiales, sin regulación ni protección estatal." },
+            { q: "¿Qué es la 'Globalización' económica?", a: "Proceso de interconexión de las economías nacionales a través de flujos de comercio, inversión y tecnología." },
+            { q: "¿Qué es el 'Neoliberalismo'?", a: "Corriente económica que promueve la свободad de mercado, la privatización y la reducción del intervención estatal." },
+            { q: "¿Qué es el 'Capitalismo'?", a: "Sistema económico basado en la propiedad privada de los medios de producción y la búsqueda de lucro en el mercado." },
+            { q: "¿Qué es el 'Mercado' en sociología económica?", a: "Espacio social donde ocurren intercambios regulados por oferta, demanda, normas y relaciones de poder." },
+            { q: "¿Qué son las 'Redes Sociales' en economía?", a: "Estructuras de relaciones entre actores económicos que facilitan el flujo de información, recursos y oportunidades." },
+            { q: "¿Qué es la 'Confianza Social' en economía?", a: "Expectativa de que otros actuarán de manera confiable y honesta, reduciendo costos de transacción." },
+            { q: "¿Qué es el 'Capital' en Marx?", a: "Valor que se autorreproduce y увеличивается a través de la explotación del trabajo en el proceso productivo." },
+            { q: "¿Qué es la 'Acumulación de Capital'?", a: "Proceso de reinvestir ganancias para aumentar la cantidad de capital y la capacidad productiva." },
+            { q: "¿Qué es el 'Consumismo'?", a: "Cultura basada en el consumo excesivo de bienes y servicios como forma de identidad y satisfacción personal." },
+            { q: "¿Qué es la 'Desigualdad Social'?", a: "Diferencia sistemática en el acceso a recursos, oportunidades y poder entre grupos sociales." },
+            { q: "¿Qué es la 'Movilidad Social'?", a: "Movimiento de individuos o grupos entre diferentes posiciones en la estructura social (vertical u horizontal)." },
+
+            // UNIDAD 3: CULTURA Y SOCIALIZACIÓN
+            { q: "¿Qué es la 'Cultura' en sociología?", a: "Conjunto de conocimientos, creencias, normas, valores, símbolos y prácticas heredadas y compartilhidas por una sociedad." },
+            { q: "¿Qué diferencia hay entre Cultura Material e Inmaterial?", a: "Material: objetos tangibles (herramientas, tecnología, arquitectura). Inmaterial: intangibles (valores, normas, lengua, creencias)." },
+            { q: "¿Qué es la 'Socialización'?", a: "Proceso de aprendizaje e internalización de normas, valores, roles y cultura de una sociedad por los individuos." },
+            { q: "¿Qué es la 'Socialización Primaria'?", a: "Proceso en la primera infancia (familia) donde se internaliza el lenguaje, valores básicos y la identidad personal." },
+            { q: "¿Qué es la 'Socialización Secundaria'?", a: "Proceso en la edad adulta donde se aprenden normas, valores y roles de instituciones específicas (escuela, trabajo)." },
+            { q: "¿Qué es el 'Agente de Socialización'?", a: "Institución o persona que transmite normas, valores y conocimientos durante el proceso de socialización (familia, escuela, medios)." },
+            { q: "¿Qué es el 'Etnocentrismo'?", a: "Tendencia a juzgar otras culturas usando los estándares de la propia, asumiendo su superioridad." },
+            { q: "¿Qué es el 'Relativismo Cultural'?", a: "Enfoque que busca comprender las prácticas culturales desde su propio contexto, sin juzgarlas según criterios ajenos." },
+            { q: "¿Qué es la 'Cultura Popular'?", a: "Conjunto de expresiones culturales (música, cine, moda, lenguaje) creadas y compartilhidas por las clases populares." },
+            { q: "¿Qué es la 'Cultura de Masas'?", a: "Producción cultural estandarizada destinada a grandes audiencias, desarrollada por industrias culturales modernas." },
+            { q: "¿Qué es el 'Paradigma' según Kuhn?", a: "Conjunto de creencias, valores y técnicas compartidas por una comunidad científica que define cómo se ve y estudia la realidad." },
+            { q: "¿Qué es el 'Contracultura'?", a: "Movimiento cultural que rejectiona y挑战a los valores dominantes de la sociedad establecida." },
+            { q: "¿Qué es la 'Identidad Social'?", a: "Sentido de pertenencia a grupos sociales (étnicos, nacionales, de género) que influye en la autodefinición del individuo." },
+            { q: "¿Qué es el 'Ciclo de la Socialización'?", a: "Proceso contínuo donde cada generación transmite cultura a la siguiente, reproduciendo y transformando la sociedad." },
+            { q: "¿Qué es el 'Papel' o 'Rol Social'?", a: "Conjunto de expectativas y comportamientos asociados a una posición específica en la estructura social." },
+            { q: "¿Qué es la 'Cultura de la Información'?", a: "Sociedad donde el conocimiento y la información son recursos centrales, transformados por tecnología digital." },
+            { q: "¿Qué son los 'Valores' en cultura?", a: "Principios abstractos que guían el comportamiento y evalúan lo que es importante o deseable en una sociedad." },
+            { q: "¿Qué son las 'Normas Sociales'?", a: "Reglas explícitas o implícitas que definen los comportamientos apropiados en una situación social determinada." },
+            { q: "¿Qué es el 'Diseño de la Cultura' (Cultural Engineering)?", a: "Proceso deliberado de crear, modificar o controlar elementos culturales para fines específicos." },
+            { q: "¿Qué es la 'Socialización Diferencial'?", a: "Proceso donde diferentes grupos sociales internalizan normas y valores de manera distinta según su posición social." }
+        ];
+
+        let currentIndex = 0;
+        let filteredCards = [...cardsData];
+        const cardElement = document.getElementById('flashcard');
+        const qText = document.getElementById('question-text');
+        const aText = document.getElementById('answer-text');
+        const counterText = document.getElementById('card-counter');
+        const previewText = document.getElementById('data-preview');
+
+        function updateCard() {
+            cardElement.classList.remove('flipped');
+            setTimeout(() => {
+                qText.textContent = filteredCards[currentIndex].q;
+                aText.textContent = filteredCards[currentIndex].a;
+                counterText.textContent = `Tarjeta ${currentIndex + 1} de ${filteredCards.length}`;
+            }, 150);
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % filteredCards.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length;
+            updateCard();
+        }
+
+        function filterByUnit(unit) {
+            if (unit === 0) {
+                filteredCards = [...cardsData];
+            } else {
+                const unitSize = 20;
+                const start = (unit - 1) * unitSize;
+                filteredCards = cardsData.slice(start, start + unitSize);
+            }
+            currentIndex = 0;
+            updateCard();
+            initData();
+        }
+
+        // Prepare preview and export
+        function initData() {
+            let text = "PREGUNTA\tRESPUESTA\n";
+            filteredCards.forEach(c => {
+                text += `${c.q}\t${c.a}\n`;
+            });
+            previewText.value = text;
+        }
+
+        function copyToClipboard() {
+            previewText.select();
+            document.execCommand('copy');
+            alert('¡Datos copiados! Ahora puedes pegarlos en un Excel o Google Sheets.');
+        }
+
+        function downloadCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,Pregunta,Respuesta\n";
+            filteredCards.forEach(c => {
+                csvContent += `"${c.q}","${c.a}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "tarjetas_sociologia_centuria.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        // Initialize first card
+        updateCard();
+        initData();
+    </script>
+</body>
+
+</html>

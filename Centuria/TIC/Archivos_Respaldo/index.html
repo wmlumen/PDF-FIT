@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programa ADE18 - TIC Centuria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; }
+        body.locked { overflow: hidden; }
+        #login-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1e2b3c; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 400px; width: 90%; }
+        .sidebar { background-color: #1e2b3c; min-height: 100vh; color: white; padding-top: 20px; }
+        .sidebar h5 { color: #ecf0f1; font-weight: bold; border-bottom: 1px solid #34495e; padding-bottom: 15px; margin-bottom: 0; text-align: center; }
+        .sidebar a { color: #bdc3c7; text-decoration: none; display: block; padding: 12px 20px; border-bottom: 1px solid #2c3e50; transition: 0.2s; }
+        .sidebar a:hover, .sidebar a.active { background-color: #2c3e50; color: white; padding-left: 25px; border-left: 4px solid #3498db; }
+        .content { padding: 50px 8%; background-color: white; min-height: 100vh; }
+        h1.page-title { color: #2c3e50; font-weight: 800; border-bottom: 4px solid #3498db; padding-bottom: 10px; margin-bottom: 30px; font-size: 2.2rem; }
+        
+        .section-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 25px; margin-bottom: 35px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid; }
+        .border-def { border-left-color: #3498db; }
+        .border-casos { border-left-color: #e74c3c; }
+        .border-comp { border-left-color: #9b59b6; }
+        .border-ej { border-left-color: #f1c40f; }
+        .border-bib { border-left-color: #2ecc71; }
+        
+        .section-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .text-def { color: #2980b9; }
+        .text-casos { color: #c0392b; }
+        .text-comp { color: #8e44ad; }
+        .text-ej { color: #f39c12; }
+        .text-bib { color: #27ae60; }
+        
+        table { font-size: 1.1rem; }
+        p { font-size: 1.15rem; color: #444; text-align: justify; margin-bottom: 15px; }
+        
+        .badge-presencial { background-color: #e74c3c; font-size: 1rem; padding: 8px 12px; margin-bottom: 25px; display: inline-block; }
+        .badge-virtual { background-color: #2980b9; font-size: 1rem; padding: 8px 12px; margin-bottom: 25px; display: inline-block; }
+        .badge-asincronica { background-color: #27ae60; font-size: 1rem; padding: 8px 12px; margin-bottom: 25px; display: inline-block; }
+    </style>
+</head>
+<body class="locked">
+    <div id="login-mask">
+        <div class="login-box">
+            <h3 class="mb-3 text-dark"><i class="bi bi-shield-lock-fill text-primary"></i> Portal Académico</h3>
+            <p class="text-muted mb-4">Material Didáctico Extenso - T.I.C.</p>
+            <input type="password" id="pass-input" class="form-control mb-3" placeholder="Contraseña de acceso">
+            <button id="btn-login" class="btn btn-primary w-100 fw-bold">Ingresar</button>
+            <p id="login-error" class="text-danger mt-3 mb-0" style="display:none; font-weight: bold;">Contraseña incorrecta.</p>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 sidebar px-0 fixed-top" style="position: sticky; top: 0;">
+                <h5>CENTURIA ADE18</h5>
+                <a href="index.html"><i class="bi bi-house-door me-2"></i>Inicio - Programa</a>
+                <a href="cronograma.html"><i class="bi bi-calendar3 me-2"></i>Cronograma Fechas</a>
+                <a href="clase_01.html">Clase 1 (Presencial)</a>
+<a href="clase_02.html">Clase 2 (Presencial)</a>
+<a href="clase_03.html">Clase 3 (Presencial)</a>
+<a href="clase_04.html">Clase 4 (Presencial)</a>
+<a href="clase_05.html">Clase 5 (Virtual)</a>
+<a href="clase_06.html">Clase 6 (Virtual)</a>
+<a href="clase_07.html">Clase 7 (Virtual)</a>
+<a href="clase_08.html">Clase 8 (Asincrónica)</a>
+<a href="clase_09.html">Clase 9 (Asincrónica)</a>
+<a href="clase_10.html">Clase 10 (Asincrónica)</a>
+<a href="clase_11.html">Clase 11 (Asincrónica)</a>
+<a href="clase_12.html">Clase 12 (Virtual)</a>
+
+            </nav>
+            <main class="col-md-9 col-lg-10 content">
+                
+<h1 class="page-title text-center">Tecnología de la Información y la Comunicación (ADE18)</h1>
+<div class="alert alert-dark text-center fs-5 mb-5"><strong>Instituto Superior Centuria</strong> | 2do Año - 3er Semestre | Carga Horaria: 120hs</div>
+<div class="section-card border-def shadow-sm">
+    <div class="section-title text-def"><i class="bi bi-bullseye"></i> Fundamentación y Objetivos Académicos</div>
+    <p>Este documento presenta el programa académico de la asignatura Tecnologías de la Información y la Comunicación, diseñada para estudiantes de segundo año de administración. El curso se fundamenta en la relevancia de las herramientas digitales como motores de competitividad y éxito dentro del entorno empresarial contemporáneo. A través de diez unidades, el plan de estudios abarca desde la gestión de bases de datos y sistemas integrados hasta las nuevas tendencias del comercio electrónico y la inteligencia artificial. La metodología de enseñanza combina la teoría con la práctica en laboratorios y visitas técnicas para asegurar un aprendizaje integral. Finalmente, el texto detalla un sistema de evaluación basado en exámenes parciales, asistencia y un proyecto final para medir el desempeño estudiantil.</p>
+</div>
+<div class="section-card border-casos shadow-sm">
+    <div class="section-title text-casos"><i class="bi bi-bar-chart-steps"></i> Metodología de Evaluación Oficial</div>
+    <ul class="list-group list-group-flush fs-5">
+        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-journal-text text-primary"></i> <strong>2 Exámenes Parciales</strong></span> <span class="badge bg-primary rounded-pill">40%</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-person-check text-success"></i> <strong>Participación en Clase (Asistencia)</strong></span> <span class="badge bg-success rounded-pill">10%</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-award text-danger"></i> <strong>Examen Final Integrador</strong></span> <span class="badge bg-danger rounded-pill">50%</span></li>
+    </ul>
+</div>
+<div class="section-card border-bib shadow-sm">
+    <div class="section-title text-bib"><i class="bi bi-info-circle"></i> Navegación del Portal Estudiantil Extendido</div>
+    <p><strong>Estimado Alumno:</strong> Utilice el menú lateral de la izquierda para acceder al material didáctico extenso y de nivel universitario correspondiente a cada clase. Cada módulo ha sido rigurosamente redactado y contiene 5 secciones académicas diseñadas para un aprendizaje profundo: Definiciones Conceptuales Exhaustivas, Casos Noticiosos Reales con análisis académico, Comparaciones Analíticas Avanzadas, Tareas Asignadas (Ejercitarios) y la respectiva Bibliografía Oficial de la materia.</p>
+</div>
+
+            </main>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const mask = document.getElementById('login-mask');
+            const passInput = document.getElementById('pass-input');
+            const btnLogin = document.getElementById('btn-login');
+            const errorMsg = document.getElementById('login-error');
+            const PASSWORD_CORRECTA = 'Centuria2026';
+            if(sessionStorage.getItem('auth_tic') === 'true') { mask.style.display = 'none'; document.body.classList.remove('locked'); }
+            function checkPassword() {
+                if(passInput.value === PASSWORD_CORRECTA) { sessionStorage.setItem('auth_tic', 'true'); mask.style.display = 'none'; document.body.classList.remove('locked'); } 
+                else { errorMsg.style.display = 'block'; passInput.classList.add('is-invalid'); }
+            }
+            btnLogin.addEventListener('click', checkPassword);
+            passInput.addEventListener('keypress', function(e) { if(e.key === 'Enter') checkPassword(); });
+        });
+    </script>
+</body>
+</html>

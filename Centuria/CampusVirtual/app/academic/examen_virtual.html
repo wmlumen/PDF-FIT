@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Virtual - Instituto Superior Centuria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
+    <style>
+        :root {
+            --primary: #0366d6;
+            --primary-dark: #0255a3;
+            --primary-light: #e8f0fe;
+            --success: #28a745;
+            --success-light: #d4edda;
+            --warning: #ffc107;
+            --warning-light: #fff3cd;
+            --danger: #dc3545;
+            --danger-light: #f8d7da;
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --border-light: #edf2f7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {max-width: 900px; margin: 0 auto;}
+
+        .card {
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius) var(--radius) 0 0 !important;
+            padding: 15px 20px;
+        }
+
+        .score-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .progress-section {margin: 20px 0;}
+
+        .progress-bar {height: 25px; background: var(--primary); border-radius: var(--radius-sm); width: 0%; transition: width 1s; color: white; line-height: 25px; font-weight: bold;}
+
+        .question-card {border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 20px; margin: 10px 0; background: white;}
+        
+        .question-card h5 {color: var(--primary); margin-bottom: 15px;}
+        
+        .option-btn {width: 100%; text-align: left; padding: 10px; margin: 5px 0; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white; cursor: pointer; transition: var(--transition);}
+        .option-btn:hover {border-color: var(--primary); background: var(--primary-light);}
+        .option-btn.selected {border-color: var(--success); background: var(--success-light);}
+        .option-btn.correct {border-color: var(--success); background: var(--success-light);}
+        .option-btn.incorrect {border-color: var(--danger); background: var(--danger-light);}
+
+        .attempt-info {background: var(--primary-light); padding: 15px; border-radius: var(--radius); margin: 15px 0;}
+        .grade-breakdown {background: var(--card-bg); padding: 20px; border-radius: var(--radius); margin: 20px 0; border-left: 4px solid var(--primary);}
+        
+        .grade-item {margin: 10px 0; font-size: 1.2rem;}
+        .grade-item span {color: var(--primary);}
+        
+        .result-badge {padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;}
+        .badge-excelente {background: var(--success); color: white;}
+        .badge-bueno {background: var(--warning); color: #212529;}
+        .badge-mejorar {background: var(--danger); color: white;}
+
+        /* Completed status */
+        .unidad-completada {background: var(--success-light); padding: 10px; border-radius: var(--radius); margin: 5px 0; border-left: 3px solid var(--success);}
+        .unidad-pendiente {background: var(--border-light); padding: 10px; border-radius: var(--radius); margin: 5px 0;}
+    </style>
+    <link rel="stylesheet" href="./accesibilidad.css">
+    <link rel="stylesheet" href="./paleta-oficial.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header con información del programa -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-clipboard-check me-2"></i> Examen Virtual - Evaluación TIC</h4>
+                <small class="text-muted">Instituto Superior Centuria - Plan de Estudios ADE18</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>📊 Escala de Calificación</h5>
+                        <div class="grade-breakdown">
+                            <div class="grade-item"><strong>Examen Parcial 1:</strong> 20% de la nota final</div>
+                            <div class="grade-item"><strong>Examen Parcial 2:</strong> 20% de la nota final</div>
+                            <div class="grade-item"><strong>Asistencia/Participación:</strong> 10% de la nota final</div>
+                            <div class="grade-item"><strong>Examen Final:</strong> 50% de la nota final (máx. 25 puntos)</div>
+                            <hr style="margin: 15px 0;">
+                            <div class="grade-item"><strong>Total:</strong> 100% de la nota final</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>📈 Progreso de Unidades</h5>
+                        <div id="progressContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de examen -->
+        <div id="examArea" class="mt-4">
+            <!-- Contenido del examen se carga aquí -->
+        </div>
+
+        <!-- Resultado final -->
+        <div id="resultArea" class="mt-4" style="display:none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-trophy me-2"></i> Resultados del Examen</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="score-display" id="finalScore">0</div>
+                    <h4 id="scorePercentage"></h4>
+                    <p id="resultMessage" class="mt-3"></p>
+                    
+                    <div class="result-badge mb-3" id="gradeBadge"></div>
+                    
+                    <h6>Desglose por secciones:</h6>
+                    <div id="sectionBreakdown"></div>
+                    
+                    <button onclick="reintentarExamen()" class="btn btn-primary-custom mt-3">Reintentar Examen</button>
+                    <button onclick="cerrarModalExamen()" class="btn btn-outline-secondary mt-2">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Confirmar Finalización de Unidades</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Has completado las unidades requeridas. ¿Deseas generar el examen ahora?</p>
+                    <hr>
+                    <p><strong>Unidades requeridas para Parcial 1:</strong> Unidades I, II, III</p>
+                    <p><strong>Unidades requeridas para Parcial 2:</strong> Unidades IV, V, VI</p>
+                    <p><strong>Unidades requeridas para Examen Final:</strong> Todas las unidades (I-X)</p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="generarExamen('parcial1')" class="btn btn-success">Generar Parcial 1</button>
+                    <button onclick="generarExamen('parcial2')" class="btn btn-warning">Generar Parcial 2</button>
+                    <button onclick="generarExamen('final')" class="btn btn-primary">Generar Examen Final</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel del Profesor -->
+    <div class="modal fade" id="professorPanel" tabindex="-1" style="display:none;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="card-header">
+                    <h5><i class="bi bi-shield-lock me-2"></i> Panel del Profesor</h5>
+                </div>
+                <div class="card-body p-4">
+                    <h6>Generar Acta en Word</h6>
+                    <p class="text-muted mb-3">Seleccione el tipo de acta y los datos a incluir:</h6>
+                    
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeScore" checked>
+                        <label class="form-check-label" for="includeScore">
+                            Incluir puntuación y porcentaje
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeBreakdown" checked>
+                        <label class="form-check-label" for="includeBreakdown">
+                            Incluir desglose por secciones
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeStats">
+                        <label class="form-check-label" for="includeStats">
+                            Incluir estadísticas de intentos
+                        </label>
+                    </div>
+                    
+                    <hr>
+                    <button onclick="descargarActaWord()" class="btn btn-primary w-100">
+                        <i class="bi bi-file-word me-2"></i> Descargar Acta en Word
+                    </button>
+                    <button onclick="cerrarPanelProfesor()" class="btn btn-secondary w-100 mt-2">
+                        <i class="bi bi-x me-2"></i> Cerrar Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="preguntas.js"></script>
+    <script>
+        // IMPORTAR BANCO DE PREGUNTAS DEL SISTEMA
+        // Las preguntas están definidas en preguntas.js como preguntasPorClase
+        // Mapeo de clases a unidades según el Plan de Estudios:
+        // Clase 1 -> Unidad I, Clase 2 -> Unidad II, etc.
+        const mapaClaseUnidad = {
+            1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V',
+            6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'Final', 12: 'Final'
+        };
+
+        // Estado del sistema
+        let sistema = {
+            intentos: {
+                parcial1: 0,
+                parcial2: 0,
+                final: 0
+            },
+            respuestas: {
+                parcial1: [],
+                parcial2: [],
+                final: []
+            }
+        };
+
+        // Cargar estado desde localStorage
+        function cargarEstado() {
+            const estado = localStorage.getItem('examenVirtualEstado');
+            if (estado) {
+                const datos = JSON.parse(estado);
+                sistema.intentos = datos.intentos || {parcial1: 0, parcial2: 0, final: 0};
+                sistema.respuestas = datos.respuestas || {parcial1: [], parcial2: [], final: []};
+            }
+        }
+
+        function guardarEstado() {
+            localStorage.setItem('examenVirtualEstado', JSON.stringify(sistema));
+        }
+
+        // Configuración de exámenes
+        const configExamen = {
+            // Porcentaje de cada parcial sobre el total de preguntas de sus unidades
+            parcialPuntos: 20, // Cada parcial vale 20 puntos (sobre 100 total)
+            finalPuntos: 25, // Examen final máximo 25 puntos
+            preguntasPorExamen: 15 // 15 preguntas por examen (MC)
+        };
+
+        // Estados de intentos
+        let intentos = {
+            parcial1: 0,
+            parcial2: 0,
+            final: 0,
+            maxIntentos: 2
+        };
+
+        // Cargar estado desde localStorage
+        function cargarEstado() {
+            const estado = localStorage.getItem('examenVirtualEstado');
+            if (estado) {
+                intentos = JSON.parse(estado);
+                actualizarProgresoUI();
+            }
+        }
+
+        function guardarEstado() {
+            localStorage.setItem('examenVirtualEstado', JSON.stringify(intentos));
+        }
+
+        // Actualizar interfaz de progreso
+        function actualizarProgresoUI() {
+            const container = document.getElementById('progressContainer');
+            if (!container) return;
+
+            let html = '';
+            programa.unidades.forEach((u, i) => {
+                const claseKey = `clase_${u.id.toString().padStart(2, '0')}`;
+                const completada = u.completada || false;
+                const claseColor = completada ? 'success' : 'secondary';
+                const icono = completada ? 'check-circle' : 'clock';
+                const texto = completada ? 'Completada' : 'Pendiente';
+                
+                html += `
+                    <div class="unidad-${completada ? 'completada' : 'pendiente'} mb-2">
+                        <strong>Unidad ${u.id}: ${u.nombre}</strong>
+                        <span class="badge bg-${claseColor}">${texto}</span>
+                    </div>
+                `;
+            });
+
+            // Mostrar indicadores de qué exámenes están disponibles
+            const p1Unidades = programa.unidades.filter((u, i) => i >= 0 && i <= 2).length; // I, II, III
+            const p2Unidades = programa.unidades.filter((u, i) => i >= 3 && i <= 5).length; // IV, V, VI
+            const todasUnidades = programa.unidades.length;
+
+            // Contar cuántas completadas
+            const p1Completas = programa.unidades.filter((u, i) => i >= 0 && i <= 2 && u.completada).length;
+            const p2Completas = programa.unidades.filter((u, i) => i >= 3 && i <= 5 && u.completada).length;
+            const finalCompletas = programa.unidades.filter(u => u.completada).length;
+
+            html += `
+                <div class="mt-3 p-3 rounded" style="background: var(--primary-light);">
+                    <h6>📋 Estado de Exámenes</h6>
+                    <div class="row">
+                        <div class="col-4">
+                            <small>Parcial 1:</small><br>
+                            <small>${p1Completas}/3 unidades</small>
+                        </div>
+                        <div class="col-4">
+                            <small>Parcial 2:</small><br>
+                            <small>${p2Completas}/3 unidades</small>
+                        </div>
+                        <div class="col-4">
+                            <small>Examen Final:</small><br>
+                            <small>${finalCompletas}/10 unidades</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Generar examen aleatorio de unidades especificadas
+        function generarExamen(tipo) {
+            // Verificar qué unidades están completadas
+            const unidadesCompletadas = programa.unidades.filter(u => u.completada).map(u => u.id);
+            const unidadesDisponibles = programa.unidades.filter(u => !u.completada);
+            
+            // Determinar qué unidades cubrirá este examen
+            let unidadesExamen = [];
+            let nombreExamen = '';
+            let unidadesClave = [];
+
+            switch(tipo) {
+                case 'parcial1':
+                    // Unidades I, II, III
+                    unidadesExamen = programa.unidades.filter(u => [1,2,3].includes(u.id));
+                    nombreExamen = 'Examen Parcial 1';
+                    unidadesClave = [1, 2, 3];
+                    break;
+                case 'parcial2':
+                    // Unidades IV, V, VI
+                    unidadesExamen = programa.unidades.filter(u => [4,5,6].includes(u.id));
+                    nombreExamen = 'Examen Parcial 2';
+                    unidadesClave = [4, 5, 6];
+                    break;
+                case 'final':
+                    // Todas las unidades
+                    unidadesExamen = programa.unidades;
+                    nombreExamen = 'Examen Final';
+                    unidadesClave = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                    break;
+            }
+
+            // Verificar si hay suficientes preguntas
+            const totalPreguntasUnidad = unidadesExamen.reduce((sum, u) => sum + (programa.preguntasPorUnidad[u.id] || 0), 0);
+            
+            if (tipo === 'final' && totalPreguntasUnidad < configExamen.preguntasPorExamen) {
+                alert(`Solo hay ${totalPreguntasUnidad} preguntas disponibles en las unidades completadas. Se necesitan al menos ${configExamen.preguntasPorExamen}.`);
+                return;
+            }
+
+            // Mostrar modal de confirmación
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            // Actualizar texto del modal
+            const modalBody = document.querySelector('#confirmModal .modal-body');
+            let unidadesTexto = '';
+            switch(tipo) {
+                case 'parcial1': unidadesTexto = 'Unidades I, II, III'; break;
+                case 'parcial2': unidadesTexto = 'Unidades IV, V, VI'; break;
+                case 'final': unidadesTexto = 'Todas las unidades (I-X)'; break;
+            }
+            modalBody.innerHTML = `
+                <p>Generar <strong>${nombreExamen}</strong> con preguntas aleatorias?</p>
+                <p><strong>Unidades:</strong> ${unidadesTexto}</p>
+                <p><strong>Preguntas:</strong> ${configExamen.preguntasPorExamen} preguntas seleccionadas aleatoriamente</p>
+                <p><strong>Puntos máximos:</strong> ${tipo === 'final' ? configExamen.finalPuntos : configExamen.parcialPuntos}</p>
+            `;
+            modal.show();
+            
+            // Guardar el tipo de examen para usarlo después
+            window.tipoExamenActual = tipo;
+        }
+
+        // Crear y mostrar el examen
+        function iniciarExamen() {
+            const tipo = window.tipoExamenActual;
+            if (!tipo) return;
+
+            // Obtener preguntas de las unidades correspondientes
+            const unidadesClave = obtenerUnidadesParaTipo(tipo);
+            const preguntas = seleccionarPreguntasAleatorias(unidadesClave, configExamen.preguntasPorExamen);
+            
+            if (!preguntas || preguntas.length === 0) {
+                alert('No hay preguntas disponibles para este examen. Verifica que las unidades correspondientes estén marcadas como completadas.');
+                return;
+            }
+
+            // Marcar unidades como completadas para el examen final
+            if (tipo === 'final') {
+                unidadesClave.forEach(id => {
+                    const u = programa.unidades.find(x => x.id === id);
+                    if (u) u.completada = true;
+                });
+                guardarEstado();
+                actualizarProgresoUI();
+            }
+
+            // Resetear respuestas del usuario
+            window.respuestasUsuario = new Array(preguntas.length).fill(null);
+            window.preguntasExamen = preguntas;
+            window.puntuacionActual = 0;
+            window.preguntaActual = 0;
+
+            // Mostrar área de examen, ocultar header
+            document.getElementById('examArea').innerHTML = generarHTMLExamen(preguntas, tipo);
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('examArea').style.display = 'block';
+
+            // Enfocar primera pregunta
+            setTimeout(() => document.querySelector('.option-btn').focus(), 100);
+        }
+
+        function obtenerUnidadesParaTipo(tipo) {
+            switch(tipo) {
+                case 'parcial1': return [1, 2, 3];
+                case 'parcial2': return [4, 5, 6];
+                case 'final': return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                default: return [];
+            }
+        }
+
+        function seleccionarPreguntasAleatorias(unidadesClave, numPreguntas) {
+            // Mapear unidades a clases del preguntasPorClase
+            // Según el plan: Unidad I = Clase 1, Unidad II = Clase 2, etc.
+            const unidadesAClases = unidadesClave.map(id => {
+                const num = parseInt(id);
+                return num >= 1 && num <= 10 ? num : 1; // Unidad 1-10 -> Clase 1-10
+            });
+            
+            const todasLasPreguntas = [];
+            
+            // Collect questions from the real bank
+            unidadesAClases.forEach(claseId => {
+                const preguntasClase = window.preguntasPorClase ? window.preguntasPorClase[claseId] : null;
+                if (preguntasClase && Array.isArray(preguntasClase)) {
+                    // Tomar preguntas de esta clase, limitar a las disponibles
+                    const disponibles = preguntasClase.length;
+                    const aTomar = Math.min(disponibles, numPreguntas - todasLasPreguntas.length);
+                    
+                    for (let i = 0; i < aTomar; i++) {
+                        const pregunta = preguntasClase[i];
+                        if (pregunta) {
+                            todasLasPreguntas.push({
+                                id: `${claseId}_${i}`,
+                                unidad: parseInt(pregunta.id || '').toString() || claseId,
+                                pregunta: pregunta.pregunta,
+                                opciones: [...pregunta.opciones],
+                                correcta: pregunta.correcta,
+                                explicacion: pregunta.explicacion
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // Si no tenemos suficientes preguntas de las unidades, completar con las disponibles del banco
+            const maxDelBanco = Math.max(...Object.keys(window.preguntasPorClase || {}).map(k => parseInt(k) || 0) || [0]);
+            let idx = 1;
+            while (todasLasPreguntas.length < numPreguntas && idx <= maxDelBanco) {
+                const preguntasClase = window.preguntasPorClase ? window.preguntasPorClase[idx] : null;
+                if (preguntasClase && Array.isArray(preguntasClase)) {
+                    for (const pregunta of preguntasClase) {
+                        if (todasLasPreguntas.length >= numPreguntas) break;
+                        const yaExiste = todasLasPreguntas.some(p => p.id === `${pregunta.id || idx}_${pregunta.opciones?.length}`);
+                        if (!yaExiste) {
+                            todasLasPreguntas.push({
+                                id: `${idx}_${todasLasPreguntas.length}`,
+                                pregunta: pregunta.pregunta,
+                                opciones: [...pregunta.opciones],
+                                correcta: pregunta.correcta,
+                                explicacion: pregunta.explicacion
+                            });
+                        }
+                    }
+                }
+                idx++;
+            }
+            
+            // Barajar y tomar solo las necesarias
+            return todasLasPreguntas
+                .sort(() => Math.random() - 0.5)
+                .slice(0, numPreguntas);
+        }
+
+        function generarHTMLExamen(preguntas, tipo) {
+            const maxPuntos = tipo === 'final' ? configExamen.finalPuntos : configExamen.parcialPuntos;
+            const puntosPorPregunta = Math.round(maxPuntos / preguntas.length);
+            
+            let html = `
+                <div class="p-3">
+                    <div class="attempt-info">
+                        <h5>📝 ${tipo === 'final' ? 'EXAMEN FINAL' : 'EXAMEN PARCIAL'}</h5>
+                        <p>Puntos máximos: <span class="score-display" id="maxPoints">${maxPuntos}</span></p>
+                        <p>Pregunta 1 de ${preguntas.length}</p>
+                        <p class="text-muted">Tiempo estimado: 20 minutos</p>
+                    </div>
+                    <input type="hidden" id="examenTipo" value="${tipo}">
+                    <input type="hidden" id="puntosPorPregunta" value="${puntosPorPregunta}">
+            `;
+
+            preguntas.forEach((pregunta, idx) => {
+                const esUltima = idx === preguntas.length - 1;
+                html += `
+                    <div class="question-card mb-3">
+                        <h5>Pregunta ${idx + 1} de ${preguntas.length}</h5>
+                        <p><strong>${pregunta.pregunta}</strong></p>
+                        <div class="option-btn-group">
+                            ${pregunta.opciones.map((op, i) => `
+                                <button class="option-btn ${i === pregunta.correcta ? 'correct' : ''}" 
+                                        data-index="${i}" 
+                                        onclick="seleccionarRespuesta(${idx}, ${i})">
+                                    <input type="radio" name="pregunta${idx}" value="${i}" hidden>
+                                    <span>${String.fromCharCode(65 + i)}</span> ${op}
+                                </button>
+                            `).join('')}
+                        </div>
+                        ${idx < preguntas.length - 1 ? '' : '<hr class="my-3">'}
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+                <div class="mt-4">
+                    <button class="btn btn-success w-100" onclick="submitExamen()" ${preguntas.length > 0 ? '' : 'disabled'} >
+                        <i class="bi bi-check-all me-2"></i> Terminar Examen
+                    </button>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function seleccionarRespuesta(indicePregunta, indiceOpcion) {
+            // Desmarcar opciones anteriores de esta pregunta
+            const opciones = document.querySelectorAll(`#examArea button[data-index="${indiceOpcion}"]`);
+            opciones.forEach(btn => btn.classList.remove('selected', 'correct', 'incorrect'));
+            
+            // Marcar selección actual
+            const btnSeleccionado = document.querySelector(`#examArea button[data-index="${indiceOpcion}"]`);
+            if (btnSeleccionado) {
+                btnSeleccionado.classList.add('selected');
+                window.respuestasUsuario[indicePregunta] = indiceOpcion;
+            }
+        }
+
+        function submitExamen() {
+            const tipo = document.getElementById('examenTipo').value;
+            const preguntas = window.preguntasExamen;
+            const maxPuntos = tipo === 'final' ? configExamen.finalPuntos : configExamen.parcialPuntos;
+            const puntosPorPregunta = Math.round(maxPuntos / preguntas.length);
+
+            // Calcular puntuación
+            let puntosObtenidos = 0;
+            let preguntasCorrectas = 0;
+
+            preguntas.forEach((pregunta, idx) => {
+                const respuestaUsuario = window.respuestasUsuario[idx];
+                if (respuestaUsuario !== null && respuestaUsuario === pregunta.correcta) {
+                    puntosObtenidos += puntosPorPregunta;
+                    preguntasCorrectas++;
+                }
+            });
+
+            const porcentaje = Math.round((puntosObtenidos / maxPuntos) * 100);
+            const intentoNum = (tipo === 'final' ? intentos.final + 1 : 
+                                tipo === 'parcial1' ? intentos.parcial1 + 1 : 
+                                intentos.parcial2 + 1);
+
+            // Guardar intento
+            guardarIntento(tipo, puntosObtenidos, maxPuntos, porcentaje, intentoNum);
+
+            // Mostrar resultados
+            mostrarResultados(tipo, puntosObtenidos, maxPuntos, porcentaje, preguntasCorrectas, preguntas.length);
+        }
+
+        function guardarIntento(tipo, puntos, maxPuntos, porcentaje, intentoNum) {
+            // Limitar a 2 intentos máximo
+            if (tipo === 'final') {
+                if (intentos.final >= 2) {
+                    alert('Has alcanzado el máximo de 2 intentos para el examen final.');
+                    return;
+                }
+                intentos.final = intentoNum;
+            } else if (tipo === 'parcial1') {
+                if (intentos.parcial1 >= 2) {
+                    alert('Has alcanzado el máximo de 2 intentos para el Parcial 1.');
+                    return;
+                }
+                intentos.parcial1 = intentoNum;
+            } else if (tipo === 'parcial2') {
+                if (intentos.parcial2 >= 2) {
+                    alert('Has alcanzado el máximo de 2 intentos para el Parcial 2.');
+                    return;
+                }
+                intentos.parcial2 = intentoNum;
+            }
+            
+            guardarEstado();
+
+            // Para el parcial 1 y 2, acumular puntos hacia la nota final
+            // En un sistema real, esto se calcularía con la fórmula del programa
+        }
+
+        function mostrarResultados(tipo, puntosObtenidos, maxPuntos, porcentaje, correctas, total) {
+            // Ocultar área de examen, mostrar resultados
+            document.getElementById('examArea').style.display = 'none';
+            document.getElementById('resultArea').style.display = 'block';
+
+            // Mostrar puntuación
+            document.getElementById('finalScore').textContent = `${puntosObtenidos}/${maxPuntos}`;
+
+            // Mensaje de resultado
+            let mensaje = '';
+            let claseBadge = '';
+            if (porcentaje >= 80) {
+                mensaje = `¡Excelente! Has aprobado con distinción.`;
+                claseBadge = 'badge-excelente';
+            } else if (porcentaje >= 70) {
+                mensaje = '¡Bien hecho! Has aprobado el examen.';
+                claseBadge = 'badge-bueno';
+            } else {
+                mensaje = 'Necesitas repasar más temas. Puedes reintentar.';
+                claseBadge = 'badge-mejorar';
+            }
+            document.getElementById('scorePercentage').innerHTML = `<p>Puntuación: <strong>${porcentaje}%</strong></p>`;
+            document.getElementById('resultMessage').textContent = mensaje;
+            document.getElementById('gradeBadge').className = `result-badge ${claseBadge}`;
+            document.getElementById('gradeBadge').textContent = mensaje;
+
+            // Desglose por secciones
+            let desglose = '';
+            if (tipo === 'final') {
+                // Para el examen final, mostrar por unidades
+                desglose = `<p>Has respondido ${correctas} de ${total} preguntas correctamente.</p>`;
+            } else {
+                desglose = `<p>Aciertos: <strong>${correctas}</strong> de <strong>${total}</strong> preguntas.</p>`;
+            }
+            document.getElementById('sectionBreakdown').innerHTML = desglose;
+
+            // Verificar si es profesor (código: 20262026)
+        let esProfesor = false;
+        const cedulaProfesor = '20262026';
+        
+        // Verificar en localStorage o prompt
+        function verificarProfesor() {
+            const cedulaGuardada = localStorage.getItem('cedula_profesor');
+            if (cedulaGuardada === cedulaProfesor) {
+                esProfesor = true;
+                mostrarPanelProfesor();
+            } else {
+                // Pedir cédula
+                const cedula = prompt('Ingrese la cédula del profesor para acceder al panel:');
+                if (cedula === cedulaProfesor) {
+                    esProfesor = true;
+                    localStorage.setItem('cedula_profesor', cedula);
+                    mostrarPanelProfesor();
+                }
+            }
+        }
+        
+        function mostrarPanelProfesor() {
+            document.getElementById('professorPanel').style.display = 'block';
+        }
+        
+        function cerrarPanelProfesor() {
+            document.getElementById('professorPanel').style.display = 'none';
+        }
+
+        // Función para descargar acta en Word
+        function descargarActaWord() {
+            // Obtener datos del resultado
+            const puntosObtenidos = parseInt(document.getElementById('finalScore').textContent.split('/')[0]) || 0;
+            const maxPuntos = parseInt(document.getElementById('finalScore').textContent.split('/')[1]) || 25;
+            const porcentaje = document.getElementById('scorePercentage').innerText || '0%';
+            const mensaje = document.getElementById('resultMessage').innerText || '';
+            const desglose = document.getElementById('sectionBreakdown').innerHTML || '';
+            
+            // Crear contenido para Word (usando formato HTML que Word puede interpretar)
+            const contenidoWord = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta de Examen - Instituto Superior Centuria</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333;}
+        .institutional {text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0366d6; padding-bottom: 20px;}
+        .header-instituto {font-size: 1.2rem; color: #0366d6; margin: 20 0;}
+        .acta-title {font-size: 2rem; font-weight: bold; margin: 20px 0; text-align: center;}
+        .student-info {margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;}
+        .score-section {font-size: 2rem; font-weight: bold; color: #0366d6; text-align: center; margin: 30px 0;}
+        .percentage {font-size: 1.2rem; color: #666; text-align: center; margin: 10px 0;}
+        .breakdown {margin: 30px 0; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;}
+        .breakdown h4 {color: #0366d6; margin-top: 0;}
+        .footer {margin-top: 40px; font-size: 0.8rem; color: #777; text-align: center;}
+        .qr-code {text-align: center; margin: 20px 0;}
+    </style>
+    <link rel="stylesheet" href="./accesibilidad.css">
+    <link rel="stylesheet" href="./paleta-oficial.css">
+</head>
+<body>
+    <div class="institutional">
+        <h1>INSTITUTO SUPERIOR CENTURIA</h1>
+        <p>Tecnología de la Información y Comunicación</p>
+    </div>
+    
+    <div class="header-instituto">ACTA DE EXAMEN VIRTUAL</div>
+    
+    <div class="student-info">
+        <p><strong>Estudiante:</strong> Usuario TIC</p>
+        <p><strong>Cédula:</strong> [Cédula del alumno]</p>
+        <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
+        <p><strong>Examen:</strong> ${document.getElementById('examenTipo').value || 'Examen Final'}</p>
+    </div>
+    
+    <div class="acta-title">Puntuación Obtenida</div>
+    <div class="score-section">${puntosObtenidos}/${maxPuntos}</div>
+    <div class="percentage">${porcentaje}</div>
+    
+    <div class="breakdown">
+        <h4>Resultado</h4>
+        <p>${mensaje}</p>
+    </div>
+    
+    ${desglose ? `
+    <div class="breakdown">
+        <h4>Desglose de Respuestas</h4>
+        ${desglose}
+    </div>` : ''}
+    
+    <div class="footer">
+        <p>Instituto Superior Centuria | Tecnología de la Información y Comunicación</p>
+        <p>Sistema de Evaluación Virtual</p>
+    </div>
+<script src="./accesibilidad.js"></script>
+<script src="./session-guard.js"></script>
+</body>
+</html>
+`;
+            
+            // Usar html2canvas y jsPDF para generar documento
+            if (typeof html2canvas !== 'undefined' && typeof jsPDF !== 'undefined') {
+                const element = document.createElement('div');
+                element.innerHTML = contenidoWord;
+                document.body.appendChild(element);
+                
+                html2canvas(element).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgHeight = (canvas.height * 210) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 10, 10, 190, imgHeight);
+                    pdf.save('Acta_Examen_${new Date().getDate()}_${new Date().getMonth() + 1}.pdf');
+                    document.body.removeChild(element);
+                });
+            } else {
+                // Fallback: abrir como ventana para imprimir/guardar
+                const blob = new Blob([contenidoWord], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            }
+        }
+
+        // Modal result final diferente
+        const resultModalModal = new bootstrap.Modal(document.getElementById('resultModal')); // This might conflict
+
+        // Función reintentar
+        function reintentarExamen() {
+            document.getElementById('examArea').style.display = 'block';
+            document.getElementById('resultArea').style.display = 'none';
+            // Resetear respuestas
+            window.respuestasUsuario = new Array(window.preguntasExamen.length).fill(null);
+            // Resetear estados visuales
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected', 'correct', 'incorrect');
+                btn.disabled = false;
+            });
+        }
+
+        function cerrarModalExamen() {
+            document.getElementById('examArea').style.display = 'none';
+            document.getElementById('resultArea').style.display = 'none';
+        }
+
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarEstado();
+            actualizarProgresoUI();
+            verificarProfesor(); // Verificar si es profesor
+            
+            // Verificar si hay exámenes pendientes por intentar
+            const tieneIntentosPendientes = intentos.parcial1 < 2 || intentos.parcial2 < 2 || intentos.final < 2;
+            
+            if (!tieneIntentosPendientes) {
+                document.getElementById('progressContainer').innerHTML = `
+                    <div class="unidad-completada mb-2">
+                        <strong>¡Felicidades!</strong> Has completado todos los intentos disponibles.
+                    </div>
+                    <p>Tu progreso ha sido guardado. ¡Sigue con las próximas unidades!</p>
+                `;
+            }
+        });
+    </script>
+<script src="./accesibilidad.js"></script>
+<script src="./session-guard.js"></script>
+</body>
+</html>

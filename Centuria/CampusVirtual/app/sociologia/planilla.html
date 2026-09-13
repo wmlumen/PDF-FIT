@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilla de Calificaciones — Campus Virtual Centuria</title>
+    <style>
+        @page { size: A4 landscape; margin: 12mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 9pt; color: #000; background: #f0f0f0; }
+        .page { width: 297mm; min-height: 210mm; margin: 12mm auto; background: #fff; padding: 12mm 15mm; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+
+        .title { text-align: center; font-size: 13pt; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+
+        .header-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px 12px; font-size: 9pt; margin-bottom: 8px; border: 1px solid #000; padding: 5px 8px; }
+        .header-info .field { display: flex; gap: 4px; }
+        .header-info .label { font-weight: bold; white-space: nowrap; }
+        .header-info .value { flex: 1; border-bottom: 1px solid #999; }
+
+        .periodo-box { display: flex; gap: 12px; font-size: 8pt; margin-bottom: 8px; border: 1px solid #000; padding: 4px 8px; align-items: center; }
+        .periodo-box label { font-weight: bold; }
+        .periodo-box .check { display: flex; align-items: center; gap: 3px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+        th, td { border: 1px solid #000; padding: 3px 5px; vertical-align: middle; }
+        th { background: #e0e0e0; font-weight: bold; text-align: center; font-size: 7pt; text-transform: uppercase; }
+        td.num { text-align: center; width: 25px; }
+        td.ci { text-align: center; width: 70px; }
+        td.score { text-align: center; width: 45px; }
+        td.total { text-align: center; width: 50px; font-weight: bold; }
+        td.final { text-align: center; width: 55px; font-weight: bold; }
+        td.letra { text-align: center; width: 70px; }
+        td.name { min-width: 150px; }
+
+        .footer { margin-top: 10px; font-size: 8pt; display: flex; justify-content: space-between; }
+        .footer .firma { text-align: center; width: 200px; }
+        .footer .firma .line { border-top: 1px solid #000; margin-top: 40px; padding-top: 3px; }
+
+        /* Edit Panel */
+        .edit-panel { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #fff; padding: 14px; overflow-y: auto; z-index: 100; font-family: 'Segoe UI', sans-serif; font-size: 10px; }
+        .edit-panel h3 { font-size: 12px; margin-bottom: 10px; color: #81C784; }
+        .edit-panel label { display: block; font-size: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin: 6px 0 2px; }
+        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 5px 7px; border: 1px solid #333; border-radius: 4px; background: #16213e; color: #fff; font-size: 10px; }
+        .edit-panel .btn { display: block; width: 100%; padding: 7px; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; margin-top: 6px; font-size: 10px; }
+        .edit-panel .btn-primary { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
+        .edit-panel .btn-print { background: #3498db; color: #fff; }
+        .edit-panel .btn-close { background: #e74c3c; color: #fff; }
+        .edit-panel .btn-add { background: #f39c12; color: #fff; }
+        .edit-panel .student-row { background: #16213e; border: 1px solid #333; border-radius: 5px; padding: 6px; margin-bottom: 5px; }
+        .edit-panel .student-row input { margin-bottom: 2px; }
+        .edit-panel .student-row .remove-btn { background: #e74c3c; color: #fff; border: none; border-radius: 3px; padding: 1px 5px; cursor: pointer; font-size: 8px; float: right; }
+        .page { margin-left: 290px; }
+
+        @media print {
+            .edit-panel { display: none !important; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+    <h3>📊 Planilla de Calificaciones</h3>
+
+    <label>Programa</label>
+    <select id="inp-programa" onchange="actualizar()">
+        <option value="Licenciatura / Ingeniería">Grado</option>
+        <option value="Especialización">Especialización</option>
+        <option value="Maestría en Administración y Gestión Pública" selected>Maestría</option>
+        <option value="Doctorado">Doctorado</option>
+    </select>
+
+    <label>Módulo / Asignatura</label>
+    <input type="text" id="inp-modulo" value="" oninput="actualizar()">
+
+    <label>Año</label>
+    <input type="text" id="inp-ano" value="2026" oninput="actualizar()">
+
+    <label>Sección</label>
+    <input type="text" id="inp-seccion" value="" oninput="actualizar()">
+
+    <label>Periodo</label>
+    <select id="inp-periodo" onchange="actualizar()">
+        <option value="Ordinario" selected>Ordinario</option>
+        <option value="Extraordinario">Extraordinario</option>
+        <option value="Complementario">Complementario</option>
+    </select>
+
+    <label>Docente</label>
+    <input type="text" id="inp-docente" value="" oninput="actualizar()">
+
+    <hr style="border-color:#333;margin:8px 0;">
+
+    <label>Escala de calificación (puntos)</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+        <div><label style="font-size:7px;">TP1-Foro1</label><input type="number" id="inp-tp1-max" value="10" oninput="recalcAll()"></div>
+        <div><label style="font-size:7px;">TP2-Foro2</label><input type="number" id="inp-tp2-max" value="10" oninput="recalcAll()"></div>
+        <div><label style="font-size:7px;">TP3-Foro3</label><input type="number" id="inp-tp3-max" value="10" oninput="recalcAll()"></div>
+        <div><label style="font-size:7px;">TP4-Foro4</label><input type="number" id="inp-tp4-max" value="10" oninput="recalcAll()"></div>
+        <div><label style="font-size:7px;">Asistencia</label><input type="number" id="inp-asis-max" value="10" oninput="recalcAll()"></div>
+        <div><label style="font-size:7px;">Trabajo Final</label><input type="number" id="inp-tf-max" value="50" oninput="recalcAll()"></div>
+    </div>
+
+    <hr style="border-color:#333;margin:8px 0;">
+
+    <label>Estudiantes</label>
+    <div id="students-container"></div>
+    <button class="btn btn-add" onclick="addStudent()">+ Agregar Estudiante</button>
+
+    <hr style="border-color:#333;margin:8px 0;">
+
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
+</div>
+
+<!-- DOCUMENTO -->
+<div class="page" id="planilla-page">
+    <div class="title">PLANILLA DE CALIFICACIONES</div>
+
+    <div class="header-info">
+        <div class="field"><span class="label">Programa:</span><span class="value" id="doc-programa">Maestría</span></div>
+        <div class="field"><span class="label">Módulo:</span><span class="value" id="doc-modulo">……………</span></div>
+        <div class="field"><span class="label">Periodo:</span><span class="value" id="doc-periodo">Ordinario</span></div>
+        <div class="field"><span class="label">Año:</span><span class="value" id="doc-ano">2026</span></div>
+        <div class="field"><span class="label">Sección:</span><span class="value" id="doc-seccion">……………</span></div>
+        <div class="field"><span class="label">Docente:</span><span class="value" id="doc-docente">……………</span></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:25px;">N°</th>
+                <th>Apellidos y Nombres</th>
+                <th style="width:70px;">C.I. Nro.</th>
+                <th style="width:45px;">TP 1<br>Foro 1<br><span id="th-tp1">10 pts</span></th>
+                <th style="width:45px;">TP 2<br>Foro 2<br><span id="th-tp2">10 pts</span></th>
+                <th style="width:45px;">TP 3<br>Foro 3<br><span id="th-tp3">10 pts</span></th>
+                <th style="width:45px;">TP 4<br>Foro 4<br><span id="th-tp4">10 pts</span></th>
+                <th style="width:45px;">Asistencia<br><span id="th-asis">10 pts</span></th>
+                <th style="width:55px;">Trabajo<br>Final<br><span id="th-tf">50 pts</span></th>
+                <th style="width:50px;">Total<br>Puntos</th>
+                <th style="width:55px;">Calif.<br>Final Nº</th>
+                <th style="width:70px;">Calif.<br>Final Letra</th>
+            </tr>
+        </thead>
+        <tbody id="planilla-tbody"></tbody>
+    </table>
+
+    <div class="footer">
+        <div class="firma">
+            <div class="line">
+                <strong id="doc-firma">………………………</strong><br>
+                <span style="font-size:7pt;">Firma y sello del Docente</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const CAL_LETRA = { 5:'Sobresaliente', 4:'Distinguido', 3:'Bueno', 2:'Aprobado', 1:'Reprobado' };
+
+let students = [
+    { nombre:'AGUIRRE BENITEZ, Eva Margarita', ci:'4231795', tp1:8, tp2:9, tp3:7, tp4:8, asis:9, tf:42 },
+    { nombre:'ALVARENGA PEZOA, Leonida', ci:'6033732', tp1:7, tp2:8, tp3:6, tp4:7, asis:8, tf:38 },
+    { nombre:'ALVAREZ CABRERA, María Ermelinda', ci:'2475204', tp1:10, tp2:9, tp3:10, tp4:9, asis:10, tf:48 },
+    { nombre:'ARZAMENDIA ROA, Cynthia Carolina', ci:'2147143', tp1:8, tp2:7, tp3:8, tp4:7, asis:9, tf:40 },
+    { nombre:'BOBADILLA MORA, Natalia Elizabeth', ci:'3767390', tp1:6, tp2:7, tp3:5, tp4:6, asis:8, tf:35 },
+];
+
+function getMax() {
+    return {
+        tp1: parseInt(document.getElementById('inp-tp1-max').value)||10,
+        tp2: parseInt(document.getElementById('inp-tp2-max').value)||10,
+        tp3: parseInt(document.getElementById('inp-tp3-max').value)||10,
+        tp4: parseInt(document.getElementById('inp-tp4-max').value)||10,
+        asis: parseInt(document.getElementById('inp-asis-max').value)||10,
+        tf: parseInt(document.getElementById('inp-tf-max').value)||50
+    };
+}
+
+function calcTotal(s) { return (s.tp1||0)+(s.tp2||0)+(s.tp3||0)+(s.tp4|0)+(s.asis||0)+(s.tf||0); }
+function calcFinal(total, max) { return max > 0 ? Math.round((total / max) * 100) : 0; }
+function getLetra(pct) { if(pct>=94) return 'Sobresaliente'; if(pct>=86) return 'Distinguido'; if(pct>=78) return 'Bueno'; if(pct>=70) return 'Aprobado'; return 'Reprobado'; }
+
+function renderStudents() {
+    const tbody = document.getElementById('planilla-tbody');
+    const container = document.getElementById('students-container');
+    tbody.innerHTML = '';
+    container.innerHTML = '';
+    const max = getMax();
+    const totalMax = max.tp1+max.tp2+max.tp3+max.tp4+max.asis+max.tf;
+
+    students.forEach((s, i) => {
+        const total = calcTotal(s);
+        const finalN = calcFinal(total, totalMax);
+        const letra = getLetra(finalN);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="num">${i+1}</td>
+            <td class="name">${s.nombre}</td>
+            <td class="ci">${s.ci}</td>
+            <td class="score">${s.tp1||''}</td>
+            <td class="score">${s.tp2||''}</td>
+            <td class="score">${s.tp3||''}</td>
+            <td class="score">${s.tp4||''}</td>
+            <td class="score">${s.asis||''}</td>
+            <td class="score">${s.tf||''}</td>
+            <td class="total">${total}</td>
+            <td class="final">${finalN}</td>
+            <td class="letra">${letra}</td>`;
+        tbody.appendChild(tr);
+
+        // Edit
+        const div = document.createElement('div');
+        div.className = 'student-row';
+        div.innerHTML = `
+            <button class="remove-btn" onclick="removeStudent(${i})">✕</button>
+            <input type="text" value="${s.nombre}" placeholder="Apellidos y Nombres" oninput="students[${i}].nombre=this.value;renderStudents()">
+            <div style="display:flex;gap:3px;flex-wrap:wrap;">
+                <input type="text" value="${s.ci}" placeholder="C.I." style="width:30%;" oninput="students[${i}].ci=this.value;renderStudents()">
+                <input type="number" value="${s.tp1}" placeholder="TP1" style="width:14%;" oninput="students[${i}].tp1=parseInt(this.value)||0;renderStudents()">
+                <input type="number" value="${s.tp2}" placeholder="TP2" style="width:14%;" oninput="students[${i}].tp2=parseInt(this.value)||0;renderStudents()">
+                <input type="number" value="${s.tp3}" placeholder="TP3" style="width:14%;" oninput="students[${i}].tp3=parseInt(this.value)||0;renderStudents()">
+                <input type="number" value="${s.tp4}" placeholder="TP4" style="width:14%;" oninput="students[${i}].tp4=parseInt(this.value)||0;renderStudents()">
+                <input type="number" value="${s.asis}" placeholder="Asis." style="width:14%;" oninput="students[${i}].asis=parseInt(this.value)||0;renderStudents()">
+                <input type="number" value="${s.tf}" placeholder="TF" style="width:20%;" oninput="students[${i}].tf=parseInt(this.value)||0;renderStudents()">
+            </div>`;
+        container.appendChild(div);
+    });
+}
+
+function addStudent() { students.push({nombre:'',ci:'',tp1:0,tp2:0,tp3:0,tp4:0,asis:0,tf:0}); renderStudents(); }
+function removeStudent(i) { students.splice(i,1); renderStudents(); }
+function recalcAll() {
+    const max = getMax();
+    document.getElementById('th-tp1').textContent = max.tp1+' pts';
+    document.getElementById('th-tp2').textContent = max.tp2+' pts';
+    document.getElementById('th-tp3').textContent = max.tp3+' pts';
+    document.getElementById('th-tp4').textContent = max.tp4+' pts';
+    document.getElementById('th-asis').textContent = max.asis+' pts';
+    document.getElementById('th-tf').textContent = max.tf+' pts';
+    renderStudents();
+}
+
+function actualizar() {
+    document.getElementById('doc-programa').textContent = document.getElementById('inp-programa').value;
+    document.getElementById('doc-modulo').textContent = document.getElementById('inp-modulo').value || '……………';
+    document.getElementById('doc-ano').textContent = document.getElementById('inp-ano').value;
+    document.getElementById('doc-seccion').textContent = document.getElementById('inp-seccion').value || '……………';
+    document.getElementById('doc-periodo').textContent = document.getElementById('inp-periodo').value;
+    document.getElementById('doc-docente').textContent = document.getElementById('inp-docente').value || '……………';
+    recalcAll();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const profesor = sessionStorage.getItem('teacher_nombre');
+    if (profesor) document.getElementById('inp-docente').value = profesor;
+    const prog = sessionStorage.getItem('docente_programa');
+    if (prog) {
+        const sel = document.getElementById('inp-programa');
+        for (let o of sel.options) { if (o.value.toLowerCase().includes(prog)) { sel.value = o.value; break; } }
+    }
+    actualizar();
+});
+</script>
+
+</body>
+</html>

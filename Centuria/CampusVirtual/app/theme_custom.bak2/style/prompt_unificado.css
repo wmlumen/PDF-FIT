@@ -1,0 +1,448 @@
+/* ============================================
+   PLANTILLA CSS UNIFICADA - PROMPT MAESTRO TIC
+   Aplicar con: <link rel="stylesheet" href="prompt_unificado.css">
+   ============================================ */
+
+/* --- Paleta Institucional Centuria (Oficial) --- */
+:root {
+    /* Verde Centuria - predominante logo/uniformes */
+    --centuria-green: #006341;
+    --centuria-green-dark: #004d33;
+    --centuria-green-light: #e6f0ec;
+    --centuria-green-hover: #008050;
+    /* Neutros institucionales */
+    --centuria-white: #FFFFFF;
+    --centuria-black: #333333;
+    --centuria-gray: #6c757d;
+    --centuria-gray-light: #f8f9fa;
+    --centuria-border: #dee2e6;
+    /* Mapeo a variables legacy para compatibilidad */
+    --primary-color: var(--centuria-green);
+    --primary-light: var(--centuria-green-light);
+    --primary-dark: var(--centuria-green-dark);
+    --secondary-color: var(--centuria-gray);
+    --success-color: var(--centuria-green);
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --text-color: var(--centuria-black);
+    --bg-color: var(--centuria-white);
+    --border-light: var(--centuria-border);
+    /* Tipografía */
+    --h2-font-size: 2rem;
+    --h3-font-size: 1.75rem;
+    --h4-font-size: 1.5rem;
+    --body-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* H2 para Unidades (Regla 1) */
+.h2-unidad {
+    font-size: var(--h2-font-size);
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* H3 para Temas (Regla 1) */
+.h3-tema {
+    font-size: var(--h3-font-size);
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* H4 para Subtemas (Regla 1) */
+.h4-subtema {
+    font-size: var(--h4-font-size);
+    font-weight: 600;
+    color: var(--danger-color);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Evitar <p> simples como títulos (Regla 1) */
+p.titulo-falso {
+    display: none; /* Ocultar títulos falsos tipo <p>Conclusión</p> */
+}
+
+/* --- Regla 2: Resaltado de Conceptos (Término: Definición) --- */
+.concepto-llave {
+    font-weight: bold;
+    color: var(--primary-color);
+    /* Cuando haya dos puntos después, el término ya está en negrita arriba */
+}
+
+/* Estilo para definiciones después de concepto con dos puntos */
+.definicion-despues-pt {
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--primary-light);
+}
+
+/* --- Regla 3: Listas Alfabéticas y Viñetas Estructuradas --- */
+.lista-alfabetica {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.lista-alfabetica li {
+    margin-bottom: 0.5rem;
+}
+
+.lista-alfabetica li::before {
+    content: counter(section) ". ";
+    counter-increment: section;
+    font-weight: bold;
+    color: var(--primary-color);
+    width: 1.5em;
+    display: inline-block;
+}
+
+.lista-viñetas {
+    list-style-type: none;
+    padding-left: 2rem;
+}
+
+.lista-viñetas li {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.lista-viñetas li::before {
+    content: "";
+    position: absolute;
+    left: -1.5rem;
+    top: 0.1rem;
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+/* --- Regla 4: Citas Textuales --- */
+.blockquote-clase {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--secondary-color);
+    background: var(--primary-light);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* --- Regla 5: Tablas Bootstrap Responsivas --- */
+.tabla-promt {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.tabla-promt th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+}
+
+.tabla-promt td {
+    padding: 0.75rem;
+    border: 1px solid var(--border-light);
+    text-align: left;
+}
+
+.tabla-promt tr:nth-child(even) {
+    background-color: var(--primary-light);
+}
+
+.tabla-promt tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* --- Regla 6: Tarjetas Verticales con íconos --- */
+.tarjeta-promt {
+    border: none;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 0;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tarjeta-promt .card-header {
+    background: var(--primary-color);
+    color: white;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+}
+
+.tarjeta-promt .card-body {
+    padding: 1rem;
+}
+
+.tarjeta-promt .icono-bootstrap {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Tarjeta apilada 100% ancho (Regla 6) */
+.tarjeta-promt.col-12 {
+    width: 100%;
+}
+
+/* --- Regla 7: Gráficos HTML, cero Arte ASCII --- */
+.contenedor-grafico {
+    /* Prohibido arte ASCII; usar grid/bootstrap en su lugar */
+    font-size: 0;
+}
+
+.contenedor-grafico [class*="bi-"] {
+    font-size: inherit;
+    display: inline-block;
+}
+
+/* --- Regla 8: Bibliografía Actualizada --- */
+.seccion-bibliografia {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.bloque-basica {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.bloque-complementaria {
+    margin-bottom: 1.5rem;
+}
+
+.bloque-basica h4,
+.bloque-complementaria h4 {
+    color: var(--primary-color);
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.bloque-basica ul,
+.bloque-complementaria ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.bloque-basica li,
+.bloque-complementaria li {
+    margin-bottom: 0.25rem;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.bloque-basica li::before,
+.bloque-complementaria li::before {
+    content: "▪";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* --- Regla 9: Desglose de Siglas --- */
+.sigla-contenedor {
+    display: inline-block;
+    border-bottom: 1px dotted var(--primary-color);
+    cursor: help;
+}
+
+.sigla-contenedor:hover {
+    text-decoration: none;
+}
+
+.sigla-tooltip {
+    position: relative;
+    white-space: nowrap;
+}
+
+.sigla-tooltip::after {
+    content: attr(data-significado);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    white-space: normal;
+    width: max-content;
+    margin-bottom: 8px;
+    z-index: 1000;
+}
+
+/* --- Regla 10: Interactividad Vínculos Internos --- */
+.enlace-ancla {
+    position: relative;
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+
+.enlace-ancla::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+    visibility: hidden;
+    transition: visibility 0.3s;
+}
+
+.enlace-ancla:hover::after {
+    visibility: visible;
+}
+
+/* --- Regla 11: Coherencia Terminológica --- */
+.consistencia-check {
+    display: inline-block;
+    border: 1px solid var(--success-color);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    color: var(--success-color);
+    margin-left: 4px;
+}
+
+/* --- Regla 12: Navegación Sidebar --- */
+.sidebar-nav .nav-link {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.sidebar-nav .nav-link.active {
+    font-weight: 600;
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+.sidebar-nav .nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+}
+
+/* --- Regla 13: Experiencia Usuario y Auto-Tracking --- */
+.sidebar-custom {
+    overflow-y: auto;
+    height: 100vh;
+    padding-bottom: 20px;
+}
+
+/* Auto-tracking del menú (JS necesario) */
+.menu-activado {
+    background-color: var(--primary-light) !important;
+}
+
+/* --- Regla 14: Gamificación y Transparencia --- */
+.distribucion-notas {
+    display: flex;
+    justify-content: space-around;
+    margin: 2rem 0;
+}
+
+.distribucion-notas .item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.distribucion-notas .porcentaje {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.alerta-asistencia {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+}
+
+/* --- Regla 15: Navegación Lineal --- */
+.navegacion-unidades {
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    padding: 1rem 0;
+    margin: 2rem 0;
+}
+
+.navegacion-unidades .btn-anter {
+    float: left;
+    margin-right: 1rem;
+}
+
+.navegacion-unidades .btn-siguiente {
+    float: right;
+    margin-left: 1rem;
+}
+
+/* --- Regla 16: Vinculación Global --- */
+.enlace-global {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+.enlace-global:hover {
+    text-decoration: underline;
+}
+
+/* Clase para asegurar enlaces transversales siempre visibles */
+.enlace-transversal {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+/* ============================================
+   CLASES AUXILIARES ADICIONALES
+   ============================================ */
+
+/* Clase para conceptos con dos puntos */
+.termino-dos-puntos::after {
+    content: ":";
+    font-weight: normal;
+}
+
+/* Para bloques de definición RAE */
+.blockquote-rae {
+    border-left: 4px solid #6c757d;
+    padding: 1rem;
+    margin: 1rem 0;
+    background: #f8f9fa;
+    font-style: italic;
+}
+
+/* Para listas de características, fases, tipos, ventajas (Regla 3) */
+.lista-caracteridades {
+    list-style-type: none;
+    padding: 0;
+}
+
+.lista-caracteridades li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.lista-caracteridades li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+    font-weight: bold;
+}

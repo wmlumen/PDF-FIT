@@ -1,0 +1,8 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/consultar", "destination": "/public/consultar.html" },
+    { "source": "/consultar.html", "destination": "/public/consultar.html" }
+  ]
+}

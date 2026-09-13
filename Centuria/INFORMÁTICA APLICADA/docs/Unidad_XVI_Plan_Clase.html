@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clase 16: Ciberseguridad & Protección de Datos | ICO3534</title>
+    <style>
+        :root { --primary: #eb4d4b; --accent: #ff7979; --highlight: #f9ca24; --bg: #f5f6fa; --white: #ffffff; --border: #dcdde1; }
+        body { font-family: 'Outfit', 'Inter', sans-serif; background-color: var(--bg); color: #2f3640; line-height: 1.6; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: var(--white); box-shadow: 0 10px 40px rgba(0,0,0,0.1); box-sizing: border-box; border-top: 15px solid var(--primary); }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { font-size: 18pt; margin: 0; color: var(--primary); }
+        .badge { background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 9pt; font-weight: bold; }
+        .alert-box { background-color: #ffeef0; border: 1px solid var(--primary); padding: 15px; border-radius: 8px; margin-bottom: 25px; color: #b33939; }
+        h2 { font-size: 14pt; color: var(--primary); text-transform: uppercase; margin-top: 30px; display: flex; align-items: center; gap: 10px; }
+        .concept-card { border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fffcfc; }
+        .glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 9pt; background: #f1f2f6; padding: 20px; border-radius: 8px; }
+        .reflection-questions { background: #fff5f5; border-left: 5px solid var(--primary); padding: 15px; margin: 20px 0; }
+        .lab-activity { border: 2px solid var(--primary); padding: 20px; border-radius: 12px; margin-top: 30px; }
+        footer { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center; font-size: 8pt; color: #718093; }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; } .no-print { display: none; } }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL CIBERSEGURIDAD</button>
+    <div class="page">
+        <header>
+            <h1>Clase 16: Ciberseguridad y Protección de Datos</h1>
+            <div class="badge">ACTUALIZACIÓN UNIDAD IX | SEGURIDAD</div>
+        </header>
+
+        <section class="alert-box">
+            <strong>🚨 ALERTA:</strong> El 60% de las PYMEs paraguayas que sufren un ataque de Ransomware pierden sus datos contables de forma definitiva por falta de backups auditados.
+        </section>
+
+        <h2>1. Amenazas en el Entorno Contable Digital</h2>
+        <div class="concept-card">
+            <strong>1. RANSOMWARE</strong>
+            Secuestro de datos mediante cifrado, exigiendo un rescate en criptomonedas. Impacta en la disponibilidad de los estados financieros.
+        </div>
+        <div class="concept-card">
+            <strong>2. INGENIERÍA SOCIAL</strong>
+            Manipulación de personas para que entreguen claves de acceso al Marangatú o firmas digitales.
+        </div>
+
+        <h2>2. Glosario de Ciber-Defensa</h2>
+        <div class="glossary">
+            <dl>
+                <dt>MFA / 2FA</dt><dd>Autenticación de dos factores (ej: token SET).</dd>
+                <dt>VPN</dt><dd>Red Privada Virtual para acceso remoto seguro.</dd>
+                <dt>Cifrado en Reposo</dt><dd>Proteger los datos guardados en el disco duro.</dd>
+                <dt>Seguridad en la Nube</dt><dd>Protocolos de proveedores (AWS, Google, Azure).</dd>
+            </dl>
+        </div>
+
+        <div class="reflection-questions">
+            <strong>❓ PREGUNTAS DE REFLEXIÓN</strong>
+            <ol>
+                <li>¿Es tu contraseña una fecha de nacimiento o nombre de un hijo? (Riesgo Crítico)</li>
+                <li>¿Quién tiene acceso a la firma digital de la empresa en este momento?</li>
+            </ol>
+        </div>
+
+        <section class="lab-activity">
+            <h2>3. Taller: Implementación de Escudo de Datos (60 min)</h2>
+            <ol>
+                <li>Configura un **Gestor de Contraseñas** recomendado.</li>
+                <li>Simula una auditoría de **Control de Acceso** para una empresa con 5 empleados y 3 niveles de jerarquía.</li>
+                <li>Crea el protocolo de **Recuperación ante Desastres (DRP)** para tu proyecto final.</li>
+            </ol>
+        </section>
+
+        <footer>
+            <strong>Lectura Complementaria:</strong> Ley N° 4868/13 de Comercio Electrónico de Paraguay. <br>
+            © 2026 Centuria • Ingeniería Aplicada • Cuidado con tus Claves
+        </footer>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

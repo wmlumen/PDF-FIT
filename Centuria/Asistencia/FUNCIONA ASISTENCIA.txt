@@ -1,0 +1,56 @@
+no tocar, FUNCIONA PARA ASISTENCIA. BACKUT
+
+const ID = '1fMdrHltDZNeSq857KPbXs5K8QXm4SCjCVylCTUX5EdA';
+const SECRET = 'CenturiaApi2024!';
+
+function doGet(e) {
+  if (!e) return ContentService.createTextOutput('{"error":"No manual"}').setMimeType(ContentService.MimeType.JSON);
+  var p = e.parameter || {};
+  if ((p.apiKey || '').trim() !== SECRET) return ContentService.createTextOutput('{"error":"API key"}').setMimeType(ContentService.MimeType.JSON);
+  
+  var ss = SpreadsheetApp.openById(ID);
+  var sheet = ss.getSheetByName('Registro');
+  if (!sheet) return ContentService.createTextOutput('{"registros":[]}').setMimeType(ContentService.MimeType.JSON);
+  
+  var values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return ContentService.createTextOutput('{"registros":[]}').setMimeType(ContentService.MimeType.JSON);
+  
+  var headers = values[0];
+  var registros = [];
+  for (var i = values.length - 1; i >= 1; i--) {
+    var row = values[i];
+    var obj = {};
+    for (var j = 0; j < headers.length; j++) obj[headers[j]] = row[j];
+    registros.push(obj);
+  }
+  return ContentService.createTextOutput(JSON.stringify({registros: registros, total: registros.length})).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  if (!e) return ContentService.createTextOutput('{"error":"No manual"}').setMimeType(ContentService.MimeType.JSON);
+  var p = e.parameter || {};
+  if ((p.apiKey || '').trim() !== SECRET) return ContentService.createTextOutput('{"error":"API key"}').setMimeType(ContentService.MimeType.JSON);
+  
+  var nombre = (p.studentName || '').trim().toUpperCase();
+  var cedula = (p.studentId || '').toString().replace(/\./g, '').trim();
+  var carrera = (p.career || '').trim();
+  var seccion = (p.seccion || '').trim();
+  
+  if (!nombre || !cedula || !carrera || !seccion) {
+    return ContentService.createTextOutput('{"error":"Faltan datos: ' + [nombre,cedula,carrera,seccion].join('|') + '"}').setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  var ss = SpreadsheetApp.openById(ID);
+  var sheet = ss.getSheetByName('Registro');
+  if (!sheet) {
+    sheet = ss.insertSheet('Registro');
+    sheet.appendRow(['Fecha','Nombre','Cedula','Carrera','Seccion','Observacion','Estado','MarcaTemporal']);
+  }
+  
+  var now = new Date();
+  var fecha = Utilities.formatDate(now, 'America/Asuncion', 'dd/MM/yyyy');
+  var hora = Utilities.formatDate(now, 'America/Asuncion', 'dd/MM/yyyy HH:mm:ss');
+  
+  sheet.appendRow([fecha, nombre, cedula, carrera, seccion, p.notes || '', 'Presente', hora]);
+  return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);
+}

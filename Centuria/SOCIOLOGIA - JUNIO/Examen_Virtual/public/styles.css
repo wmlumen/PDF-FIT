@@ -1,0 +1,263 @@
+/* ==========================================================================
+   1. VARIABLES GLOBALES Y CONFIGURACIÓN BASE
+   ========================================================================== */
+:root {
+    /* Paleta de Colores Institucionales Refinados */
+    --color-institucional-dark: #1e3f20;   /* Verde follaje profundo corporativo */
+    --color-institucional-base: #2c5d3d;   /* Verde primario de identidad */
+    --color-institucional-light: #e1efe6;  /* Fondo suave de contraste */
+    --color-institucional-accent: #b38f43; /* Dorado académico elegante */
+    
+    /* Paleta de Soporte (Grises y Semánticos) */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    
+    --color-rojo-vivo: #dc2626;
+    --color-rojo-fondo: #fef2f2;
+    --color-esmeralda: #059669;
+    --color-esmeralda-fondo: #ecfdf5;
+    --color-azul-link: #2563eb;
+    --color-azul-fondo: #eff6ff;
+
+    /* Tipografías */
+    --fuente-principal: 'Inter', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--slate-50);
+    color: var(--slate-800);
+    font-family: var(--fuente-principal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: screen;
+    display: flex;
+}
+
+/* ==========================================================================
+   2. ESTRUCTURA Y ESTRUCTURAS DE SOPORTE (LAYOUT)
+   ========================================================================== */
+
+/* Sidebar de Navegación Fija */
+aside {
+    background-color: var(--color-institucional-dark);
+    color: #ffffff;
+    width: 16rem; /* 256px - Equivalente a w-64 */
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Contenedor Principal Ajustado al Sidebar */
+main {
+    flex: 1 1 0%;
+    padding-left: 16rem; /* Deja el espacio exacto para el Sidebar */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+/* Encabezado Superior de Control */
+header {
+    background-color: #ffffff;
+    border-b: 1px solid var(--slate-200);
+    height: 4rem; /* 64px */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Área de contenido de trabajo */
+.content-wrapper {
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================================================
+   3. COMPONENTES REUTILIZABLES (DASHBOARD CARDS & TABLES)
+   ========================================================================== */
+
+/* Tarjetas de Indicadores Clave (KPIs) */
+.kpi-card {
+    background-color: #ffffff;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid var(--slate-200);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Estructuración de Tablas de Datos Avanzadas */
+.table-container {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid var(--slate-200);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.table-header-styled {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--slate-100);
+    background-color: rgba(248, 250, 252, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: var(--slate-100);
+    color: var(--slate-600);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--slate-200);
+}
+
+td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--slate-100);
+    font-size: 0.875rem;
+    color: var(--slate-700);
+    vertical-align: middle;
+}
+
+tr.row-interactive:hover {
+    background-color: rgba(241, 245, 249, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* ==========================================================================
+   4. BARRAS DE DESPLAZAMIENTO FLUIDAS (SCROLLBARS)
+   ========================================================================== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--slate-100);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--slate-200);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-400);
+}
+
+/* ==========================================================================
+   5. MICROMOVIMIENTOS Y ANIMACIONES (INTERFACES DINÁMICAS)
+   ========================================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade {
+    animation: fadeIn 0.35s ease-out forwards;
+}
+
+/* Estado de alerta parpadeante de monitoreo "En Vivo" */
+@keyframes pingPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    70%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.live-indicator-ping {
+    position: relative;
+    display: inline-flex;
+    border-radius: 9999px;
+    height: 0.5rem;
+    width: 0.5rem;
+    background-color: var(--color-rojo-vivo);
+}
+
+.live-indicator-ping::after {
+    content: '';
+    position: absolute;
+    inline-size: 100%;
+    block-size: 100%;
+    border-radius: 9999px;
+    background-color: var(--color-rojo-vivo);
+    animation: pingPulse 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* ==========================================================================
+   6. RESPONSIVIDAD (SOPORTE PARA DISPOSITIVOS MÓVILES)
+   ========================================================================== */
+@media (max-width: 768px) {
+    aside {
+        transform: translateX(-100%); /* Oculta el sidebar en móviles por defecto */
+    }
+    aside.open {
+        transform: translateX(0); /* Clase gatillo para abrir desde JS en móviles */
+    }
+    main {
+        padding-left: 0 !important; /* Libera el espacio lateral */
+    }
+}
+
+@media print {
+    .no-print, aside, header, .toolbar {
+        display: none !important;
+    }
+    main {
+        padding: 0 !important;
+        background-color: #ffffff;
+    }
+}

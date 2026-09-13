@@ -1,0 +1,1272 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilla de Asistencia - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="institutional.css">
+    <script src="script.js?v=5"></script>
+    <script>
+    (function() {
+        function checkModule() {
+            if (typeof isModuleEnabled !== 'function') {
+                setTimeout(checkModule, 50);
+                return;
+            }
+            if (!isModuleEnabled('teacher_planilla')) {
+                redirigirModuloDeshabilitado();
+            }
+        }
+        checkModule();
+    })();
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .planilla-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #333;
+        }
+        
+        /* Encabezado del instituto */
+        .header-instituto {
+            text-align: center;
+            padding: 15px;
+            border-bottom: 2px solid #333;
+            background: white;
+        }
+        
+        .header-instituto h1 {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        
+        /* Fila de información */
+        .info-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            border-bottom: 1px solid #333;
+        }
+        
+        .info-cell {
+            padding: 8px 12px;
+            border-right: 1px solid #333;
+            font-size: 11px;
+        }
+        
+        .info-cell:last-child {
+            border-right: none;
+        }
+        
+        .info-cell label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        .info-cell .value {
+            min-height: 16px;
+            border-bottom: 1px solid #999;
+        }
+        
+        /* Tabla de asistencia */
+        .tabla-asistencia {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        .tabla-asistencia th,
+        .tabla-asistencia td {
+            border: 1px solid #333;
+            padding: 4px 2px;
+            text-align: center;
+        }
+        
+        .tabla-asistencia th {
+            background: #e8e8e8;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .tabla-asistencia th:first-child,
+        .tabla-asistencia td:first-child {
+            text-align: left;
+            padding-left: 8px;
+        }
+        
+        .tabla-asistencia th:nth-child(2),
+        .tabla-asistencia td:nth-child(2) {
+            text-align: left;
+            padding-left: 8px;
+            min-width: 180px;
+        }
+        
+        .col-cedula {
+            width: 100px;
+        }
+        
+        .col-nombre {
+            width: 200px;
+        }
+        
+        .col-fecha {
+            width: 28px;
+            min-width: 24px;
+            max-width: 32px;
+            vertical-align: bottom;
+            padding: 0 2px 6px 2px !important;
+            line-height: 1;
+            position: relative;
+        }
+        
+        .col-fecha .fecha-texto {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin: 0 auto;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        /* Modo horizontal (0°) */
+        .planilla-container.horizontal-dates .col-fecha {
+            width: 70px;
+            min-width: 60px;
+            max-width: 80px;
+            vertical-align: middle;
+            padding: 4px 2px !important;
+        }
+        
+        .planilla-container.horizontal-dates .col-fecha .fecha-texto {
+            writing-mode: horizontal-tb;
+            transform: rotate(0deg);
+            height: auto;
+            font-size: 9px;
+            justify-content: center;
+        }
+        
+        .col-fecha .fecha-numero {
+            font-size: 9px;
+            font-weight: bold;
+            margin-top: 3px;
+            color: #555;
+        }
+        
+        .planilla-container.horizontal-dates .col-fecha .fecha-numero {
+            margin-top: 2px;
+        }
+        
+        /* Botón toggle de orientación */
+        .btn-orientacion {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-orientacion:hover {
+            background: #0052a3;
+            transform: scale(1.1);
+        }
+        
+        .btn-orientacion:active {
+            transform: scale(0.95);
+        }
+        
+        /* Fila de asignatura */
+        .fila-asignatura td {
+            background: #f0f0f0;
+            font-weight: bold;
+            font-size: 10px;
+            text-align: center;
+            padding: 4px;
+        }
+        
+        .fila-asignatura td:first-child,
+        .fila-asignatura td:nth-child(2) {
+            background: #e0e0e0;
+        }
+        
+        /* Planilla de Planificación (Sábados) */
+        .planilla-planificacion {
+            display: none;
+        }
+        
+        .planilla-planificacion.activa {
+            display: block;
+        }
+        
+        .planilla-planificacion .header-planilla {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #333;
+            background: white;
+        }
+        
+        .planilla-planificacion .header-planilla h1 {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 0;
+            color: #333;
+        }
+        
+        .planilla-planificacion .header-planilla h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 8px 0 0 0;
+            color: #555;
+        }
+        
+        .tabla-planificacion {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        .tabla-planificacion th,
+        .tabla-planificacion td {
+            border: 1px solid #333;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        
+        .tabla-planificacion th {
+            background: #e8e8e8;
+            font-weight: bold;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        
+        .tabla-planificacion th:first-child,
+        .tabla-planificacion td:first-child {
+            text-align: left;
+            padding-left: 10px;
+            width: 100px;
+        }
+        
+        .tabla-planificacion th:nth-child(2),
+        .tabla-planificacion td:nth-child(2) {
+            text-align: left;
+            padding-left: 10px;
+            width: 250px;
+        }
+        
+        .tabla-planificacion th:nth-child(3),
+        .tabla-planificacion td:nth-child(3) {
+            width: 150px;
+        }
+        
+        .tabla-planificacion th:nth-child(4),
+        .tabla-planificacion td:nth-child(4) {
+            width: 100px;
+        }
+        
+        .tabla-planificacion th:nth-child(5),
+        .tabla-planificacion td:nth-child(5),
+        .tabla-planificacion th:nth-child(6),
+        .tabla-planificacion td:nth-child(6) {
+            width: 120px;
+        }
+        
+        .tabla-planificacion tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .info-planificacion {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+        }
+        
+        .info-planificacion .info-cell {
+            padding: 8px 12px;
+            border-right: 1px solid #333;
+        }
+        
+        .info-planificacion .info-cell:last-child {
+            border-right: none;
+        }
+        
+        .info-planificacion .info-cell label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #555;
+        }
+        
+        /* Estados */
+        .presente {
+            color: #0066cc;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .ausente {
+            color: #cc0000;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .ausencia-justificada {
+            color: #ff6600;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* Login overlay */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .login-overlay.hidden {
+            display: none;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+        }
+        
+        .login-box h2 {
+            margin-bottom: 20px;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .login-btn:hover {
+            background: #0052a3;
+        }
+        
+        .login-error {
+            color: #cc0000;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .login-error.show {
+            display: block;
+        }
+        
+        /* Controles */
+        .controles {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .btn.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn.active:hover {
+            background: #0052a3;
+        }
+        
+        /* Panel de configuración */
+        .config-panel {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .config-panel h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .config-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .config-row label {
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 80px;
+        }
+        
+        .config-row input,
+        .config-row select {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        /* Leyenda */
+        .leyenda {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        
+        .leyenda-item {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        
+        .leyenda-item strong {
+            margin-right: 5px;
+        }
+        
+        /* Responsive */
+        @media print {
+            body { background: white; padding: 0; }
+            .controles, .login-overlay, .config-panel, .btn-orientacion { display: none !important; }
+            .planilla-container { border: 1px solid #333; }
+        }
+        
+        @media (max-width: 768px) {
+            .tabla-asistencia { font-size: 9px; }
+            .tabla-asistencia th, .tabla-asistencia td { padding: 3px 2px; }
+            .col-fecha .fecha-texto { height: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <img src="logo_centuria_blanco_1.png" alt="Logo Centuria" style="height:70px;margin-bottom:15px;">
+            <h2><i class="fas fa-lock"></i> Planilla de Asistencia</h2>
+            <p>Instituto Superior Centuria</p>
+            <input type="password" class="login-input" id="loginPassword" placeholder="Contraseña" onkeypress="if(event.key==='Enter')checkLogin()">
+            <button class="login-btn" onclick="checkLogin()">
+                <i class="fas fa-unlock"></i> Acceder
+            </button>
+            <div class="login-error" id="loginError">Contraseña incorrecta</div>
+            <a href="https://wmlumen.github.io/Asistencia/" style="display:block;margin-top:15px;color:#666;font-size:12px;">
+                <i class="fas fa-home"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <!-- Header Institucional -->
+    <div class="institutional-header" style="padding: 15px 30px; display: none;" id="planilla-header">
+        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="logo_centuria_blanco_1.png" alt="Logo Centuria" style="height: 45px;">
+                <div>
+                    <h1 style="font-size: 18px; margin: 0;">Instituto Superior Centuria</h1>
+                    <p style="font-size: 12px; margin: 0; opacity: 0.9;">Planilla de Asistencia</p>
+                </div>
+            </div>
+            <a href="https://wmlumen.github.io/Asistencia/" style="color: white; text-decoration: none; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-home"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div id="mainContent" style="display:none;">
+        <div class="controles">
+            <a href="https://wmlumen.github.io/Asistencia/" class="btn">
+                <i class="fas fa-home"></i> Inicio
+            </a>
+            <button class="btn" data-source="api" onclick="setDataSource('api')">
+                <i class="fas fa-cloud"></i> API
+            </button>
+            <button class="btn" data-source="csv" onclick="setDataSource('csv')">
+                <i class="fas fa-file-csv"></i> CSV
+            </button>
+            <button class="btn" data-source="local" onclick="setDataSource('local')">
+                <i class="fas fa-hdd"></i> Local
+            </button>
+            <button class="btn" onclick="toggleConfig()">
+                <i class="fas fa-cog"></i> Configurar
+            </button>
+            <button class="btn" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <span id="statusText" style="font-size:12px;color:#666;"></span>
+        </div>
+
+        <!-- Panel de configuración -->
+        <div class="config-panel" id="configPanel" style="display:none;">
+            <h3><i class="fas fa-cog"></i> Configuración de la Planilla</h3>
+            <div class="config-row">
+                <label>Carrera:</label>
+                <select id="config-carrera" style="width:220px;padding:6px;border:2px solid #ddd;border-radius:4px;">
+                    <option value="">-- Seleccione --</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <label>Sección:</label>
+                <select id="config-seccion" style="width:150px;padding:6px;border:2px solid #ddd;border-radius:4px;">
+                    <option value="">-- Seleccione --</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <label>Asignatura:</label>
+                <select id="config-asignatura" style="width:220px;padding:6px;border:2px solid #ddd;border-radius:4px;">
+                    <option value="">-- Seleccione --</option>
+                </select>
+            </div>
+            <div class="config-row">
+                <label>Periodo:</label>
+                <input type="text" id="config-periodo" placeholder="Ej: 2026" style="width:100px;">
+            </div>
+            <div class="config-row">
+                <label>Mes:</label>
+                <input type="text" id="config-mes" placeholder="Ej: JUNIO" style="width:150px;">
+            </div>
+            <div class="config-row">
+                <label>Profesor:</label>
+                <input type="text" id="config-profesor" placeholder="Nombre del profesor" style="width:250px;">
+            </div>
+            <div class="config-row" id="config-fechas-sabado" style="display:none;">
+                <label>Fecha Inicio:</label>
+                <input type="date" id="config-fecha-inicio" style="width:130px;">
+                <label style="min-width:auto;margin-left:10px;">Fecha Cierre:</label>
+                <input type="date" id="config-fecha-cierre" style="width:130px;">
+            </div>
+            <div class="config-row">
+                <button class="btn" onclick="guardarConfig()" style="background:#28a745;color:white;border-color:#28a745;">
+                    <i class="fas fa-save"></i> Guardar Configuración
+                </button>
+                <button class="btn" onclick="toggleConfig()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </div>
+
+        <div class="planilla-container" id="planillaContainer">
+            <div class="header-instituto">
+                <img src="logo_centuria.png" alt="Logo Centuria" style="height:60px;margin-bottom:10px;">
+                <h1>INSTITUTO SUPERIOR CENTURIA</h1>
+            </div>
+            
+            <div class="info-row">
+                <div class="info-cell">
+                    <label>CARRERA</label>
+                    <div class="value" id="info-carrera"></div>
+                </div>
+                <div class="info-cell">
+                    <label>SECCION</label>
+                    <div class="value" id="info-seccion"></div>
+                </div>
+                <div class="info-cell">
+                    <label>PERIODO</label>
+                    <div class="value" id="info-periodo"></div>
+                </div>
+                <div class="info-cell">
+                    <label>MES</label>
+                    <div class="value" id="info-mes"></div>
+                </div>
+                <div class="info-cell">
+                    <label>PROFESOR</label>
+                    <div class="value" id="info-profesor"></div>
+                </div>
+            </div>
+            
+            <table class="tabla-asistencia" id="tablaAsistencia">
+                <thead id="thead-asistencia">
+                    <!-- Se genera dinámicamente -->
+                </thead>
+                <tbody id="tbody-asistencia">
+                    <!-- Se genera dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="leyenda" id="leyenda-asistencia">
+            <span class="leyenda-item"><strong class="presente">P</strong> = Presente</span>
+            <span class="leyenda-item"><strong class="ausente">A</strong> = Ausente</span>
+            <span class="leyenda-item"><strong class="ausencia-justificada">AJ</strong> = Ausencia Justificada</span>
+        </div>
+        
+        <!-- Planilla de Planificación (Sábados) -->
+        <div class="planilla-planificacion" id="planillaPlanificacion">
+            <div class="header-planilla">
+                <img src="logo_centuria.png" alt="Logo Centuria" style="height:60px;margin-bottom:10px;">
+                <h1>PLANILLA DE DOCENTE</h1>
+                <h2 id="planificacion-subtitulo">INSTITUTO SUPERIOR CENTURIA</h2>
+            </div>
+            
+            <div class="info-planificacion">
+                <div class="info-cell">
+                    <label>Carrera</label>
+                    <div class="value" id="planif-carrera"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Sección</label>
+                    <div class="value" id="planif-seccion"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Asignatura</label>
+                    <div class="value" id="planif-asignatura"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Periodo</label>
+                    <div class="value" id="planif-periodo"></div>
+                </div>
+            </div>
+            
+            <div class="info-planificacion" style="border-bottom:2px solid #333;">
+                <div class="info-cell">
+                    <label>Mes</label>
+                    <div class="value" id="planif-mes"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Profesor</label>
+                    <div class="value" id="planif-profesor"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Fecha de Inicio</label>
+                    <div class="value" id="planif-fecha-inicio"></div>
+                </div>
+                <div class="info-cell">
+                    <label>Fecha de Cierre</label>
+                    <div class="value" id="planif-fecha-cierre"></div>
+                </div>
+            </div>
+            
+            <table class="tabla-planificacion" id="tablaPlanificacion">
+                <thead>
+                    <tr>
+                        <th>Cédula</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Asignatura</th>
+                        <th>Mes</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Fecha de Cierre</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-planificacion">
+                    <!-- Se genera dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Botón toggle orientación fechas -->
+        <button id="btnOrientacion" class="btn-orientacion" onclick="toggleOrientacionFechas()" title="Cambiar a horizontal (0°)" style="display:none;">
+            <i class="fas fa-arrows-alt-h"></i>
+        </button>
+    </div>
+
+    <script>
+        let dataSource = localStorage.getItem('planilla_fuente') || '';
+        let configPlanilla = JSON.parse(localStorage.getItem('planilla_config') || '{}');
+        
+        async function checkLogin() {
+            const input = document.getElementById('loginPassword');
+            const error = document.getElementById('loginError');
+            const result = loginTeacher(input.value.trim());
+            if (result.ok) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('planilla-header').style.display = 'block';
+                // Esperar a que los catálogos se carguen antes de continuar
+                await cargarCatalogosPlanilla();
+                cargarConfigGuardada();
+                // Auto-detectar API si no hay fuente guardada
+                if (!dataSource && typeof getAttendanceApiUrl === 'function' && getAttendanceApiUrl()) {
+                    setDataSource('api');
+                } else if (dataSource) {
+                    setDataSource(dataSource);
+                }
+            } else {
+                error.classList.add('show');
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        // Cargar catálogos sincronizados en los selects
+        async function cargarCatalogosPlanilla() {
+            await inicializarCatalogos();
+            
+            const carreras = JSON.parse(localStorage.getItem('cat_carreras') || '[]');
+            let secciones = JSON.parse(localStorage.getItem('cat_secciones') || '[]');
+            if (!secciones.includes('07-IC026')) secciones.push('07-IC026');
+            const asignaturas = JSON.parse(localStorage.getItem('cat_asignaturas') || '[]');
+            
+            // Asegurar que existan las secciones exactas usadas en los datos
+            // Buscar coincidencia parcial (sin prefijo código-) para evitar duplicados
+            const extras = ['LV 026', 'MJ 026', 'S 026', 'Otro'];
+            extras.forEach(e => {
+                const existe = secciones.some(s => s.endsWith('-' + e) || s === e);
+                if (!existe) {
+                    secciones.push(e);
+                }
+            });
+            
+            const llenarSelect = (id, items) => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">-- Seleccione --</option>';
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    const partes = item.split('-');
+                    option.textContent = partes.length >= 2 ? partes.slice(1).join('-') : item;
+                    select.appendChild(option);
+                });
+            };
+            
+            llenarSelect('config-carrera', carreras);
+            llenarSelect('config-seccion', secciones);
+            llenarSelect('config-asignatura', asignaturas);
+        }
+        
+        function toggleConfig() {
+            const panel = document.getElementById('configPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function esSeccionSabado(seccion) {
+            return seccion && seccion.toString().trim().toUpperCase().startsWith('S');
+        }
+        
+        function cargarConfigGuardada() {
+            if (configPlanilla.carrera) document.getElementById('config-carrera').value = configPlanilla.carrera;
+            if (configPlanilla.seccion) document.getElementById('config-seccion').value = configPlanilla.seccion;
+            if (configPlanilla.asignatura) document.getElementById('config-asignatura').value = configPlanilla.asignatura;
+            if (configPlanilla.periodo) document.getElementById('config-periodo').value = configPlanilla.periodo;
+            if (configPlanilla.mes) document.getElementById('config-mes').value = configPlanilla.mes;
+            if (configPlanilla.profesor) document.getElementById('config-profesor').value = configPlanilla.profesor;
+            if (configPlanilla.fechaInicio) document.getElementById('config-fecha-inicio').value = configPlanilla.fechaInicio;
+            if (configPlanilla.fechaCierre) document.getElementById('config-fecha-cierre').value = configPlanilla.fechaCierre;
+            
+            // Mostrar/ocultar campos de fecha para sábados
+            const esSabado = esSeccionSabado(configPlanilla.seccion);
+            document.getElementById('config-fechas-sabado').style.display = esSabado ? 'flex' : 'none';
+            
+            // Actualizar info en la planilla
+            document.getElementById('info-carrera').textContent = configPlanilla.carrera || '';
+            document.getElementById('info-seccion').textContent = configPlanilla.seccion || '';
+            document.getElementById('info-periodo').textContent = configPlanilla.periodo || new Date().getFullYear();
+            document.getElementById('info-mes').textContent = configPlanilla.mes || new Date().toLocaleString('es-PY', { month: 'long' }).toUpperCase();
+            document.getElementById('info-profesor').textContent = configPlanilla.profesor || (typeof CONFIG !== 'undefined' && CONFIG.name_docente ? CONFIG.name_docente : '');
+            
+            // Actualizar planilla de planificación
+            document.getElementById('planif-carrera').textContent = configPlanilla.carrera || '';
+            document.getElementById('planif-seccion').textContent = configPlanilla.seccion || '';
+            document.getElementById('planif-asignatura').textContent = configPlanilla.asignatura || '';
+            document.getElementById('planif-periodo').textContent = configPlanilla.periodo || new Date().getFullYear();
+            document.getElementById('planif-mes').textContent = configPlanilla.mes || new Date().toLocaleString('es-PY', { month: 'long' }).toUpperCase();
+            document.getElementById('planif-profesor').textContent = configPlanilla.profesor || (typeof CONFIG !== 'undefined' && CONFIG.name_docente ? CONFIG.name_docente : '');
+            document.getElementById('planif-fecha-inicio').textContent = configPlanilla.fechaInicio ? formatearFecha(configPlanilla.fechaInicio) : '';
+            document.getElementById('planif-fecha-cierre').textContent = configPlanilla.fechaCierre ? formatearFecha(configPlanilla.fechaCierre) : '';
+        }
+        
+        function formatearFecha(fechaStr) {
+            if (!fechaStr) return '';
+            const partes = fechaStr.split('-');
+            if (partes.length === 3) {
+                return partes[2] + '/' + partes[1] + '/' + partes[0];
+            }
+            return fechaStr;
+        }
+        
+        function guardarConfig() {
+            configPlanilla = {
+                carrera: document.getElementById('config-carrera').value,
+                seccion: document.getElementById('config-seccion').value,
+                asignatura: document.getElementById('config-asignatura').value,
+                periodo: document.getElementById('config-periodo').value,
+                mes: document.getElementById('config-mes').value,
+                profesor: document.getElementById('config-profesor').value,
+                fechaInicio: document.getElementById('config-fecha-inicio').value,
+                fechaCierre: document.getElementById('config-fecha-cierre').value
+            };
+            localStorage.setItem('planilla_config', JSON.stringify(configPlanilla));
+            cargarConfigGuardada();
+            toggleConfig();
+            if (dataSource) cargarPlanilla();
+        }
+        
+        function setDataSource(source) {
+            dataSource = source;
+            localStorage.setItem('planilla_fuente', source);
+            document.querySelectorAll('.btn[data-source]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.source === source);
+            });
+            cargarPlanilla();
+        }
+        
+        function extraerFechaLimpia(str) {
+            if (!str) return '';
+            str = String(str).trim();
+            
+            // Formato DD/MM/YYYY HH:MM:SS
+            if (str.includes('/')) {
+                return str.split(' ')[0];
+            }
+            
+            // Formato YYYY-MM-DDTHH:MM:SS
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                return isoMatch[3] + '/' + isoMatch[2] + '/' + isoMatch[1];
+            }
+            
+            // Formato DD-MM-YYYY
+            const parts = str.split('-');
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    return parts[2] + '/' + parts[1] + '/' + parts[0];
+                } else {
+                    return parts[0] + '/' + parts[1] + '/' + parts[2];
+                }
+            }
+            
+            return str;
+        }
+        
+        async function cargarPlanilla() {
+            const statusText = document.getElementById('statusText');
+            const thead = document.getElementById('thead-asistencia');
+            const tbody = document.getElementById('tbody-asistencia');
+            const planillaContainer = document.getElementById('planillaContainer');
+            const planillaPlanif = document.getElementById('planillaPlanificacion');
+            const leyendaAsistencia = document.getElementById('leyenda-asistencia');
+            const btnOrientacion = document.getElementById('btnOrientacion');
+            
+            // Detectar si es sección de sábado
+            const esSabado = esSeccionSabado(configPlanilla.seccion);
+            
+            if (esSabado) {
+                // Mostrar planilla de planificación
+                planillaContainer.style.display = 'none';
+                planillaPlanif.classList.add('activa');
+                leyendaAsistencia.style.display = 'none';
+                btnOrientacion.style.display = 'none';
+                cargarPlanillaPlanificacion();
+                return;
+            } else {
+                // Mostrar planilla de asistencia normal
+                planillaContainer.style.display = 'block';
+                planillaPlanif.classList.remove('activa');
+                leyendaAsistencia.style.display = 'block';
+                btnOrientacion.style.display = 'flex';
+            }
+            
+            statusText.textContent = 'Cargando...';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</td></tr>';
+            
+            let records = [];
+            let justificaciones = [];
+            
+            try {
+                if (dataSource === 'api') {
+                    const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                    if (apiUrl) {
+                        const resp = await fetch(apiUrl + '?modo=registro&apiKey=' + encodeURIComponent(typeof getApiKey === 'function' ? getApiKey() : ''));
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            records = data.registros || [];
+                        }
+                        
+                        const respJ = await fetch(apiUrl + '?modo=justificaciones&apiKey=' + encodeURIComponent(typeof getApiKey === 'function' ? getApiKey() : ''));
+                        if (respJ.ok) {
+                            const dataJ = await respJ.json();
+                            justificaciones = dataJ.justificaciones || [];
+                        }
+                    }
+                    statusText.textContent = records.length + ' registros (API)';
+                }
+                else if (dataSource === 'csv') {
+                    const csvUrl = (typeof getAttendanceCsvUrl === 'function') ? getAttendanceCsvUrl() : '';
+                    if (csvUrl) {
+                        const resp = await fetch(csvUrl);
+                        if (resp.ok) {
+                            const text = await resp.text();
+                            if (typeof parseCSVToAttendance === 'function') {
+                                records = parseCSVToAttendance(text);
+                            }
+                        }
+                    }
+                    statusText.textContent = records.length + ' registros (CSV)';
+                }
+                else if (dataSource === 'local') {
+                    if (typeof loadAttendanceRecords === 'function') {
+                        records = loadAttendanceRecords();
+                    }
+                    try {
+                        const jRaw = localStorage.getItem('justificaciones_ausencias');
+                        if (jRaw) justificaciones = JSON.parse(jRaw);
+                    } catch(e) {}
+                    statusText.textContent = records.length + ' registros (Local)';
+                }
+            } catch(err) {
+                console.error('Error:', err);
+                statusText.textContent = 'Error al cargar';
+            }
+            
+            // Aplicar filtros de carrera y sección
+            if (configPlanilla.carrera) {
+                const filtroCarrera = configPlanilla.carrera.toUpperCase().trim();
+                records = records.filter(r => (r.carrera || r.Carrera || r.career || '').toUpperCase().trim() === filtroCarrera);
+                justificaciones = justificaciones.filter(j => (j.carrera || j.Carrera || '').toUpperCase().trim() === filtroCarrera);
+            }
+            if (configPlanilla.seccion) {
+                const filtroSeccion = configPlanilla.seccion.toUpperCase().trim();
+                records = records.filter(r => (r.seccion || r.Seccion || r.section || r.grupo || r.Grupo || '').toUpperCase().trim() === filtroSeccion);
+                justificaciones = justificaciones.filter(j => (j.seccion || j.Seccion || j.grupo || j.Grupo || '').toUpperCase().trim() === filtroSeccion);
+            }
+            
+            if (!records.length && !justificaciones.length) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;">No hay datos disponibles</td></tr>';
+                return;
+            }
+            
+            // Procesar registros
+            const datosProcesados = {};
+            const fechasSet = new Set();
+            
+            // Procesar asistencias
+            records.forEach(r => {
+                const cedula = (r.cedula || r.Cedula || r.studentId || '').toString().replace(/\./g, '').trim();
+                const nombre = (r.nombre || r.Nombre || r.studentName || '').toUpperCase().trim();
+                const carrera = (r.carrera || r.Carrera || r.career || '').toUpperCase().trim();
+                const seccion = (r.seccion || r.Seccion || r.section || '').toUpperCase().trim();
+                const estado = (r.estado || r.Estado || 'Presente').trim();
+                
+                const fecha = extraerFechaLimpia(r.marcaTemporal || r.MarcaTemporal || r.Fecha || r.fecha || '');
+                
+                if (!cedula || !fecha) return;
+                
+                if (!datosProcesados[cedula]) {
+                    datosProcesados[cedula] = {
+                        nombre: nombre,
+                        carrera: carrera,
+                        seccion: seccion,
+                        fechas: {}
+                    };
+                }
+                
+                datosProcesados[cedula].fechas[fecha] = estado === 'Ausencia Justificada' ? 'AJ' : 'P';
+                fechasSet.add(fecha);
+            });
+            
+            // Procesar justificaciones
+            justificaciones.forEach(j => {
+                const cedula = (j.cedula || j.Cedula || '').toString().replace(/\./g, '').trim();
+                const nombre = (j.nombre || j.Nombre || '').toUpperCase().trim();
+                const carrera = (j.carrera || j.Carrera || '').toUpperCase().trim();
+                const seccion = (j.seccion || j.Seccion || '').toUpperCase().trim();
+                const fecha = extraerFechaLimpia(j.fecha || j.Fecha || j.fechaAusencia || '');
+                
+                if (!cedula || !fecha) return;
+                
+                if (!datosProcesados[cedula]) {
+                    datosProcesados[cedula] = {
+                        nombre: nombre,
+                        carrera: carrera,
+                        seccion: seccion,
+                        fechas: {}
+                    };
+                }
+                
+                if (!datosProcesados[cedula].fechas[fecha]) {
+                    datosProcesados[cedula].fechas[fecha] = 'AJ';
+                }
+                fechasSet.add(fecha);
+            });
+            
+            // Ordenar fechas
+            const fechasOrdenadas = Array.from(fechasSet).sort();
+            
+            // Actualizar info
+            const cedulas = Object.keys(datosProcesados);
+            if (cedulas.length > 0 && !configPlanilla.carrera) {
+                const primero = datosProcesados[cedulas[0]];
+                document.getElementById('info-carrera').textContent = primero.carrera || '';
+                document.getElementById('info-seccion').textContent = primero.seccion || '';
+            }
+            
+            // Generar encabezados
+            let theadHTML = '<tr>';
+            theadHTML += '<th class="col-cedula">CÉDULA</th>';
+            theadHTML += '<th class="col-nombre">NOMBRE Y APELLIDO</th>';
+            
+            // Fila de asignatura
+            let asignaturaHTML = '<tr class="fila-asignatura">';
+            asignaturaHTML += '<td colspan="2">ASIGNATURA: ' + (configPlanilla.asignatura || 'NO CONFIGURADA') + '</td>';
+            
+            fechasOrdenadas.forEach((f, index) => {
+                const partes = f.split('/');
+                const dia = partes[0] || '';
+                const mes = partes[1] || '';
+                const anio = partes[2] || '';
+                
+                theadHTML += '<th class="col-fecha">';
+                theadHTML += '<div class="fecha-texto">' + f + '</div>';
+                theadHTML += '<div class="fecha-numero">' + (index + 1) + '</div>';
+                theadHTML += '</th>';
+                
+                asignaturaHTML += '<td></td>';
+            });
+            
+            theadHTML += '</tr>';
+            asignaturaHTML += '</tr>';
+            
+            thead.innerHTML = theadHTML + asignaturaHTML;
+            
+            // Generar filas de datos
+            let tbodyHTML = '';
+            cedulas.sort().forEach(cedula => {
+                const info = datosProcesados[cedula];
+                tbodyHTML += '<tr>';
+                tbodyHTML += '<td>' + cedula + '</td>';
+                tbodyHTML += '<td>' + info.nombre + '</td>';
+                
+                fechasOrdenadas.forEach(fecha => {
+                    const estado = info.fechas[fecha];
+                    if (estado === 'P') {
+                        tbodyHTML += '<td class="presente">P</td>';
+                    } else if (estado === 'AJ') {
+                        tbodyHTML += '<td class="ausencia-justificada">AJ</td>';
+                    } else {
+                        tbodyHTML += '<td class="ausente">A</td>';
+                    }
+                });
+                
+                tbodyHTML += '</tr>';
+            });
+            
+            tbody.innerHTML = tbodyHTML;
+        }
+        
+        // Cargar planilla de planificación (para sábados)
+        async function cargarPlanillaPlanificacion() {
+            const statusText = document.getElementById('statusText');
+            const tbody = document.getElementById('tbody-planificacion');
+            
+            statusText.textContent = 'Cargando planificación...';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Cargando datos...</td></tr>';
+            
+            let records = [];
+            
+            try {
+                if (dataSource === 'api') {
+                    const apiUrl = (typeof getAttendanceApiUrl === 'function') ? getAttendanceApiUrl() : '';
+                    if (apiUrl) {
+                        const resp = await fetch(apiUrl + '?modo=registro&apiKey=' + encodeURIComponent(typeof getApiKey === 'function' ? getApiKey() : ''));
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            records = data.registros || [];
+                        }
+                    }
+                    statusText.textContent = records.length + ' registros (API)';
+                }
+                else if (dataSource === 'csv') {
+                    const csvUrl = (typeof getAttendanceCsvUrl === 'function') ? getAttendanceCsvUrl() : '';
+                    if (csvUrl) {
+                        const resp = await fetch(csvUrl);
+                        if (resp.ok) {
+                            const text = await resp.text();
+                            if (typeof parseCSVToAttendance === 'function') {
+                                records = parseCSVToAttendance(text);
+                            }
+                        }
+                    }
+                    statusText.textContent = records.length + ' registros (CSV)';
+                }
+                else if (dataSource === 'local') {
+                    if (typeof loadAttendanceRecords === 'function') {
+                        records = loadAttendanceRecords();
+                    }
+                    statusText.textContent = records.length + ' registros (Local)';
+                }
+            } catch(err) {
+                console.error('Error:', err);
+                statusText.textContent = 'Error al cargar';
+            }
+            
+            // Aplicar filtros de carrera y sección
+            if (configPlanilla.carrera) {
+                const filtroCarrera = configPlanilla.carrera.toUpperCase().trim();
+                records = records.filter(r => (r.carrera || r.Carrera || r.career || '').toUpperCase().trim() === filtroCarrera);
+            }
+            if (configPlanilla.seccion) {
+                const filtroSeccion = configPlanilla.seccion.toUpperCase().trim();
+                records = records.filter(r => (r.seccion || r.Seccion || r.section || r.grupo || r.Grupo || '').toUpperCase().trim() === filtroSeccion);
+            }
+            
+            if (!records.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">No hay datos disponibles</td></tr>';
+                return;
+            }
+            
+            // Procesar registros - agrupar por cédula
+            const datosProcesados = {};
+            
+            records.forEach(r => {
+                const cedula = (r.cedula || r.Cedula || r.studentId || '').toString().replace(/\./g, '').trim();
+                const nombre = (r.nombre || r.Nombre || r.studentName || '').toUpperCase().trim();
+                
+                if (!cedula) return;
+                
+                if (!datosProcesados[cedula]) {
+                    datosProcesados[cedula] = {
+                        nombre: nombre,
+                        cedula: cedula
+                    };
+                }
+            });
+            
+            // Generar filas
+            let tbodyHTML = '';
+            const cedulas = Object.keys(datosProcesados).sort();
+            
+            cedulas.forEach(cedula => {
+                const info = datosProcesados[cedula];
+                tbodyHTML += '<tr>';
+                tbodyHTML += '<td>' + cedula + '</td>';
+                tbodyHTML += '<td>' + info.nombre + '</td>';
+                tbodyHTML += '<td>' + (configPlanilla.asignatura || '') + '</td>';
+                tbodyHTML += '<td>' + (configPlanilla.mes || '') + '</td>';
+                tbodyHTML += '<td>' + (configPlanilla.fechaInicio ? formatearFecha(configPlanilla.fechaInicio) : '') + '</td>';
+                tbodyHTML += '<td>' + (configPlanilla.fechaCierre ? formatearFecha(configPlanilla.fechaCierre) : '') + '</td>';
+                tbodyHTML += '</tr>';
+            });
+            
+            tbody.innerHTML = tbodyHTML;
+        }
+        
+        // Toggle orientación de fechas (90° / 0°)
+        function toggleOrientacionFechas() {
+            const container = document.getElementById('planillaContainer');
+            const btn = document.getElementById('btnOrientacion');
+            const isHorizontal = container.classList.toggle('horizontal-dates');
+            
+            // Guardar preferencia
+            localStorage.setItem('planilla_fechas_horizontal', isHorizontal ? '1' : '0');
+            
+            // Cambiar icono
+            btn.innerHTML = isHorizontal ? '<i class="fas fa-arrows-alt-v"></i>' : '<i class="fas fa-arrows-alt-h"></i>';
+            btn.title = isHorizontal ? 'Cambiar a vertical (90°)' : 'Cambiar a horizontal (0°)';
+        }
+        
+        // Restaurar orientación guardada
+        (function() {
+            const container = document.getElementById('planillaContainer');
+            const btn = document.getElementById('btnOrientacion');
+            const guardado = localStorage.getItem('planilla_fechas_horizontal');
+            if (guardado === '1') {
+                container.classList.add('horizontal-dates');
+                btn.innerHTML = '<i class="fas fa-arrows-alt-v"></i>';
+                btn.title = 'Cambiar a vertical (90°)';
+            }
+        })();
+        
+        // Verificar sesión al cargar
+        (async function() {
+            if (typeof isTeacherSessionActive === 'function' && isTeacherSessionActive()) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // Cargar las opciones de los selects primero
+                if (typeof cargarCatalogosPlanilla === 'function') {
+                    await cargarCatalogosPlanilla();
+                }
+                
+                cargarConfigGuardada();
+                // Auto-detectar API si no hay fuente guardada
+                if (!dataSource && typeof getAttendanceApiUrl === 'function' && getAttendanceApiUrl()) {
+                    setDataSource('api');
+                } else if (dataSource) {
+                    setDataSource(dataSource);
+                }
+            }
+        })();
+    </script>
+    
+    <!-- Botón toggle orientación fechas -->
+    <button id="btnOrientacion" class="btn-orientacion" onclick="toggleOrientacionFechas()" title="Cambiar a horizontal (0°)" style="display:none;">
+        <i class="fas fa-arrows-alt-h"></i>
+    </button>
+</body>
+</html>

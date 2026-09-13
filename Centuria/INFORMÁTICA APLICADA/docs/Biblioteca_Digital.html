@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Digital | Informática Aplicada ICO3534</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #008f1f;
+            --accent-glow: rgba(0, 143, 31, 0.4);
+            --accent-light: #25a837;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(0, 143, 31, 0.15);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* HERO */
+        .hero {
+            padding: 100px 20px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+
+        .hero .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* GRID */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            height: 2px;
+            flex: 1;
+            background: linear-gradient(to right, var(--accent), transparent);
+        }
+
+        .shelf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        /* BOOK CARD */
+        .book-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 50px rgba(0, 143, 31, 0.15);
+        }
+
+        .book-card:hover::before { transform: scaleX(1); }
+
+        .book-meta {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .book-icon-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: rgba(0, 143, 31, 0.1);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--accent-light);
+            flex-shrink: 0;
+        }
+
+        .book-info { flex: 1; }
+
+        .book-author {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
+        }
+
+        .book-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .book-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .btn-read {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-read:hover {
+            background: var(--accent-light);
+            box-shadow: 0 0 25px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* VIEWER MODAL */
+        .viewer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .viewer-content {
+            width: 90%;
+            height: 90%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .close-viewer {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2001;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .close-viewer:hover { background: #e74c3c; }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .shelf-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">📚 Recursos Académicos</div>
+            <h1>Biblioteca Digital Centuria</h1>
+            <p>Acceso directo a la bibliografía maestra, legislación vigente y whitepapers fundamentales de Informática Aplicada.</p>
+        </div>
+    </section>
+
+    <div class="container">
+
+        <h2 class="section-title">📖 Libros y Obras Académicas</h2>
+        <div class="shelf-grid">
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-atom"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">Ludwig von Bertalanffy</div>
+                        <div class="book-title">Teoría General de los Sistemas</div>
+                    </div>
+                </div>
+                <p class="book-desc">La obra fundacional que define los sistemas abiertos, la entropía y la homeostasis organizacional aplicada a empresas y contabilidad.</p>
+                <div class="book-footer">
+                    <a href="https://monoskop.org/images/0/05/Bertalanffy_Ludwig_von_Teoria_General_de_los_Sistemas.pdf" target="_blank" class="btn-read">
+                        <i class="fas fa-external-link-alt"></i> Abrir Libro
+                    </a>
+                    <span class="tag">PDF Académico</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">Enrique Fowler Newton</div>
+                        <div class="book-title">Contabilidad Básica</div>
+                    </div>
+                </div>
+                <p class="book-desc">Manual técnico sobre la captura y procesamiento de datos para la generación de estados financieros veraces en sistemas computarizados.</p>
+                <div class="book-footer">
+                    <a href="https://es.scribd.com/document/329528761/Fowler-Newton-Contabilidad-Basica" target="_blank" class="btn-read">
+                        <i class="fas fa-external-link-alt"></i> Consultar Obra
+                    </a>
+                    <span class="tag">Base Teórica</span>
+                </div>
+            </div>
+
+        </div>
+
+        <h2 class="section-title">⚖️ Legislación y Normativas</h2>
+        <div class="shelf-grid">
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-gavel"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">Congreso del Paraguay</div>
+                        <div class="book-title">Ley N° 6822/2021 — Servicios de Confianza</div>
+                    </div>
+                </div>
+                <p class="book-desc">Marco legal que otorga validez jurídica a los documentos electrónicos y la firma digital cualificada en Paraguay.</p>
+                <div class="book-footer">
+                    <a href="https://www.bacn.gov.py/leyes-paraguayas/9566/ley-n-6822-de-servicios-de-confianza" target="_blank" class="btn-read">
+                        <i class="fas fa-landmark"></i> Ver Ley Oficial
+                    </a>
+                    <span class="tag">Legislación</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-shield-alt"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">SET / DNIT</div>
+                        <div class="book-title">Resolución SET N° 412/04</div>
+                    </div>
+                </div>
+                <p class="book-desc">Requerimientos técnicos obligatorios para sistemas informáticos de contabilidad: inmutabilidad, logs de auditoría y resguardo de 5 años.</p>
+                <div class="book-footer">
+                    <a href="https://www.set.gov.py/portal/PARAGUAY-SET/detail?id=945" target="_blank" class="btn-read">
+                        <i class="fas fa-file-signature"></i> Ver Resolución
+                    </a>
+                    <span class="tag">Normativa Técnica</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-search-dollar"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">IAASB (IFAC)</div>
+                        <div class="book-title">NIA 315 — Riesgos de TI en Auditoría</div>
+                    </div>
+                </div>
+                <p class="book-desc">Estándar internacional para la identificación y valoración de riesgos de incorrección material mediante el conocimiento de los sistemas de TI.</p>
+                <div class="book-footer">
+                    <a href="https://www.ifac.org/system/files/publications/files/NIA-315-Revisada-2019.pdf" target="_blank" class="btn-read">
+                        <i class="fas fa-balance-scale"></i> Consultar NIA
+                    </a>
+                    <span class="tag">Norma Internacional</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-network-wired"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">ISACA</div>
+                        <div class="book-title">Marco COBIT 2019</div>
+                    </div>
+                </div>
+                <p class="book-desc">Marco de referencia para la gobernanza de TI empresarial: control de datos, trazabilidad y gestión de riesgos tecnológicos.</p>
+                <div class="book-footer">
+                    <a href="https://www.isaca.org/resources/cobit" target="_blank" class="btn-read">
+                        <i class="fas fa-external-link-alt"></i> Ver Framework
+                    </a>
+                    <span class="tag">Marco de Referencia</span>
+                </div>
+            </div>
+
+        </div>
+
+        <h2 class="section-title">🔗 Whitepapers y Tecnología Emergente</h2>
+        <div class="shelf-grid">
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fab fa-bitcoin"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">Satoshi Nakamoto</div>
+                        <div class="book-title">Bitcoin: A Peer-to-Peer Electronic Cash System</div>
+                    </div>
+                </div>
+                <p class="book-desc">El whitepaper que fundó la tecnología Blockchain, base de la "Partida Triple" digital y los sistemas descentralizados de validación.</p>
+                <div class="book-footer">
+                    <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" class="btn-read">
+                        <i class="fas fa-code"></i> Leer Whitepaper
+                    </a>
+                    <span class="tag">DLT / Blockchain</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fab fa-ethereum"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">Vitalik Buterin</div>
+                        <div class="book-title">Ethereum Whitepaper — Smart Contracts</div>
+                    </div>
+                </div>
+                <p class="book-desc">Contratos inteligentes que ejecutan automáticamente reglas de negocio: pagos automáticos al aprobar una factura SIFEN.</p>
+                <div class="book-footer">
+                    <a href="https://ethereum.org/en/whitepaper/" target="_blank" class="btn-read">
+                        <i class="fas fa-code"></i> Leer Whitepaper
+                    </a>
+                    <span class="tag">Contratos Inteligentes</span>
+                </div>
+            </div>
+
+            <div class="book-card">
+                <div class="book-meta">
+                    <div class="book-icon-wrap"><i class="fas fa-robot"></i></div>
+                    <div class="book-info">
+                        <div class="book-author">IFAC</div>
+                        <div class="book-title">IA y la Profesión Contable</div>
+                    </div>
+                </div>
+                <p class="book-desc">Informe oficial de la Federación Internacional de Contadores sobre cómo la IA Generativa transforma la auditoría y la gestión financiera.</p>
+                <div class="book-footer">
+                    <a href="https://www.ifac.org/knowledge-gateway/technology/discussion/artificial-intelligence-and-accounting-profession" target="_blank" class="btn-read">
+                        <i class="fas fa-external-link-alt"></i> Leer Artículo
+                    </a>
+                    <span class="tag">Inteligencia Artificial</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Viewer Modal -->
+    <div class="viewer-overlay" id="viewerOverlay">
+        <button class="close-viewer" onclick="closeViewer()">×</button>
+        <div class="viewer-content">
+            <iframe id="viewerFrame" src=""></iframe>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Centuria • Informática Aplicada • Todos los derechos reservados</p>
+    </footer>
+
+    <script>
+        function openViewer(url) {
+            document.getElementById('viewerFrame').src = url;
+            document.getElementById('viewerOverlay').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeViewer() {
+            document.getElementById('viewerOverlay').style.display = 'none';
+            document.getElementById('viewerFrame').src = '';
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+    <script src="core.js"></script>
+</body>
+</html>

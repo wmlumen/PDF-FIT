@@ -1,0 +1,22 @@
+MODULO TIC - INSTITUTO SUPERIOR CENTURIA
+==========================================
+
+Estructura:
+- Plan_de_Estudio_TIC.md        : Programa oficial de la materia
+- clase_01.html a clase_12.html : Clases por modalidad (Presencial 1-4, Virtual 5-8, Asincrónica 9-12)
+- index.html                    : Portal web del curso
+- generar_htmls.py              : Script generador de clases HTML
+
+Módulos adicionales:
+- Asistencia/                   : Sistema de registro de asistencia web + Apps Script
+- Criterios/                    : Criterios de evaluación y rúbricas
+- DESARROLLO/                   : Ejercicios prácticos y actividades
+- Examen_Virtual/               : Exámenes virtuales
+- Examen_final/                 : Exámenes finales
+- unidades centuria/            : Unidades de estudio complementarias
+- web_Asistencia/               : Portal web completo del curso + sistema de asistencia
+
+Uso:
+1. Abrir index.html o web_Asistencia/index.html en el navegador
+2. Configurar Datos_Generales.txt con datos del curso
+3. Configurar endpoint en Asistencia/index.html para guardar asistencias

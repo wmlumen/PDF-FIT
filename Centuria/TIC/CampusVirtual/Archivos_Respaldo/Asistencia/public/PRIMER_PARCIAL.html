@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Primer Parcial - Sociología 2026 | Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #047857;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 24px;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(16,185,129,0.15), transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(4,120,87,0.2), transparent 50%);
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #34d399, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .question { margin-bottom: 24px; }
+        .question-text {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .q-num {
+            background: linear-gradient(135deg, #34d399, #059669);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .options { display: flex; flex-direction: column; gap: 8px; margin-left: 38px; }
+        .option {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .option:hover { border-color: var(--primary); background: rgba(16,185,129,0.05); }
+        .option input { accent-color: var(--primary); width: 18px; height: 18px; }
+        .option.correct { border-color: #10b981; background: rgba(16,185,129,0.1); }
+        .option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+        .actions { text-align: center; margin-top: 32px; }
+        .btn {
+            background: linear-gradient(135deg, #34d399, #059669);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .result-box {
+            display: none;
+            text-align: center;
+            padding: 32px;
+        }
+        .score {
+            font-size: 64px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #34d399, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .detail { font-size: 14px; color: #94a3b8; margin-top: 8px; }
+        .login-form { display: flex; flex-direction: column; gap: 12px; }
+        .login-form input {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: #f8fafc;
+            font-size: 15px;
+        }
+        .login-form input::placeholder { color: #64748b; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-scroll mr-2"></i> Examen Primer Parcial</h1>
+            <p style="color:#94a3b8;margin-top:6px;">Instituto Superior Centuria — Sociología 2026</p>
+        </div>
+
+        <!-- Pantalla de acceso con contraseña -->
+        <div class="card" id="access-card">
+            <h2 style="margin-bottom:16px;font-size:18px;"><i class="fas fa-lock mr-2"></i> Acceso al Examen</h2>
+            <div class="login-form">
+                <input type="password" id="access-password" placeholder="Contraseña de acceso" required>
+                <button class="btn" onclick="checkAccess()"><i class="fas fa-key mr-2"></i> Ingresar</button>
+                <p id="access-error" style="font-size:12px;color:#ef4444;text-align:center;"></p>
+            </div>
+        </div>
+
+        <!-- Condiciones del examen -->
+        <div class="card hidden" id="conditions-card">
+            <h2 style="margin-bottom:16px;font-size:18px;"><i class="fas fa-clipboard-list mr-2"></i> Condiciones del Examen</h2>
+            <ul style="line-height:2;font-size:14px;color:#cbd5e1;">
+                <li><i class="fas fa-clock mr-2" style="color:#fbbf24;"></i> <strong>Duración:</strong> 30 minutos por intento</li>
+                <li><i class="fas fa-redo mr-2" style="color:#10b981;"></i> <strong>Intentos:</strong> 2 intentos permitidos</li>
+                <li><i class="fas fa-trophy mr-2" style="color:#fbbf24;"></i> <strong>Puntaje:</strong> Se guarda el mayor puntaje de los 2 intentos</li>
+                <li><i class="fas fa-list-ol mr-2" style="color:#60a5fa;"></i> <strong>Preguntas:</strong> 20 ejercicios (selección múltiple y verdadero/falso)</li>
+                <li><i class="fas fa-check-circle mr-2" style="color:#10b981;"></i> <strong>Aprobación:</strong> 100% de respuestas correctas</li>
+                <li><i class="fas fa-user mr-2" style="color:#a78bfa;"></i> <strong>Datos:</strong> Registro automático de nombre y cédula</li>
+            </ul>
+            <div class="actions" style="margin-top:24px;">
+                <button class="btn" onclick="showLogin()"><i class="fas fa-arrow-right mr-2"></i> Comenzar</button>
+            </div>
+        </div>
+
+        <!-- Login del alumno -->
+        <div class="card hidden" id="login-card">
+            <h2 style="margin-bottom:16px;font-size:18px;"><i class="fas fa-user-graduate mr-2"></i> Datos del alumno</h2>
+            <div class="login-form">
+                <input type="text" id="student-name" placeholder="Nombre y Apellido" required>
+                <input type="text" id="student-id" placeholder="Cédula de Identidad" required>
+                <button class="btn" id="start-btn" onclick="beginExam()"><i class="fas fa-play mr-2"></i> Iniciar examen</button>
+                <p id="attempt-info" style="font-size:12px;color:#94a3b8;text-align:center;"></p>
+            </div>
+        </div>
+
+        <!-- Examen -->
+        <div class="card hidden" id="exam-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <span style="font-size:12px;color:#94a3b8;">20 preguntas — Selección múltiple y Verdadero/Falso</span>
+                <span id="timer" style="font-size:12px;color:#fbbf24;">30:00</span>
+            </div>
+            <div id="questions"></div>
+            <div class="actions">
+                <button class="btn" onclick="submitExam()"><i class="fas fa-paper-plane mr-2"></i> Entregar examen</button>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="card result-box" id="result-card">
+            <div id="result-content" style="display:none; text-align:left; padding: 10px;">
+                
+                <div style="text-align:center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+                    <img src="logo_centuria_blanco_1.png" alt="Logo Centuria" style="height: 40px; margin-bottom: 10px;">
+                    <h2 style="font-size: 18px; margin: 0; color: #fff;">CERTIFICADO DE EXAMEN</h2>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin: 5px 0 0 0;">Instituto Superior Centuria — Sociología 2026</p>
+                </div>
+
+                <div id="cert-student-info" style="margin-bottom: 20px; font-size: 14px;">
+                    <!-- Student name and ID -->
+                </div>
+
+                <div id="cert-attempts" style="margin-bottom: 20px;">
+                    <!-- Attempt 1 and Attempt 2 boxes -->
+                </div>
+
+                <div id="cert-final-score" style="text-align:center; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 15px; border-radius: 8px;">
+                    <!-- Final Score -->
+                </div>
+
+                <div id="result-screenshot" data-html2canvas-ignore="true" style="margin-top:20px;border:1px solid var(--border);border-radius:12px;overflow:hidden;"></div>
+                
+                <div class="actions" data-html2canvas-ignore="true" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;">
+                    <button class="btn" onclick="downloadJpg()"><i class="fas fa-image mr-2"></i> Descargar JPG</button>
+                    <button class="btn" id="retry-btn" onclick="retryExam()"><i class="fas fa-redo mr-2"></i> Siguiente intento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const EXAM_KEY = 'primer_parcial_sociologia_2026_results';
+        const ATTEMPT_KEY = 'primer_parcial_sociologia_2026_attempts';
+        const MAX_ATTEMPTS = 2;
+        const EXAM_TIME = 30 * 60;
+        const ACCESS_PASSWORD = 'Centuri@2026';
+        let answers = {};
+        let submitted = false;
+        let startTime = null;
+        let timerInterval = null;
+        let currentAttempt = 1;
+        let bestResult = null;
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx46pwkd78VUgYTy4k0KbHBkqbwAq1aQoq9MYB6ihMhRc51yLTSExaXYTyQvO7cXZtX/exec';
+
+        function checkAccess() {
+            const pass = document.getElementById('access-password').value.trim();
+            const errorEl = document.getElementById('access-error');
+            if (pass === 'Centuri@2026') {
+                document.getElementById('access-card').classList.add('hidden');
+                document.getElementById('conditions-card').classList.remove('hidden');
+                errorEl.textContent = '';
+            } else {
+                errorEl.textContent = 'Contraseña incorrecta.';
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('conditions-card').classList.add('hidden');
+            document.getElementById('login-card').classList.remove('hidden');
+            loadAttempts();
+            const info = document.getElementById('attempt-info');
+            if (info) {
+                info.textContent = 'Intentos restantes: ' + Math.max(0, MAX_ATTEMPTS - ((currentAttempt - 1))) + ' / ' + MAX_ATTEMPTS;
+            }
+        }
+
+        function loadAttempts() {
+            try {
+                const raw = localStorage.getItem(ATTEMPT_KEY);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    currentAttempt = data.attempts ? data.attempts.length + 1 : 1;
+                    bestResult = data.bestResult || null;
+                }
+            } catch (e) {
+                currentAttempt = 1;
+                bestResult = null;
+            }
+        }
+
+        function saveAttempt(result) {
+            try {
+                const raw = localStorage.getItem(ATTEMPT_KEY);
+                let data = raw ? JSON.parse(raw) : { attempts: [], bestResult: null };
+                data.attempts = data.attempts || [];
+                data.attempts.push(result);
+                if (!bestResult || result.score > bestResult.score) {
+                    bestResult = result;
+                    data.bestResult = bestResult;
+                }
+                localStorage.setItem(ATTEMPT_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.error('Error saving attempt', e);
+            }
+        }
+
+        function canAttempt() {
+            try {
+                const raw = localStorage.getItem(ATTEMPT_KEY);
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    return (data.attempts || []).length < MAX_ATTEMPTS;
+                }
+            } catch (e) {}
+            return true;
+        }
+
+        function generateQuestions() {
+            return [
+                // SECCIÓN 1: SELECCIÓN MÚLTIPLE
+                {
+                    id: 1,
+                    text: "¿Qué autor es considerado el padre del Positivismo y de la sociología científica?",
+                    options: ["Augusto Comte", "Karl Marx", "Max Weber", "Emile Durkheim"],
+                    answer: "Augusto Comte"
+                },
+                {
+                    id: 2,
+                    text: "¿Cómo define Durkheim el 'Hecho Social'?",
+                    options: ["Como acciones individuales irracionales", "Como maneras de actuar externas al individuo con poder coercitivo", "Como la lucha constante por los medios de producción", "Como una acción social racional con fines"],
+                    answer: "Como maneras de actuar externas al individuo con poder coercitivo"
+                },
+                {
+                    id: 3,
+                    text: "¿Qué es el método 'Verstehen' de Max Weber?",
+                    options: ["El análisis puramente matemático de las estadísticas", "La comprensión interpretativa del sentido subjetivo de la acción social", "El estudio de la evolución de las especies", "La revolución del proletariado contra la burguesía"],
+                    answer: "La comprensión interpretativa del sentido subjetivo de la acción social"
+                },
+                {
+                    id: 4,
+                    text: "Según Karl Marx, ¿qué es la 'Plusvalía'?",
+                    options: ["El costo total de la materia prima", "El salario justo que recibe el trabajador", "La diferencia entre el valor producido por el trabajador y el salario que recibe", "El impuesto que cobra el Estado al capitalista"],
+                    answer: "La diferencia entre el valor producido por el trabajador y el salario que recibe"
+                },
+                {
+                    id: 5,
+                    text: "¿Qué es el 'Capital Social' según Putnam?",
+                    options: ["El dinero acumulado en las cuentas bancarias de las corporaciones", "Recursos obtenidos a través de redes de contactos y confianza interpersonal", "El capital físico utilizado para la manufactura de bienes", "El presupuesto estatal asignado a obras públicas"],
+                    answer: "Recursos obtenidos a través de redes de contactos y confianza interpersonal"
+                },
+                {
+                    id: 6,
+                    text: "¿Qué plantea el modelo del 'Homo Economicus'?",
+                    options: ["Asume que el humano es un actor racional que busca maximizar beneficios y minimizar costos", "Asume que las decisiones económicas están motivadas por normas sociales", "Propone que la economía debe basarse en el trueque", "Sugiere que los individuos no tienen interés en el mercado"],
+                    answer: "Asume que el humano es un actor racional que busca maximizar beneficios y minimizar costos"
+                },
+                {
+                    id: 7,
+                    text: "¿Qué es el 'Neoliberalismo'?",
+                    options: ["Sistema económico basado en la propiedad estatal de las empresas", "Corriente económica que promueve la libertad de mercado y la reducción del estado", "Una teoría marxista sobre la explotación", "Un movimiento exclusivamente político sin impacto económico"],
+                    answer: "Corriente económica que promueve la libertad de mercado y la reducción del estado"
+                },
+                {
+                    id: 8,
+                    text: "¿Qué es la 'Cultura' en sociología?",
+                    options: ["Exclusivamente las bellas artes (música clásica, pintura, escultura)", "El grado de estudios académicos de un individuo", "Conjunto de conocimientos, creencias, normas, valores y prácticas compartidas por una sociedad", "Las características biológicas hereditarias"],
+                    answer: "Conjunto de conocimientos, creencias, normas, valores y prácticas compartidas por una sociedad"
+                },
+                {
+                    id: 9,
+                    text: "¿Qué es la 'Socialización Primaria'?",
+                    options: ["Proceso en la primera infancia donde se internalizan el lenguaje y valores básicos (ej. familia)", "El aprendizaje de conocimientos técnicos en el entorno laboral", "La adaptación de los adultos a un nuevo país", "La interacción a través de redes sociales en internet"],
+                    answer: "Proceso en la primera infancia donde se internalizan el lenguaje y valores básicos (ej. familia)"
+                },
+                {
+                    id: 10,
+                    text: "¿Qué significa 'Etnocentrismo'?",
+                    options: ["Comprender cada cultura desde su propio punto de vista histórico", "La tendencia a juzgar otras culturas usando los estándares de la propia asumiendo su superioridad", "La mezcla armónica de diferentes grupos étnicos en una sociedad", "Ignorar las costumbres y tradiciones del pasado"],
+                    answer: "La tendencia a juzgar otras culturas usando los estándares de la propia asumiendo su superioridad"
+                },
+                
+                // SECCIÓN 2: VERDADERO Y FALSO
+                {
+                    id: 11,
+                    text: "Según Augusto Comte, la Ley de los Tres Estados consiste en las fases: Teológico, Metafísico y Positivo.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Verdadero"
+                },
+                {
+                    id: 12,
+                    text: "En la teoría de Durkheim, la 'Solidaridad Mecánica' es propia de las sociedades modernas industriales con alta diferenciación de funciones.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Falso"
+                },
+                {
+                    id: 13,
+                    text: "Para Karl Marx, la 'Alienación' se refiere a la separación del trabajador respecto al producto que crea, a su propio trabajo y a los demás.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Verdadero"
+                },
+                {
+                    id: 14,
+                    text: "El modelo del 'Homo Sociologicus' afirma que las decisiones económicas están completamente aisladas de los valores, normas y la presión de grupo.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Falso"
+                },
+                {
+                    id: 15,
+                    text: "El 'Institucionalismo' es una corriente que enfatiza el papel nulo o irrelevante de las instituciones en la sociedad.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Falso"
+                },
+                {
+                    id: 16,
+                    text: "La 'Movilidad Social' se refiere al movimiento de individuos o grupos entre diferentes posiciones en la estructura social.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Verdadero"
+                },
+                {
+                    id: 17,
+                    text: "La 'Cultura Inmaterial' incluye exclusivamente objetos tangibles como herramientas, monumentos arquitectónicos y tecnología.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Falso"
+                },
+                {
+                    id: 18,
+                    text: "Un 'Agente de Socialización' es aquella persona o institución (como la escuela o la familia) que transmite normas y valores durante la socialización.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Verdadero"
+                },
+                {
+                    id: 19,
+                    text: "La 'Cultura de Masas' hace referencia a la producción cultural estandarizada que va destinada a grandes audiencias a través de las industrias culturales.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Verdadero"
+                },
+                {
+                    id: 20,
+                    text: "La 'Desigualdad Social' implica que todos los individuos de una sociedad tienen exactamente las mismas oportunidades y acceso equitativo a recursos y poder.",
+                    options: ["Verdadero", "Falso"],
+                    answer: "Falso"
+                }
+            ];
+        }
+
+        let questions = generateQuestions();
+
+        function renderQuestions() {
+            const container = document.getElementById('questions');
+            container.innerHTML = questions.map(q => {
+                const optsHtml = q.options.map(opt => {
+                    return `<label class="option">
+                        <input type="radio" name="q${q.id}" value="${opt.replace(/"/g, '&quot;')}" onchange="saveAnswer(${q.id}, '${opt.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">
+                        <span>${opt}</span>
+                    </label>`;
+                }).join('');
+                return `<div class="question" data-q="${q.id}">
+                    <div class="question-text"><span class="q-num">${q.id}</span><span>${q.text}</span></div>
+                    <div class="options">${optsHtml}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function saveAnswer(id, value) {
+            if (submitted) return;
+            answers[id] = value;
+        }
+
+        function beginExam() {
+            loadAttempts();
+            if (!canAttempt()) {
+                alert('Ya completó los 2 intentos permitidos. Su mejor puntaje fue: ' + (bestResult ? bestResult.score + '/' + bestResult.total + ' (' + bestResult.percent + '%)' : 'N/A'));
+                showBestResult();
+                return;
+            }
+            const name = document.getElementById('student-name').value.trim();
+            const id = document.getElementById('student-id').value.trim();
+            if (!name || !id) { alert('Ingrese nombre y cédula'); return; }
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('exam-card').classList.remove('hidden');
+            renderQuestions();
+            startTimer();
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            let time = EXAM_TIME;
+            const el = document.getElementById('timer');
+            const int = setInterval(() => {
+                if (submitted) { clearInterval(int); return; }
+                const m = String(Math.floor(time/60)).padStart(2,'0');
+                const s = String(time%60).padStart(2,'0');
+                el.textContent = m+':'+s;
+                if (time-- <= 0) { clearInterval(int); submitExam(); }
+            }, 1000);
+            timerInterval = int;
+        }
+
+        function submitExam() {
+            if (submitted) return;
+            submitted = true;
+            if (timerInterval) clearInterval(timerInterval);
+            let score = 0;
+            const details = questions.map(q => {
+                const ok = answers[q.id] === q.answer;
+                if (ok) score++;
+                return { id: q.id, question: q.text, answer: answers[q.id], correct: q.answer, ok };
+            });
+            const result = {
+                student: document.getElementById('student-name').value.trim(),
+                cedula: document.getElementById('student-id').value.trim(),
+                date: new Date().toISOString(),
+                attempt: currentAttempt,
+                score,
+                total: questions.length,
+                percent: Math.round((score/questions.length)*100),
+                details
+            };
+            localStorage.setItem(EXAM_KEY, JSON.stringify(result));
+            saveAttempt(result);
+            sendToGoogleSheets(result);
+            document.getElementById('exam-card').classList.add('hidden');
+            const rc = document.getElementById('result-card');
+            rc.style.display = 'block';
+            
+            renderCertificate();
+            
+            document.getElementById('result-content').style.display = 'block';
+            document.getElementById('retry-btn').style.display = canAttempt() ? 'inline-block' : 'none';
+            highlightAnswers();
+            captureResultCard();
+        }
+
+        function showBestResult() {
+            if (!bestResult) return;
+            document.getElementById('login-card').classList.add('hidden');
+            const rc = document.getElementById('result-card');
+            rc.style.display = 'block';
+            
+            renderCertificate();
+            
+            document.getElementById('result-content').style.display = 'block';
+            document.getElementById('retry-btn').style.display = 'none';
+            captureResultCard();
+        }
+
+        function renderCertificate() {
+            try {
+                const raw = localStorage.getItem(ATTEMPT_KEY);
+                let data = raw ? JSON.parse(raw) : { attempts: [], bestResult: null };
+                const attempts = data.attempts || [];
+                const student = attempts.length > 0 ? attempts[0].student : '';
+                const cedula = attempts.length > 0 ? attempts[0].cedula : '';
+                
+                document.getElementById('cert-student-info').innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                        <strong style="color:#fff;">Alumno:</strong> <span>${student}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong style="color:#fff;">Cédula:</strong> <span>${cedula}</span>
+                    </div>
+                `;
+
+                let attemptsHtml = '<h3 style="font-size:13px; color:var(--text-secondary); margin-bottom: 10px; text-transform:uppercase;">Detalle de Intentos</h3>';
+                
+                attempts.forEach((att, idx) => {
+                    const timeString = att.date ? new Date(att.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                    attemptsHtml += `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 8px; display:flex; justify-content: space-between; align-items:center;">
+                            <div>
+                                <strong style="color:#fff; font-size:14px;">Intento ${idx + 1}</strong>
+                                <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Hora de entrega: ${timeString}</div>
+                            </div>
+                            <div style="font-size:16px; font-weight:bold; color:#fbbf24;">
+                                ${att.score}/${att.total} <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(${att.percent}%)</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('cert-attempts').innerHTML = attemptsHtml;
+
+                if (data.bestResult) {
+                    document.getElementById('cert-final-score').innerHTML = `
+                        <div style="font-size:12px; color: #4ade80; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">Calificación Final Registrada</div>
+                        <div style="font-size:24px; font-weight:bold; color: #fff;">${data.bestResult.score}/${data.bestResult.total} <span style="font-size:16px; font-weight:normal; color:var(--text-muted);">(${data.bestResult.percent}%)</span></div>
+                        <div style="font-size:11px; color: var(--text-muted); margin-top:5px;">(Se registra el mayor puntaje)</div>
+                    `;
+                }
+            } catch(e) {
+                console.error("Error rendering cert", e);
+            }
+        }
+
+        async function captureResultCard() {
+            const el = document.getElementById('result-card');
+            if (typeof html2canvas !== 'undefined' && el) {
+                try {
+                    const canvas = await html2canvas(el, { backgroundColor: '#0f172a', scale: 2 });
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                    const container = document.getElementById('result-screenshot');
+                    if (container) {
+                        container.innerHTML = '<img src="' + dataUrl + '" style="width:100%;border-radius:10px;">';
+                    }
+                } catch (e) {
+                    console.error('No se pudo generar la imagen del resultado', e);
+                }
+            }
+        }
+
+        function downloadJpg() {
+            const img = document.querySelector('#result-screenshot img');
+            if (!img) { alert('Primero generá la vista previa del resultado.'); return; }
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'resultado_primer_parcial_' + Date.now() + '.jpg';
+            a.click();
+        }
+
+        function retryExam() {
+            if (!canAttempt()) {
+                alert('Ya completó los 2 intentos permitidos. Se queda registrado el mayor puntaje.');
+                showBestResult();
+                return;
+            }
+            if (!confirm('Se registrará el mayor puntaje de ambos intentos. ¿Desea realizar el siguiente intento?')) {
+                showBestResult();
+                return;
+            }
+            answers = {};
+            submitted = false;
+            document.getElementById('result-card').style.display = 'none';
+            document.getElementById('result-content').style.display = 'none';
+            document.getElementById('exam-card').classList.remove('hidden');
+            renderQuestions();
+            startTimer();
+        }
+
+        async function sendToGoogleSheets(result) {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('a5xZ1')) {
+                console.warn('Google Sheets URL no configurada');
+                return;
+            }
+            try {
+                const payload = {
+                    student: result.student,
+                    cedula: result.cedula,
+                    attempt: result.attempt,
+                    score: result.score,
+                    total: result.total,
+                    percent: result.percent,
+                    date: result.date,
+                    details: result.details
+                };
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                console.log('Enviado a Google Sheets');
+            } catch (error) {
+                console.error('Error enviando a Google Sheets:', error);
+            }
+        }
+
+        function highlightAnswers() {
+            questions.forEach(q => {
+                const box = document.querySelector(`.question[data-q="${q.id}"]`);
+                if (!box) return;
+                box.querySelectorAll('.option').forEach(opt => {
+                    const val = opt.querySelector('input').value;
+                    if (val === q.answer) opt.classList.add('correct');
+                    if (answers[q.id] && val === answers[q.id] && val !== q.answer) opt.classList.add('wrong');
+                });
+            });
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (submitted) {
+                const raw = localStorage.getItem(EXAM_KEY);
+                if (raw) {
+                    const blob = new Blob([raw], { type: 'application/json' });
+                    navigator.sendBeacon && navigator.sendBeacon('data:application/json,' + encodeURIComponent(raw));
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAttempts();
+            const info = document.getElementById('attempt-info');
+            if (info) {
+                info.textContent = 'Intentos restantes: ' + Math.max(0, MAX_ATTEMPTS - ((currentAttempt - 1))) + ' / ' + MAX_ATTEMPTS;
+            }
+        });
+    </script>
+</body>
+</html>

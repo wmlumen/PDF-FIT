@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Virtual - Sociología - Instituto Superior Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --color-primario: #2c5d3d;
+            --color-acento: #c5a059;
+            --color-fondo: #ffffff;
+            --color-texto: #333333;
+            --color-texto-suave: #54595f;
+            --fuente-principal: 'Montserrat', sans-serif;
+            --fuente-secundaria: 'Roboto', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            font-family: var(--fuente-secundaria);
+            line-height: 1.6;
+            margin: 0;
+            user-select: none;
+        }
+        h1, h2, h3, .titulo-institucional {
+            font-family: var(--fuente-principal);
+            color: var(--color-primario);
+            font-weight: 700;
+        }
+        .btn-centuria {
+            background-color: var(--color-primario);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-family: var(--fuente-principal);
+            transition: background 0.3s ease;
+        }
+        .btn-centuria:hover {
+            background-color: var(--color-acento);
+            cursor: pointer;
+        }
+        .detalle-dorado {
+            border-bottom: 3px solid var(--color-acento);
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-left: 6px solid var(--color-primario);
+        }
+        .step-header {
+            background: var(--color-primario);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-number {
+            background: var(--color-acento);
+            color: var(--color-primario);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .content-padding { padding: 1.5rem; }
+        .text-primary { color: var(--color-primario); }
+        .bg-primary { background-color: var(--color-primario); }
+        @media print { .no-print { display: none !important; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="p-3 md:p-6" oncontextmenu="return false;">
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-2xl mt-8 animate-fade">
+    <div class="text-center mb-5">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <p class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Excelencia Académica</p>
+        <h1 class="text-lg font-bold mt-3 text-primary">Examen de Sociología</h1>
+        <p class="text-sm text-gray-500 italic">Primer Parcial</p>
+    </div>
+    <div class="space-y-3">
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Cédula de Identidad</label>
+            <input type="text" id="student-id" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: 1234567">
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre y Apellido</label>
+            <input type="text" id="student-name" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="bg-blue-50 p-2 rounded-lg text-xs text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i> Tiempo: <strong id="exam-time-display">90 minutos</strong> | Total: 20 puntos
+        </div>
+        <button onclick="startExam()" class="w-full btn-centuria py-3 rounded-lg hover:opacity-90 shadow-lg">
+            COMENZAR EXAMEN
+        </button>
+    </div>
+</div>
+
+<!-- TEACHER PANEL -->
+<div id="teacher-panel" class="hidden max-w-7xl mx-auto animate-fade">
+    <div class="bg-white rounded-xl shadow-lg p-5">
+        <div class="flex justify-between items-center mb-4 border-b-2 border-green-500 pb-3">
+            <div>
+                <h1 class="text-xl font-bold"><span class="text-red-600">INSTITUTO SUPERIOR CENTURIA</span></h1>
+                <p class="text-xs text-gray-500 uppercase">Panel del Docente</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-green-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Alumnos</p>
+                    <p id="total-count" class="text-xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-blue-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Promedio</p>
+                    <p id="avg-score" class="text-xl font-bold text-blue-600">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teacher Settings -->
+        <div class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200">
+            <h3 class="font-bold text-sm text-yellow-700 mb-2">Configuración del Examen</h3>
+            <div class="flex gap-3 items-center">
+                <label class="text-xs">Tiempo (minutos):</label>
+                <input type="number" id="exam-time-setting" value="90" class="border rounded px-2 py-1 w-16 text-sm" min="10" max="180">
+                <button onclick="saveExamTime()" class="btn-centuria text-xs px-3 py-1">Guardar</button>
+                <span id="save-msg" class="text-green-600 text-xs hidden">✓ Guardado</span>
+            </div>
+            <div class="mt-2 flex gap-3 items-center">
+                <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">
+                    <i class="fas fa-file-pdf mr-1"></i> Exportar Planilla PDF
+                </button>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">
+                <strong>Docente:</strong> <span id="teacher-name-display"></span> | <strong>C.I.:</strong> <span id="teacher-id-display"></span>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="col-span-1 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2 flex justify-between">
+                    <span>Alumnos Entregados</span>
+                    <button onclick="actualizarPanel()" class="text-green-600 text-xs hover:underline"><i class="fas fa-sync"></i></button>
+                </h2>
+                <div id="students-list" class="space-y-2 text-sm"></div>
+            </div>
+            <div class="col-span-3 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2">Detalle del Examen</h2>
+                <div id="exam-detail" class="text-gray-500 text-center py-8">Seleccione un alumno para ver su examen</div>
+            </div>
+        </div>
+        <button onclick="location.reload()" class="mt-3 text-gray-500 hover:text-gray-700 text-xs"><i class="fas fa-arrow-left mr-1"></i> Salir</button>
+    </div>
+</div>
+
+<!-- EXAM CONTAINER -->
+<div id="exam-container" class="hidden max-w-4xl mx-auto animate-fade">
+
+<div class="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded-r-lg">
+    <p class="text-sm font-bold text-green-700">Evaluación correspondiente a las Unidades I, II y III</p>
+    <p class="text-xs text-gray-600 mt-1">Tiempo máximo: <span id="exam-timer-display"></span> | Total: 20 puntos</p>
+</div>
+
+<header class="max-w-4xl mx-auto mb-4 text-center border-b-2 pb-3" style="border-color: var(--color-primario);">
+    <div class="flex flex-col items-center mb-1">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <p class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Excelencia Académica</p>
+    </div>
+    <h2 class="text-lg font-bold mt-1 uppercase text-primary">Primer Examen Parcial de Sociología</h2>
+</header>
+
+<section class="bg-white border-2 border-gray-200 rounded-lg p-3 mb-4 grid grid-cols-1 md:grid-cols-3 gap-3 shadow-sm">
+    <div class="md:col-span-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Estudiante:</label>
+        <div id="display-name" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Cédula:</label>
+        <div id="display-id" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Fecha:</label>
+        <div id="display-date" class="border-b border-gray-400 h-6"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Docente:</label>
+        <div id="display-teacher" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div class="bg-green-50 p-2 rounded text-center border border-green-200">
+        <label class="text-xs font-bold text-primary uppercase">Tiempo Restante:</label>
+        <div id="timer" class="text-xl font-bold text-red-600 mt-1">90:00</div>
+    </div>
+</section>
+
+<!-- SECTION I -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h2 class="text-base font-bold uppercase">I. Selección Múltiple (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Marque la respuesta correcta (1 pto cada una).</p>
+        <div id="section1-questions" class="space-y-4"></div>
+    </div>
+</section>
+
+<!-- SECTION II -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h2 class="text-base font-bold uppercase">II. Verdadero o Falso (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Escriba 'V' o 'F' (1 pto cada una).</p>
+        <div id="section2-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<!-- SECTION III -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h2 class="text-base font-bold uppercase">III. Define (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Redacte brevemente (1 pto cada uno).</p>
+        <div id="section3-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<!-- SECTION IV -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">4</div>
+        <h2 class="text-base font-bold uppercase">IV. Estudio de Caso (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mb-3">
+            <h3 class="font-bold text-sm text-gray-800 mb-1"><i class="fas fa-briefcase mr-1 text-primary"></i>Caso: "La Negociación Fallida"</h3>
+            <p class="text-xs text-gray-700 text-justify">Una agencia despachante contrata a un brillante economistas para negociar tarifas con una delegación asiática. Durante la reunión, él omite saludos, interrumpe a los mayores y exige firmar rápido diciendo que "su cultura es superior". La delegación rechaza la oferta.</p>
+        </div>
+        <div id="section4-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<div class="text-center pb-10">
+    <button onclick="finalizarExamen()" class="bg-red-600 text-white px-10 py-3 rounded-full font-bold text-lg shadow-xl hover:bg-red-700 transition">
+        FINALIZAR EXAMEN
+    </button>
+</div>
+</div>
+
+<!-- RESULT MODAL -->
+<div id="result-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-white max-w-lg w-full p-5 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div id="acta-content" class="p-4 border-4 border-double border-gray-300">
+            <div class="text-center border-b-2 border-green-600 pb-3 mb-4">
+                <h2 class="font-title text-xl">ACTA DE CALIFICACIÓN</h2>
+                <p class="text-xs uppercase tracking-widest">Instituto Superior Centuria</p>
+                <p class="text-xs text-gray-500">Sociología - Primer Parcial</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <p><strong>Fecha:</strong> <span id="res-date"></span></p>
+                <p><strong>Estudiante:</strong> <span id="res-name" class="uppercase font-bold"></span></p>
+                <p><strong>Cédula:</strong> <span id="res-id"></span></p>
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-base"><strong>Puntaje:</strong> <span id="res-score" class="text-green-600 font-bold text-xl"></span>/20</p></div>
+                        <div><p class="text-base"><strong>Porcentaje:</strong> <span id="res-percent" class="text-green-600 font-bold text-xl"></span>%</p></div>
+                    </div>
+                </div>
+            </div>
+            <div id="results-matrix" class="mt-3 text-xs bg-gray-50 p-2 rounded border"></div>
+            
+            <!-- QR Code Placeholder -->
+            <div class="mt-3 text-center">
+                <div class="inline-block border-2 border-gray-300 p-2 rounded">
+                    <div id="qr-display" class="w-20 h-20 bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                        <span class="text-[8px]">Datos del Examen<br>C.I.: <span class="res-qr-ci"></span><br>Nota: <span class="res-qr-score"></span></span>
+                    </div>
+                </div>
+                <p class="text-[8px] text-gray-500 mt-1">Escanee para recopilar datos</p>
+            </div>
+            
+            <div class="mt-6 flex justify-between">
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Firma del Alumno</div>
+                </div>
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]" id="teacher-signature"></div>
+                    <p class="text-[8px] mt-1" id="teacher-ci-display"></p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-3 justify-center">
+            <button onclick="descargarActa()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">
+                <i class="fas fa-download mr-2"></i> Descargar Acta
+            </button>
+            <button onclick="imprimirActa()" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-700">
+                <i class="fas fa-print mr-2"></i> Imprimir
+            </button>
+            <button onclick="location.reload()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold text-sm">Salir</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="delete-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-white max-w-md w-full p-5 rounded-xl shadow-2xl">
+        <h2 class="text-lg font-bold mb-3 text-center">Confirmar Eliminación</h2>
+        <p class="text-sm text-gray-600 mb-2">Ingrese la justificación:</p>
+        <input type="text" id="delete-justification" class="w-full border rounded p-2 text-sm mb-3" placeholder="Ej: Error del sistema, Alumno repitió...">
+        <input type="hidden" id="delete-ci">
+        <div class="flex gap-2 justify-center">
+            <button onclick="confirmDelete()" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold">Confirmar</button>
+            <button onclick="cancelDelete()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const examData = {
+    section1: [
+        { q: '1. Según A. Comte, el "Estado Positivo" se caracteriza por:', options: ['a) Creer en explicaciones divinas.', 'b) Deducción lógica abstracta.', 'c) Método científico y observación empírica.'], answer: 'c' },
+        { q: '2. El "Homo Sociologicus" sostiene que:', options: ['a) Solo busca maximizar dinero.', 'b) Decisiones influenciadas por normas y valores.', 'c) Emociones no juegan ningún rol.'], answer: 'b' },
+        { q: '3. Internalización de normas en la niñez se conoce como:', options: ['a) Socialización Secundaria.', 'b) Etnocentrismo.', 'c) Socialización Primaria.'], answer: 'c' },
+        { q:  '4. "Cultura Inmaterial" incluye:', options: ['a) Oficinas y vehículos.', 'b) Valores, lenguaje y ética.', 'c) Productos de importación.'], answer: 'b' },
+        { q: '5. Analizar el comercio creyendo superior nuestra cultura es:', options: ['a) Relativismo Cultural.', 'b) Etnocentrismo.', 'c) Dinámica Social.'], answer: 'b' }
+    ],
+    section2: [
+        { q: '1. El "Sentido Común" se basa en conocimiento científico.', answer: 'F' },
+        { q: '2. Para Marx, el conflicto de clases es motor del cambio.', answer: 'V' },
+        { q: '3. La "Estática Social" se ocupa del orden y cooperación.', answer: 'V' },
+        { q:  '4. "Incrustación" dice que mercados funcionan sin confianza.', answer: 'F' },
+        { q: '5. Aprender cultura de empresa es Socialización Secundaria.', answer: 'V' }
+    ],
+    section3: ['1. Sociología:', '2. Acción Social (Weber):', '3. Cultura Material:', '4. Capital Social:', '5. Dinámica Social:'],
+    section4: [
+        { q: '4.1 ¿Por qué fracasó la oferta por "Incrustación Social"?', pts: 2.5 },
+        { q: '4.2 Identifique el Etnocentrismo y cómo actuar desde "Relativismo Cultural".', pts: 2.5 }
+    ]
+};
+
+let currentStudent = { name: '', ci: '', isTest: false, teacherName: '', teacherCI: '' };
+let examTime = parseInt(localStorage.getItem('examTime')) || 90;
+let timeLeft = examTime * 60;
+let timerInterval;
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getDate() {
+    return new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getTime() {
+    return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getDevice() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf('mobile') > -1) return 'Móvil';
+    if (ua.indexOf('tablet') > -1) return 'Tablet';
+    return 'PC';
+}
+
+function renderSection1() {
+    const container = document.getElementById('section1-questions');
+    const items = shuffleArray([...examData.section1]);
+    items.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mb-3';
+        div.innerHTML = `<p class="text-sm font-semibold text-gray-800 mb-1">${idx + 1}. ${item.q}</p>
+            <div class="text-sm text-gray-700 space-y-1 ml-2">
+                ${item.options.map(o => {
+                    const letter = o.charAt(0);
+                    return `<label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="radio" name="q1_${idx}" value="${letter}" class="w-3 h-3 text-green-600">
+                        <span>${o}</span>
+                    </label>`;
+                }).join('')}
+            </div>`;
+        container.appendChild(div);
+    });
+}
+
+function renderSection2() {
+    const container = document.getElementById('section2-questions');
+    examData.section2.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between border-b pb-2';
+        div.innerHTML = `<p class="text-sm text-gray-800 flex-1">${idx + 1}. ${item.q}</p>
+            <div class="flex gap-3 ml-3">
+                <label class="cursor-pointer text-sm"><input type="radio" name="q2_${idx}" value="V" class="w-3 h-3"> V</label>
+                <label class="cursor-pointer text-sm"><input type="radio" name="q2_${idx}" value="F" class="w-3 h-3"> F</label>
+            </div>`;
+        container.appendChild(div);
+    });
+}
+
+function renderSection3() {
+    const container = document.getElementById('section3-questions');
+    examData.section3.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `<label class="font-bold text-sm text-primary">${item}</label>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="2" name="q3_${idx}" placeholder="Defina..."></textarea>`;
+        container.appendChild(div);
+    });
+}
+
+function renderSection4() {
+    const container = document.getElementById('section4-questions');
+    examData.section4.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `<p class="text-sm font-semibold text-gray-800">${item.q} (${item.pts} Ptos)</p>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="3" name="q4_${idx}" placeholder="Escriba su respuesta..."></textarea>`;
+        container.appendChild(div);
+    });
+}
+
+function startExam() {
+    const ci = document.getElementById('student-id').value.trim();
+    const name = document.getElementById('student-name').value.trim();
+    
+    if (!ci || !name) {
+        alert('Complete todos los campos');
+        return;
+    }
+    
+    currentStudent = { name, ci };
+    
+    if (ci === '20262026') {
+        currentStudent.teacherName = prompt('Ingrese su nombre:') || 'Docente';
+        currentStudent.teacherCI = ci;
+        showTeacherPanel();
+        return;
+    }
+    
+    if (ci === '99') {
+        currentStudent.isTest = true;
+    }
+    
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('exam-container').classList.remove('hidden');
+    document.getElementById('display-name').textContent = name;
+    document.getElementById('display-id').textContent = ci;
+    document.getElementById('display-date').textContent = getDate();
+    document.getElementById('display-teacher').textContent = localStorage.getItem('teacherName') || 'C.I. 20262026';
+    document.getElementById('exam-timer-display').textContent = examTime + ' minutos';
+    document.getElementById('exam-time-display').textContent = examTime + ' minutos';
+    
+    renderSection1();
+    renderSection2();
+    renderSection3();
+    renderSection4();
+    
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        finalizarExamen();
+        return;
+    }
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    if (timeLeft < 300) document.getElementById('timer').classList.add('text-red-600');
+}
+
+function calcularPuntaje() {
+    let score = 0;
+    let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q1_${i}"]:checked`);
+        if (selected) score++;
+        if (selected) s1++;
+    }
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (selected && selected.value === examData.section2[i].answer) { score++; s2++; }
+    }
+    for (let i = 0; i < 5; i++) {
+        const text = document.querySelector(`textarea[name="q3_${i}"]`)?.value?.trim();
+        if (text && text.length > 10) { score++; s3++; }
+    }
+    for (let i = 0; i < 2; i++) {
+        const text = document.querySelector(`textarea[name="q4_${i}"]`)?.value?.trim();
+        if (text && text.length > 20) { score += 2.5; s4 += 2.5; }
+    }
+    return {
+        score: Math.min(score, 20),
+        summary: [
+            { section: 'I. Selección Múltiple', correct: s1, total: 5 },
+            { section: 'II. Verdadero/Falso', correct: s2, total: 5 },
+            { section: 'III. Definiciones', correct: s3, total: 5 },
+            { section: 'IV. Caso', correct: s4, total: 5 }
+        ]
+    };
+}
+
+function finalizarExamen() {
+    clearInterval(timerInterval);
+    
+    if (currentStudent.isTest) {
+        alert('Examen de prueba completado');
+        location.reload();
+        return;
+    }
+    
+    const result = calcularPuntaje();
+    const score = result.score;
+    const percent = ((score / 20) * 100).toFixed(0);
+    
+    document.getElementById('res-name').textContent = currentStudent.name;
+    document.getElementById('res-id').textContent = currentStudent.ci;
+    document.getElementById('res-date').textContent = `${getDate()} ${getTime()}`;
+    document.getElementById('res-score').textContent = score;
+    document.getElementById('res-percent').textContent = percent;
+    
+    // QR Data
+    document.querySelector('.res-qr-ci').textContent = currentStudent.ci;
+    document.querySelector('.res-qr-score').textContent = score;
+    
+    // Matrix
+    let matrixHTML = '';
+    result.summary.forEach(s => {
+        const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '◐' : '✗');
+        const color = s.correct === s.total ? 'text-green-600' : (s.correct > 0 ? 'text-yellow-600' : 'text-red-600');
+        matrixHTML += `<div class="flex justify-between border-b py-1 ${color}"><span>${s.section}</span><span>${icon} ${s.correct}/${s.total}</span></div>`;
+    });
+    document.getElementById('results-matrix').innerHTML = matrixHTML;
+    
+    // Teacher signature
+    const teacherName = localStorage.getItem('teacherName') || 'Docente';
+    document.getElementById('teacher-signature').textContent = teacherName;
+    document.getElementById('teacher-ci-display').textContent = 'C.I. 20262026';
+    
+    document.getElementById('result-modal').classList.remove('hidden');
+    guardarResultado(result);
+}
+
+function guardarResultado(result) {
+    let allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const existing = allResults.filter(r => r.ci === currentStudent.ci);
+    
+    if (existing.length >= 3) {
+        return;
+    }
+    
+    const record = {
+        name: currentStudent.name,
+        ci: currentStudent.ci,
+        score: result.score,
+        date: getDate(),
+        time: getTime(),
+        datetime: new Date().toISOString(),
+        device: getDevice(),
+        summary: result.summary
+    };
+    
+    allResults.push(record);
+    localStorage.setItem('examResults', JSON.stringify(allResults));
+}
+
+function descargarActa() {
+    const element = document.getElementById('acta-content');
+    html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Acta_${currentStudent.ci}_${currentStudent.name.split(' ')[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // Mostrar mensaje y cerrar después de 2 segundos
+        setTimeout(() => {
+            if (confirm('¿Desea cerrar la ventana del examen?')) {
+                window.close();
+            }
+        }, 1000);
+    });
+}
+
+function imprimirActa() {
+    window.print();
+    // Cerrar después de imprimir
+    setTimeout(() => {
+        if (confirm('¿Desea cerrar la ventana del examen?')) {
+            window.close();
+        }
+    }, 1500);
+}
+
+function showTeacherPanel() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('teacher-panel').classList.remove('hidden');
+    document.getElementById('exam-time-display').textContent = examTime + ' minutos';
+    document.getElementById('exam-time-setting').value = examTime;
+    document.getElementById('teacher-name-display').textContent = localStorage.getItem('teacherName') || 'Docente';
+    document.getElementById('teacher-id-display').textContent = '20262026';
+    cargarDatosProfesor();
+}
+
+function saveExamTime() {
+    const newTime = parseInt(document.getElementById('exam-time-setting').value);
+    if (newTime >= 10 && newTime <= 180) {
+        examTime = newTime;
+        localStorage.setItem('examTime', newTime);
+        localStorage.setItem('teacherName', currentStudent.teacherName);
+        document.getElementById('exam-time-display').textContent = newTime + ' minutos';
+        document.getElementById('save-msg').classList.remove('hidden');
+        setTimeout(() => document.getElementById('save-msg').classList.add('hidden'), 2000);
+    }
+}
+
+function cargarDatosProfesor() {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const uniqueStudents = [...new Set(allResults.map(r => r.ci))];
+    document.getElementById('total-count').textContent = uniqueStudents.length;
+    
+    const bestScores = uniqueStudents.map(ci => {
+        const studentResults = allResults.filter(r => r.ci === ci);
+        return Math.max(...studentResults.map(r => r.score));
+    });
+    const avg = bestScores.length > 0 ? (bestScores.reduce((sum, s) => sum + s, 0) / bestScores.length).toFixed(1) : '-';
+    document.getElementById('avg-score').textContent = avg;
+    
+    let html = '';
+    if (allResults.length === 0) {
+        html = '<p class="text-gray-400 text-center py-4">Sin entregas</p>';
+    } else {
+        allResults.sort((a, b) => new Date(b.datetime) - new Date(a.datetime)).forEach((r) => {
+            const attempts = allResults.filter(x => x.ci === r.ci).length;
+            const maxScore = Math.max(...allResults.filter(x => x.ci === r.ci).map(x => x.score));
+            const percent = ((maxScore / 20) * 100).toFixed(0);
+            html += `<div class="bg-white p-2 rounded border cursor-pointer hover:bg-green-50" onclick="verDetalleExamen('${r.ci}')">
+                <p class="font-bold text-xs">${r.name}</p>
+                <p class="text-xs text-gray-500">C.I. ${r.ci} | Mejor: ${maxScore}/20 (${percent}%) | Intento ${attempts}/3</p>
+                <p class="text-xs text-gray-400">${r.date} ${r.time}</p>
+                <button onclick="event.stopPropagation(); eliminarAlumno('${r.ci}')" class="text-xs text-red-600 hover:underline mt-1">Eliminar</button>
+            </div>`;
+        });
+    }
+    document.getElementById('students-list').innerHTML = html;
+}
+
+function verDetalleExamen(ci) {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const deletions = JSON.parse(localStorage.getItem('deletedResults') || '[]');
+    const studentResults = allResults.filter(x => x.ci === ci).sort((a, b) => b.score - a.score);
+    const bestResult = studentResults[0];
+    const del = deletions.filter(d => d.ci === ci);
+    
+    if (!bestResult) return;
+    
+    let attemptsHTML = '';
+    studentResults.forEach((r, idx) => {
+        const percent = ((r.score / 20) * 100).toFixed(0);
+        attemptsHTML += `
+            <div class="bg-white p-2 rounded border mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-xs">Intento ${idx + 1}</span>
+                    <span class="text-green-600 font-bold">${r.score}/20 (${percent}%)</span>
+                </div>
+                <div class="text-xs text-gray-500">${r.date} ${r.time}</div>
+            </div>
+        `;
+    });
+    
+    let matrixHTML = '';
+    if (bestResult.summary) {
+        bestResult.summary.forEach(s => {
+            const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '◐' : '✗');
+            const color = s.correct === s.total ? 'text-green-600' : (s.correct > 0 ? 'text-yellow-600' : 'text-red-600');
+            matrixHTML += `<div class="flex justify-between border-b py-1 ${color}"><span>${s.section}</span><span>${icon} ${s.correct}/${s.total}</span></div>`;
+        });
+    }
+    
+    let deleteHistory = '';
+    if (del.length > 0) {
+        deleteHistory = `<div class="border-t pt-2 mt-2"><p class="font-bold text-xs text-red-600">Historial de Eliminaciones</p>${del.map(d => `<p class="text-xs">${d.date} - "${d.justification}"</p>`).join('')}</div>`;
+    }
+    
+    document.getElementById('exam-detail').innerHTML = `
+        <div class="space-y-3 text-sm">
+            <div><strong>Nombre:</strong> ${bestResult.name}</div>
+            <div><strong>C.I.:</strong> ${bestResult.ci}</div>
+            <div class="bg-yellow-50 p-2 rounded border mb-2">
+                <p class="font-bold text-xs text-yellow-700">Todos los Intentos</p>
+                ${attemptsHTML}
+            </div>
+            <div class="bg-green-50 p-3 rounded-lg border">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><strong>Mejor Nota:</strong> <span class="text-green-600 font-bold text-lg">${bestResult.score}/20</span></div>
+                    <div><strong>Porcentaje:</strong> <span class="text-green-600 font-bold text-lg">${((bestResult.score/20)*100).toFixed(0)}%</span></div>
+                </div>
+            </div>
+            <div class="bg-gray-100 p-2 rounded">
+                <p class="font-bold text-xs">Matriz de Respuestas (Mejor Intento)</p>
+                <div class="mt-1">${matrixHTML || '<p class="text-xs text-gray-400">Sin matriz disponible</p>'}</div>
+            </div>
+            <div class="text-xs text-gray-500">
+                <strong>Dispositivo:</strong> ${bestResult.device || 'N/A'}
+            </div>
+            <button onclick="exportExamenIndividual('${ci}')" class="mt-3 bg-red-600 text-white px-3 py-2 rounded text-xs hover:bg-red-700">
+                <i class="fas fa-file-pdf mr-1"></i> Exportar Examen PDF
+            </button>
+            ${deleteHistory}
+        </div>
+    `;
+}
+
+function eliminarAlumno(ci) {
+    document.getElementById('delete-ci').value = ci;
+    document.getElementById('delete-justification').value = '';
+    document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function confirmDelete() {
+    const ci = document.getElementById('delete-ci').value;
+    const justification = document.getElementById('delete-justification').value.trim();
+    
+    if (!justification) {
+        alert('Ingrese justificación');
+        return;
+    }
+    if (!confirm('¿Está seguro?')) return;
+    
+    let allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    allResults = allResults.filter(r => r.ci !== ci);
+    localStorage.setItem('examResults', JSON.stringify(allResults));
+    
+    let deletions = JSON.parse(localStorage.getItem('deletedResults') || '[]');
+    deletions.push({ ci, date: getDate(), time: getTime(), justification });
+    localStorage.setItem('deletedResults', JSON.stringify(deletions));
+    
+    document.getElementById('delete-modal').classList.add('hidden');
+    cargarDatosProfesor();
+}
+
+function cancelDelete() {
+    document.getElementById('delete-modal').classList.add('hidden');
+}
+
+function actualizarPanel() {
+    cargarDatosProfesor();
+}
+
+function exportPDF() {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const uniqueStudents = [...new Set(allResults.map(r => r.ci))];
+    
+    if (allResults.length === 0) {
+        alert('No hay exámenes para exportar');
+        return;
+    }
+    
+    const teacherName = localStorage.getItem('teacherName') || 'Docente';
+    const examTime = localStorage.getItem('examTime') || '90';
+    const date = new Date().toLocaleDateString('es-ES');
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Planilla de Exámenes - Sociología</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2c5d3d; padding-bottom: 10px; }
+            .header h1 { color: #2c5d3d; margin: 0; }
+            .header p { margin: 5px 0; color: #666; }
+            .info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+            th { background-color: #2c5d3d; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .success { color: green; }
+            .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #666; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>INSTITUTO SUPERIOR CENTURIA</h1>
+            <p>Examen de Sociología - Planilla de Resultados</p>
+        </div>
+        <div class="info">
+            <p><strong>Fecha de exportación:</strong> ${date}</p>
+            <p><strong>Docente:</strong> ${teacherName}</p>
+            <p><strong>Tiempo del examen:</strong> ${examTime} minutos</p>
+            <p><strong>Total de alunos:</strong> ${uniqueStudents.length}</p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cédula</th>
+                    <th>Nombre y Apellido</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Mejor Nota</th>
+                    <th>Porcentaje</th>
+                    <th>Intentos</th>
+                    <th>Dispositivo</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    uniqueStudents.forEach((ci, index) => {
+        const studentResults = allResults.filter(r => r.ci === ci);
+        const bestScore = Math.max(...studentResults.map(r => r.score));
+        const bestResult = studentResults.find(r => r.score === bestScore);
+        const percent = ((bestScore / 20) * 100).toFixed(0);
+        const attempts = studentResults.length;
+        
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${ci}</td>
+                <td>${bestResult.name}</td>
+                <td>${bestResult.date}</td>
+                <td>${bestResult.time}</td>
+                <td class="success"><strong>${bestScore}/20</strong></td>
+                <td>${percent}%</td>
+                <td>${attempts}/3</td>
+                <td>${bestResult.device || 'N/A'}</td>
+            </tr>
+        `;
+    });
+    
+    const bestScores = uniqueStudents.map(ci => {
+        const studentResults = allResults.filter(r => r.ci === ci);
+        return Math.max(...studentResults.map(r => r.score));
+    });
+    const avg = bestScores.length > 0 ? (bestScores.reduce((sum, s) => sum + s, 0) / bestScores.length).toFixed(1) : 0;
+    
+    html += `
+            </tbody>
+        </table>
+        <div class="footer">
+            <p><strong>Promedio general:</strong> ${avg}/20 (${((avg/20)*100).toFixed(0)}%)</p>
+            <p>Instituto Superior Centuria - Sociología</p>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+}
+
+function exportExamenIndividual(ci) {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const studentResults = allResults.filter(r => r.ci === ci).sort((a, b) => b.score - a.score);
+    const bestResult = studentResults[0];
+    
+    if (!bestResult) return;
+    
+    const teacherName = localStorage.getItem('teacherName') || 'Docente';
+    const date = new Date().toLocaleDateString('es-ES');
+    const percent = ((bestResult.score / 20) * 100).toFixed(0);
+    
+    let matrizDetallada = '';
+    if (bestResult.summary) {
+        bestResult.summary.forEach(s => {
+            const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '◐' : '✗');
+            const color = s.correct === s.total ? 'green' : (s.correct > 0 ? 'orange' : 'red');
+            matrizDetallada += `<tr style="color:${color}">
+                <td>${s.section}</td>
+                <td>${s.correct}/${s.total}</td>
+                <td>${icon}</td>
+            </tr>`;
+        });
+    }
+    
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Examen Individual - ${bestResult.name}</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #2c5d3d; padding-bottom: 15px; }
+            .header h1 { color: #2c5d3d; margin: 0; font-size: 24px; }
+            .student-info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+            .student-info table { width: 100%; }
+            .student-info td { padding: 8px; }
+            .score-box { text-align: center; padding: 20px; background: #2c5d3d; color: white; border-radius: 8px; margin: 20px 0; }
+            .score-box .score { font-size: 36px; font-weight: bold; }
+            .score-box .percent { font-size: 18px; }
+            table.matrix { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            table.matrix th { background: #2c5d3d; color: white; padding: 10px; }
+            table.matrix td { padding: 8px; border-bottom: 1px solid #ddd; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+            .attempts { margin-top: 20px; }
+            .attempts table { width: 100%; border-collapse: collapse; }
+            .attempts th, .attempts td { border: 1px solid #ddd; padding: 6px; font-size: 11px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>INSTITUTO SUPERIOR CENTURIA</h1>
+            <p>Examen de Sociología - Primer Parcial</p>
+        </div>
+        
+        <div class="student-info">
+            <table>
+                <tr><td><strong>Nombre:</strong></td><td>${bestResult.name}</td></tr>
+                <tr><td><strong>Cédula:</strong></td><td>${bestResult.ci}</td></tr>
+                <tr><td><strong>Fecha:</strong></td><td>${bestResult.date}</td></tr>
+                <tr><td><strong>Hora:</strong></td><td>${bestResult.time}</td></tr>
+                <tr><td><strong>Dispositivo:</strong></td><td>${bestResult.device || 'N/A'}</td></tr>
+            </table>
+        </div>
+        
+        <div class="score-box">
+            <div class="score">${bestResult.score}/20</div>
+            <div class="percent">${percent}%</div>
+        </div>
+        
+        <h3>Matriz de Respuestas</h3>
+        <table class="matrix">
+            <tr><th>Sección</th><th>Respuestas Correctas</th><th>Estado</th></tr>
+            ${matrizDetallada}
+        </table>
+        
+        <div class="attempts">
+            <h3>Todos los Intentos</h3>
+            <table>
+                <tr><th>Intento</th><th>Fecha</th><th>Hora</th><th>Nota</th><th>%</th></tr>
+                ${studentResults.map((r, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${r.date}</td>
+                        <td>${r.time}</td>
+                        <td>${r.score}/20</td>
+                        <td>${((r.score/20)*100).toFixed(0)}%</td>
+                    </tr>
+                `).join('')}
+            </table>
+        </div>
+        
+        <div class="footer">
+            <p>Docente: ${teacherName}</p>
+            <p>Fecha de emisión: ${date}</p>
+            <p>Instituto Superior Centuria - Sociología</p>
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+}
+
+console.log('Examen Sociología Centuria v5 - Listo');
+</script>
+
+</body>
+</html>

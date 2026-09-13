@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 01: Sistemas de Información (Master Edition) | ICO3534</title>
+    <style>
+        :root {
+            --primary: #0d47a1;
+            --accent: #1565c0;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm;
+            margin: 20mm auto;
+            background: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-top: 15px solid var(--primary);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+        }
+
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 26pt;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 18pt;
+            color: var(--primary);
+            border-left: 8px solid var(--accent);
+            padding-left: 15px;
+            margin: 40px 0 20px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: var(--accent);
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .reading-box {
+            background: #fffcf0;
+            border: 1px solid #f1c40f;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-style: italic;
+            position: relative;
+        }
+
+        .reading-box::before {
+            content: "📖 LECTURA OBLIGATORIA INCLUIDA";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #f1c40f;
+            color: #000;
+            padding: 2px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 5px;
+            font-style: normal;
+        }
+
+        .important-note {
+            background: #fdedec;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .technical-box {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .snippet {
+            background: #2d3436;
+            color: #55efc4;
+            padding: 25px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 10pt;
+            line-height: 1.5;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #1dd1a1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 10pt;
+        }
+
+        th,
+        td {
+            border: 1px solid #dcdde1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f2f6;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 20mm;
+            right: 25mm;
+            font-size: 9pt;
+            color: #95a5a6;
+        }
+
+        .btn-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media print {
+            body {
+                background: none;
+            }
+
+            .page {
+                margin: 0;
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .btn-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <header>
+            <div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div>
+            <h1>UNIDAD I: Los Sistemas</h1>
+            <p style="font-size: 1.2rem; color: #7f8c8d;">Guía Maestra de Estudio y Ejecución Profesional</p>
+        </header>
+        <section>
+            <h2>1. Introducción y Contexto Curricular</h2>
+            <p>La asignatura "Informática Aplicada" se sitúa en el núcleo de la formación del Ingeniero/Contador
+                moderno. En esta primera unidad, abordamos el concepto de **Sistema** no como un ente aislado de
+                software, sino como una estructura organizacional que procesa realidad económica para convertirla en
+                decisiones estratégicas.</p>
+            <p>Históricamente, la contabilidad se veía como un registro estático. Hoy, bajo la Teoría General de
+                Sistemas, la vemos como un **Flujo Dinámico**. Si el flujo se interrumpe o el dato se corrompe, la
+                organización pierde su capacidad de navegación en el mercado.</p>
+            <h3>1.1 Objetivos Pedagógicos de Alto Nivel</h3>
+            <ul>
+                <li><strong>Científico:</strong> Definir epistemológicamente qué es un sistema y sus fronteras.</li>
+                <li><strong>Técnico:</strong> Identificar los 4 procesos vitales: Colección, Almacenamiento,
+                    Procesamiento y Distribución.</li>
+                <li><strong>Legal:</strong> Internalizar la necesidad de 'veracidad y oportunidad' exigida por el fisco
+                    paraguayo (DNIT).</li>
+            </ul>
+        </section>
+        <div class="important-note"><strong>⚠️ NOTA DEL DOCENTE:</strong> Esta guía está diseñada para ser la
+            herramienta principal de su laboratorio práctico. No la lea únicamente, ejecute los ejercicios contenidos.
+        </div>
+        <section class="reading-box">
+            <h3>📜 Texto Fundamental Incluido (Programa p.2-3)</h3>
+            <p>"El avance de las TIC imprime velocidad en varios escenarios comerciales, legales y ambientales al exigir
+                eficiencia en el registro de operaciones. La producción de información veraz, confiable y oportuna es el
+                fin último de la informática aplicada. Los sistemas deben ser capaces de coleccionar datos a través de
+                señales electrónicas integrando todas las tecnologías disponibles para la recuperación inmediata de
+                información financiera clave."</p>
+        </section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <div class="page">
+        <h2>2. Desarrollo Teórico Profundo</h2>
+        <h3>2.1 Clasificación Analítica de los Sistemas</h3>
+        <p>Para comprender la informática contable, debemos clasificar los sistemas según su relación con el entorno.
+            Los sistemas contables son, por definición, **Sistemas Abiertos** y **Cibernéticos** (con
+            retroalimentación).</p>
+        <p><strong>A. Sistemas de Procesamiento de Transacciones (TPS):</strong> Es el nivel base. Aquí es donde el
+            'Dato Bruto' entra al sistema. Si un TPS falla, la contabilidad es inexistente.</p>
+        <p><strong>B. Sistemas de Información Gerencial (MIS):</strong> Toman los datos del TPS y generan reportes. Es
+            el nivel del contador que asesora a la dirección.</p>
+        <p><strong>C. Sistemas de Apoyo a Decisiones (DSS):</strong> Utilizan modelos matemáticos para proyectar
+            escenarios. Es el nivel de la Ingeniería Aplicada.</p>
+        <h3>2.2 Los 4 Procesos Críticos: Una Visión Técnica</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Proceso</th>
+                    <th>Definición Técnica</th>
+                    <th>Ejemplo en la Profesión</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Colección</strong></td>
+                    <td>Captura de señales digitales u OCR de documentos físicos.</td>
+                    <td>Escaneo de facturas con código QR de la DNIT.</td>
+                </tr>
+                <tr>
+                    <td><strong>Almacenamiento</strong></td>
+                    <td>Persistencia inmutable en bases de datos (SQL/NoSQL).</td>
+                    <td>Servidores locales o servicios Cloud (Azure/AWS).</td>
+                </tr>
+                <tr>
+                    <td><strong>Procesamiento</strong></td>
+                    <td>Transformación mediante algoritmos de partida doble.</td>
+                    <td>Generación automática del Libro Diario y Mayor.</td>
+                </tr>
+                <tr>
+                    <td><strong>Distribución</strong></td>
+                    <td>Entrega de información en formatos auditables.</td>
+                    <td>Generación de archivos JSON para el SIFEN.</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>2.3 El Concepto de Entropía en Sistemas Contables</h3>
+        <p>La entropía es la tendencia al desorden. En informática aplicada, un sistema con alta entropía es aquel donde
+            los datos están duplicados, los reportes no cuadran o existe latencia en la entrega de información. El rol
+            del experto es aplicar **Negentropía** (orden) mediante procesos de normalización de datos.</p>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <div class="page">
+        <h2>3. Laboratorio de Aplicación: Herramientas de Ejecución</h2>
+        <p>En este bloque, pasamos de la teoría al control de datos. Utilizaremos algoritmos lógicos para validar la
+            integridad de la información en la fase de **Colección**.</p>
+        <section class="technical-box">
+            <h3 style="margin-top:0;">🛠️ CAJA DE HERRAMIENTAS TÉCNICAS</h3>
+            <p><strong>Desafío:</strong> Diseñar un algoritmo que clasifique documentos y valide su origen.</p>
+            <p><strong>Snippet de Lógica de Clasificación (Pseudocódigo):</strong></p>
+            <div class="snippet"># ALGORITMO DE CLASIFICACIÓN DE ENTRADAS<br>VARIABLES ID_DATO, TIPO_DOC,
+                ORIGEN<br><br>INICIO<br>&nbsp;&nbsp;LEER ID_DATO<br>&nbsp;&nbsp;SI (TIPO_DOC == "FACTURA_ELECTRONICA")
+                ENTONCES<br>&nbsp;&nbsp;&nbsp;&nbsp;LLAMAR_PROCESO:
+                "VALIDACION_API_DNIT"<br>&nbsp;&nbsp;&nbsp;&nbsp;DESTINO: "ALMACENAMIENTO_FISCAL"<br>&nbsp;&nbsp;SINO SI
+                (TIPO_DOC == "NOTA_INTERNA") ENTONCES<br>&nbsp;&nbsp;&nbsp;&nbsp;DESTINO:
+                "CONTROL_INTERNO"<br>&nbsp;&nbsp;SINO<br>&nbsp;&nbsp;&nbsp;&nbsp;MARCAR:
+                "DERECHO_A_REVISIÓN_MANUAL"<br>&nbsp;&nbsp;FIN SI<br>FIN</div>
+        </section>
+        <h3>3.1 Dataset de Entrenamiento Profesional (Muestreo Real)</h3>
+        <p>Utilice la siguiente base de datos para simular una carga de sistemas en la Ciudad de Asunción.</p>
+        <table class="dataset-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Entidad / Proveedor</th>
+                    <th>Monto (PYG)</th>
+                    <th>Fase del Sistema</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>001</td>
+                    <td>Municipalidad de Asunción</td>
+                    <td>15.500.000</td>
+                    <td>Colección Manual</td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>Bancard S.A. (Comisiones)</td>
+                    <td>2.100.000</td>
+                    <td>Colección Automática</td>
+                </tr>
+                <tr>
+                    <td>003</td>
+                    <td>Ande (Servicios Públicos)</td>
+                    <td>4.750.000</td>
+                    <td>Procesamiento Pendiente</td>
+                </tr>
+                <tr>
+                    <td>004</td>
+                    <td>Estudio Contable "Centuria"</td>
+                    <td>8.900.000</td>
+                    <td>Almacenado (Azure Cloud)</td>
+                </tr>
+                <tr>
+                    <td>005</td>
+                    <td>Local "El Sol" (Ventas)</td>
+                    <td>22.300.000</td>
+                    <td>Distribución (Dashboard)</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <div class="page">
+        <h2>4. Casos de Estudio y Realidad Nacional</h2>
+        <h3>Caso 4.1: El Fracaso de la Implementación en "Empresa X"</h3>
+        <p>Una mediana empresa decide informatizar su contabilidad. Compra el software más costoso, pero olvida auditar
+            la fase de **Colección**. Los empleados cargan datos con errores de dedo, sin validar RUCs. </p>
+        <p><strong>Resultado:</strong> Al llegar el fin de mes, el sistema (fase de Procesamiento) emite balances
+            "cuadrados" pero basados en datos falsos. </p>
+        <p><strong>Lección Técnica:</strong> Un sistema es tan bueno como el dato más débil que ingresa. <em>(Principio
+                GIGO: Garbage In, Garbage Out)</em>.</p>
+        <h3>4.2 Marco Regulatorio: La Contabilidad Digital en Paraguay</h3>
+        <p>En Paraguay, los sistemas deben cumplir con la **Ley 6822/21 (Servicios de Confianza)** y las resoluciones de
+            la **DNIT**. No basta con procesar; el sistema debe garantizar la **Firma Digital** y la **Inmutabilidad**
+            de los registros una vez cerrados.</p>
+        <section class="checklist">
+            <h3>🏁 CHECKLIST DE AUDITORÍA DE SISTEMAS (NIVEL 1)</h3>
+            <ul>
+                <li>[ ] ¿El sistema permite que dos facturas tengan el mismo número? (Error de Integridad)</li>
+                <li>[ ] ¿Se aplica el redondeo PYG (moneda nacional) según norma?</li>
+                <li>[ ] ¿Existe un Log de Auditoría que registre quién modificó un dato?</li>
+                <li>[ ] ¿La fase de Distribución entrega archivos compatibles con el Marangatú?</li>
+            </ul>
+        </section>
+        <h3>4.3 Bibliografía Comentada: Fowler Newton</h3>
+        <p>Newton (1998) sostiene que "el contador que no entiende la informática es como un médico que no entiende la
+            anatomía". En su obra fundamental, destaca que el control de los archivos maestros (donde están los clientes
+            y cuentas) es el punto más sensible de cualquier sistema informático.</p>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <div class="page">
+        <h2>5. Guía SOS: Resolución de Crisis en el SIC</h2>
+        <p>Como profesional de Ingeniería Aplicada, usted será consultado cuando el sistema falle. Esta sección le
+            provee las claves para el diagnóstico rápido.</p>
+        <section class="sos-box">
+            <h3 style="margin-top:0; color:#d63031;">🆘 "QUÉ HACER SI..." (Troubleshooting)</h3>
+            <p><strong>A. EL BALANCE NO CUADRA POR 1 GUARANÍ:</strong><br><strong>Causa:</strong> Errores de redondeo en
+                el algoritmo de cálculo de IVA.<br><strong>Solución:</strong> Aplique la función
+                <code>REDONDEAR(monto; 0)</code> al inicio de la fase de procesamiento, no al final de la visualización.
+            </p>
+            <p><strong>B. EL REPORTE DE VENTAS NO COINCIDE CON EL STOCK:</strong><br><strong>Causa:</strong> Falta de un
+                algoritmo de <em>Commit</em> (Transacción Segura). Se grabó la venta pero el sistema falló al actualizar
+                el almacén.<br><strong>Solución:</strong> Implementar "Unidades de Trabajo Atómicas" donde o se graban
+                ambos datos o no se graba ninguno.</p>
+            <p><strong>C. LA INFORMACIÓN SE PERDIÓ TRAS UN CORTE DE ENERGÍA:</strong><br><strong>Causa:</strong> Fallo
+                en la fase de Almacenamiento. No existía un búfer de escritura seguro.<br><strong>Solución:</strong>
+                Migrar a sistemas con <em>Journaling</em> y servidores con UPS integrada.</p>
+        </section>
+        <h3>5.1 Micro-Cita Ovelar (2008)</h3>
+        <p>"La eficiencia de un sistema se mide por su capacidad de recuperación ante el error humano. Un software que
+            no permite auditar el pasado es una trampa legal para el profesional."</p>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <div class="page">
+        <h2>6. Evaluación Final de Competencias</h2>
+        <p>Para considerar superada esta unidad maestra, usted debe ser capaz de resolver el siguiente cuestionario
+            técnico de simulación profesional.</p>
+        <section style="background:#f1f2f6; padding:30px; border-radius:10px;">
+            <h3>📝 Cuestionario de Análisis Profesional</h3>
+            <ol>
+                <li>¿Cuál es la diferencia técnica entre 'Dato' e 'Información' en un contexto de auditoría informática?
+                </li>
+                <li>Explique por qué un sistema contable se considera un Sistema Abierto.</li>
+                <li>Dada una lista de 500 facturas PDF, ¿qué técnicas de "Colección" propondría para evitar la carga
+                    manual?</li>
+                <li>¿Qué función del sistema se encarga de que el Balance General esté disponible el día 1 de cada mes?
+                </li>
+                <li>Proponga un algoritmo en Pseudocódigo para detectar si un RUC ingresado es válido o no.</li>
+            </ol>
+        </section>
+        <h3>6.1 Glosario de la Unidad I</h3>
+        <ul>
+            <li><strong>GIGO:</strong> Garbage In, Garbage Out. Calidad de salida depende de calidad de entrada.</li>
+            <li><strong>TRAZABILIDAD:</strong> Capacidad de seguir el rastro de un dato desde su origen hasta el reporte
+                final.</li>
+            <li><strong>SIFEN:</strong> Sistema Integrado de Facturación Electrónica Nacional (Paraguay).</li>
+            <li><strong>API:</strong> Interfaz de Programación de Aplicaciones (Conexión entre sistemas).</li>
+        </ul>
+        <div class="footer" style="padding-bottom:50px;">
+            <p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p>
+            <p>© 2026 Centuria • Ingeniería Aplicada • Todos los derechos reservados.</p>
+        </div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

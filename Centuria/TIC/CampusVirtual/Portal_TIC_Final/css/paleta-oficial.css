@@ -1,0 +1,137 @@
+/* ============================================================
+   PALETA OFICIAL INSTITUTO SUPERIOR CENTURIA
+   Colores: #2D2D2D | #E6F4EA | #00B140 | #007A33 | #81C784
+   ============================================================ */
+
+:root {
+    --c-primary: #007A33;
+    --c-secondary: #00B140;
+    --c-hover: #81C784;
+    --c-light: #E6F4EA;
+    --c-dark: #2D2D2D;
+    --c-white: #ffffff;
+    --c-gold: #C5A55A;
+}
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Montserrat', 'Segoe UI', sans-serif;
+    background-color: var(--c-light);
+    color: var(--c-dark);
+    line-height: 1.6;
+}
+
+/* ── Header institucional ── */
+.header-centuria {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+}
+.sidebar a {
+    color: var(--c-white);
+    text-decoration: none;
+    padding: 10px 16px;
+    display: block;
+    border-radius: 6px;
+    transition: background .2s;
+}
+.sidebar a:hover,
+.sidebar a.active {
+    background-color: rgba(255,255,255,.12);
+}
+
+/* ── Botones ── */
+.btn-centuria {
+    background-color: var(--c-secondary);
+    color: var(--c-white);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform .2s;
+}
+.btn-centuria:hover {
+    background-color: var(--c-hover);
+    transform: translateY(-1px);
+}
+
+/* ── Cards ── */
+.card-centuria {
+    background-color: var(--c-white);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 1.25rem;
+    margin: 1rem 0;
+    border-left: 4px solid var(--c-primary);
+}
+.card-centuria:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* ── Badges ── */
+.badge-centuria {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+/* ── Texto ── */
+.text-centuria { color: var(--c-primary) !important; }
+.text-muted-centuria { color: #6c757d; }
+
+/* ── Enlaces ── */
+a.centuria-link {
+    color: var(--c-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color .2s;
+}
+a.centuria-link:hover {
+    color: var(--c-secondary);
+}
+
+/* ── Progress bar ── */
+.progress-centuria {
+    background-color: #dee2e6;
+    border-radius: 20px;
+    height: 20px;
+    overflow: hidden;
+}
+.progress-centuria-bar {
+    background: linear-gradient(90deg, var(--c-primary), var(--c-secondary));
+    height: 100%;
+    border-radius: 20px;
+    transition: width .5s ease;
+}
+
+/* ── Tabla ── */
+.table-centuria thead {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+}
+.table-centuria tbody tr:hover {
+    background-color: var(--c-light);
+}
+
+/* ── Alerta ── */
+.alert-centuria {
+    background-color: var(--c-light);
+    border-left: 4px solid var(--c-primary);
+    color: var(--c-dark);
+    padding: 12px 16px;
+    border-radius: 6px;
+}

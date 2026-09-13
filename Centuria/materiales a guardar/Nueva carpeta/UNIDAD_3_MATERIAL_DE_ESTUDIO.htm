@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidad 3: La Socialización - Instituto Superior Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-left: 6px solid #1e40af;
+        }
+
+        .step-header {
+            background: #f1f5f9;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #1e40af;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .content-padding {
+            padding: 1.5rem;
+        }
+
+        .highlight-box {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #bbf7d0;
+        }
+
+        .glossary-term {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .step-card { box-shadow: none; border: 1px solid #e2e8f0; border-left: 6px solid #1e40af; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header Institucional -->
+    <header class="max-w-4xl mx-auto mb-10 text-center border-b-2 border-blue-900 pb-6">
+        <div class="flex flex-col items-center mb-4">
+            <div class="text-blue-900 font-bold text-3xl tracking-tighter mb-1">
+                INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span>
+            </div>
+            <p class="text-gray-500 uppercase tracking-widest text-sm font-semibold">Excelencia Académica</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mt-4 italic">
+            <div><strong>Carrera:</strong> Administración Aduanera / Cs. Empresariales</div>
+            <div><strong>Asignatura:</strong> Sociología</div>
+            <div><strong>Docente:</strong> Lic. Christhian Keim</div>
+            <div><strong>Material:</strong> Unidad 3</div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+
+        <!-- 1. FICHA DE CLASE -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Ficha de Clase</h2>
+            </div>
+            <div class="content-padding grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-users mr-2 text-blue-700"></i>Tema: La Socialización, Aprendizaje Social y sus Agentes</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Resumen:</strong> La identidad no es innata, se construye socialmente. Exploraremos cómo interiorizamos la cultura y el impacto de las redes de comunicación en la personalidad social y el consumo.
+                    </p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm">
+                    <p class="mb-2"><strong><i class="fas fa-laptop-house mr-1"></i> Modalidad:</strong> Asincrónica</p>
+                    <p class="mb-2"><strong><i class="fas fa-tasks mr-1"></i> Sesión:</strong> Trabajo Independiente</p>
+                    <p><strong><i class="fas fa-bullseye mr-1"></i> Objetivo:</strong> Analizar cómo las instituciones moldean la conducta y la cultura organizacional.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DESARROLLO TEÓRICO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Desarrollo Teórico y Lecturas</h2>
+            </div>
+            <div class="content-padding space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">A. ¿Qué es la Socialización?</h3>
+                        <p class="text-sm text-gray-700 leading-relaxed">Es la incorporación de la cultura a través de la participación espontánea. Su función es <strong>conservadora</strong>: transmite pautas de una generación a otra para garantizar el orden grupal.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">B. Representaciones Colectivas</h3>
+                        <p class="text-sm text-gray-700 leading-relaxed">Según <strong>Emile Durkheim</strong>, son categorías abstractas producidas colectivamente que la sociedad impone al individuo, conformando su bagaje cultural.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">C. Agentes de Socialización</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="p-4 bg-white border rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-1"><i class="fas fa-home mr-2"></i>Agentes Primarios</h4>
+                            <p class="text-xs text-gray-600">Familia y pares: brindan las normas iniciales de comportamiento y afecto.</p>
+                        </div>
+                        <div class="p-4 bg-white border rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-1"><i class="fas fa-wifi mr-2"></i>Redes y Medios</h4>
+                            <p class="text-xs text-gray-600">Núcleo de la sociedad de la información. Moldean el ser y facilitan la interacción social.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-4 border-l-4 border-blue-800 rounded">
+                    <h3 class="text-lg font-bold text-blue-900 mb-2">D. Socialización vs. Educación</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <p><strong>Socialización:</strong> Espontánea, continua y de carácter predominantemente conservador.</p>
+                        <p><strong>Educación:</strong> Estructurada, con agentes específicos (docentes) y carácter más innovador para el mercado laboral.</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 border rounded-lg">
+                    <h3 class="text-sm font-bold uppercase text-gray-500 mb-3"><i class="fas fa-bookmark mr-2"></i>Bibliografía de la Unidad</h3>
+                    <ul class="text-sm space-y-1 text-gray-600">
+                        <li><strong>Complementaria:</strong> Havighurst, R. J. (1978). <em>La Sociedad y la Educación en América Latina</em>.</li>
+                        <li><strong>Multimedia (Obligatorio):</strong> Video "Introducción a la Sociología" (Durkheim y Medios) - YouTube.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GUÍA DE ESTUDIO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Guía de Estudio y Glosario</h2>
+            </div>
+            <div class="content-padding">
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-800 mb-4 italic">Resuelva durante la revisión del material:</h3>
+                    <ol class="list-decimal ml-6 space-y-4 text-gray-700 text-sm">
+                        <li class="pl-2">¿Cuál es la diferencia principal entre el proceso de educación y el proceso de socialización?</li>
+                        <li class="pl-2">Explique con sus palabras qué son las "representaciones colectivas" de las que habla Durkheim.</li>
+                        <li class="pl-2">¿Por qué se afirma que la socialización es "conservadora" y la educación formal es "innovadora"?</li>
+                    </ol>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3 class="font-bold mb-3 text-green-900"><i class="fas fa-spell-check mr-2"></i>Glosario Clave</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div><span class="glossary-term">Socialización:</span> Internalización espontánea de la cultura en el individuo.</div>
+                        <div><span class="glossary-term">Rep. Colectiva:</span> Ideas impuestas por la sociedad para ver el mundo.</div>
+                        <div><span class="glossary-term">Educación:</span> Transmisión estructurada de contenidos específicos.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ACTIVIDADES ASINCRÓNICAS -->
+        <section class="step-card" style="border-left-color: #7c3aed;">
+            <div class="step-header" style="background: #f5f3ff;">
+                <div class="step-number" style="background: #7c3aed;">4</div>
+                <h2 class="text-xl font-bold uppercase text-purple-800">Foro de Debate Virtual</h2>
+            </div>
+            <div class="content-padding">
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="bg-purple-100 text-purple-700 p-3 rounded-lg">
+                        <i class="fas fa-comments fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold">"El impacto de la tecnología en la socialización del consumo"</h3>
+                        <p class="text-sm text-gray-600">Actividad obligatoria en el Aula Virtual.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mt-6 text-sm">
+                    <div class="bg-white p-3 border rounded shadow-sm">
+                        <p class="font-bold text-purple-700 mb-1">Consigna 1 (Individual):</p>
+                        <p class="text-gray-700">Redacte una intervención (mín. 150 palabras) analizando cómo las redes sociales actúan como agentes de socialización, moldeando hábitos de consumo.</p>
+                    </div>
+                    <div class="bg-white p-3 border rounded shadow-sm">
+                        <p class="font-bold text-purple-700 mb-1">Consigna 2 (Interactiva):</p>
+                        <p class="text-gray-700">Comente críticamente la intervención de un compañero debatiendo sobre la privacidad y la ética profesional en la sociedad de la información.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 & 6. MATERIALES Y EVALUACIÓN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h2 class="text-md font-bold uppercase text-blue-900">Materiales</h2>
+                </div>
+                <div class="content-padding text-sm">
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-link text-blue-500 mr-2"></i>Aula Virtual (Plataforma Centuria).</li>
+                        <li><i class="fas fa-file-pdf text-red-500 mr-2"></i>Guía de Estudio en PDF.</li>
+                        <li><i class="fas fa-play-circle text-red-600 mr-2"></i>Video Cátedra Sociología (Enlace).</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <h2 class="text-md font-bold uppercase text-blue-900">Evaluación</h2>
+                </div>
+                <div class="content-padding text-sm">
+                    <p class="font-semibold text-blue-800 mb-2">Instrumento: Rúbrica de foros</p>
+                    <p class="text-gray-600">Se evaluará la capacidad analítica para diferenciar socialización formal e informal, redacción técnica y respeto en el debate.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 7. SÍNTESIS FINAL -->
+        <section class="step-card" style="border-left-color: #1e3a8a;">
+            <div class="step-header" style="background: #1e3a8a; color: white;">
+                <div class="step-number" style="background: white; color: #1e3a8a;">7</div>
+                <h2 class="text-xl font-bold uppercase">Conexión Profesional</h2>
+            </div>
+            <div class="content-padding">
+                <div class="bg-blue-900 text-white p-5 rounded-lg shadow-inner mb-6">
+                    <h3 class="font-bold mb-3 flex items-center gap-2">
+                        <i class="fas fa-university"></i> Ámbito Empresarial y Aduanero:
+                    </h3>
+                    <p class="text-sm leading-relaxed opacity-90">
+                        Al ingresar a la Dirección de Aduanas o una empresa, vivirás dos procesos: la <strong>educación</strong> (manuales, reglamentos) y la <strong>socialización espontánea</strong> (ética no escrita, clima laboral). Un líder eficiente debe saber socializar sanamente a su equipo bajo una cultura organizacional sólida.
+                    </p>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h4 class="font-bold text-gray-800 mb-2 underline decoration-red-500 underline-offset-4">Pregunta de Autoevaluación:</h4>
+                    <p class="text-gray-600 italic text-sm">¿Estoy consciente de las representaciones colectivas y prejuicios que poseo al evaluar a clientes o pares comerciales de otras regiones?</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-4xl mx-auto text-center py-10 no-print">
+        <button onclick="window.print()" class="bg-blue-900 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-800 transition shadow-lg">
+            <i class="fas fa-print mr-2"></i> Imprimir Guía de Estudio
+        </button>
+        <p class="text-xs text-gray-400 mt-6 uppercase tracking-widest">© 2024 Instituto Superior Centuria - Unidad 3 Sociología</p>
+    </footer>
+
+</body>
+</html>

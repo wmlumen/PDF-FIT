@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 04: Excel Avanzado para Finanzas (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #1565c0; --accent: #1976d2; --bg: #e3f2fd; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #e3f2fd; border: 1px solid #1565c0; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #1565c0; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #f1f8e9; border: 1px solid #43a047; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #263238; color: #81c784; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #43a047; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f1f8e9; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD IV: Planillas Electrónicas</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Modelado Financiero y Auditoría con Excel Avanzado</p></header>
+        <section><h2>1. Excel como Herramienta de Fiscalización</h2><p>Para el profesional de ciencias económicas, la planilla electrónica es la navaja suiza de la auditoría. En esta unidad maestra, elevamos el uso de Excel de un simple registro a un **Sistema de Verificación de Datos**. El objetivo es construir modelos inalterables que resistan el escrutinio de una fiscalización de la DNIT.</p>
+        <p>Aprenderemos a modelar datos relacionales, automatizar conciliaciones bancarias y blindar la integridad del libro diario mediante fórmulas lógicas avanzadas.</p></section>
+        <section class="reading-box"><h3>📜 Guía de Cátedra (Programa p.3)</h3><p>"La planilla electrónica es el puente estratégico en las TICs. Permite no solo el almacenamiento, sino el procesamiento instantáneo y la generación de escenarios proyectivos. El estudiante debe dominar la referenciación absoluta y el análisis de tablas dinámicas para garantizar la 'oportunidad' de la información financiera."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: REFERENCIACIÓN Y BLINDAJE -->
+    <div class="page">
+        <h2>2. Blindaje de Modelos Financieros</h2>
+        <h3>2.1 Referenciación Absoluta ($) y Nombres de Rango</h3><p>Un error común en auditoría es el "desplazamiento de celdas". Al copiar una fórmula, si no se usan referencias absolutas, la tasa impositiva (ej: IVA 10%) puede terminar apuntando a una celda vacía o con texto, invalidando todo el reporte fiscal.</p>
+        <p><strong>Uso Profesional de Nombres de Rango:</strong> En lugar de escribir <code>A1:A500</code>, nombramos el rango como <code>Plan_Cuentas</code>. Esto hace que las fórmulas sean legibles y auditables: <code>=BUSCARV(C2; Plan_Cuentas; 2; 0)</code>.</p>
+        <h3>2.2 Tipos de Referencias</h3><table><thead><tr><th>Tipo</th><th>Notación</th><th>Uso en Contabilidad</th></tr></thead><tbody><tr><td><strong>Relativa</strong></td><td>A1</td><td>Copia de cálculos de línea (ej: Cantidad * Precio).</td></tr><tr><td><strong>Absoluta</strong></td><td>$A$1</td><td>Tasas fijas (IVA, IRP, Tipo de Cambio).</td></tr><tr><td><strong>Mixta</strong></td><td>$A1 / A$1</td><td>Tablas de doble entrada (ej: Matriz impositiva).</td></tr></tbody></table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: FUNCIONES LÓGICAS Y BÚSQUEDA -->
+    <div class="page">
+        <h2>3. Lógica de Automatización de Asientos</h2>
+        <p>El uso combinado de **SI**, **Y**, **O** y **BUSCARV** permite que el profesional cree un "Libro Diario Inteligente" que valida los datos en tiempo real.</p>
+        <h3>3.1 La Función BUSCARV en el Plan de Cuentas</h3><p>Esta función es el motor que vincula el movimiento diario con el maestro de cuentas. Permite que, al ingresar un código, el sistema traiga automáticamente el nombre de la cuenta y su naturaleza (Deudora/Acreedora).</p>
+        <div class="snippet">// Fórmula Maestra para Conciliación Bancaria:<br>=SI(ESERROR(BUSCARV(A2; 'Extracto_Banco'!$A$1:$B$500; 1; FALSO)); "Pndte Conciliar ❌"; "Conciliado ✅")</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: TABLAS DINÁMICAS Y REPORTES -->
+    <div class="page">
+        <h2>4. Inteligencia de Negocios (Dashboards)</h2>
+        <p>La **Tabla Dinámica** (Pivot Table) es la herramienta más potente de Excel para el resumen de grandes volúmenes de datos. Permite pasar de 10,000 facturas a un resumen de ventas por sucursal en 3 clics.</p>
+        <h3>4.1 Estructura de un Reporte Dinámico</h3><ul><li>**Filtros:** Periodos, Sucursales, Operadores.</li><li>**Columnas:** Meses, Trimestres.</li><li>**Filas:** Cuentas Contables, Centros de Costos.</li><li>**Valores:** Suma de Montos, Promedios, Porcentajes.</li></ul>
+        <div class="technical-box"><strong>📌 REGLA DE ORO:</strong> Los datos origen de una Tabla Dinámica nunca deben contener celdas combinadas ni filas vacías. Debe ser una base de datos "limpia".</div>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO DE CONCILIACIÓN -->
+    <div class="page">
+        <h2>5. Laboratorio Práctico: Depuración de Facturas</h2>
+        <p>Utilice el siguiente dataset para crear un modelo que calcule el IVA 10% y el IVA 5%, validando con la función SI.</p>
+        <h3>📊 Dataset Maestro de Operaciones (Dataset IV)</h3>
+        <table><thead><tr><th>Concepto</th><th>Monto Total (PYG)</th><th>Tasa IVA (%)</th><th>Cálculo Automático</th></tr></thead><tbody><tr><td>Mercaderías Grav.</td><td>1.100.000</td><td>10</td><td>=(Total / 1.1) * 0.1</td></tr><tr><td>Canasta Básica</td><td>2.100.000</td><td>5</td><td>=(Total / 1.05) * 0.05</td></tr><tr><td>Servicios Públicos</td><td>450.000</td><td>10</td><td>...</td></tr><tr><td>Gastos Exentos</td><td>2.680.000</td><td>0</td><td>0</td></tr><tr><td>Insumos IT</td><td>8.900.000</td><td>10</td><td>...</td></tr></tbody></table>
+        <section class="checklist"><h3>🏁 CHECKLIST DE AUDITORÍA EXCEL</h3><ul><li>[ ] ¿Se ha usado REDONDEAR a cero decimales para PYG?</li><li>[ ] ¿Los filtros de la tabla dinámica muestran solo datos válidos?</li><li>[ ] ¿Se ha protegido las fórmulas con bloqueo de celdas?</li><li>[ ] ¿El libro diario cuadra al 100% mediante sumatoria condicional?</li></ul></section>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: El Paramédico de Excel</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- LAS FÓRMULAS NO SE CALCULAN:</strong> Verifica que el cálculo esté en "Automático" en la pestaña Fórmulas > Opciones de Cálculo.</p><p><strong>- MI BUSCARV DA #N/D PERO EL VALOR EXISTE:</strong> Tienes espacios invisibles en las celdas. Usa la función <code>=ESPACIOS(celda)</code> para limpiar los datos antes de buscar.</p><p><strong>- EL ARCHIVO PESA DEMASIADO Y SE CUELGA:</strong> Has aplicado formato a toda la columna (65,000 filas). Limpia los formatos innecesarios y usa "Tablas" oficiales de Excel (Ctrl+T).</p></section>
+        <h3>📝 Evaluación de Competencia Técnica</h3><ol><li>¿Por qué es preferible usar Tablas Dinámicas frente a subtotales manuales en una auditoría?</li><li>Explique la sintaxis de una fórmula que devuelva "ALERTA" si el gasto supera el presupuesto en la celda B5.</li><li>Describa un escenario donde una referencia relativa cause un error fatal en un balance impositivo.</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Ingeniería Aplicada • Material Académico</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+/* ============================================================
+   ACCESIBILIDAD - Campus Virtual Centuria
+   Panel de configuración visual + Alto contraste
+   ============================================================ */
+
+/* ── Panel de configuración ── */
+#acenturia-settings-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acenturia-settings-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+}
+.acenturia-settings-box {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  max-width: 380px;
+  width: 92%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  overflow: hidden;
+  animation: acenturiaSlideIn .25s ease;
+}
+@keyframes acenturiaSlideIn {
+  from { opacity: 0; transform: translateY(-20px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.acenturia-settings-header {
+  background: #007A33;
+  color: #fff;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.acenturia-settings-header h6 {
+  margin: 0;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #fff;
+}
+.acenturia-settings-header .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: .8;
+}
+.acenturia-settings-body {
+  padding: 16px 18px;
+}
+.acenturia-setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.acenturia-setting-row:last-child { border-bottom: none; }
+.acenturia-label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: #333;
+}
+.acenturia-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.acenturia-btn-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 2px solid #007A33;
+  background: #fff;
+  color: #007A33;
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acenturia-btn-sm:hover {
+  background: #007A33;
+  color: #fff;
+}
+.acenturia-val {
+  font-size: .8rem;
+  font-weight: 700;
+  color: #007A33;
+  min-width: 42px;
+  text-align: center;
+}
+.acenturia-btn-toggle {
+  padding: 5px 16px;
+  border-radius: 20px;
+  border: 2px solid #dee2e6;
+  background: #f8f9fa;
+  color: #666;
+  font-weight: 700;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: .2s;
+  letter-spacing: .5px;
+}
+.acenturia-btn-toggle.active {
+  background: #007A33;
+  border-color: #007A33;
+  color: #fff;
+}
+.acenturia-btn-reset {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #666;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .15s;
+}
+.acenturia-btn-reset:hover {
+  background: #f8f9fa;
+  border-color: #007A33;
+  color: #007A33;
+}
+
+/* ── Botón ⚙ al lado de Salir ── */
+#acenturia-settings-btn {
+  border-radius: 8px !important;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  transition: .15s;
+}
+#acenturia-settings-btn:hover {
+  background: #007A33 !important;
+  border-color: #007A33 !important;
+  color: #fff !important;
+  transform: rotate(90deg);
+}
+
+/* ============================================================
+   MODO ALTO CONTRASTE - FONDO NEGRO, TEXTO AMARILLO
+   Garantiza contraste WCAG AAA (7:1 mínimo)
+   ============================================================ */
+
+/* ── Nivel raíz: fondo negro total ── */
+.alto-contraste,
+.alto-contraste html,
+.alto-contraste body {
+  background: #000 !important;
+  color: #ffeb3b !important;
+}
+
+/* ── TODOS los elementos: fondo oscuro + texto claro ── */
+.alto-contraste * {
+  color: #ffeb3b !important;
+  border-color: #444 !important;
+  text-shadow: none !important;
+}
+
+/* ── FONDOS BLANCOS → OSCUROS (forzar override de inline styles) ── */
+.alto-contraste div,
+.alto-contraste section,
+.alto-contraste article,
+.alto-contraste aside,
+.alto-contraste main,
+.alto-contraste header,
+.alto-contraste footer,
+.alto-contraste nav,
+.alto-contraste .card,
+.alto-contraste .card-body,
+.alto-contraste .card-header,
+.alto-contraste .bg-white,
+.alto-contraste .alert,
+.alto-contraste .modal-content,
+.alto-contraste .offcanvas {
+  background-color: #111 !important;
+  color: #ffeb3b !important;
+}
+
+/* ── Formularios ── */
+.alto-contraste input,
+.alto-contraste select,
+.alto-contraste textarea,
+.alto-contraste .form-control,
+.alto-contraste .form-select,
+.alto-contraste .input-group-text,
+.alto-contraste .form-floating label {
+  background: #1a1a1a !important;
+  color: #ffeb3b !important;
+  border-color: #555 !important;
+}
+
+/* ── Tablas ── */
+.alto-contraste table,
+.alto-contraste .table,
+.alto-contraste td,
+.alto-contraste th,
+.alto-contraste .table-responsive {
+  background: #111 !important;
+  color: #ffeb3b !important;
+  border-color: #444 !important;
+}
+.alto-contraste .table thead,
+.alto-contraste thead {
+  background: #222 !important;
+  color: #fff !important;
+}
+.alto-contraste tbody tr:nth-child(odd) { background: #0a0a0a !important; }
+.alto-contraste tbody tr:nth-child(even) { background: #1a1a1a !important; }
+.alto-contraste tbody tr:hover { background: #333 !important; }
+
+/* ── Enlaces ── */
+.alto-contraste a,
+.alto-contraste .text-primary {
+  color: #00e5ff !important;
+}
+.alto-contraste a:hover {
+  color: #80deea !important;
+  text-decoration: underline !important;
+}
+
+/* ── Texto muted → gris claro legible ── */
+.alto-contraste .text-muted,
+.alto-contraste small,
+.alto-contraste .small {
+  color: #bbb !important;
+}
+
+/* ── Encabezados ── */
+.alto-contraste h1, .alto-contraste h2, .alto-contraste h3,
+.alto-contraste h4, .alto-contraste h5, .alto-contraste h6 {
+  color: #fff !important;
+}
+
+/* ── Badges ── */
+.alto-contraste .badge {
+  color: #000 !important;
+  border: 1px solid #555 !important;
+}
+.alto-contraste .badge.bg-success { background: #00897b !important; color: #fff !important; }
+.alto-contraste .badge.bg-danger { background: #c62828 !important; color: #fff !important; }
+.alto-contraste .badge.bg-warning { background: #f9a825 !important; color: #000 !important; }
+.alto-contraste .badge.bg-primary { background: #1565c0 !important; color: #fff !important; }
+
+/* ── Botones ── */
+.alto-contraste .btn {
+  border-color: #555 !important;
+}
+.alto-contraste .btn-primary,
+.alto-contraste .btn-success,
+.alto-contraste [style*="background: #007A33"],
+.alto-contraste [style*="background:#007A33"] {
+  background: #00695c !important;
+  color: #fff !important;
+  border-color: #00695c !important;
+}
+.alto-contraste .btn-outline-secondary,
+.alto-contraste .btn-outline-primary,
+.alto-contraste .btn-outline-success {
+  background: transparent !important;
+  color: #00e5ff !important;
+  border-color: #00e5ff !important;
+}
+.alto-contraste .btn-close { filter: brightness(0) invert(1); }
+
+/* ── Sidebar / Nav verde ── */
+.alto-contraste .sidebar,
+.alto-contraste nav[style*="background"],
+.alto-contraste [style*="background: #007A33"],
+.alto-contraste [style*="background:#007A33"] {
+  background: #0d1b0e !important;
+}
+.alto-contraste .sidebar a,
+.alto-contraste nav a {
+  color: #ffeb3b !important;
+}
+.alto-contraste .sidebar a:hover,
+.alto-contraste nav a:hover {
+  background: #1b3a1f !important;
+  color: #fff !important;
+}
+.alto-contraste .sidebar .active,
+.alto-contraste nav .active {
+  background: #1b3a1f !important;
+  color: #fff !important;
+}
+
+/* ── Progress bars ── */
+.alto-contraste .progress {
+  background: #222 !important;
+}
+.alto-contraste .progress-bar {
+  background: #00897b !important;
+  color: #fff !important;
+}
+
+/* ── Alertas ── */
+.alto-contraste .alert-success { background: #1b3a1f !important; color: #a5d6a7 !important; border-color: #2e7d32 !important; }
+.alto-contraste .alert-warning { background: #3e2723 !important; color: #ffcc80 !important; border-color: #e65100 !important; }
+.alto-contraste .alert-danger { background: #3b1a1a !important; color: #ef9a9a !important; border-color: #c62828 !important; }
+.alto-contraste .alert-info { background: #0d2137 !important; color: #90caf9 !important; border-color: #1565c0 !important; }
+.alto-contraste .alert-primary { background: #0d2137 !important; color: #90caf9 !important; border-color: #1565c0 !important; }
+
+/* ── Escala de notas ── */
+.alto-contraste .scale-box {
+  background: #1a1a1a !important;
+  color: #ffeb3b !important;
+  border-color: #555 !important;
+}
+.alto-contraste .scale-active {
+  background: #00695c !important;
+  color: #fff !important;
+}
+
+/* ── Bloques de código / blockquote ── */
+.alto-contraste blockquote,
+.alto-contraste pre,
+.alto-contraste code {
+  background: #1a1a1a !important;
+  color: #a5d6a7 !important;
+  border-color: #444 !important;
+}
+
+/* ── Selectores de radio/botones toggle ── */
+.alto-contraste .btn-check:checked + .btn {
+  background: #00695c !important;
+  color: #fff !important;
+}
+
+/* ── Offcanvas / sidebar móvil ── */
+.alto-contraste .offcanvas { background: #111 !important; }
+.alto-contraste .offcanvas-header { border-bottom-color: #444 !important; }
+.alto-contraste .offcanvas-body { color: #ffeb3b !important; }
+
+/* ── Scrollbar visible ── */
+.alto-contraste ::-webkit-scrollbar { width: 10px; }
+.alto-contraste ::-webkit-scrollbar-track { background: #1a1a1a; }
+.alto-contraste ::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
+.alto-contraste ::-webkit-scrollbar-thumb:hover { background: #777; }

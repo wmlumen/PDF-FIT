@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Docente — Sociología | Campus Virtual Centuria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        :root {
+            --verde-oscuro: #007A33;
+            --verde-medio: #00B140;
+            --verde-claro: #E6F4EA;
+            --verde-hover: #81C784;
+            --texto-oscuro: #2D2D2D;
+            --dorado: #C5A55A;
+            --dorado-claro: #D4B96A;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Montserrat', 'Segoe UI', sans-serif; min-height: 100vh; color: var(--texto-oscuro); }
+
+        /* =========== LOGIN OVERLAY — MISMO DISEÑO QUE INDEX =========== */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(0,177,64,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(129,199,132,.1) 0%, transparent 50%),
+                linear-gradient(160deg, #003d19 0%, #007A33 35%, #005c26 65%, #003d19 100%);
+            transition: opacity .4s, visibility .4s;
+        }
+        #login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        #login-overlay::after {
+            content: ''; position: fixed; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(255,255,255,.03)'/%3E%3C/svg%3E");
+            z-index: -1;
+        }
+        .login-wrapper { width: 100%; max-width: 520px; padding: 20px; animation: fadeInUp .8s cubic-bezier(.16,1,.3,1); }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+        .login-hero { text-align: center; margin-bottom: 32px; }
+        .login-hero img { height: 130px; margin-bottom: 20px; filter: drop-shadow(0 4px 20px rgba(0,0,0,.4)); animation: logoFloat 4s ease-in-out infinite; }
+        @keyframes logoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        .login-hero h1 { font-weight:200; letter-spacing:6px; font-size:1.6rem; text-transform:uppercase; text-shadow:0 2px 12px rgba(0,0,0,.3); color:#fff; }
+        .login-hero .subtitle { font-weight:400; font-size:.78rem; letter-spacing:2px; text-transform:uppercase; color:var(--dorado); margin-top:4px; }
+        .login-divider { display:flex; align-items:center; justify-content:center; gap:12px; margin:20px auto; }
+        .login-divider .line { width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--dorado),transparent); }
+        .login-divider .diamond { width:8px; height:8px; background:var(--dorado); transform:rotate(45deg); }
+        .login-card {
+            border-radius:24px; overflow:hidden;
+            background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+            backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+            box-shadow:0 8px 32px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .login-card::before { content:''; display:block; height:3px; background:linear-gradient(90deg,transparent,var(--dorado),var(--verde-hover),var(--dorado),transparent); }
+        .login-card-body { padding:36px 40px 40px; }
+        .card-greeting { text-align:center; margin-bottom:24px; }
+        .card-greeting h2 { font-size:1rem; font-weight:600; letter-spacing:1px; color:#fff; }
+        .card-greeting p { font-size:.75rem; color:rgba(255,255,255,.5); letter-spacing:.5px; }
+        .premium-label { font-size:.68rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dorado); margin-bottom:6px; display:block; }
+        .premium-input {
+            width:100%; padding:14px 16px; background:rgba(255,255,255,.08);
+            border:1px solid rgba(255,255,255,.15); border-radius:12px;
+            color:#fff; font-family:'Montserrat',sans-serif; font-weight:600; font-size:.95rem;
+            letter-spacing:1px; outline:none; transition:.3s;
+        }
+        .premium-input::placeholder { color:rgba(255,255,255,.35); font-weight:400; letter-spacing:0; }
+        .premium-input:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(197,165,90,.2); background:rgba(255,255,255,.12); }
+        .premium-btn {
+            width:100%; padding:14px; margin-top:20px;
+            background:linear-gradient(135deg,var(--verde-medio),var(--verde-oscuro));
+            color:#fff; border:none; border-radius:14px;
+            font-family:'Montserrat',sans-serif; font-weight:700; font-size:.88rem;
+            letter-spacing:1px; cursor:pointer; transition:.35s cubic-bezier(.16,1,.3,1);
+            position:relative; overflow:hidden;
+        }
+        .premium-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%); transform:translateX(-100%); transition:.5s; }
+        .premium-btn:hover::before { transform:translateX(100%); }
+        .premium-btn:hover { transform:translateY(-2px); box-shadow:0 12px 35px rgba(0,122,51,.4); }
+        .premium-btn:disabled { opacity:.5; transform:none!important; cursor:not-allowed; }
+        .login-error { background:rgba(239,83,80,.12); border:1px solid rgba(239,83,80,.3); border-radius:10px; color:#ef9a9a; font-size:.75rem; padding:10px 14px; margin-bottom:14px; display:none; text-align:center; }
+        .login-error.show { display:block; animation:shake .4s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+        .premium-separator { border:none; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin:18px 0; }
+        .premium-alert-info { background:rgba(0,177,64,.1); border:1px solid rgba(0,177,64,.2); border-radius:12px; color:rgba(255,255,255,.6); font-size:.72rem; padding:12px 16px; text-align:center; }
+
+        /* =========== MODAL REGISTRO =========== */
+        .modal-overlay { display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); align-items:center; justify-content:center; }
+        .modal-overlay.show { display:flex; }
+
+        /* =========== PANEL STRUCTURE =========== */
+        .sidebar-glass { background:rgba(0,61,25,.95); backdrop-filter:blur(20px); border-right:1px solid rgba(255,255,255,.08); }
+        .header-glass { background:rgba(255,255,255,.85); backdrop-filter:blur(12px); border-bottom:1px solid rgba(226,232,240,.6); }
+        .kpi-hover { transition:all .3s cubic-bezier(.4,0,.2,1); }
+        .kpi-hover:hover { transform:translateY(-2px); box-shadow:0 10px 25px -5px rgba(0,0,0,.08); }
+        tbody tr { transition:all .15s ease; }
+        tbody tr:hover { background:rgba(241,245,249,.8)!important; }
+        .nav-btn { transition:all .2s cubic-bezier(.4,0,.2,1); }
+        .nav-btn:hover { transform:translateX(4px); }
+        .custom-scrollbar::-webkit-scrollbar { width:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+        .animate-fade { animation:fadeIn .4s cubic-bezier(.4,0,.2,1) forwards; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @media(max-width:880px) { .w-72{width:15rem;} .md\:pl-72{padding-left:0!important;} }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen:true, activeTab:'perfil' }">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- LOGIN OVERLAY — MISMO DISEÑO QUE INDEX.HTML               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="login-overlay">
+    <div class="login-wrapper">
+        <div class="login-hero">
+            <img src="../images/logo_centuria_blanco_1.png" alt="Instituto Superior Centuria">
+            <h1>Campus Virtual</h1>
+            <div class="subtitle">Sociología — Panel Docente/Académico</div>
+        </div>
+
+        <div class="login-divider">
+            <div class="line"></div>
+            <div class="diamond"></div>
+            <div class="line"></div>
+        </div>
+
+        <!-- PASO 1: Login -->
+        <div id="login-step-1">
+            <div class="login-card">
+                <div class="login-card-body">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-shield-lock me-2"></i>Iniciar Sesión</h2>
+                        <p>Acceda a su panel docente o académico</p>
+                    </div>
+
+                    <div id="login-error" class="login-error">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        <span id="login-error-text">Cédula o contraseña incorrecta</span>
+                    </div>
+
+                    <label class="premium-label">Cédula de Identidad</label>
+                    <input type="text" id="login-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+
+                    <label class="premium-label" style="margin-top:14px;">Contraseña</label>
+                    <div style="position:relative;">
+                        <input type="password" id="login-password" class="premium-input" placeholder="Tu contraseña" style="padding-right:44px;font-size:.85rem;letter-spacing:.5px;" onkeydown="if(event.key==='Enter') loginDocente()">
+                        <button type="button" onclick="togglePasswordVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;">
+                            <i id="pwd-toggle-icon" class="bi bi-eye"></i>
+                        </button>
+                    </div>
+
+                    <button id="btn-login" class="premium-btn" onclick="loginDocente()">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel
+                    </button>
+
+                    <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;">
+                        <button onclick="abrirRecuperar()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-question-circle me-1"></i>¿Olvidaste tu contraseña?
+                        </button>
+                        <span style="color:rgba(255,255,255,.15);">|</span>
+                        <button onclick="mostrarRegistro()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.7rem;cursor:pointer;font-family:Montserrat;letter-spacing:.5px;" onmouseover="this.style.color='var(--dorado)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">
+                            <i class="bi bi-person-plus me-1"></i>Registrarse
+                        </button>
+                    </div>
+
+                    <hr class="premium-separator">
+
+                    <div class="premium-alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Formato de contraseña: Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 2: Registro -->
+        <div id="login-step-2" style="display:none;">
+            <div class="login-card">
+                <div class="login-card-body">
+                    <div class="card-greeting">
+                        <h2><i class="bi bi-person-plus me-2"></i>Crear Cuenta</h2>
+                        <p>Complete sus datos para acceder a la plataforma</p>
+                    </div>
+
+                    <div id="reg-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;color:#ef9a9a;font-size:.75rem;padding:10px 14px;margin-bottom:14px;text-align:center;">
+                        <i class="bi bi-exclamation-circle me-1"></i><span id="reg-error-text">Error</span>
+                    </div>
+                    <div id="reg-exito" style="display:none;background:rgba(0,177,64,.12);border:1px solid rgba(0,177,64,.3);border-radius:10px;color:#81C784;font-size:.75rem;padding:10px 14px;margin-bottom:14px;text-align:center;">
+                        <i class="bi bi-check-circle me-1"></i><span id="reg-exito-text">Registrado</span>
+                    </div>
+
+                    <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;" oninput="this.value=this.value.replace(/\./g,'');verificarCedulaRegistro()">
+
+                    <label class="premium-label" style="margin-top:12px;">Nombre <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-nombre" class="premium-input" placeholder="Ej: JUAN" style="text-transform:uppercase;font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Apellido <span style="color:#ef5350;">*</span></label>
+                    <input type="text" id="reg-apellido" class="premium-input" placeholder="Ej: PÉREZ" style="text-transform:uppercase;font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Correo electrónico</label>
+                    <input type="email" id="reg-email" class="premium-input" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
+
+                    <label class="premium-label" style="margin-top:12px;">Teléfono</label>
+                    <input type="text" id="reg-telefono" class="premium-input" placeholder="0981 123456" style="font-size:.85rem;">
+
+                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:10px 14px;margin:16px 0 12px;">
+                        <p style="color:rgba(255,255,255,.6);font-size:.68rem;text-align:center;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            El administrador asignará su <strong style="color:var(--dorado);">rol</strong> y <strong style="color:var(--dorado);">asignatura</strong> después del registro.
+                        </p>
+                    </div>
+
+                    <button id="btn-registrar" class="premium-btn" onclick="registrarUsuario()">
+                        <i class="bi bi-person-check me-2"></i>Crear mi cuenta
+                    </button>
+                    <button class="premium-btn-ghost" onclick="volverLogin()" style="width:100%;margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.75rem;cursor:pointer;font-family:Montserrat;">
+                        <i class="bi bi-arrow-left me-1"></i>Volver al login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PANEL PRINCIPAL                                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<main class="flex-1 min-h-screen transition-all duration-300" :class="{ 'md:pl-72': sidebarOpen }">
+
+    <!-- HEADER -->
+    <header class="header-glass sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl hover:bg-slate-100 transition">
+                <i class="bi bi-list text-lg"></i>
+            </button>
+            <div>
+                <h1 class="text-sm font-bold text-slate-800">Panel Docente/Académico</h1>
+                <p class="text-[10px] text-slate-400 font-medium">Sociología — Instituto Superior Centuria</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="docente-badge" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold">Cargando...</span>
+            <button onclick="cerrarSesion()" class="p-2 rounded-xl hover:bg-rose-50 text-rose-500 transition" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- SIDEBAR -->
+        <aside x-show="sidebarOpen" x-transition class="sidebar-glass w-72 min-h-[calc(100vh-60px)] fixed md:sticky top-[60px] p-4 space-y-1 z-20">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Mi Cuenta</p>
+
+            <button @click="activeTab='perfil'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='perfil' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-person-circle text-sm"></i> Mi Perfil
+            </button>
+
+            <button @click="activeTab='datos'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='datos' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-card-list text-sm"></i> Datos Personales
+            </button>
+
+            <button @click="activeTab='emergencia'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='emergencia' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-heart-pulse text-sm"></i> Contacto de Emergencia
+            </button>
+
+            <hr class="border-white/10 my-2">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Académico</p>
+
+            <button @click="activeTab='live'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='live' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-camera-video text-sm"></i> Monitoreo
+                <span id="sidebar-active-badge" class="ml-auto bg-rose-500/20 text-rose-300 text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+
+            <button @click="activeTab='analytics'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='analytics' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-bar-chart text-sm"></i> Métricas
+            </button>
+
+            <button @click="activeTab='attendance'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='attendance' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-clipboard-check text-sm"></i> Asistencia
+            </button>
+
+            <button @click="activeTab='progress'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='progress' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-trophy text-sm"></i> Marcador
+            </button>
+
+            <hr class="border-white/10 my-2">
+            <p class="text-[9px] font-bold text-white/30 tracking-widest uppercase px-3 mb-2">Herramientas</p>
+
+            <button @click="activeTab='calendar'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='calendar' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-calendar3 text-sm"></i> Calendario
+            </button>
+
+            <a href="documentos.html" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5 text-white/60 hover:bg-white/5 hover:text-white">
+                <i class="bi bi-file-earmark-text text-sm"></i> Documentos
+                <i class="bi bi-box-arrow-up-right ml-auto text-[9px]"></i>
+            </a>
+
+            <button @click="activeTab='config'" class="nav-btn w-full text-left px-3 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2.5" :class="activeTab==='config' ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'">
+                <i class="bi bi-gear text-sm"></i> Configuración
+            </button>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <div class="flex-1 p-6 max-w-6xl mx-auto">
+
+            <!-- ===== MI PERFIL ===== -->
+            <div x-show="activeTab==='perfil'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4">Mi Perfil</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-5 text-center">
+                            <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold mx-auto mb-3" id="profile-avatar">?</div>
+                            <h4 class="font-bold text-sm" id="profile-name">Cargando...</h4>
+                            <p class="text-[10px] text-slate-500" id="profile-cedula">CI: ---</p>
+                            <span class="inline-block mt-2 text-[9px] font-bold px-3 py-1 rounded-full" id="profile-rol-badge" style="background:#E0F2F1;color:#007A33;">Sin asignar</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Asignatura</span><span class="font-semibold text-sm" id="profile-asignatura">Sin asignar</span></div>
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Carrera</span><span class="font-semibold text-sm" id="profile-carrera">Sin asignar</span></div>
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Estado</span><span class="font-semibold text-sm text-emerald-600">Activo</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== DATOS PERSONALES ===== -->
+            <div x-show="activeTab==='datos'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4">Datos Personales</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo</label><input type="text" id="datos-nombre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Nombre"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Cédula</label><input type="text" id="datos-cedula" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" disabled></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Correo</label><input type="email" id="datos-email" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="correo@ejemplo.com"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Teléfono</label><input type="text" id="datos-telefono" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="0981 123456"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Fecha de Nacimiento</label><input type="date" id="datos-nacimiento" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Dirección</label><input type="text" id="datos-direccion" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Barrio, Ciudad"></div>
+                </div>
+                <button onclick="guardarDatosPersonales()" class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition">
+                    <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                </button>
+            </div>
+
+            <!-- ===== CONTACTO DE EMERGENCIA ===== -->
+            <div x-show="activeTab==='emergencia'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4"><i class="bi bi-heart-pulse text-rose-500 me-2"></i>Contacto de Emergencia</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Nombre del Contacto</label><input type="text" id="emerg-nombre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="Nombre completo"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Parentesco</label><select id="emerg-parentesco" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"><option value="">Seleccionar...</option><option>Padre</option><option>Madre</option><option>Hermano/a</option><option>Cónyuge</option><option>Otro</option></select></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Teléfono</label><input type="text" id="emerg-telefono" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" placeholder="0981 123456"></div>
+                    <div><label class="text-[10px] font-bold text-slate-400 uppercase">Tipo de Sangre</label><select id="emerg-sangre" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm"><option value="">Seleccionar...</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+                    <div class="md:col-span-2"><label class="text-[10px] font-bold text-slate-400 uppercase">Alergias / Condiciones Médicas</label><textarea id="emerg-alergias" class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-xl text-sm" rows="3" placeholder="Describa alergias o condiciones relevantes..."></textarea></div>
+                </div>
+                <button onclick="guardarEmergencia()" class="mt-4 bg-rose-500 text-white px-6 py-2 rounded-xl text-xs font-semibold hover:bg-rose-600 transition">
+                    <i class="bi bi-heart me-1"></i>Guardar Contacto de Emergencia
+                </button>
+            </div>
+
+            <!-- ===== CONFIGURACIÓN ===== -->
+            <div x-show="activeTab==='config'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade">
+                <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3 mb-4"><i class="bi bi-gear me-2"></i>Configuración de la Plataforma</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Tema Oscuro</p><p class="text-[10px] text-slate-400">Cambiar apariencia de la plataforma</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" onchange="toggleTemaOscuro()"><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Notificaciones</p><p class="text-[10px] text-slate-400">Recibir alertas de actividad</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" checked><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                        <div><p class="text-xs font-semibold">Auto-refresh (5s)</p><p class="text-[10px] text-slate-400">Actualizar datos automáticamente</p></div>
+                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="auto-refresh" class="sr-only peer" onchange="toggleAutoRefresh()"><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== MONITOREO (tabs anteriores) ===== -->
+            <div x-show="activeTab==='live'||activeTab==='analytics'||activeTab==='attendance'||activeTab==='progress'||activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade text-center py-12 text-slate-400">
+                <i class="bi bi-inbox text-3xl text-slate-300 mb-3 block"></i>
+                <p class="text-sm font-medium">Módulo en desarrollo</p>
+                <p class="text-[10px] mt-1">Próximamente disponible</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODAL RECUPERAR CONTRASEÑA                                -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="modal-recuperar" class="modal-overlay">
+    <div class="login-card" style="max-width:440px;">
+        <div class="login-card-body">
+            <h3 style="color:#fff;font-size:1rem;font-weight:700;text-align:center;margin-bottom:16px;">
+                <i class="bi bi-key me-2" style="color:var(--dorado);"></i>Recuperar Contraseña
+            </h3>
+            <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+                <p style="color:var(--dorado-claro);font-size:.72rem;text-align:center;line-height:1.6;">
+                    <strong>Tu contraseña se genera automáticamente:</strong><br>
+                    Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *
+                </p>
+            </div>
+            <label class="premium-label">Cédula</label>
+            <input type="text" id="recuperar-cedula" class="premium-input text-center" placeholder="SIN PUNTOS" style="font-size:1rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+            <button onclick="buscarContrasena()" class="premium-btn" style="margin-top:16px;">
+                <i class="bi bi-search me-2"></i>Buscar
+            </button>
+            <div id="recuperar-paso2" style="display:none;margin-top:16px;background:rgba(0,177,64,.1);border:1px solid rgba(0,177,64,.25);border-radius:14px;padding:20px;text-align:center;">
+                <p style="color:rgba(255,255,255,.5);font-size:.7rem;margin-bottom:8px;">Tu contraseña es:</p>
+                <div id="recuperar-password" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:14px;font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:2px;font-family:monospace;cursor:pointer;" onclick="copiarContrasena()">---</div>
+                <p style="color:rgba(255,255,255,.35);font-size:.6rem;margin-top:8px;">Haz clic para copiar</p>
+            </div>
+            <div id="recuperar-error" style="display:none;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-radius:10px;padding:12px;text-align:center;margin-top:12px;">
+                <p style="color:#ef9a9a;font-size:.75rem;">Cédula no encontrada</p>
+            </div>
+            <button onclick="cerrarRecuperar()" style="width:100%;margin-top:16px;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:10px;border-radius:12px;font-size:.78rem;cursor:pointer;font-family:Montserrat;">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+// === LOCAL STORAGE ===
+const USERS_KEY = 'sociologia_users';
+const STORAGE_KEY = 'sociologia_teacherRecords';
+const STUDENT_RESULTS_KEY = 'socioResults';
+const ATTENDANCE_KEY = 'sociologia_attendanceRecords';
+const PERFIL_KEY = 'sociologia_perfil';
+const EMERGENCIA_KEY = 'sociologia_emergencia';
+
+function getUsersDB() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; } }
+function saveUsersDB(db) { localStorage.setItem(USERS_KEY, JSON.stringify(db)); }
+function buscarUsuario(cedula) { const db = getUsersDB(); return db[cedula] || null; }
+function registrarUsuarioLocal(cedula, nombre, apellido, email, telefono, rol) {
+    const db = getUsersDB();
+    const cedulaLimpia = cedula.replace(/\./g, '');
+    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+    db[cedula] = { nombre, apellido, email, telefono, rol, password, fechaRegistro: new Date().toISOString() };
+    saveUsersDB(db);
+}
+function readArrayStorage(key) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : []; } catch { return []; } }
+
+// === SESSION GUARD ===
+let lastActivity = Date.now();
+const INACTIVITY_LIMIT = 60 * 60 * 1000;
+function resetActivity() { lastActivity = Date.now(); }
+['click','keydown','mousemove','scroll','touchstart'].forEach(evt => document.addEventListener(evt, resetActivity, {passive:true}));
+setInterval(() => {
+    if (document.getElementById('login-overlay').classList.contains('hidden') && (Date.now() - lastActivity > INACTIVITY_LIMIT)) {
+        if (confirm('Tu sesión expirará por inactividad. ¿Deseas continuar?')) { resetActivity(); } else { cerrarSesion(); }
+    }
+}, 60000);
+
+// === PASSWORD TOGGLE ===
+function togglePasswordVisibility() {
+    const inp = document.getElementById('login-password');
+    const icon = document.getElementById('pwd-toggle-icon');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; } else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+}
+
+// === LOGIN ===
+async function loginDocente() {
+    const cedula = document.getElementById('login-cedula').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    const errorText = document.getElementById('login-error-text');
+    const btn = document.getElementById('btn-login');
+    if (!cedula || !password) { errorText.textContent = 'Debes ingresar cédula y contraseña.'; errorDiv.classList.add('show'); return; }
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...'; btn.disabled = true; errorDiv.classList.remove('show');
+    try {
+        const usuario = buscarUsuario(cedula);
+        if (!usuario) { errorText.textContent = 'Cédula no registrada. Regístrese primero.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
+        if (password !== usuario.password) { errorText.textContent = 'Contraseña incorrecta.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
+        const nombreCompleto = usuario.nombre + ' ' + usuario.apellido;
+        sessionStorage.setItem('teacher_cedula', cedula);
+        sessionStorage.setItem('teacher_nombre', nombreCompleto);
+        sessionStorage.setItem('teacher_session_active', '1');
+        sessionStorage.setItem('userRole', usuario.rol || 'docente');
+        sessionStorage.setItem('current_cedula', cedula);
+        sessionStorage.setItem('current_nombre', nombreCompleto);
+        document.getElementById('docente-badge').textContent = nombreCompleto + ' (CI: ' + cedula + ')';
+        document.getElementById('login-overlay').classList.add('hidden');
+        cargarPerfil(cedula);
+    } catch (e) { console.error(e); errorText.textContent = 'Error inesperado.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; }
+}
+
+// === REGISTRO ===
+function mostrarRegistro() { document.getElementById('login-step-1').style.display = 'none'; document.getElementById('login-step-2').style.display = 'block'; }
+function volverLogin() { document.getElementById('login-step-2').style.display = 'none'; document.getElementById('login-step-1').style.display = 'block'; }
+
+function verificarCedulaRegistro() {
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    if (cedula.length < 5) return;
+    const usuario = buscarUsuario(cedula);
+    if (usuario) {
+        document.getElementById('reg-nombre').value = usuario.nombre;
+        document.getElementById('reg-apellido').value = usuario.apellido;
+        document.getElementById('reg-email').value = usuario.email || '';
+        document.getElementById('reg-telefono').value = usuario.telefono || '';
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+        document.getElementById('reg-exito').innerHTML = '<i class="bi bi-check-circle me-1"></i>Ya registrado. Tu contraseña: <strong>' + password + '</strong>';
+        document.getElementById('reg-exito').style.display = 'block';
+        document.getElementById('reg-error').style.display = 'none';
+    } else {
+        document.getElementById('reg-nombre').value = '';
+        document.getElementById('reg-apellido').value = '';
+        document.getElementById('reg-exito').style.display = 'none';
+    }
+}
+
+function registrarUsuario() {
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
+    const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
+    const email = document.getElementById('reg-email').value.trim();
+    const telefono = document.getElementById('reg-telefono').value.trim();
+    const errorDiv = document.getElementById('reg-error');
+    const exitoDiv = document.getElementById('reg-exito');
+    errorDiv.style.display = 'none'; exitoDiv.style.display = 'none';
+    if (!cedula || !nombre || !apellido) { document.getElementById('reg-error-text').textContent = 'Completa cédula, nombre y apellido.'; errorDiv.style.display = 'block'; return; }
+    if (buscarUsuario(cedula)) { document.getElementById('reg-error-text').textContent = 'Esta cédula ya está registrada.'; errorDiv.style.display = 'block'; return; }
+    registrarUsuarioLocal(cedula, nombre, apellido, email, telefono, 'sin_asignar');
+    const cedulaLimpia = cedula.replace(/\./g, '');
+    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+    exitoDiv.innerHTML = '<i class="bi bi-check-circle me-1"></i><strong>Registrado.</strong> Tu contraseña: <strong>' + password + '</strong>';
+    exitoDiv.style.display = 'block';
+}
+
+// === RECUPERAR CONTRASEÑA ===
+function abrirRecuperar() { document.getElementById('modal-recuperar').classList.add('show'); document.getElementById('recuperar-cedula').value = ''; document.getElementById('recuperar-paso2').style.display = 'none'; document.getElementById('recuperar-error').style.display = 'none'; }
+function cerrarRecuperar() { document.getElementById('modal-recuperar').classList.remove('show'); }
+function buscarContrasena() {
+    const cedula = document.getElementById('recuperar-cedula').value.trim();
+    if (!cedula) { alert('Ingresa tu cédula.'); return; }
+    const usuario = buscarUsuario(cedula);
+    if (usuario) {
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+        document.getElementById('recuperar-password').textContent = password;
+        document.getElementById('recuperar-paso2').style.display = 'block';
+        document.getElementById('recuperar-error').style.display = 'none';
+    } else {
+        document.getElementById('recuperar-error').style.display = 'block';
+        document.getElementById('recuperar-paso2').style.display = 'none';
+    }
+}
+function copiarContrasena() {
+    const pwd = document.getElementById('recuperar-password').textContent;
+    navigator.clipboard.writeText(pwd).then(() => { alert('Contraseña copiada: ' + pwd); });
+}
+
+// === PERFIL ===
+function cargarPerfil(cedula) {
+    const usuario = buscarUsuario(cedula);
+    if (!usuario) return;
+    document.getElementById('profile-avatar').textContent = usuario.nombre.charAt(0);
+    document.getElementById('profile-name').textContent = usuario.nombre + ' ' + usuario.apellido;
+    document.getElementById('profile-cedula').textContent = 'CI: ' + cedula;
+    document.getElementById('profile-rol-badge').textContent = usuario.rol === 'sin_asignar' ? 'Sin asignar' : usuario.rol;
+    document.getElementById('profile-asignatura').textContent = usuario.asignatura || 'Sin asignar';
+    document.getElementById('profile-carrera').textContent = usuario.carrera || 'Sin asignar';
+    document.getElementById('datos-nombre').value = usuario.nombre + ' ' + usuario.apellido;
+    document.getElementById('datos-cedula').value = cedula;
+    document.getElementById('datos-email').value = usuario.email || '';
+    document.getElementById('datos-telefono').value = usuario.telefono || '';
+    // Cargar datos personales guardados
+    const perfil = readArrayStorage(PERFIL_KEY).find(p => p.cedula === cedula);
+    if (perfil) {
+        document.getElementById('datos-nacimiento').value = perfil.nacimiento || '';
+        document.getElementById('datos-direccion').value = perfil.direccion || '';
+    }
+    // Cargar emergencia
+    const emergencia = readArrayStorage(EMERGENCIA_KEY).find(e => e.cedula === cedula);
+    if (emergencia) {
+        document.getElementById('emerg-nombre').value = emergencia.nombre || '';
+        document.getElementById('emerg-parentesco').value = emergencia.parentesco || '';
+        document.getElementById('emerg-telefono').value = emergencia.telefono || '';
+        document.getElementById('emerg-sangre').value = emergencia.sangre || '';
+        document.getElementById('emerg-alergias').value = emergencia.alergias || '';
+    }
+}
+
+function guardarDatosPersonales() {
+    const cedula = sessionStorage.getItem('current_cedula');
+    const datos = readArrayStorage(PERFIL_KEY);
+    const idx = datos.findIndex(d => d.cedula === cedula);
+    const nuevo = { cedula, nacimiento: document.getElementById('datos-nacimiento').value, direccion: document.getElementById('datos-direccion').value };
+    if (idx >= 0) datos[idx] = { ...datos[idx], ...nuevo }; else datos.push(nuevo);
+    localStorage.setItem(PERFIL_KEY, JSON.stringify(datos));
+    alert('Datos personales guardados.');
+}
+
+function guardarEmergencia() {
+    const cedula = sessionStorage.getItem('current_cedula');
+    const datos = readArrayStorage(EMERGENCIA_KEY);
+    const idx = datos.findIndex(d => d.cedula === cedula);
+    const nuevo = { cedula, nombre: document.getElementById('emerg-nombre').value, parentesco: document.getElementById('emerg-parentesco').value, telefono: document.getElementById('emerg-telefono').value, sangre: document.getElementById('emerg-sangre').value, alergias: document.getElementById('emerg-alergias').value };
+    if (idx >= 0) datos[idx] = { ...datos[idx], ...nuevo }; else datos.push(nuevo);
+    localStorage.setItem(EMERGENCIA_KEY, JSON.stringify(datos));
+    alert('Contacto de emergencia guardado.');
+}
+
+// === LOGOUT ===
+function cerrarSesion() { sessionStorage.clear(); window.location.href = '../index.html'; }
+
+// === CONFIG ===
+function toggleTemaOscuro() { document.body.classList.toggle('dark'); }
+let autoRefreshInterval = null;
+function toggleAutoRefresh() {
+    const on = document.getElementById('auto-refresh')?.checked;
+    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+    if (on) autoRefreshInterval = setInterval(() => {}, 5000);
+}
+</script>
+</body>
+</html>

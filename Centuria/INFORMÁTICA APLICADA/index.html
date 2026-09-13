@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centuria | Dashboard de Ingeniería Aplicada</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="docs/style.css">
+    <style>
+        :root {
+            --primary: #008f1f;
+            --secondary: #25a837;
+            --accent: #001c8f;
+            --accent-glow: rgba(0, 143, 31, 0.4);
+        }
+        .teacher-login {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        .teacher-login input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--primary);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            margin: 5px;
+            outline: none;
+        }
+        .btn-auth {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="badge" style="background: var(--primary);">✓ SISTEMA UNIFICADO 2.0</span>
+            <h1 style="background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Informática Aplicada</h1>
+            <p class="subtitle" style="color:#aaa;">Ecosistema Pedagógico de Alta Fidelidad • Ingeniería Aplicada</p>
+        </header>
+
+        <!-- Información General -->
+        <div class="info-grid">
+            <div class="info-card" style="border-left: 5px solid var(--primary);">
+                <h3>Estado Curricular</h3>
+                <p>100% Sincronizado</p>
+            </div>
+            <div class="info-card" style="border-left: 5px solid var(--primary);">
+                <h3>Docente Actual</h3>
+                <p id="displayTeacher">CENTURIA</p>
+            </div>
+            <div class="info-card" style="border-left: 5px solid var(--primary);">
+                <h3>Hito Semestral</h3>
+                <p>Cierre de Actas</p>
+            </div>
+        </div>
+
+        <!-- Acceso Unificado -->
+        <div style="text-align: center; margin-top: 50px;">
+            <a href="docs/Unidad_I_Plan_Clase.html" class="btn-copy" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 10px 30px var(--accent-glow); text-decoration: none; border:none; color:white; padding: 20px 40px; border-radius:12px; display: inline-flex; width: auto; font-size: 1.2rem; font-weight:800;">
+                🚀 INICIAR RECORRIDO CURRICULAR (C1-C23)
+            </a>
+            <p style="margin-top: 20px; color: #888;">Haga clic para acceder al mapa interactivo de clases y materiales.</p>
+        </div>
+
+        <!-- Panel de Docente (Control Maestro) -->
+        <div class="teacher-login">
+            <h3 style="margin-bottom: 15px;">Panel de Personalización</h3>
+            <div id="loginForm">
+                <input type="password" id="authCode" placeholder="Código de Acceso">
+                <button class="btn-auth" onclick="verifyCode()">Desbloquear</button>
+            </div>
+            <div id="editForm" style="display: none;">
+                <input type="text" id="teacherName" placeholder="Nombre y Apellido">
+                <button class="btn-auth" onclick="saveTeacher()">Guardar y Aplicar Globalmente</button>
+            </div>
+        </div>
+
+        <footer style="text-align: center; margin-top: 100px; color: #555; padding-bottom: 40px;">
+            © 2026 Centuria • Ingeniería Aplicada • Sistema Maestro
+        </footer>
+    </div>
+
+    <script>
+        function verifyCode() {
+            const code = document.getElementById('authCode').value;
+            if (code === 'D0C3NT3') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('editForm').style.display = 'block';
+            } else {
+                alert('Código Incorrecto');
+            }
+        }
+
+        function saveTeacher() {
+            const name = document.getElementById('teacherName').value;
+            if (name) {
+                localStorage.setItem('teacher_name', name);
+                document.getElementById('displayTeacher').innerText = name;
+                alert('Docente actualizado en todo el sistema.');
+            }
+        }
+
+        // On Load
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('teacher_name');
+            if (saved) document.getElementById('displayTeacher').innerText = saved;
+        });
+    </script>
+</body>
+</html>

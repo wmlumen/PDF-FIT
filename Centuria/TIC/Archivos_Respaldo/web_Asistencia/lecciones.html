@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecciones - TIC - Instituto Superior Centuria</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="lesson.css">
+    <script src="script.js?v=2"></script>
+
+    <!-- Sin estilos específicos de página — todo en lesson.css -->
+</head>
+<body>
+
+    <header class="lesson-header">
+        <h1><i class="fas fa-book-open"></i> Lecciones</h1>
+        <p>Material de Estudio — TIC — Unidades 1 a 6</p>
+        <div class="header-nav">
+            <a href="https://wmlumen.github.io/Asistencia/"><i class="fas fa-arrow-left"></i> Volver al Dashboard</a>
+        </div>
+    </header>
+
+    <div class="lesson-container">
+
+        <!-- Mensaje de estado vacío (cuando el docente apaga todas) -->
+        <div id="empty-unidades-msg" class="empty-state no-print" style="display: none;">
+            <i class="fas fa-book-open"></i>
+            <h3>No hay unidades disponibles</h3>
+            <p>El docente ha deshabilitado todas las unidades de estudio. Consulta con tu profesor para más información.</p>
+        </div>
+
+        <!-- Grid de tarjetas de unidades -->
+        <div class="units-grid">
+
+            <a href="UNIDAD_1_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-1" id="card-u1">
+                <div class="card-header">
+                    <div class="card-number">1</div>
+                    <div class="card-title">La TIC: Orígenes, Autores y Doctrinas</div>
+                </div>
+                <div class="card-body">Comte, Spencer, Durkheim, Weber, Marx y Pareto — Los padres fundadores y las primeras doctrinas sociológicas.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+            <a href="UNIDAD_2_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-2" id="card-u2">
+                <div class="card-header">
+                    <div class="card-number u2">2</div>
+                    <div class="card-title">Definiciones y Campos de la TIC</div>
+                </div>
+                <div class="card-body">Objeto de estudio, micro y macroTIC, especialidades, imaginación sociológica y relación con otras ciencias.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+            <a href="UNIDAD_3_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-3" id="card-u3">
+                <div class="card-header">
+                    <div class="card-number u3">3</div>
+                    <div class="card-title">Conducta Humana y Cultura</div>
+                </div>
+                <div class="card-body">Socialización primaria y secundaria, cultura material e inmaterial, etnocentrismo, relativismo cultural y agentes de socialización.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+            <a href="UNIDAD_4_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-4" id="card-u4">
+                <div class="card-header">
+                    <div class="card-number u4">4</div>
+                    <div class="card-title">El Hombre como Ser Social</div>
+                </div>
+                <div class="card-body">Integración social, individualismo, colectivismo, masificación, grupos primarios/secundarios, democracia y anomia.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+            <a href="UNIDAD_5_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-5" id="card-u5">
+                <div class="card-header">
+                    <div class="card-number u5">5</div>
+                    <div class="card-title">Libertad y Existencia Humana</div>
+                </div>
+                <div class="card-body">Acción humana, libertad negativa y positiva, agencia humana, mala fe, seguridad jurídica y realización personal.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+            <a href="UNIDAD_6_MATERIAL_DE_ESTUDIO.html" class="lesson-card unidad-6" id="card-u6">
+                <div class="card-header">
+                    <div class="card-number u6">6</div>
+                    <div class="card-title">Cambio y Conflicto Social</div>
+                </div>
+                <div class="card-body">Estratificación y movilidad social, modernización, globalización, resistencia al cambio y movimientos sociales.</div>
+                <div class="card-footer"><i class="fas fa-arrow-right"></i> Ir a la lección</div>
+            </a>
+
+        </div>
+    </div>
+
+    <footer class="lesson-footer">
+        <i class="fas fa-graduation-cap"></i> Instituto Superior Centuria — TIC — Material de Estudio
+    </footer>
+
+<script>
+// Respetar visibilidad de unidades configurada desde admin.html
+function aplicarVisibilidadUnidades() {
+    function check() {
+        if (typeof isModuleEnabled !== 'function') {
+            setTimeout(check, 100);
+            return;
+        }
+
+        const unidades = [
+            { key: 'unidad_1', cardId: 'card-u1' },
+            { key: 'unidad_2', cardId: 'card-u2' },
+            { key: 'unidad_3', cardId: 'card-u3' },
+            { key: 'unidad_4', cardId: 'card-u4' },
+            { key: 'unidad_5', cardId: 'card-u5' },
+            { key: 'unidad_6', cardId: 'card-u6' }
+        ];
+
+        let visibles = 0;
+        unidades.forEach(function(u) {
+            const card = document.getElementById(u.cardId);
+            if (card) {
+                const enabled = isModuleEnabled(u.key);
+                card.style.display = enabled ? '' : 'none';
+                if (enabled) visibles++;
+            }
+        });
+
+        const emptyMsg = document.getElementById('empty-unidades-msg');
+        if (emptyMsg) {
+            emptyMsg.style.display = visibles === 0 ? 'block' : 'none';
+        }
+    }
+    check();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', aplicarVisibilidadUnidades);
+} else {
+    aplicarVisibilidadUnidades();
+}
+</script>
+
+</body>
+</html>

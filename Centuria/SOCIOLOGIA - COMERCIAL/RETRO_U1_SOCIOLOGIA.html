@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retroalimentación Unidad 1 - Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --color-primario: #2c5d3d;
+            --color-acento: #c5a059;
+            --color-fondo: #ffffff;
+            --color-texto: #333333;
+            --color-texto-suave: #54595f;
+            --fuente-principal: 'Montserrat', sans-serif;
+            --fuente-secundaria: 'Roboto', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-texto);
+            font-family: var(--fuente-secundaria);
+            line-height: 1.6;
+            margin: 0;
+            user-select: none;
+        }
+        h1, h2, h3, .titulo-institucional {
+            font-family: var(--fuente-principal);
+            color: var(--color-primario);
+            font-weight: 700;
+        }
+        .btn-centuria {
+            background-color: var(--color-primario);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-family: var(--fuente-principal);
+            transition: background 0.3s ease;
+        }
+        .btn-centuria:hover {
+            background-color: var(--color-acento);
+            cursor: pointer;
+        }
+        .detalle-dorado {
+            border-bottom: 3px solid var(--color-acento);
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-left: 6px solid var(--color-primario);
+        }
+        .step-header {
+            background: var(--color-primario);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-number {
+            background: var(--color-acento);
+            color: var(--color-primario);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .content-padding { padding: 1.5rem; }
+        .text-primary { color: var(--color-primario); }
+        .bg-primary { background-color: var(--color-primario); }
+        @media print { .no-print { display: none !important; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="p-3 md:p-6" oncontextmenu="return false;">
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-2xl mt-8 animate-fade">
+    <div class="text-center mb-5">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <h1 class="text-lg font-bold mt-3">Retroalimentación - Unidad 1</h1>
+        <p class="text-sm text-gray-500 italic">Sociología - Variables y Tipografía</p>
+    </div>
+    <div class="space-y-3">
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre y Apellido Completos</label>
+            <input type="text" id="student-name" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: Juan Pérez">
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Cédula de Identidad</label>
+            <input type="text" id="student-id" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: 1234567">
+        </div>
+        <div class="bg-blue-50 p-2 rounded-lg text-xs text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i> Retroalimentación: 60 minutos | Pases: 2
+        </div>
+        <button onclick="startExam()" class="w-full btn-centuria py-3 rounded-lg hover:opacity-90 shadow-lg">
+            COMENZAR
+        </button>
+    </div>
+</div>
+
+<!-- TEACHER PANEL -->
+<div id="teacher-panel" class="hidden max-w-7xl mx-auto animate-fade">
+    <div class="bg-white rounded-xl shadow-lg p-5">
+        <div class="flex justify-between items-center mb-4 border-b-2 border-green-500 pb-3">
+            <div>
+                <h1 class="text-xl font-bold"><span class="text-red-600">INSTITUTO SUPERIOR CENTURIA</span></h1>
+                <p class="text-xs text-gray-500 uppercase">Panel del Docente - Retroalimentación U1</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-green-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Entregados</p>
+                    <p id="total-count" class="text-xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-blue-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Promedio</p>
+                    <p id="avg-score" class="text-xl font-bold text-blue-600">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auto-refresh and Export -->
+        <div class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200">
+            <div class="flex gap-3 items-center">
+                <label class="flex items-center gap-2 text-xs">
+                    <input type="checkbox" id="auto-refresh" onchange="toggleAutoRefresh()" class="w-4 h-4">
+                    Auto-actualizar cada 10 seg
+                </label>
+                <button onclick="exportPDF()" class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">
+                    <i class="fas fa-file-pdf mr-1"></i> Exportar PDF
+                </button>
+                <button onclick="actualizarPanel()" class="text-green-600 text-xs hover:underline">
+                    <i class="fas fa-sync mr-1"></i> Actualizar
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="col-span-1 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2">Alumnos</h2>
+                <div id="students-list" class="space-y-2 text-sm"></div>
+            </div>
+            <div class="col-span-3 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2">Detalle del Examen</h2>
+                <div id="exam-detail" class="text-gray-500 text-center py-8">Seleccione un alumno</div>
+            </div>
+        </div>
+        <button onclick="location.reload()" class="mt-3 text-gray-500 hover:text-gray-700 text-xs"><i class="fas fa-arrow-left mr-1"></i> Salir</button>
+    </div>
+</div>
+
+<!-- EXAM CONTAINER -->
+<div id="exam-container" class="hidden max-w-4xl mx-auto animate-fade">
+
+<div class="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded-r-lg">
+    <p class="text-sm font-bold text-green-700">Unidad 1: Definición de Variables y Tipografía</p>
+    <p class="text-xs text-gray-600 mt-1">Retroalimentación: 60 minutos | Total: 15 puntos</p>
+</div>
+
+<header class="max-w-4xl mx-auto mb-4 text-center border-b-2 pb-3" style="border-color: var(--color-primario);">
+    <div class="flex flex-col items-center mb-1">
+        <div class="font-bold text-xl tracking-tighter mb-1 titulo-institucional">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <p class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Retroalimentación</p>
+    </div>
+    <h2 class="text-lg font-bold mt-1 uppercase text-primary">Unidad 1 - Sociología</h2>
+</header>
+
+<section class="bg-white border-2 border-gray-200 rounded-lg p-3 mb-4 grid grid-cols-1 md:grid-cols-3 gap-3 shadow-sm">
+    <div class="md:col-span-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Estudiante:</label>
+        <div id="display-name" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Cédula:</label>
+        <div id="display-id" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Fecha:</label>
+        <div id="display-date" class="border-b border-gray-400 h-6"></div>
+    </div>
+    <div class="bg-green-50 p-2 rounded text-center border border-green-200">
+        <label class="text-xs font-bold text-primary uppercase">Tiempo:</label>
+        <div id="timer" class="text-xl font-bold text-red-600 mt-1">60:00</div>
+    </div>
+</section>
+
+<!-- SECTION I: Definición de Variables -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h2 class="text-base font-bold uppercase">I. Definición de Variables (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Defina los siguientes conceptos (1 pto cada uno).</p>
+        <div id="section1-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<!-- SECTION II: Tipos de Variables -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h2 class="text-base font-bold uppercase">II. Tipos de Variables (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Clasifique las variables (1 pto cada una).</p>
+        <div id="section2-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<!-- SECTION III: Aplicación -->
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h2 class="text-base font-bold uppercase">III. Identificación (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Identifique el tipo de variable (1 pto cada uno).</p>
+        <div id="section3-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<div class="text-center pb-10">
+    <button onclick="finalizarExamen()" class="bg-red-600 text-white px-10 py-3 rounded-full font-bold text-lg shadow-xl hover:bg-red-700 transition">
+        FINALIZAR
+    </button>
+</div>
+</div>
+
+<!-- RESULT MODAL -->
+<div id="result-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-white max-w-lg w-full p-5 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div id="acta-content" class="p-4 border-4 border-double border-gray-300">
+            <div class="text-center border-b-2 border-green-600 pb-3 mb-4">
+                <h2 class="font-title text-xl">ACTA DE RETROALIMENTACIÓN</h2>
+                <p class="text-xs uppercase tracking-widest">Instituto Superior Centuria</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <p><strong>Fecha:</strong> <span id="res-date"></span></p>
+                <p><strong>Estudiante:</strong> <span id="res-name" class="uppercase font-bold"></span></p>
+                <p><strong>Cédula:</strong> <span id="res-id"></span></p>
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-base"><strong>Puntaje:</strong> <span id="res-score" class="text-green-600 font-bold text-xl"></span>/15</p></div>
+                        <div><p class="text-base"><strong>Porcentaje:</strong> <span id="res-percent" class="text-green-600 font-bold text-xl"></span>%</p></div>
+                    </div>
+                </div>
+            </div>
+            <div id="results-matrix" class="mt-3 text-xs bg-gray-50 p-2 rounded"></div>
+            <div class="mt-6 flex justify-between">
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Firma</div>
+                </div>
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Lic. Christhian Keim</div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-3 justify-center">
+            <button onclick="descargarActa()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">
+                <i class="fas fa-download mr-2"></i> Descargar
+            </button>
+            <button onclick="imprimirActa()" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-700">
+                <i class="fas fa-print mr-2"></i> Imprimir
+            </button>
+            <button onclick="location.reload()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold text-sm">Salir</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const examData = {
+    section1: [
+        '1. Variable Sociológica:',
+        '2. Variable Independiente:',
+        '3. Variable Dependiente:',
+        '4. Variable Interviniente:',
+        '5. Variable Ordinal:'
+    ],
+    section2: [
+        { q: '1. Nivel educativo (sin estudio, primaria, secundaria, universidad):', type: 'ordinal' },
+        { q: '2. Ingreso mensual en dólares:', type: 'razon' },
+        { q: '3. Género (masculino/femenino):', type: 'nominal' },
+        { q: '4. Temperatura en grados Celsius:', type: 'razon' },
+        { q: '5. Satisfacción laboral (satisfecho/insatisfecho):', type: 'ordinal' }
+    ],
+    section3: [
+        { q: '1. "Número de hijos" - ¿Qué tipo de variable es?', answer: 'discreta', options: ['Discreta', 'Continua', 'Nominal', 'Ordinal'] },
+        { q: '2. "Estado civil" - ¿Qué tipo de variable es?', answer: 'nominal', options: ['Discreta', 'Continua', 'Nominal', 'Ordinal'] },
+        { q: '3. "Rendimiento académico (0-100)" - ¿Qué tipo es?', answer: 'razon', options: ['Discreta', 'Continua', 'Nominal', 'Intervalo'] },
+        { q: '4. "Temperatura corporal" - ¿Qué tipo es?', answer: 'razon', options: ['Discreta', 'Continua', 'Nominal', 'Ordinal'] },
+        { q: '5. "Nivel de felicidad (1-10)" - ¿Qué tipo es?', answer: 'ordinal', options: ['Discreta', 'Continua', 'Nominal', 'Ordinal'] }
+    ]
+};
+
+let currentStudent = { name: '', ci: '', isTest: false };
+let timeLeft = 3600;
+let timerInterval;
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getDate() {
+    return new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getTime() {
+    return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderSection1() {
+    const container = document.getElementById('section1-questions');
+    examData.section1.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <label class="font-bold text-sm text-primary">${item}</label>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="2" name="q1_${idx}" placeholder="Defina..."></textarea>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection2() {
+    const container = document.getElementById('section2-questions');
+    examData.section2.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between border-b pb-2';
+        div.innerHTML = `
+            <p class="text-sm text-gray-800 flex-1">${idx + 1}. ${item.q}</p>
+            <div class="flex gap-2 ml-2 text-xs">
+                <label><input type="radio" name="q2_${idx}" value="nominal" class="w-3 h-3"> Nominal</label>
+                <label><input type="radio" name="q2_${idx}" value="ordinal" class="w-3 h-3"> Ordinal</label>
+                <label><input type="radio" name="q2_${idx}" value="intervalo" class="w-3 h-3"> Intervalo</label>
+                <label><input type="radio" name="q2_${idx}" value="razon" class="w-3 h-3"> Razón</label>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection3() {
+    const container = document.getElementById('section3-questions');
+    examData.section3.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mb-3';
+        div.innerHTML = `
+            <p class="text-sm font-semibold text-gray-800 mb-1">${idx + 1}. ${item.q}</p>
+            <div class="text-sm text-gray-700 space-y-1 ml-2">
+                ${item.options.map(o => `
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="radio" name="q3_${idx}" value="${o.toLowerCase()}" class="w-3 h-3 text-green-600">
+                        <span>${o}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function startExam() {
+    const name = document.getElementById('student-name').value.trim();
+    const ci = document.getElementById('student-id').value.trim();
+    
+    if (!name || !ci) {
+        alert('Complete todos los campos');
+        return;
+    }
+    
+    currentStudent = { name, ci };
+    
+    if (ci === '1340130') {
+        showTeacherPanel();
+        return;
+    }
+    
+    if (ci === '99') {
+        currentStudent.isTest = true;
+    }
+    
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('exam-container').classList.remove('hidden');
+    document.getElementById('display-name').textContent = name;
+    document.getElementById('display-id').textContent = ci;
+    document.getElementById('display-date').textContent = getDate();
+    
+    renderSection1();
+    renderSection2();
+    renderSection3();
+    
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        finalizarExamen();
+        return;
+    }
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    
+    if (timeLeft < 300) {
+        document.getElementById('timer').classList.add('text-red-600');
+    }
+}
+
+function calcularPuntaje() {
+    let score = 0;
+    let section1Correct = 0, section2Correct = 0, section3Correct = 0;
+    
+    for (let i = 0; i < 5; i++) {
+        const text = document.querySelector(`textarea[name="q1_${i}"]`)?.value?.trim();
+        if (text && text.length > 10) { score++; section1Correct++; }
+    }
+    
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (selected && selected.value === examData.section2[i].type) { score++; section2Correct++; }
+    }
+    
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q3_${i}"]:checked`);
+        if (selected && selected.value === examData.section3[i].answer) { score++; section3Correct++; }
+    }
+    
+    return {
+        score: Math.min(score, 15),
+        summary: [
+            { section: 'I. Definición de Variables', correct: section1Correct, total: 5 },
+            { section: 'II. Tipos de Variables', correct: section2Correct, total: 5 },
+            { section: 'III. Identificación', correct: section3Correct, total: 5 }
+        ]
+    };
+}
+
+function finalizarExamen() {
+    clearInterval(timerInterval);
+    
+    if (currentStudent.isTest) {
+        alert('Examen de prueba completado');
+        location.reload();
+        return;
+    }
+    
+    const result = calcularPuntaje();
+    const score = result.score;
+    const percent = ((score / 15) * 100).toFixed(0);
+    
+    document.getElementById('res-name').textContent = currentStudent.name;
+    document.getElementById('res-id').textContent = currentStudent.ci;
+    document.getElementById('res-date').textContent = `${getDate()} ${getTime()}`;
+    document.getElementById('res-score').textContent = score;
+    document.getElementById('res-percent').textContent = percent;
+    
+    let matrixHTML = '';
+    result.summary.forEach(s => {
+        const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '◐' : '✗');
+        const color = s.correct === s.total ? 'text-green-600' : (s.correct > 0 ? 'text-yellow-600' : 'text-red-600');
+        matrixHTML += `<div class="flex justify-between border-b py-1 ${color}"><span>${s.section}</span><span>${icon} ${s.correct}/${s.total}</span></div>`;
+    });
+    document.getElementById('results-matrix').innerHTML = matrixHTML;
+    
+    document.getElementById('result-modal').classList.remove('hidden');
+    guardarResultado(result);
+}
+
+function guardarResultado(result) {
+    const record = {
+        name: currentStudent.name,
+        ci: currentStudent.ci,
+        score: result.score,
+        date: getDate(),
+        time: getTime(),
+        datetime: new Date().toISOString()
+    };
+    
+    let allResults = JSON.parse(localStorage.getItem('retroResults') || '[]');
+    allResults.push(record);
+    localStorage.setItem('retroResults', JSON.stringify(allResults));
+}
+
+function descargarActa() {
+    const element = document.getElementById('acta-content');
+    html2canvas(element, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        const parts = currentStudent.name.split(' ');
+        link.download = `Acta_U1_${currentStudent.ci}_${parts[0]}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // Mostrar mensaje y cerrar después de descargar
+        setTimeout(() => {
+            if (confirm('¿Desea cerrar la ventana del examen?')) {
+                window.close();
+            }
+        }, 1000);
+    });
+}
+
+function imprimirActa() {
+    window.print();
+    // Cerrar después de imprimir
+    setTimeout(() => {
+        if (confirm('¿Desea cerrar la ventana del examen?')) {
+            window.close();
+        }
+    }, 1500);
+}
+
+function showTeacherPanel() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('teacher-panel').classList.remove('hidden');
+    cargarDatosProfesor();
+}
+
+let autoRefreshInterval = null;
+
+function toggleAutoRefresh() {
+    const checkbox = document.getElementById('auto-refresh');
+    if (checkbox.checked) {
+        autoRefreshInterval = setInterval(() => {
+            cargarDatosProfesor();
+        }, 10000);
+    } else {
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+function cargarDatosProfesor() {
+    const allResults = JSON.parse(localStorage.getItem('retroResults') || '[]');
+    document.getElementById('total-count').textContent = allResults.length;
+    
+    const avg = allResults.length > 0 
+        ? (allResults.reduce((sum, r) => sum + r.score, 0) / allResults.length).toFixed(1)
+        : '-';
+    document.getElementById('avg-score').textContent = avg;
+    
+    let html = '';
+    if (allResults.length === 0) {
+        html = '<p class="text-gray-400 text-center py-4">Sin entregas</p>';
+    } else {
+        allResults.sort((a, b) => new Date(b.datetime) - new Date(a.datetime)).forEach((r) => {
+            const percent = ((r.score / 15) * 100).toFixed(0);
+            html += `
+                <div class="bg-white p-2 rounded border cursor-pointer hover:bg-green-50" onclick="verDetalleExamen('${r.ci}')">
+                    <p class="font-bold text-xs">${r.name}</p>
+                    <p class="text-xs text-gray-500">C.I. ${r.ci} | Nota: ${r.score}/15 (${percent}%)</p>
+                    <p class="text-xs text-gray-400">${r.date} ${r.time}</p>
+                </div>
+            `;
+        });
+    }
+    document.getElementById('students-list').innerHTML = html;
+}
+
+function verDetalleExamen(ci) {
+    const allResults = JSON.parse(localStorage.getItem('retroResults') || '[]');
+    const studentResults = allResults.filter(x => x.ci === ci).sort((a, b) => b.score - a.score);
+    const bestResult = studentResults[0];
+    
+    if (!bestResult) return;
+    
+    let attemptsHTML = '';
+    studentResults.forEach((r, idx) => {
+        const percent = ((r.score / 15) * 100).toFixed(0);
+        attemptsHTML += `
+            <div class="bg-white p-2 rounded border mb-1">
+                <span class="font-bold text-xs">Intento ${idx + 1}:</span>
+                <span class="text-green-600 font-bold ml-2">${r.score}/15 (${percent}%)</span>
+                <span class="text-xs text-gray-400 ml-2">${r.date} ${r.time}</span>
+            </div>
+        `;
+    });
+    
+    let matrixHTML = '';
+    if (bestResult.summary) {
+        bestResult.summary.forEach(s => {
+            const icon = s.correct === s.total ? '✓' : (s.correct > 0 ? '◐' : '✗');
+            const color = s.correct === s.total ? 'text-green-600' : (s.correct > 0 ? 'text-yellow-600' : 'text-red-600');
+            matrixHTML += `<div class="flex justify-between border-b py-1 ${color}"><span>${s.section}</span><span>${icon} ${s.correct}/${s.total}</span></div>`;
+        });
+    }
+    
+    document.getElementById('exam-detail').innerHTML = `
+        <div class="space-y-3 text-sm">
+            <div><strong>Nombre:</strong> ${bestResult.name}</div>
+            <div><strong>C.I.:</strong> ${bestResult.ci}</div>
+            <div class="bg-yellow-50 p-2 rounded">
+                <p class="font-bold text-xs text-yellow-700">Intentos Realizados</p>
+                ${attemptsHTML}
+            </div>
+            <div class="bg-green-50 p-3 rounded-lg border">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><strong>Mejor Nota:</strong> <span class="text-green-600 font-bold text-lg">${bestResult.score}/15</span></div>
+                    <div><strong>Porcentaje:</strong> <span class="text-green-600 font-bold text-lg">${((bestResult.score/15)*100).toFixed(0)}%</span></div>
+                </div>
+            </div>
+            <div class="bg-gray-100 p-2 rounded">
+                <p class="font-bold text-xs">Matriz de Respuestas</p>
+                ${matrixHTML || '<p class="text-xs text-gray-400">Sin matriz</p>'}
+            </div>
+        </div>
+    `;
+}
+
+function exportPDF() {
+    const allResults = JSON.parse(localStorage.getItem('retroResults') || '[]');
+    
+    if (allResults.length === 0) {
+        alert('No hay exámenes para exportar');
+        return;
+    }
+    
+    const date = new Date().toLocaleDateString('es-ES');
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Planilla Retroalimentación U1</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2c5d3d; padding-bottom: 10px; }
+            .header h1 { color: #2c5d3d; margin: 0; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 11px; }
+            th { background-color: #2c5d3d; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>INSTITUTO SUPERIOR CENTURIA</h1>
+            <p>Retroalimentación Unidad 1 - Sociología</p>
+            <p>Fecha: ${date} | Total: ${allResults.length}</p>
+        </div>
+        <table>
+            <tr><th>#</th><th>Cédula</th><th>Nombre</th><th>Fecha</th><th>Hora</th><th>Nota</th><th>%</th></tr>
+    `;
+    
+    allResults.sort((a, b) => b.score - a.score).forEach((r, i) => {
+        html += `<tr><td>${i+1}</td><td>${r.ci}</td><td>${r.name}</td><td>${r.date}</td><td>${r.time}</td><td>${r.score}/15</td><td>${((r.score/15)*100).toFixed(0)}%</td></tr>`;
+    });
+    
+    const avg = (allResults.reduce((sum, r) => sum + r.score, 0) / allResults.length).toFixed(1);
+    html += `
+        </table>
+        <p><strong>Promedio:</strong> ${avg}/15 (${((avg/15)*100).toFixed(0)}%)</p>
+    </body>
+    </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+}
+
+console.log('Retroalimentación Unidad 1 - Listo');
+</script>
+
+</body>
+</html>

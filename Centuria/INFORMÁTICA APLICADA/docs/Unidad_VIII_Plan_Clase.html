@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 08: Normativas SET/DNIT (Master Edition) | ICO3534</title>
+    <style>
+        :root {
+            --primary: #008f1f;
+            --accent: #25a837;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm;
+            margin: 20mm auto;
+            background: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-top: 15px solid var(--primary);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+        }
+
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 26pt;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 18pt;
+            color: var(--primary);
+            border-left: 8px solid var(--accent);
+            padding-left: 15px;
+            margin: 40px 0 20px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: var(--accent);
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .reading-box {
+            background: #fffcf0;
+            border: 1px solid #f1c40f;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-style: italic;
+            position: relative;
+        }
+
+        .reading-box::before {
+            content: "📚 LECTURA PREVIA OBLIGATORIA (TEXTO EXPLÍCITO)";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #f1c40f;
+            color: #000;
+            padding: 2px 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 5px;
+            font-style: normal;
+        }
+
+        .legal-text {
+            font-family: 'Times New Roman', serif;
+            font-size: 11pt;
+            color: #2d3436;
+            background: #fdfdfd;
+            padding: 20px;
+            border: 1px solid #dfe6e9;
+            margin: 15px 0;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .important-note {
+            background: #fdedec;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .technical-box {
+            background: #e8f4fd;
+            border: 1px solid #3498db;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .snippet {
+            background: #2d3436;
+            color: #55efc4;
+            padding: 25px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 10pt;
+            line-height: 1.5;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #1dd1a1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 10pt;
+        }
+
+        th,
+        td {
+            border: 1px solid #dcdde1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f2f6;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 20mm;
+            right: 25mm;
+            font-size: 9pt;
+            color: #95a5a6;
+        }
+
+        .btn-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 35px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media print {
+            body { background: none; }
+            .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; }
+            .btn-print { display: none; }
+        }
+    </style>
+</head>
+
+<body class="unit-body">
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR GUÍA MAESTRA</button>
+
+    <div class="page">
+        <header>
+            <div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div>
+            <h1>UNIDAD V: Marco Legal DNIT</h1>
+            <p style="font-size: 1.2rem; color: #7f8c8d;">Guía Maestra: Legislación Digital y Cumplimiento Tributario</p>
+        </header>
+
+        <section>
+            <h2>1. El Ecosistema Normativo de la DNIT</h2>
+            <p>El cumplimiento tributario digital en Paraguay se rige por leyes que otorgan al dato electrónico la misma validez que al papel rubricado. A continuación, se presenta la base legal que todo profesional debe dominar.</p>
+        </section>
+
+        <section class="reading-box">
+            <h3>📑 LEY N° 6822/21 - Artículo 15</h3>
+            <div class="legal-text">
+                "Artículo 15.- Validez de los documentos electrónicos. Los documentos electrónicos tendrán la misma validez jurídica y fuerza probatoria que los documentos en soporte papel, siempre que cumplan con los requisitos establecidos en la presente Ley. Ningún documento electrónico podrá ser rechazado como prueba en juicio por la sola razón de su formato electrónico. La firma digital cualificada tendrá el mismo valor legal que una firma ológrafa sujeta a certificación ante escribano público."
+            </div>
+        </section>
+
+        <section class="reading-box">
+            <h3>📑 RESOLUCIÓN SET N° 412/04 - Artículo 5</h3>
+            <div class="legal-text">
+                "Artículo 5.- De las prohibiciones. Queda terminantemente prohibido a los contribuyentes que utilicen sistemas computarizados de contabilidad: a) La utilización de procedimientos que permitan el borrado físico de los registros contables ya confirmados. b) La generación de duplicidad de números de comprobantes para una misma serie y punto de expedición. c) La falta de un rastro de auditoría que documente cualquier modificación autorizada de parámetros."
+            </div>
+        </section>
+
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>2. Profundización Legislativa: Servicios de Confianza</h2>
+        <p>La Ley 6822/21 no solo habla de firmas, sino de la "Inmutabilidad" del documento en el tiempo.</p>
+
+        <section class="reading-box">
+            <h3>📑 LEY N° 6822/21 - Artículo 22 (Sellado de Tiempo)</h3>
+            <div class="legal-text">
+                "Artículo 22.- El sellado de tiempo electrónico cualificado es un servicio que garantiza que un documento electrónico existía en una fecha y hora determinadas y que no ha sido modificado desde entonces. Los prestadores de servicios de confianza deben asegurar que los registros de tiempo sean exactos y estén sincronizados con la Red Mundial de Tiempo."
+            </div>
+        </section>
+
+        <h3>2.1 Análisis de la Partida Triple Digital</h3>
+        <table>
+            <thead>
+                <tr><th>Concepto</th><th>Ley Aplicable</th><th>Requisito Técnico</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Firma de Factura</td><td>Decreto 7731/17 (SIFEN)</td><td>Certificado Digital X.509</td></tr>
+                <tr><td>Libros Digitales</td><td>Res. 412/04</td><td>Log de transacciones no eliminable</td></tr>
+                <tr><td>Contratos Electrónicos</td><td>Ley 6822/21</td><td>Aceptación via Firma Cualificada</td></tr>
+            </tbody>
+        </table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>3. Casos de Estudio y Realidad Nacional</h2>
+        
+        <div class="technical-box">
+            <h3 style="margin-top:0;">CASO 8.1: LA MULTA POR "REGISTRO VOLÁTIL"</h3>
+            <p><strong>Descripción:</strong> Un importante importador de Ciudad del Este fue auditado por la DNIT (ex SET). El sistema permitía 'Anular' facturas que luego desaparecían de la base de datos sin dejar rastro.</p>
+            <p><strong>Fallo Judicial:</strong> La Corte Suprema falló a favor del fisco, dictaminando que la contabilidad era 'No Confiable' por violar el Art. 5 de la Res. 412/04. La multa ascendió a 1.200 millones de GS.</p>
+        </div>
+
+        <section class="reading-box">
+            <h3>📚 LECTURA COMPLEMENTARIA: EL DECRETO 7731/17 (SIFEN)</h3>
+            <div class="legal-text">
+                "El Sistema Integrado de Facturación Electrónica Nacional (SIFEN) establece que el contribuyente es el responsable absoluto de la custodia y conservación de los archivos XML firmados digitalmente por un periodo de 5 años. La pérdida de estos archivos equivale legalmente a la pérdida de libros manuales y acarrea sanciones de clausura."
+            </div>
+        </section>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>4. Laboratorio de Auditoría Legislativa</h2>
+        <p>A continuación, desarrolle la lógica para auditar si una base de datos cumple con el Artículo 5 (No borrado).</p>
+        <div class="snippet">
+            # SCRIPT DE AUDITORÍA DNIT v2.1<br>
+            SELECT count(*) FROM auditoria_logs WHERE accion = 'DELETE';<br>
+            IF (count > 0) THEN ALERT "VIOLACIÓN DE RES. 412/04 detected!";
+        </div>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>5. Guía SOS y Prevención</h2>
+        <section style="background:#fffcf0; border:1px solid #f1c40f; padding:25px; border-radius:12px;">
+            <h3 style="margin-top:0; color:#d35400;">🆘 PROTOCOLO DE CONTINGENCIA DNIT</h3>
+            <p>De acuerdo al manual del SIFEN, ante la caída del servicio de recepción de la DNIT:</p>
+            <ol>
+                <li>Emitir factura en Modo Contingencia (Secuencia Alternativa).</li>
+                <li>Firma y entrega del KUDE al cliente.</li>
+                <li>Plazo de 72hs para la transmisión obligatoria una vez restablecido el servicio.</li>
+            </ol>
+        </section>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>6. Evaluación y Glosario</h2>
+        <section style="background:#f1f2f6; padding:30px; border-radius:10px;">
+            <h3>📝 Cuestionario de Marco Legal</h3>
+            <ol>
+                <li>¿Cuál es la diferencia jurídica entre una "Firma Electrónica Simple" y una "Firma Cualificada" según la Ley 6822/21?</li>
+                <li>¿Por qué la Res. 412/04 prohíbe el borrado físico de registros?</li>
+                <li>¿Qué plazo tiene el contribuyente para transmitir facturas en modo contingencia?</li>
+            </ol>
+        </section>
+        <footer style="margin-top:40px; text-align:center; font-size:9pt; color:#7f8c8d;">
+            © 2026 Centuria • Ingeniería Aplicada • Todos los derechos reservados.
+        </footer>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+
+    <script src="core.js"></script>
+</body>
+</html>

@@ -544,4 +544,20 @@ docker exec -i moodle_web php /var/www/html/import_indicators.php 3
 
 ---
 
+## 6. ACTUALIZACIONES DEL PROYECTO
+
+**Lo que se ha completado**:
+- Creado directorio `C:\moodledata` y generado `config.php` minimalista.
+- Copiados recursos estáticos (`Backend_Scripts`, `Materiales_Clases`, `academic`, `admin`) dentro de `CampusVirtual/app/moodle`.
+- Añadida regla de firewall para permitir tráfico en el puerto **8080**.
+- Verificado que Apache escucha en **8080** y que MySQL está activo.
+
+**Pendientes**:
+- Actualizar XAMPP a una versión con **PHP 8.3** (se aprobó instalación full XAMPP 8.3).
+- Modificar `httpd.conf` para cargar el módulo PHP 8.3 y eliminar el módulo PHP 7.4.
+- Conceder permisos de escritura a `C:\moodledata` al usuario/servicio Apache (`daemon` o cuenta actual).
+- Reiniciar Apache y validar la versión de PHP (`phpinfo()`).
+- Completar el asistente de instalación de Moodle (aceptar licencia GPL, crear base de datos, admin).
+- Verificar que Moodle funciona accediendo a `http://localhost:8080/CampusVirtual`.
+
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*

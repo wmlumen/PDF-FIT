@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 07: Sistemas de Información Modernos (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #4527a0; --accent: #5e35b1; --bg: #f3e5f5; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #f3e5f5; border: 1px solid #4527a0; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #4527a0; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #ede7f6; border: 1px solid #7e57c2; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #263238; color: #b39ddb; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #7e57c2; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f3e5f5; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD VII: SIC Moderno</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Sistemas de Información Contable en la Era de la Inmediatez</p></header>
+        <section><h2>1. El SIC como Activo Estratégico</h2><p>En la modernidad, el Sistema de Información Contable (SIC) ha dejado de ser un centro de costos para convertirse en un **Activo Estratégico**. La capacidad de capturar datos en el punto de venta y convertirlos en información financiera instantánea es lo que determina la supervivencia de las empresas en el mercado paraguayo actual.</p>
+        <p>No basta con "tener un sistema"; el profesional debe asegurar que el SIC sea capaz de responder a requerimientos de información cada vez más complejos y dinámicos.</p></section>
+        <section class="reading-box"><h3>📜 Texto de Cátedra (Programa p.2)</h3><p>"El avance de las TICs exige eficiencia y calidad en el registro. Un SIC moderno debe producir información que sea Veraz, Confiable y, sobre todo, Oportuna. La 'oportunidad' significa que el dato debe estar disponible en el preciso momento en que el accionista debe tomar una decisión, no semanas después del cierre."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: REQUERIMIENTOS DE INFORMACIÓN -->
+    <div class="page">
+        <h2>2. Atributos de la Información de Calidad</h2>
+        <h3>2.1 El Triángulo de la Excelencia Informativa</h3><p>Para que un SIC sea considerado "moderno y profesional", su salida (información) debe cumplir con 3 atributos innegociables:</p>
+        <ul><li>**Veracidad:** El dato digital debe ser el reflejo exacto del hecho económico (ej: El saldo de banco en el sistema debe ser idéntico al extracto).</li><li>**Confiabilidad:** El sistema debe poseer controles que impidan la manipulación indebida de los datos.</li><li>**Oportunidad:** La información debe fluir a la velocidad del negocio.</li></ul>
+        <h3>2.2 Tipología de Usuarios del SIC</h3><p>Un SIC moderno atiende a múltiples frentes: 1. **Usuarios Internos** (Gerentes, Dueños). 2. **Usuarios Externos** (DNIT, Bancos, Proveedores). El diseño del sistema debe permitir vistas personalizadas para cada uno.</p>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: SIC ESTRATÉGICO VS OPERATIVO -->
+    <div class="page">
+        <h2>3. Niveles de Madurez del Sistema</h2>
+        <p>No todos los sistemas contables son iguales. La ingeniería aplicada clasifica el SIC según su capacidad de generación de valor.</p>
+        <h3>3.1 Nivel Operativo (Data-Driven)</h3><p>Se enfoca en el registro masivo de facturas, recibos y notas de crédito. Su éxito se mide por la velocidad de carga y la ausencia de errores de tipografía.</p>
+        <h3>3.2 Nivel Estratégico (Inisght-Driven)</h3><p>Utiliza herramientas de **Business Intelligence (BI)** para cruzar datos contables con datos de mercado. Permite responder preguntas como: "¿Qué sucursal es más rentable tras descontar los impuestos por zona específica?".</p>
+        <div class="technical-box"><strong>📌 PRO-TIP:</strong> Un SIC moderno debe permitir la exportación de datos en tiempo real a modelos de Excel Dinámico para simulaciones inmediatas.</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: MÉTODOS DE COLECCIÓN MODERNOS -->
+    <div class="page">
+        <h2>4. Captura de Datos: De la Carga al Flujo</h2>
+        <p>El SIC moderno reduce la intervención humana en la fase de colección para minimizar el riesgo de error.</p>
+        <h3>4.1 Métodos de Entrada Avanzados</h3><table><thead><tr><th>Método</th><th>Tecnología</th><th>Impacto en el SIC</th></tr></thead><tbody><tr><td><strong>Batch Processing</strong></td><td>Carga por lotes (Fin de día).</td><td>Útil para procesos pesados de nómina.</td></tr><tr><td><strong>Real-Time</strong></td><td>Actualización inmediata (API).</td><td>Indispensable para control de Stock y Ventas.</td></tr><tr><td><strong>OCR / IA</strong></td><td>Reconocimiento de Facturas.</td><td>Elimina el 90% de la carga manual.</td></tr></tbody></table>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO DE REQUERIMIENTOS -->
+    <div class="page">
+        <h2>5. Laboratorio: Diseño de Requerimientos de Información</h2>
+        <p>Usted debe definir qué datos necesita el sistema para generar un reporte de rentabilidad por producto en tiempo real.</p>
+        <div class="snippet">// Algoritmo de Cálculo de Rentabilidad Real:<br>FUNCION Calcular_Rentabilidad(ID_Prod) {<br>&nbsp;&nbsp;&nbsp;&nbsp;Ingreso = GET_VENTA_NETA(ID_Prod)<br>&nbsp;&nbsp;&nbsp;&nbsp;Costo = GET_COSTO_PPP(ID_Prod)<br>&nbsp;&nbsp;&nbsp;&nbsp;Gasto_Dir = GET_LOGISTICA(ID_Prod)<br>&nbsp;&nbsp;&nbsp;&nbsp;RETORNAR (Ingreso - Costo - Gasto_Dir)<br>}</div>
+        <h3>📊 Dataset de Análisis de Requerimientos (Dataset VII)</h3>
+        <table><thead><tr><th>Pregunta de Negocio</th><th>Dato Necesario</th><th>Origen del Dato</th></tr></thead><tbody><tr><td>¿Cuánto IVA debo pagar hoy?</td><td>Facturas Emitidas/Recibidas</td><td>Módulo SIFEN</td></tr><tr><td>¿Cuál es el valor del stock?</td><td>Cantidad x Costo Último</td><td>Módulo Almacén</td></tr><tr><td>¿Hay riesgo de liquidez?</td><td>Cuentas X Cobrar < 30 días</td><td>Módulo Finanzas</td></tr></tbody></table>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: Fallos en el Flujo de Información</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- LA INFORMACIÓN LLEGA "SUCIA" (CON ERRORES):</strong> Fallo en la fase de *Validación de Entrada*. Debes implementar "Reglas de Dominio" (ej: No permitir montos negativos o RUCs sin dígito verificador).</p><p><strong>- EL GERENTE DICE QUE EL SISTEMA ES LENTO:</strong> Probable cuello de botella en la base de datos. Revisa los índices o migra el procesamiento pesado a horarios nocturnos (Batch).</p><p><strong>- SE PIERDE LA TRAZABILIDAD DEL DATO:</strong> Verifica si existen "ajustes manuales" sin justificación. En un SIC moderno, todo ajuste debe estar vinculado a un documento de respaldo digital.</p></section>
+        <h3>📝 Evaluación de Madurez de Sistemas</h3><ol><li>¿Por qué la 'Oportunidad' es el atributo más difícil de conseguir en un SIC tradicional?</li><li>Explique la relación entre el Módulo de Compras y la Veracidad del Balance General.</li><li>Diseñe una lista de 5 controles automáticos que debería tener un SIC para evitar la carga de facturas falsas.</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Informática Aplicada • Material de Alta Performance</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

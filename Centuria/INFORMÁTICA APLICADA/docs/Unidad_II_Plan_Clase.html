@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 02: Algorítmica y Lógica de Datos (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #1a237e; --accent: #283593; --bg: #f8f9fa; --white: #ffffff; --text: #333; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #fffbe6; border: 1px solid #ffe58f; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #faad14; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #e8eaf6; border: 1px solid #9575cd; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #2d3436; color: #a29bfe; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #6c5ce7; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f0f2f5; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD II: Algorítmica Contable</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Lógica de Procesamiento y Automatización de Reglas de Negocio</p></header>
+        <section><h2>1. El Algoritmo como Motor de Decisión</h2><p>Un algoritmo es una secuencia finita de instrucciones precisas. En la informática aplicada a los negocios, los algoritmos son la traducción técnica de las **Reglas de Negocio Contable**. Sin una lógica algorítmica sólida, el sistema es incapaz de garantizar la inmutabilidad y la veracidad de la información.</p>
+        <p>El estudiante de Ingeniería Aplicada debe desarrollar el "Pensamiento Computacional": la habilidad de descomponer procesos contables manuales en pasos lógicos ejecutables por una máquina.</p></section>
+        <section class="reading-box"><h3>📜 Texto de Cátedra (Programa p.4)</h3><p>"El dominio de las nociones lógicas primarias es el requisito esencial para comprender cómo un programa ejecuta tareas de fiscalización. La diferencia entre un dato y una instrucción radica en que el dato es el objeto de la transformación, mientras que la instrucción es el algoritmo impuesto por el perito profesional para cumplir con los principios contables generalmente aceptados."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: ESTRUCTURAS LÓGICAS EN BANCA Y FINANZAS -->
+    <div class="page">
+        <h2>2. Estructuras Lógicas Fundamentales</h2>
+        <h3>2.1 Estructuras Condicionales (Toma de Decisión)</h3><p>Son el corazón del control interno. Permiten que el sistema decida basándose en el estado de una cuenta. Por ejemplo, decidir si se emite una factura con retención o no.</p>
+        <p><strong>Lógica de Aplicación de IVA (SI / ENTONCES):</strong></p><ul><li><strong>Si</strong> (Monto > 0) <strong>Entonces</strong> IVA = Monto / 11.</li><li><strong>Sino</strong> IVA = 0.</li><li><strong>Fin Si.</strong></li></ul>
+        <h3>2.2 Estructuras Iterativas (Bucles de Procesamiento)</h3><p>Permiten aplicar una regla a miles de registros simultáneamente. Es lo que permite procesar una planilla de sueldos para 5,000 empleados en segundos.</p><table><thead><tr><th>Tipo de Lógica</th><th>Función Técnica</th><th>Uso en Contabilidad</th></tr></thead><tbody><tr><td><strong>Secuencia</strong></td><td>Pasos lineares.</td><td>Carga de Asiento Diario.</td></tr><tr><td><strong>Selección (IF)</strong></td><td>Decisión binaria.</td><td>Validación de Crédito / Morosidad.</td></tr><tr><td><strong>Repetición (FOR)</strong></td><td>Bucle controlado.</td><td>Cálculo de Depreciación anual.</td></tr></tbody></table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: VARIABLES Y TIPOS DE DATOS -->
+    <div class="page">
+        <h2>3. Gestión de Datos y Variables</h2>
+        <p>Para construir un sistema, debemos definir cómo "nombrar" las cosas en la memoria de la computadora.</p>
+        <h3>3.1 Tipos de Datos Contables</h3><ul><li><strong>Integer (Entero):</strong> Para números de cuenta e IDs de transacción.</li><li><strong>Decimal / Double:</strong> Para montos en moneda (PYG). **Vital:** Manejo de precisión para evitar errores de centavos.</li><li><strong>Boolean:</strong> Para estados de verdad (Pagado = TRUE / FALSE).</li><li><strong>String (Cadena):</strong> Para nombres de proveedores y descripciones.</li></ul>
+        <h3>3.2 Constantes vs Variables</h3><p>Una **Constante** es un valor que no cambia durante la ejecución (ej: el porcentaje de IVA 10%). Una **Variable** es un valor que muta (ej: el saldo actual de Caja que cambia tras cada asiento).</p>
+        <div class="technical-box"><strong>📌 IMPORTANTE:</strong> Un error en la definición del tipo de dato (ej: usar enteros para montos decimales) causará fallos en los balances consolidados.</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: DIAGRAMACIÓN Y MAPEADO -->
+    <div class="page">
+        <h2>4. Diseño de Procesos Informatizados</h2>
+        <p>Antes de programar, se debe diagramar. El **Diagrama de Flujo** es el plano de construcción de la lógica contable.</p>
+        <h3>4.1 Mapeo de Proceso: Manual vs Digital</h3><p>El perito contable debe identificar el camino que recorre la factura desde que llega al scanner hasta que se convierte en un bit en el Libro IVA Ventas.</p>
+        <div style="background: #f8f9fa; border: 2px dashed #9575cd; padding: 30px; text-align: center; font-family: monospace;">[INICIO] --> [LECTURA FACTURA] --> [¿RUC VÁLIDO?]<br>|______________________________| (SI)<br>| --> [CALCULAR IVA] --> [FIN]<br>|______________________________| (NO)<br>| --> [RECHAZAR] --> [FIN]</div>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO DE AUTOMATIZACIÓN -->
+    <div class="page">
+        <h2>5. Laboratorio Práctico: Automatización del Balance de Sumas</h2>
+        <p>Utilice la siguiente lógica para validar la integridad de un balance de prueba de 5 registros.</p>
+        <div class="snippet">// Algoritmo de Auditoría de Balance<br>VAR Suma_Debe, Suma_Haber, Diferencia<br>PARA cada Asiento EN Diario HACER<br>&nbsp;&nbsp;&nbsp;&nbsp;Suma_Debe = Suma_Debe + Monto_Debe<br>&nbsp;&nbsp;&nbsp;&nbsp;Suma_Haber = Suma_Haber + Monto_Haber<br>FIN PARA<br>Diferencia = Suma_Debe - Suma_Haber<br>SI (Diferencia == 0) MOSTRAR "Balance Cuadrado ✅"<br>SINO MOSTRAR "Error de Partida Doble: " + Diferencia</div>
+        <h3>📊 Dataset de Práctica Profesional</h3>
+        <table><thead><tr><th>Cuenta</th><th>Debe (PYG)</th><th>Haber (PYG)</th><th>Lógica de Movimiento</th></tr></thead><tbody><tr><td>Bancos</td><td>12.000.000</td><td>0</td><td>Activo que aumenta.</td></tr><tr><td>Ventas</td><td>0</td><td>10.909.091</td><td>Ingreso (Neto).</td></tr><tr><td>IVA DF</td><td>0</td><td>1.090.909</td><td>Pasivo (10%).</td></tr><tr><td>Caja</td><td>500.000</td><td>0</td><td>Activo.</td></tr><tr><td>Capital</td><td>0</td><td>1.600.000</td><td>Patrimonio Neto.</td></tr></tbody></table>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: Solución de Errores Lógicos</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- EL RESULTADO DA DECIMALES EN GUARANÍES:</strong> PYG no usa céntimos. Implementa la función <code>TRUNCAR()</code> o <code>REDONDEAR(monto, 0)</code> en tu algoritmo inicial.</p><p><strong>- EL BUCLE SE QUEDA PEGADO (INFINITO):</strong> Te falta una condición de salida. Verifica que el contador del bucle esté aumentando en cada iteración.</p><p><strong>- EL SISTEMA NO RECONOCE EL TIPO DE CUENTA:</strong> Es un error de la fase de <em>Colección</em>. El ID de cuenta en tu algoritmo debe coincidir exactamente con el ID del Maestro de Cuentas.</p></section>
+        <h3>📝 Cuestionario de Lógica Superior</h3><ol><li>¿Por qué es vital usar constantes para las tasas impositivas en lugar de escribir el número directamente en cada fórmula?</li><li>Diseñe un pseudocódigo para calcular el salario neto de un empleado restando el 9% de IPS.</li><li>Explique qué sucedería en el balance si el algoritmo de validación de partida doble fallara.</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Ingeniería Aplicada • Material Académico</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

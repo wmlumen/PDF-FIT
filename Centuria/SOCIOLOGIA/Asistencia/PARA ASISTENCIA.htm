@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistencia Permanente - Centuria</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .qr-frame {
+            border: 3px solid var(--primary);
+            padding: 10px;
+            border-radius: 15px;
+            margin: 20px 0;
+            min-height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        #qr-display {
+            max-width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            transition: 0.3s;
+            border: none;
+        }
+
+        .btn-change {
+            background: transparent;
+            color: var(--accent);
+            text-decoration: underline;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        input[type="file"] { display: none; }
+
+        .status-tag {
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-top: 5px;
+            display: none;
+        }
+
+        h1 { color: var(--primary); margin: 0; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Navegación -->
+    <div style="text-align: left; margin-bottom: 15px;">
+        <a href="index.html" style="color: #666; text-decoration: none; font-size: 0.9rem; font-weight: bold;">&larr; Volver al Dashboard</a>
+    </div>
+
+    <h1>Asistencia Digital</h1>
+    <p style="color: #666;">Escaneen el código para el registro diario.</p>
+
+    <div class="qr-frame" id="drop-zone">
+        <div id="placeholder">
+            <p>No hay QR cargado</p>
+            <label for="file-input" class="btn">Cargar QR Inicial</label>
+        </div>
+        <img id="qr-display" src="" alt="QR de Asistencia">
+    </div>
+
+    <div id="save-status" class="status-tag">✓ Imagen guardada localmente</div>
+
+    <input type="file" id="file-input" accept="image/*">
+    
+    <div class="controls">
+        <label for="file-input" class="btn-change" id="change-link" style="display:none;">
+            Actualizar o cambiar imagen QR
+        </label>
+    </div>
+
+    <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; font-size: 0.8rem; color: #aaa;">
+        Docente: Metodología de la Investigación<br>
+        © 2026 Sistema de Gestión Educativa
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const qrDisplay = document.getElementById('qr-display');
+    const placeholder = document.getElementById('placeholder');
+    const changeLink = document.getElementById('change-link');
+    const statusTag = document.getElementById('save-status');
+
+    // 1. Intentar cargar la imagen guardada al iniciar
+    window.onload = () => {
+        const savedQR = localStorage.getItem('asistencia_qr');
+        if (savedQR) {
+            mostrarImagen(savedQR);
+        }
+    };
+
+    // 2. Escuchar cuando se sube una nueva imagen
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                // Guardar en almacenamiento local
+                localStorage.setItem('asistencia_qr', base64Image);
+                mostrarImagen(base64Image);
+                
+                // Mostrar confirmación visual
+                statusTag.style.display = 'block';
+                setTimeout(() => { statusTag.style.display = 'none'; }, 3000);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function mostrarImagen(src) {
+        qrDisplay.src = src;
+        qrDisplay.style.display = 'block';
+        placeholder.style.display = 'none';
+        changeLink.style.display = 'inline-block';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidad 2: Definiciones y Campos de la Sociología - Instituto Superior Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        
+        h1, h2, h3, h4, .font-title {
+            font-family: var(--font-title);
+            color: var(--color-secondary);
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-left: 6px solid var(--color-primary);
+        }
+
+        .step-header {
+            background: #f7f7f7;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: var(--color-primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .content-padding {
+            padding: 1.5rem;
+        }
+
+        .highlight-box {
+            background: #f0fdf4;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #bbf7d0;
+        }
+
+        .glossary-term {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .concept-tag {
+            background: #eafaf1;
+            border: 1px solid #a6e7c3;
+            color: #1c7c4a;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .text-primary { color: var(--color-primary); }
+        .bg-primary { background-color: var(--color-primary); }
+        .border-primary { border-color: var(--color-primary); }
+
+        .text-secondary { color: var(--color-secondary); }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .step-card { box-shadow: none; border: 1px solid #e2e8f0; border-left: 6px solid var(--color-primary); page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header Institucional -->
+    <header class="max-w-4xl mx-auto mb-10 text-center border-b-2 pb-6" style="border-color: var(--color-primary);">
+        <div class="flex flex-col items-center mb-4">
+            <div class="font-bold text-3xl tracking-tighter mb-1 font-title text-secondary">
+                INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span>
+            </div>
+            <p class="text-gray-500 uppercase tracking-widest text-sm font-semibold">Excelencia Académica</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mt-4 italic">
+            <div><strong>CARRERA:</strong> Adm. Aduanera / Ciencias Empresariales</div>
+            <div><strong>ASIGNATURA:</strong> Sociología</div>
+            <div><strong>DOCENTE:</strong> Lic. Christhian Keim</div>
+            <div><strong>MATERIAL DE ESTUDIO:</strong> UNIDAD 2</div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+
+        <!-- 1. FICHA DE CLASE -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="text-xl font-bold uppercase text-secondary">Ficha de Clase</h2>
+            </div>
+            <div class="content-padding grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-sitemap mr-2 text-primary"></i>Tema: Definiciones y Campos de la Sociología (Relación con la Economía)</h3>
+                    <p class="text-gray-700 leading-relaxed text-sm">
+                        Análisis de las múltiples definiciones de Sociología, sus áreas de especialización y la crucial interrelación que guarda con la ciencia económica, fundamental para el profesional de la administración y las aduanas.
+                    </p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100 text-sm">
+                    <p class="mb-2"><strong><i class="fas fa-bullseye mr-1"></i> Objetivo:</strong> Comprender el alcance de la sociología y su aplicación en contextos económicos. </p>
+                    <p><strong><i class="fas fa-briefcase mr-1"></i> Enfoque:</strong> Perfil profesional administrativo y aduanero.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DESARROLLO TEÓRICO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="text-xl font-bold uppercase text-secondary">Desarrollo Teórico</h2>
+            </div>
+            <div class="content-padding space-y-6">
+                
+                <div>
+                    <h3 class="text-lg font-bold text-primary border-b pb-1 mb-3">A. ¿Qué es la Sociología? Múltiples Definiciones</h3>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        La sociología es la ciencia social que se encarga del análisis científico de la sociedad humana o población regional. Estudia los fenómenos colectivos producidos por la actividad social de los seres humanos, dentro del contexto histórico-cultural en el que se encuentran inmersos.
+                    </p>
+                    <ul class="list-disc ml-5 mt-2 space-y-1 text-xs text-gray-700">
+                        <li><strong>Según Max Weber:</strong> Es una ciencia que pretende entender, interpretándola, la acción social para de esa manera explicarla causalmente en su desarrollo y efectos.</li>
+                        <li><strong>Según Émile Durkheim:</strong> Es el estudio de los "hechos sociales" (modos de actuar, pensar y sentir externos al individuo).</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-md font-bold text-primary mb-2">B. Campos de la Sociología</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-white border rounded shadow-sm">
+                                <h4 class="font-bold text-primary text-xs uppercase mb-1">Sociología Económica</h4>
+                                <p class="text-[11px] text-gray-600">Estudia cómo los fenómenos económicos están influenciados y moldean la sociedad.</p>
+                            </div>
+                            <div class="p-3 bg-white border rounded shadow-sm">
+                                <h4 class="font-bold text-primary text-xs uppercase mb-1">Sociología Política</h4>
+                                <p class="text-[11px] text-gray-600">Analiza el poder, el gobierno, y el comportamiento político desde una perspectiva sociológica.</p>
+                            </div>
+                            <div class="p-3 bg-white border rounded shadow-sm">
+                                <h4 class="font-bold text-primary text-xs uppercase mb-1">Sociología del Trabajo</h4>
+                                <p class="text-[11px] text-gray-600">Se enfoca en las relaciones laborales, el mercado de trabajo y las organizaciones.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-md font-bold text-primary mb-2">C. Relación con la Economía</h3>
+                        <p class="text-xs text-gray-700 mb-4">La economía se centra en la producción, distribución y consumo de bienes y servicios, asumiendo a menudo un comportamiento racional ("Homo economicus"). La sociología enriquece esta visión:</p>
+                        <ul class="list-disc ml-5 space-y-2 text-xs text-gray-600">
+                            <li><strong>Incrustación Social:</strong> Las decisiones económicas no ocurren en el vacío, están "incrustadas" en redes sociales, normas culturales y estructuras de poder. (Granovetter)</li>
+                            <li><strong>Capital Social:</strong> Las redes de confianza y cooperación tienen un valor económico. (Bourdieu, Coleman)</li>
+                            <li><strong>Consumo como Acto Social:</strong> El consumo no es solo una necesidad, sino una forma de construir identidad y estatus.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 p-4 border rounded-lg text-sm">
+                    <h3 class="font-bold uppercase text-gray-500 mb-2 text-xs tracking-wider"><i class="fas fa-book-reader mr-2"></i>Lectura Obligatoria</h3>
+                    <p class="text-xs text-gray-600 italic">Swedberg, R. "Principios de Sociología Económica".</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GUÍA DE ESTUDIO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="text-xl font-bold uppercase text-secondary">Guía de Actividades</h2>
+            </div>
+            <div class="content-padding">
+                <div class="space-y-4 mb-6">
+                    <div class="flex gap-4">
+                        <div class="bg-green-100 text-green-800 h-6 w-6 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-xs">1</div>
+                        <p class="text-gray-700 text-sm">¿Cuál es la diferencia entre el "crecimiento biológico" y la "formación de la personalidad social"?</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-green-100 text-green-800 h-6 w-6 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-xs">2</div>
+                        <p class="text-gray-700 text-sm">¿Cuál factor considera la sociología como más determinante para explicar conductas culturales? Justifique.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-green-100 text-green-800 h-6 w-6 flex-shrink-0 rounded-full flex items-center justify-center font-bold text-xs">3</div>
+                        <p class="text-gray-700 text-sm">Explique la paradoja de ser "criatura" y "creador" de la sociedad simultáneamente.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h3 class="font-bold mb-3 text-primary text-sm"><i class="fas fa-spell-check mr-2"></i>Glosario de Unidad</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px] text-gray-600">
+                        <div><span class="glossary-term text-xs">Internalización:</span> Proceso de absorber normas y valores culturales.</div>
+                        <div><span class="glossary-term text-xs">Persona Social:</span> Identidad adquirida mediante la interacción con el entorno.</div>
+                        <div><span class="glossary-term text-xs">Personalidad:</span> Resultado de la síntesis entre herencia biológica y aprendizaje social.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ACTIVIDADES: ANÁLISIS DE CASO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <h2 class="text-xl font-bold uppercase text-secondary">Análisis de Caso Ético</h2>
+            </div>
+            <div class="content-padding">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-green-100 text-green-700 p-3 rounded-lg">
+                        <i class="fas fa-gavel fa-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold">Dilema en Puesto Fronterizo</h3>
+                        <p class="text-xs text-gray-600 italic">Normalización de "propinas informales" entre funcionarios antiguos.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white border p-3 rounded text-xs">
+                        <p class="font-bold text-primary mb-1">Perspectiva "Criatura":</p>
+                        <p class="text-gray-600 leading-tight">¿Cómo explica la sociología que un funcionario nuevo adopte estas prácticas por la presión del entorno social ("crianza")?</p>
+                    </div>
+                    <div class="bg-white border p-3 rounded text-xs">
+                        <p class="font-bold text-primary mb-1">Perspectiva "Creador":</p>
+                        <p class="text-gray-600 leading-tight">¿Qué acciones éticas puede tomar el profesional para actuar como un "agente de cambio" y modificar esa realidad institucional?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 & 6. MATERIALES Y EVALUACIÓN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h2 class="text-md font-bold uppercase text-secondary text-xs">Materiales</h2>
+                </div>
+                <div class="content-padding text-xs">
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-book text-primary mr-2"></i>Texto de Peter Berger (Introducción).</li>
+                        <li><i class="fas fa-file-alt text-primary mr-2"></i>Ficha de apoyo plataforma Centuria.</li>
+                        <li><i class="fas fa-video text-red-500 mr-2"></i>Video complementario: Socialización y Personalidad.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <h2 class="text-md font-bold uppercase text-secondary text-xs">Evaluación</h2>
+                </div>
+                <div class="content-padding text-xs">
+                    <p class="font-semibold text-primary mb-2">Rúbrica de Análisis Crítico</p>
+                    <ul class="list-disc ml-4 space-y-1 text-gray-600">
+                        <li>Diferenciación clara entre Naturaleza y Crianza.</li>
+                        <li>Capacidad de aplicar el doble rol (Criatura/Creador) al caso.</li>
+                        <li>Uso de terminología técnica en el cuestionario.</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- 7. SÍNTESIS FINAL -->
+        <section class="step-card" style="border-left-color: var(--color-secondary);">
+            <div class="step-header" style="background: var(--color-secondary); color: white;">
+                <div class="step-number" style="background: white; color: var(--color-secondary);">7</div>
+                <h2 class="text-xl font-bold uppercase" style="color: white;">Conexión Profesional</h2>
+            </div>
+            <div class="content-padding">
+                <div class="text-white p-5 rounded-lg shadow-inner mb-6" style="background-color: var(--color-secondary);">
+                    <h3 class="font-bold mb-2 flex items-center gap-2 text-sm">
+                        <i class="fas fa-user-tie"></i> Perfil Administrativo Centuria:
+                    </h3>
+                    <p class="text-xs leading-relaxed opacity-90">
+                        Entender que somos "criaturas" nos ayuda a reconocer los vicios y virtudes de nuestra organización, pero recordarnos como "creadores" nos empodera con la capacidad técnica y ética de transformar el entorno laboral. El administrador no solo ejecuta, sino que <strong>lidera el cambio cultural</strong>.
+                    </p>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h4 class="font-bold text-gray-800 mb-2 underline decoration-red-500 underline-offset-4 text-sm">Pregunta de Autoevaluación:</h4>
+                    <p class="text-gray-600 italic text-xs">¿En qué áreas de mi vida profesional actual estoy actuando simplemente como "criatura" y en cuáles me reconozco como "creador"?</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-4xl mx-auto text-center py-10 no-print">
+        <button onclick="window.print()" class="text-white px-6 py-2 rounded-full font-bold hover:bg-green-700 transition shadow-lg text-sm bg-primary">
+            <i class="fas fa-print mr-2"></i> Descargar Guía Unidad 2
+        </button>
+        <p class="text-[10px] text-gray-400 mt-6 uppercase tracking-widest">© 2024 Instituto Superior Centuria - Formación de Líderes Éticos</p>
+    </footer>
+
+</body>
+</html>

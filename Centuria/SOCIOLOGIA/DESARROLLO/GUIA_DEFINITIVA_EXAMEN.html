@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Definitiva - Examen Final Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: #f0f2f5;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-title {
+            font-family: var(--font-title);
+            color: var(--color-secondary);
+        }
+
+        .document-container {
+            background: white;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border-top: 8px solid var(--color-primary);
+        }
+
+        .section-title {
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pedagogical-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--color-primary);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .tip-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+        }
+
+        .comparative-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .comparative-table th {
+            background-color: var(--color-secondary);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparative-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            vertical-align: top;
+        }
+
+        .comparative-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .glossary-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .glossary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: var(--color-primary);
+        }
+
+        .apa-reference {
+            padding-left: 2rem;
+            text-indent: -2rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .unit-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--color-primary);
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .author-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .author-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .author-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+            border-color: var(--color-primary);
+        }
+
+        .author-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1rem auto;
+            background: #eafaf1;
+            color: var(--color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .checklist-number {
+            background: var(--color-primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+        }
+
+        .alert-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .document-container {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+                border-top: none;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .glossary-card {
+                break-inside: avoid;
+            }
+
+            .comparative-table {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navegación -->
+    <div class="max-w-4xl mx-auto mb-4 mt-4 no-print px-4 md:px-0">
+        <a href="index.html"
+            class="inline-flex items-center text-sm font-bold text-gray-500 hover:text-primary transition-colors"><i
+                class="fas fa-arrow-left mr-2"></i> Volver al Dashboard</a>
+    </div>
+
+    <div class="document-container">
+
+        <!-- Cabecera -->
+        <header class="text-center mb-10">
+            <div
+                class="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-md">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 class="text-3xl font-bold uppercase tracking-tight mb-2">Manual de Preparación Definitiva</h1>
+            <h2 class="text-xl text-gray-600 font-title mb-4">Examen Final Integrador - Sociología Aplicada</h2>
+            <p class="text-sm font-semibold text-primary tracking-widest uppercase border-b pb-6">Instituto Superior
+                Centuria</p>
+        </header>
+
+        <!-- Introducción Pedagógica -->
+        <div class="pedagogical-box">
+            <h3 class="font-bold text-lg mb-2 text-secondary"><i class="fas fa-bullseye text-primary mr-2"></i>Objetivo
+                de este Material</h3>
+            <p class="text-gray-700 text-sm">
+                Este dossier condensa los saberes fundamentales de las 6 unidades del programa. Ha sido diseñado técnica
+                y visualmente para maximizar la comprensión de las tensiones sociológicas. Su dominio es
+                <strong>imprescindible</strong> para la redacción del Ensayo Académico (Proyecto Final).
+            </p>
+        </div>
+
+        <!-- SECCIÓN 1: Los 6 Pilares (Resumen de Unidades) -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-layer-group text-primary"></i> 1. Síntesis de las
+            6 Unidades</h2>
+        <p class="text-sm text-gray-600 mb-6">Un repaso de las ideas centrales de cada módulo que conforman el programa
+            de estudio.</p>
+
+        <div class="unit-grid">
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U1: Orígenes y Positivismo</h4>
+                <p class="text-xs text-gray-600">La sociología nace para dar respuestas científicas (Positivismo) al
+                    caos de las Revoluciones Industrial y Francesa, superando las explicaciones religiosas o de sentido
+                    común.</p>
+            </div>
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U2: Economía y Sociedad</h4>
+                <p class="text-xs text-gray-600">Rechazo al "Homo Economicus" aislado. La economía está "incrustada" en
+                    relaciones sociales; los negocios dependen de la confianza, el capital social y el estatus.</p>
+            </div>
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U3: Cultura y Conducta</h4>
+                <p class="text-xs text-gray-600">Nuestra acción social está programada por la cultura (material e
+                    inmaterial). Se transmite a través de la Socialización (Primaria en la familia, Secundaria en el
+                    trabajo).</p>
+            </div>
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U4: El Hombre Social</h4>
+                <p class="text-xs text-gray-600">Análisis de cómo nos integramos. Las empresas modernas requieren
+                    "Solidaridad Orgánica" (cohesión por especialidad mutua) y rechazan el autoritarismo mecánico.</p>
+            </div>
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U5: Libertad vs Determinismo</h4>
+                <p class="text-xs text-gray-600">Aunque estamos condicionados por el entorno, el ser humano posee
+                    "Agencia". Escudarse en "seguir órdenes" para ser corrupto es un acto de "Mala Fe".</p>
+            </div>
+            <div class="unit-card">
+                <h4 class="font-bold text-gray-800 text-sm mb-2 text-primary">U6: Conflicto y Cambio</h4>
+                <p class="text-xs text-gray-600">El conflicto no es una enfermedad, es el motor que genera la
+                    modernización. Ocurre por la desigualdad en la Estratificación Social frente a la globalización.</p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: Autores Clave -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-users text-primary"></i> 2. Paradigmas y Autores
+            Clave</h2>
+
+        <div class="author-grid">
+            <div class="author-card">
+                <div class="author-icon"><i class="fas fa-landmark"></i></div>
+                <h4 class="font-bold text-gray-800">Augusto Comte</h4>
+                <p class="text-xs text-gray-500 font-semibold mb-2">Positivismo</p>
+                <p class="text-xs text-gray-600">Creador de la Ley de los 3 Estados (Teológico, Metafísico, Positivo) y
+                    las divisiones de Estática y Dinámica Social.</p>
+            </div>
+            <div class="author-card">
+                <div class="author-icon"><i class="fas fa-fire"></i></div>
+                <h4 class="font-bold text-gray-800">Karl Marx</h4>
+                <p class="text-xs text-gray-500 font-semibold mb-2">Teoría del Conflicto</p>
+                <p class="text-xs text-gray-600">La historia avanza por el conflicto entre clases sociales. Las leyes y
+                    la cultura solo protegen a quienes tienen el poder económico.</p>
+            </div>
+            <div class="author-card">
+                <div class="author-icon"><i class="fas fa-link"></i></div>
+                <h4 class="font-bold text-gray-800">Émile Durkheim</h4>
+                <p class="text-xs text-gray-500 font-semibold mb-2">Funcionalismo</p>
+                <p class="text-xs text-gray-600">Estudió los Hechos Sociales, la Anomia (falta de normas) y los tipos de
+                    Solidaridad que mantienen unida a la sociedad.</p>
+            </div>
+            <div class="author-card">
+                <div class="author-icon"><i class="fas fa-brain"></i></div>
+                <h4 class="font-bold text-gray-800">Max Weber</h4>
+                <p class="text-xs text-gray-500 font-semibold mb-2">Sociología Comprensiva</p>
+                <p class="text-xs text-gray-600">Se enfocó en el individuo, definiendo la Acción Social (con arreglo a
+                    fines, valores, afectiva y tradicional). Analizó la Burocracia.</p>
+            </div>
+            <div class="author-card">
+                <div class="author-icon"><i class="fas fa-user-shield"></i></div>
+                <h4 class="font-bold text-gray-800">Jean-Paul Sartre</h4>
+                <p class="text-xs text-gray-500 font-semibold mb-2">Existencialismo</p>
+                <p class="text-xs text-gray-600">Aportó el concepto de "Mala Fe": el autoengaño en el ámbito laboral
+                    para evadir la responsabilidad moral individual.</p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: Cuadros Comparativos -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-columns text-primary"></i> 3. Cuadros Comparativos
+            Esenciales</h2>
+        <p class="text-sm text-gray-600 mb-4">Las ciencias sociales se basan en el contraste de paradigmas. Domina estas
+            diferencias estructurales:</p>
+
+        <h4 class="font-bold text-gray-800 mt-6 mb-2">A. La Perspectiva de Análisis</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-comment-slash mr-2"></i>Sentido Común</th>
+                <th width="50%"><i class="fas fa-microscope mr-2"></i>Perspectiva Sociológica</th>
+            </tr>
+            <tr>
+                <td>Subjetivo, basado en experiencias personales limitadas.</td>
+                <td>Objetivo, basado en el método científico y datos empíricos.</td>
+            </tr>
+            <tr>
+                <td>Asume que "las cosas siempre han sido así" (Naturalización).</td>
+                <td>Busca el origen histórico y las causas estructurales (Desnaturalización).</td>
+            </tr>
+            <tr>
+                <td>Culpa exclusivamente al individuo de sus fracasos.</td>
+                <td>Analiza cómo el entorno y la estructura condicionan al individuo.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">B. El Modelo del Comportamiento (Unidad 2)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-robot mr-2"></i>Homo Economicus</th>
+                <th width="50%"><i class="fas fa-users mr-2"></i>Homo Sociologicus</th>
+            </tr>
+            <tr>
+                <td>Actúa como una "calculadora" perfecta y aislada.</td>
+                <td>Actúa influenciado por la cultura, su estatus y sus redes de contactos.</td>
+            </tr>
+            <tr>
+                <td>Siempre busca el precio más bajo y el máximo beneficio.</td>
+                <td>Racionalidad limitada; a veces paga más por estatus (Efecto Veblen) o por lealtad.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">C. Tipos de Solidaridad / Integración (Unidad 4)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-link mr-2"></i>Solidaridad Mecánica</th>
+                <th width="50%"><i class="fas fa-cogs mr-2"></i>Solidaridad Orgánica</th>
+            </tr>
+            <tr>
+                <td>Cohesión basada en la <strong>similitud</strong> (todos hacen y creen lo mismo).</td>
+                <td>Cohesión basada en la <strong>interdependencia</strong> (necesitamos la especialidad del otro).</td>
+            </tr>
+            <tr>
+                <td>Alta represión al que piensa distinto.</td>
+                <td>Fomenta el individualismo funcional y la innovación.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">D. Visión frente a otras Culturas (Unidad 3)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-times-circle text-red-300 mr-2"></i>Etnocentrismo</th>
+                <th width="50%"><i class="fas fa-check-circle text-green-300 mr-2"></i>Relativismo Cultural</th>
+            </tr>
+            <tr>
+                <td>Juzgar otras culturas utilizando los estándares propios. Asume superioridad.</td>
+                <td>Comprender prácticas ajenas desde sus propios términos y contexto.</td>
+            </tr>
+            <tr>
+                <td>Genera fricciones comerciales y fracaso en aduanas/negocios internacionales.</td>
+                <td>Fomenta la empatía, adaptación y éxito en la globalización.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">E. Tipos de Acción Social (Max Weber - Unidad 3)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="25%"><i class="fas fa-bullseye mr-2"></i>Racional con Fines</th>
+                <th width="25%"><i class="fas fa-balance-scale mr-2"></i>Racional con Valores</th>
+                <th width="25%"><i class="fas fa-heart mr-2"></i>Afectiva</th>
+                <th width="25%"><i class="fas fa-landmark mr-2"></i>Tradicional</th>
+            </tr>
+            <tr>
+                <td>Calcula medios para alcanzar un objetivo lógico (Ej. Invertir para ganar más).</td>
+                <td>Actúa por firme convicción ética sin importar el costo (Ej. Rechazar sobornos).</td>
+                <td>Dictada por emociones y sentimientos (Ej. Contratar a un familiar por cariño).</td>
+                <td>Dictada por costumbres arraigadas (Ej. "En la aduana siempre se hizo así").</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">F. Tipos de Grupos Sociales (Unidad 4)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-home mr-2"></i>Grupos Primarios</th>
+                <th width="50%"><i class="fas fa-briefcase mr-2"></i>Grupos Secundarios</th>
+            </tr>
+            <tr>
+                <td>Relaciones íntimas, afectivas y cara a cara. Son un fin en sí mismos.</td>
+                <td>Relaciones formales, impersonales y utilitarias. Orientados a un objetivo.</td>
+            </tr>
+            <tr>
+                <td>Ejemplo: La familia, amigos de la infancia. Base de la identidad.</td>
+                <td>Ejemplo: Una empresa, la Aduana, un sindicato. Medio para lograr metas.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">G. Paradigmas Sociopolíticos (Unidad 4)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-user mr-2"></i>Individualismo</th>
+                <th width="50%"><i class="fas fa-users mr-2"></i>Colectivismo</th>
+            </tr>
+            <tr>
+                <td>Prioriza la libertad y derechos del individuo frente al grupo.</td>
+                <td>Prioriza la cohesión, el orden y el bienestar grupal por sobre el individuo.</td>
+            </tr>
+            <tr>
+                <td><strong>Ventaja:</strong> Innovación. <strong>Riesgo:</strong> Egoísmo y Anomia.</td>
+                <td><strong>Ventaja:</strong> Lealtad. <strong>Riesgo:</strong> Conformismo y burocracia rígida.</td>
+            </tr>
+        </table>
+
+        <h4 class="font-bold text-gray-800 mt-8 mb-2">H. Sistemas de Estratificación (Unidad 6)</h4>
+        <table class="comparative-table">
+            <tr>
+                <th width="50%"><i class="fas fa-lock mr-2"></i>Castas / Estamentos (Tradicional)</th>
+                <th width="50%"><i class="fas fa-lock-open mr-2"></i>Clases Sociales (Moderno)</th>
+            </tr>
+            <tr>
+                <td>Posición social heredada por nacimiento, familia o tierra.</td>
+                <td>Posición basada en la ocupación, economía y nivel educativo.</td>
+            </tr>
+            <tr>
+                <td>Sistema cerrado: Movilidad social nula o legalmente prohibida.</td>
+                <td>Sistema abierto: Permite (teóricamente) la movilidad social por mérito.</td>
+            </tr>
+        </table>
+
+        <div class="alert-box">
+            <h4 class="font-bold text-red-800 mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Error Fatal en
+                Exámenes</h4>
+            <p class="text-sm text-red-900">Al analizar un problema (ej. Contrabando), NO uses la psicología ("el
+                contrabandista es malo o codicioso") ni el derecho penal ("es ilegal"). Usa causas sociológicas:
+                <strong>Anomia estatal</strong>, falta de <strong>Movilidad Social</strong>, o fuerte
+                <strong>Incrustación</strong> de redes locales.</p>
+        </div>
+
+        <!-- SECCIÓN 4: Glosario Clave -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-book-open text-primary"></i> 4. Glosario
+            Fundamental de Aplicación</h2>
+        <p class="text-sm text-gray-600 mb-6">Términos técnicos de uso obligatorio para la redacción de tu proyecto
+            final y desempeño profesional.</p>
+
+        <div class="glossary-grid">
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Agencia Humana</h4>
+                <p class="text-sm text-gray-700">Capacidad de los individuos para actuar de forma independiente y tomar
+                    sus propias decisiones éticas o libres frente a las presiones del entorno.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Acción Social</h4>
+                <p class="text-sm text-gray-700">Toda conducta humana que tiene un sentido subjetivo interno y que está
+                    orientada hacia el comportamiento de otras personas (Weber).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Anomia</h4>
+                <p class="text-sm text-gray-700">Debilidad, confusión o ausencia de normas sociales e institucionales.
+                    Genera desorientación y a menudo fomenta la informalidad (Durkheim).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Capital Social</h4>
+                <p class="text-sm text-gray-700">El valor y los recursos (información, favores, seguridad) que se
+                    obtienen a través de la red de relaciones personales y confianza de un individuo.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Cohesión Social</h4>
+                <p class="text-sm text-gray-700">El grado de consenso, integración y pertenencia que tienen los miembros
+                    de un grupo. Depende directamente de la Solidaridad (Mecánica u Orgánica) imperante.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Cultura Material / Inmaterial</h4>
+                <p class="text-sm text-gray-700"><strong>Material:</strong> Bienes tangibles (tecnología, edificios).
+                    <strong>Inmaterial:</strong> El "software" social (valores, leyes, costumbres, lenguaje).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Democracia (Enfoque Sociológico)</h4>
+                <p class="text-sm text-gray-700">Más que ir a votar, es un <strong>modo de convivencia</strong> que
+                    fomenta la participación, la movilidad social y la resolución pacífica e institucional de los
+                    conflictos.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Determinismo (Duro)</h4>
+                <p class="text-sm text-gray-700">Doctrina (rechazada por la sociología moderna) que afirma que el ser
+                    humano no tiene libertad de elección, estando 100% condicionado por su entorno social o biológico.
+                </p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Dinámica y Estática Social</h4>
+                <p class="text-sm text-gray-700">Dos ramas de Comte. <strong>Estática:</strong> Estudia el orden y la
+                    cooperación. <strong>Dinámica:</strong> Estudia el progreso y el cambio en el tiempo.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Efecto Veblen</h4>
+                <p class="text-sm text-gray-700">Consumo irracional por estatus. Comprar un bien más caro solo para
+                    demostrar riqueza al grupo (Ej. autos de lujo, relojes).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Estratificación Social</h4>
+                <p class="text-sm text-gray-700">División sistemática de la sociedad en capas jerárquicas que generan
+                    desigualdades en el acceso a la riqueza, el poder y el prestigio.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Incrustación (Embeddedness)</h4>
+                <p class="text-sm text-gray-700">Teoría que demuestra que la economía no funciona en un vacío
+                    matemático, sino que está sumergida ("incrustada") en redes de relaciones humanas previas.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Instituciones Sociales</h4>
+                <p class="text-sm text-gray-700">Estructuras estandarizadas, estables y permanentes creadas para regular
+                    el comportamiento (Ej. El Estado mantiene el orden, la Familia socializa).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Mala Fe</h4>
+                <p class="text-sm text-gray-700">Autoengaño para eludir la responsabilidad moral. Ocurre cuando un
+                    profesional se excusa diciendo "solo seguía órdenes" o "el sistema me obligó" (Sartre).</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Modernización y Globalización</h4>
+                <p class="text-sm text-gray-700"><strong>Modernización:</strong> Transición a sociedades industriales y
+                    tecnológicas. <strong>Globalización:</strong> Acelerada interdependencia mundial que exige
+                    relativismo cultural.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Movilidad Social</h4>
+                <p class="text-sm text-gray-700">Capacidad de los individuos para ascender o descender dentro del
+                    sistema de estratificación (clases sociales), generalmente a través de la educación o el mérito.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Resistencia al Cambio</h4>
+                <p class="text-sm text-gray-700">Oposición a la innovación institucional, impulsada generalmente por
+                    <em>intereses creados</em> (quienes se benefician del atraso) o <em>inercia cultural</em>.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Seguridad Jurídica</h4>
+                <p class="text-sm text-gray-700">Condición esencial para el libre mercado y la libertad. Implica leyes
+                    claras, predecibles y aplicadas a todos por igual mediante instituciones sólidas.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Sociología (Definición)</h4>
+                <p class="text-sm text-gray-700">Estudio sistemático, empírico y metódico de las sociedades humanas y de
+                    cómo nuestras acciones están condicionadas por el grupo.</p>
+            </div>
+            <div class="glossary-card">
+                <h4 class="font-bold text-primary mb-2">Socialización</h4>
+                <p class="text-sm text-gray-700">Proceso mediante el cual un individuo internaliza la cultura de su
+                    sociedad (Primaria en la niñez) o de una organización específica (Secundaria en el trabajo).</p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: Banco de Preguntas V/F para Repaso -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-check-double text-primary"></i> 5. Banco de
+            Repaso: Verdadero o Falso</h2>
+        <p class="text-sm text-gray-600 mb-6">Este banco contiene 45 afirmaciones. Para dominar el 100% de los
+            materiales, realiza 3 repasos completos rotando los sets.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-[11px]">
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h4 class="font-bold text-primary mb-3 uppercase tracking-tighter text-center border-b pb-2">Set 1:
+                    Fundamentos</h4>
+                <ul class="space-y-2 text-gray-700">
+                    <li>1. La globalización borra fronteras de forma absoluta. (F)</li>
+                    <li>2. El Homo Sociologicus actúa por presión grupal. (V)</li>
+                    <li>3. La socialización primaria ocurre en la familia. (V)</li>
+                    <li>4. El etnocentrismo juzga desde valores ajenos. (F)</li>
+                    <li>5. La solidaridad orgánica es para sociedades modernas. (V)</li>
+                    <li>6. La Mala Fe evade responsabilidad moral. (V)</li>
+                    <li>7. La estratificación divide a la sociedad en capas. (V)</li>
+                    <li>8. La anomia es la claridad total de normas. (F)</li>
+                    <li>9. Marx dice que el consenso mueve la historia. (F)</li>
+                    <li>10. El capital social se basa en redes de confianza. (V)</li>
+                    <li>11. La acción afectiva se dicta por emociones. (V)</li>
+                    <li>12. La burocracia es la forma más racional. (V)</li>
+                    <li>13. El determinismo duro defiende la libertad total. (F)</li>
+                    <li>14. La movilidad social es imposible hoy día. (F)</li>
+                    <li>15. El Estado es vital para el mercado seguro. (V)</li>
+                </ul>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h4 class="font-bold text-primary mb-3 uppercase tracking-tighter text-center border-b pb-2">Set 2:
+                    Teoría y Cambio</h4>
+                <ul class="space-y-2 text-gray-700">
+                    <li>16. Spencer aplicó la evolución a la sociedad. (V)</li>
+                    <li>17. La incrustación niega el peso social en economía. (F)</li>
+                    <li>18. La cultura inmaterial incluye maquinaria física. (F)</li>
+                    <li>19. Los grupos primarios son impersonales. (F)</li>
+                    <li>20. Comte basó la sociología en la observación. (V)</li>
+                    <li>21. La libertad positiva es ejecutar proyectos. (V)</li>
+                    <li>22. La modernización es el paso a la industria. (V)</li>
+                    <li>23. La solidaridad mecánica se basa en similitud. (V)</li>
+                    <li>24. Los hechos sociales dependen del individuo. (F)</li>
+                    <li>25. La socio-economía rechaza al calculador perfecto. (V)</li>
+                    <li>26. La socialización secundaria termina en la niñez. (F)</li>
+                    <li>27. El individualismo extremo causa anomia. (V)</li>
+                    <li>28. La agencia es influir pese a presiones. (V)</li>
+                    <li>29. La resistencia al cambio protege intereses. (V)</li>
+                    <li>30. Institucionalizar el conflicto evita violencia. (V)</li>
+                </ul>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h4 class="font-bold text-primary mb-3 uppercase tracking-tighter text-center border-b pb-2">Set 3:
+                    Sociedad y Mercado</h4>
+                <ul class="space-y-2 text-gray-700">
+                    <li>31. El estado metafísico es el fin de la humanidad. (F)</li>
+                    <li>32. El mercado es inmune a pánicos sociales. (F)</li>
+                    <li>33. La acción tradicional se hace por hábito. (V)</li>
+                    <li>34. Un sindicato es un grupo secundario. (V)</li>
+                    <li>35. Para Pareto, las élites nunca cambian. (F)</li>
+                    <li>36. La seguridad jurídica es innecesaria. (F)</li>
+                    <li>37. Las castas permiten alta movilidad. (F)</li>
+                    <li>38. La sociología nace tras la Rev. Industrial. (V)</li>
+                    <li>39. El prestigio no afecta los precios nunca. (F)</li>
+                    <li>40. La Acción Social tiene sentido subjetivo. (V)</li>
+                    <li>41. Los grupos secundarios son impersonales. (V)</li>
+                    <li>42. La libertad absoluta ignora la estructura. (V)</li>
+                    <li>43. "Seguir órdenes" justifica la corrupción. (F)</li>
+                    <li>44. El efecto Veblen explica el consumo por estatus. (V)</li>
+                    <li>45. Marx dice que el conflicto genera cambios. (V)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: Checklist del Ensayo -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-pen-nib text-primary"></i> 6. Checklist de
+            Redacción: Ensayo Integrador</h2>
+        <p class="text-sm text-gray-600 mb-4">Antes de enviar tu proyecto final en PDF, verifica cumplir con esta
+            estructura metodológica:</p>
+
+        <div class="mb-8">
+            <div class="checklist-item">
+                <div class="checklist-number">1</div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-800">Introducción Planteada</h4>
+                    <p class="text-xs text-gray-600">¿Dejaste claro de qué trata el ensayo (ej. comercio fronterizo
+                        informal) y formulaste una tesis central?</p>
+                </div>
+            </div>
+            <div class="checklist-item">
+                <div class="checklist-number">2</div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-800">Uso Obligatorio de Conceptos</h4>
+                    <p class="text-xs text-gray-600">¿Utilizaste correctamente al menos TRES términos sociológicos (Ej.
+                        Anomia, Estratificación, Incrustación) aplicados a tu caso práctico y no solo definidos en el
+                        aire?</p>
+                </div>
+            </div>
+            <div class="checklist-item">
+                <div class="checklist-number">3</div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-800">Cierre con Propuesta Profesional</h4>
+                    <p class="text-xs text-gray-600">¿Tu conclusión incluye una reflexión ética sobre cómo un
+                        Administrador Aduanero o de Ciencias Empresariales debe gestionar este conflicto sociológico?
+                    </p>
+                </div>
+            </div>
+            <div class="checklist-item">
+                <div class="checklist-number">4</div>
+                <div>
+                    <h4 class="font-bold text-sm text-gray-800">Normas APA 6ta Edición</h4>
+                    <p class="text-xs text-gray-600">¿Incluiste citas en el texto (Autor, año) y armaste la lista
+                        bibliográfica final ordenadamente?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 6: Bibliografía APA 6 -->
+        <h2 class="text-2xl font-bold section-title"><i class="fas fa-bookmark text-primary"></i> 6. Referencias
+            Bibliográficas Oficiales</h2>
+        <p class="text-sm text-gray-600 mb-6">Material estructurado bajo el formato estandarizado APA (6ta Edición), de
+            consulta válida para el Ensayo Final Integrador:</p>
+
+        <div class="bg-white border border-gray-200 p-6 rounded-lg">
+            <div class="apa-reference">
+                Alberoni, F., et al. (1980). <em>Cuestiones de Sociología</em>. Barcelona, España: Editorial Herder.
+            </div>
+            <div class="apa-reference">
+                Berger, P. L. (s.f.). <em>Introducción a la Sociología</em>. Ciudad de México, México: Limusa.
+            </div>
+            <div class="apa-reference">
+                Fichter, J. H. (1980). <em>Sociología</em>. Barcelona, España: Editorial Herder.
+            </div>
+            <div class="apa-reference">
+                Havighurst, R. J. y colaboradores. (1978). <em>La Sociedad y la Educación en América Latina</em>. Buenos
+                Aires, Argentina: EUDEBA.
+            </div>
+            <div class="apa-reference">
+                Horton, P. B. (s.f.). <em>Sociología</em>. Madrid, España: McGraw-Hill.
+            </div>
+            <div class="apa-reference">
+                Shepard, J., Odom, y Bruton. (1982). <em>Sociología</em>. Ciudad de México, México: Limusa.
+            </div>
+            <div class="apa-reference">
+                Cátedra Bustos - UBAXXI. (s.f.). <em>Sociología (014)</em> [Archivo de video]. Recuperado de
+                https://www.youtube.com/watch?v=w75D_lJpNzQ
+            </div>
+            <div class="apa-reference">
+                Derecho en Minutos. (s.f.). <em>INTRODUCCIÓN A LA SOCIOLOGÍA || Bolillas 1, 2 y 3 - Cátedra 2</em>
+                [Archivo de video]. Recuperado de https://www.youtube.com/watch?v=GdKZ7NGKCQ4
+            </div>
+        </div>
+
+        <!-- Footer de Acción -->
+        <div class="mt-12 text-center no-print border-t border-gray-200 pt-8">
+            <p class="text-gray-600 mb-4 font-semibold">¿Listo para el desafío final?</p>
+            <button onclick="window.print()"
+                class="bg-primary hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold transition shadow-lg flex items-center justify-center mx-auto gap-2">
+                <i class="fas fa-print"></i> Imprimir Manual de Estudio
+            </button>
+            <a href="EXAMEN_FINAL.html" target="_blank"
+                class="inline-block mt-4 text-sm text-primary hover:underline font-bold">
+                <i class="fas fa-external-link-alt mr-1"></i> Ver Rúbrica del Examen Final
+            </a>
+        </div>
+
+    </div>
+
+    <footer class="text-center py-6 text-gray-400 text-xs tracking-widest uppercase">
+        © 2026 Sistema de Gestión Educativa - Instituto Superior Centuria
+    </footer>
+
+</body>
+
+</html>

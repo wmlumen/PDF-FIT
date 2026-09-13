@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clase 10: Evaluación Parcial I y Repaso General | ICO3534</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="unit-body">
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR GUÍA MAESTRA</button>
+
+    <div class="page">
+        <header>
+            <div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div>
+            <h1>UNIDAD VII: SIC Moderno</h1>
+            <p style="font-size: 1.2rem; color: #7f8c8d;">Evaluación Parcial I y Repaso General</p>
+        </header>
+
+        <section class="lab-activity">
+            <h2>🎯 Objetivos de la Jornada</h2>
+            <ul>
+                <li>Evaluar el dominio técnico de los conceptos de Sistemas, Algoritmos y Ofimática.</li>
+                <li>Consolidar los requerimientos legales de la DNIT (Res. 412/04).</li>
+                <li>Validar la capacidad de análisis de casos prácticos de informatización contable.</li>
+            </ul>
+        </section>
+
+        <section class="reading-box">
+            <h3>📑 LECTURA PREVIA OBLIGATORIA: TEORÍA DE LA INMEDIATEZ</h3>
+            <div style="font-family: 'Times New Roman', serif; text-align: justify; padding: 20px; background: #fffcf0; border: 1px solid #f1c40f;">
+                "La era de la inmediatez en los Sistemas de Información Contable (SIC) se define por la capacidad de capturar, procesar y distribuir datos financieros en tiempo real. Según la Norma Internacional de Auditoría (NIA) 315, el auditor debe comprender cómo la entidad utiliza sistemas computadorizados para iniciar, registrar y procesar transacciones. En Paraguay, la inmediatez está impulsada por el SIFEN, donde la facturación electrónica exige una validación instantánea que no permite demoras manuales en el flujo de información."
+            </div>
+        </section>
+
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>2. Repaso General Legislativo</h2>
+        <section class="reading-box">
+            <h3>📑 LEY 6822/21 - EL VALOR DE LA PRUEBA (EXPLÍCITO)</h3>
+            <div style="font-family: 'Times New Roman', serif; text-align: justify; padding: 20px; background: #fff;">
+                "Artículo 20.- De la integridad y conservación de los documentos electrónicos. Para determinar si la integridad de la información consignada en un documento electrónico se ha mantenido, el criterio de valoración será si aquella ha permanecido completa e inalterada, sin perjuicio de los cambios propios que por razones técnicas sufra para su comunicación, archivo o presentación. Los sujetos obligados por leyes especiales a conservar registros contables podrán hacerlo en soporte electrónico siempre que aseguren que la información sea accesible para su consulta posterior."
+            </div>
+        </section>
+
+        <table>
+            <thead><tr><th>Dimensión</th><th>Riesgo Identificado</th><th>Mitigación Técnica</th></tr></thead>
+            <tbody>
+                <tr><td>Integridad</td><td>Modificación post-cierre</td><td>Hash de bloque y firma digital</td></tr>
+                <tr><td>Inmediatez</td><td>Latencia en Marangatú</td><td>Protocolo de Contingencia (72hs)</td></tr>
+            </tbody>
+        </table>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>3. Laboratorio de Repaso Técnico</h2>
+        <section class="technical-box">
+            <h3>🛠️ DESAFÍO TÉCNICO: VALIDACIÓN DE ALGORITMOS</h3>
+            <p><strong>Problema:</strong> El sistema acepta facturas con montos negativos. ¿Qué parte de la Regla de Negocio está fallando?</p>
+            <div class="snippet">
+                IF (MONTO &lt; 0) THEN<br>
+                &nbsp;&nbsp;REJECT_TRANS("Valor No Permitido")<br>
+                &nbsp;&nbsp;LOG_EVENT("Intento de Inserción Negativa")<br>
+                END IF
+            </div>
+        </section>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>4. Análisis de Casos: El "Delay" en la Auditoría</h2>
+        <p>Estudio sobre empresas que cargan sus facturas una vez a la semana, perdiendo la ventaja competitiva de la inmediatez y violando las normas de emisión en tiempo real.</p>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>5. Guía SOS: Preparándose para el Parcial</h2>
+        <section class="important-note">
+            <strong>🚀 TIP DEL DOCENTE:</strong> Estudie la diferencia entre "Firma Electrónica" y "Firma Cualificada". Es pregunta de examen fija.
+        </section>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+
+    <div class="page">
+        <h2>6. Rúbrica de la Evaluación</h2>
+        <footer style="margin-top:100px; text-align:center;">© 2026 Centuria • Ingeniería Aplicada</footer>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+
+    <script src="core.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 09: E-Commerce y SIFEN (Master Edition) | ICO3534</title>
+    <style>
+        :root { --primary: #e65100; --accent: #ef6c00; --bg: #fff3e0; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.8; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 25mm; margin: 20mm auto; background: var(--white); box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 15px solid var(--primary); box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
+        header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        h1 { font-size: 24pt; color: var(--primary); margin: 0; }
+        h2 { font-size: 18pt; color: var(--primary); border-left: 8px solid var(--accent); padding-left: 15px; margin: 40px 0 20px; text-transform: uppercase; }
+        h3 { font-size: 14pt; color: var(--accent); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .badge { display: inline-block; background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; }
+        .reading-box { background: #fff3e0; border: 1px solid #e65100; padding: 30px; border-radius: 8px; margin: 20px 0; font-style: italic; position: relative; }
+        .reading-box::before { content: "📖 LECTURA OBLIGATORIA INCLUIDA"; position: absolute; top: -12px; left: 20px; background: #e65100; color: #fff; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; font-style: normal; }
+        .technical-box { background: #fafafa; border: 1px solid #ffccbc; padding: 25px; border-radius: 8px; margin: 20px 0; }
+        .snippet { background: #263238; color: #ffab91; padding: 25px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 10pt; line-height: 1.5; margin: 20px 0; overflow-x: auto; border: 1px solid #ff7043; }
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 10pt; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #fff3e0; color: var(--primary); font-weight: bold; }
+        .page-number { position: absolute; bottom: 20mm; right: 25mm; font-size: 9pt; color: #95a5a6; }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 35px; cursor: pointer; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; border: none; width: 100%; min-height: auto; } .btn-print { display: none; } }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL COMPLETO (6 PÁGINAS)</button>
+    <!-- PÁGINA 1: PORTADA Y FUNDAMENTACIÓN -->
+    <div class="page">
+        <header><div class="badge">CURSO: ICO3534 - INFORMÁTICA APLICADA</div><h1>UNIDAD IX: E-Commerce y SIFEN</h1><p style="font-size: 1.2rem; color: #7f8c8d;">Modelos de Negocios Digitales y Automatización Fiscal</p></header>
+        <section><h2>1. La Nueva Frontera Comercial</h2><p>El Comercio Electrónico (E-Commerce) ha dejado de ser una opción para convertirse en el canal principal de transacciones en la economía global. Para el contador e ingeniero, esto implica un cambio radical en la forma de auditar: ya no existen factureros manuales, sino flujos de datos que deben conectarse automáticamente con el **SIFEN** y el sistema contable central.</p>
+        <p>En esta unidad, analizamos cómo la venta digital transforma el asiento contable en un proceso instantáneo y desatendido.</p></section>
+        <section class="reading-box"><h3>📜 Guía Estratégica TIC (Programa p.2)</h3><p>"El avance de las TICs imprime velocidad en escenarios comerciales. El e-commerce exige eficiencia extrema en el registro de operaciones comerciales para producir información veraz y oportuna. La integración entre la tienda virtual y el SIFEN es el fin último de la fiscalización moderna en Paraguay."</p></section>
+        <div class="page-number">Página 1 de 6</div>
+    </div>
+    <!-- PÁGINA 2: MODELOS DE NEGOCIOS DIGITALES -->
+    <div class="page">
+        <h2>2. Tipología de Comercio Electrónico</h2>
+        <h3>2.1 Clasificación por Actores</h3><p>Entender con quién comerciamos define la carga impositiva y la lógica del sistema.</p>
+        <ul><li>**B2C (Business to Consumer):** La tienda tradicional online. Requiere alta automatización de facturas pequeñas y recurrentes.</li><li>**B2B (Business to Business):** Relaciones entre empresas. Requiere integración de cuentas corrientes y facturación electrónica compleja.</li><li>**C2C (Consumer to Consumer):** Plataformas de intermediación (ej: Marketplace). El sistema debe gestionar comisiones y retenciones.</li></ul>
+        <h3>2.2 El Concepto de Dropshipping</h3><p>Venta sin stock físico. El sistema debe gestionar la triangulación: Cobro al cliente -> Pago al proveedor -> Diferencia de margen. Un reto para la contabilidad de costos.</p>
+        <div class="page-number">Página 2 de 6</div>
+    </div>
+    <!-- PÁGINA 3: PASARELAS DE PAGO Y CONCILIACIÓN -->
+    <div class="page">
+        <h2>3. Flujos de Cobro y Comisiones</h2>
+        <p>En el E-Commerce, el dinero rara vez entra directo al banco. Pasa por una **Pasarela de Pago** (Gateway).</p>
+        <h3>3.1 Lógica de la Pasarela (Bancard, PagoPar, etc.)</h3><p>El sistema debe capturar: 1. El Monto Bruto Pagado. 2. La Comisión de la Pasarela. 3. El IVA de la Comisión. 4. El Monto Neto a recibir.</p>
+        <div class="technical-box"><strong>📌 ALERTA DE AUDITORÍA:</strong> Muchos sistemas registran solo el ingreso neto en bancos, perdiendo la trazabilidad del gasto por comisión y el crédito fiscal asociado. ¡Grave error profesional!</div>
+        <div class="page-number">Página 3 de 6</div>
+    </div>
+    <!-- PÁGINA 4: INTEGRACIÓN TOTAL CON SIFEN -->
+    <div class="page">
+        <h2>4. Automatización Fiscal: Factura E Directa</h2>
+        <p>El éxito de un E-Commerce profesional en Paraguay reside en su capacidad de emitir la Factura Electrónica (e-KUatia) sin intervención humana.</p>
+        <h3>4.1 Algoritmo de Emisión Automática</h3><table><thead><tr><th>Paso</th><th>Acción del Sistema</th><th>Resultado Legal</th></tr></thead><tbody><tr><td><strong>Check-out</strong></td><td>Cliente confirma compra.</td><td>Generación de orden de venta.</td></tr><tr><td><strong>Pago OK</strong></td><td>Validación de pasarela.</td><td>Disparo de interfaz SIFEN.</td></tr><tr><td><strong>XML Sign</strong></td><td>Firma digital del XML.</td><td>CDC generado por la DNIT.</td></tr><tr><td><strong>Envío E-mail</strong></td><td>Envío del Kuatia'i (PDF).</td><td>Cumplimiento normativo 100%.</td></tr></tbody></table>
+        <div class="page-number">Página 4 de 6</div>
+    </div>
+    <!-- PÁGINA 5: LABORATORIO DE FLUJO E-COMMERCE -->
+    <div class="page">
+        <h2>5. Laboratorio: Modelado de Venta Online con Retención</h2>
+        <p>Diseñe la lógica para una venta de 1.100.000 PYG pagada con tarjeta de crédito (Comisión 5%).</p>
+        <div class="snippet">// Lógica de Liquidación de E-Commerce:<br>FUNC Procesar_Venta(Monto_Bruto) {<br>&nbsp;&nbsp;&nbsp;&nbsp;Comision = Monto_Bruto * 0.05<br>&nbsp;&nbsp;&nbsp;&nbsp;IVA_Comision = Comision / 11<br>&nbsp;&nbsp;&nbsp;&nbsp;Monto_Neto_Banco = Monto_Bruto - Comision<br>&nbsp;&nbsp;&nbsp;&nbsp;GENERAR_FACTURA_ELECTRONICA(Monto_Bruto, IVA_10)<br>&nbsp;&nbsp;&nbsp;&nbsp;GENERAR_ASIENTO(DB: Recaudaciones, CR: Ventas, CR: IVA_DF)<br>}</div>
+        <h3>📊 Dataset de Ventas Digitales (Dataset IX)</h3>
+        <table><thead><tr><th>Orden ID</th><th>Cliente</th><th>Monto Bruto (PYG)</th><th>Medio de Pago</th></tr></thead><tbody><tr><td>ORD-991</td><td>Juan Valdez</td><td>550.000</td><td>Tarjeta (SIFEN OK ✅)</td></tr><tr><td>ORD-992</td><td>Marta Gomez</td><td>1.200.000</td><td>Transferencia (Pendiente ⏳)</td></tr><tr><td>ORD-993</td><td>Empresa Z</td><td>22.000.000</td><td>B2B (Línea de Crédito)</td></tr></tbody></table>
+        <div class="page-number">Página 5 de 6</div>
+    </div>
+    <!-- PÁGINA 6: SOS Y EVALUACIÓN -->
+    <div class="page">
+        <h2>6. Guía SOS: Crisis en el Canal Digital</h2>
+        <section class="sos-box"><h3>🆘 "QUÉ HACER SI..."</h3><p><strong>- EL PAGO SE COBRÓ PERO NO SE GENERÓ FACTURA:</strong> Fallo en el <em>Webhook</em>. Debes tener un proceso de 'Reintento Automático' o 'Conciliación Nocturna' para atrapar estas huérfanas.</p><p><strong>- LAS COMISIONES NO COINCIDEN CON EL EXTRACTO:</strong> Revisa el cálculo del Redondeo. Las pasarelas a veces truncan decimales de forma distinta al sistema contable. Aplica el ajuste al Centavo de Diferencia.</p><p><strong>- EL CLIENTE PIDE DEVOLUCIÓN:</strong> Debes emitir una **Nota de Crédito Electrónica** vinculada al CDC de la factura original. Sin el CDC vinculado, la DNIT rechazará la anulación del impuesto.</p></section>
+        <h3>📝 Evaluación de Negocios Digitales</h3><ol><li>¿Cuál es la ventaja competitiva de integrar el stock físico con la tienda online en tiempo real?</li><li>Explique el flujo contable de una venta de 2.000.000 PYG con una comisión del 3% + IVA.</li><li>¿Qué medidas de seguridad informática debe tener un E-Commerce para proteger los datos de tarjetas de los clientes? (Pista: PCI-DSS).</li></ol>
+        <div class="footer"><p style="font-weight:bold;">ESTADO DE LA UNIDAD: 100% COMPLETA - NIVEL EXPERTO ALCANZADO</p><p>© 2026 Centuria • Ingeniería Aplicada • Material de Alta Performance</p></div>
+        <div class="page-number">Página 6 de 6</div>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+const vm=require('node:vm');const fs=require('node:fs');const assert=require('node:assert/strict');
+const context={Utilities:{formatDate:d=>d.toISOString().slice(0,10)},PropertiesService:{getScriptProperties:()=>({getProperty:()=> 'privada'})}};
+vm.createContext(context);vm.runInContext(fs.readFileSync('Backend_Scripts/Asistencia_Por_Fechas.gs','utf8'),context);
+const tables={RegistroAlumnos:[['1','Alumno','','ADE18','A'],['2','Par','','ADE18','A'],['3','Otra','','ADE18','B']],ClasesTIC:[['2020-01-01','ADE18','A'],['2020-01-02','ADE18','A'],['2099-01-01','ADE18','A']],Asistencias:[['03/01/2020, 10:00:00','2','Presencial',''],['03/01/2020, 11:00:00','2','Presencial',''],['04/01/2020, 10:00:00','3','Presencial',''],['05/01/2020, 10:00:00','2','Unidad 1',''],['02/01/2020, 10:00:00','1','Presencial','']],JustificacionesTIC:[['2020-01-01','1','Aprobado']]};
+const ss={getSheetByName:n=> tables[n]?{getDataRange:()=>({getValues:()=>[[],...tables[n]]})}:null};
+const r=JSON.parse(JSON.stringify(context.ticResumen(ss,'1')));
+assert.deepEqual(r.detalle.map(x=>[x.fecha,x.estado]),[['2020-01-01','Ausente justificado'],['2020-01-02','Presente'],['2020-01-03','Ausente sin justificar'],['2099-01-01','Pendiente']]);
+assert.equal(context.ticFecha('2020-02-31'),'');assert.equal(context.ticFecha('13/09/2026, 10:00:00'),'2026-09-13');
+assert.throws(()=>context.ticResumen(ss,'404'),/Falta carrera/);
+assert.throws(()=>context.ticGuardar(ss,{clave:'incorrecta'}),/Clave docente/);
+assert.throws(()=>context.ticGuardar(ss,{clave:'privada',fecha:'2020-02-31'}),/Fecha inválida/);
+assert.throws(()=>context.ticGuardar(ss,{clave:'privada',action:'guardar_clase_tic',fecha:'2020-01-01',carrera:'=IMPORTXML()',seccion:'A'}),/Texto/);
+console.log('OK: fechas, duplicados, grupo, presencia, justificación, pendientes, clave y validación.');

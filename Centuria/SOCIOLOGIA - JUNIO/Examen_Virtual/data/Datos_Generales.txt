@@ -1,0 +1,67 @@
+# ============================================
+# DATOS GENERALES DEL EXAMEN - INSTITUTO CENTURIA
+# ============================================
+# Edita este archivo para configurar el examen.
+# Sube el archivo y el examen se actualiza automáticamente.
+
+# === DATOS DEL DOCENTE ===
+name.docente=Christhian Keim
+cedula.docente=1340130
+
+# === CREDENCIALES DE ACCESO ===
+# Cédula para modo prueba (sin guardar resultados)
+cedula.prueba=99
+# Cédula para acceder al panel del docente
+cedula.panel.docente=1340130
+# Código para examen extraordinario
+codigo.examen.extraordinario=CE-EXT-26
+
+# === INFORMACIÃ“N DEL CURSO ===
+grupo=S 026, LV 026 y MJ 026
+materia=Sociologia
+año=2026
+seccion=Ingenieria Comercial y Contabilidad
+
+# === CONFIGURACIÃ“N DEL EXAMEN ===
+# Tiempo límite en minutos
+tiempo.limite=60
+# Cantidad máxima de intentos por estudiante
+intentos.maximos=2
+# Preguntas por sección
+preguntas.seleccion.multiple=15
+preguntas.verdadero.falso=15
+# Puntuación
+puntaje.total=30
+puntaje.aprobacion=60
+
+# === FECHAS ===
+fecha.examen=S 026: Sábado 27 de 13:00 a 14:00 hs. | LV 026: Sábado 27 de 20:30 a 21:30 hs. | MJ 026: Sábado 27 de 20:30 a 21:30 hs.
+fecha.limite=Sábado 27 de 21:30 hs.
+
+# === MOTIVOS PARA EXAMEN EXTRAORDINARIO ===
+# Estos son los motivos disponibles para solicitar examen extraordinario
+motivo.enfermedad=Enfermedad
+motivo.falta.pago=Falta de Pago
+motivo.trabajo=Trabajo
+motivo.familiar=Problema Familiar
+motivo.otro=Otros
+
+# === LINKS ===
+# Link de Google Forms (dejar vacío si no hay)
+link.google.forms=
+# Link de Google Sheets asistencia
+link.asistencia=https://docs.google.com/spreadsheets/d/1mMd2UbVxCQqLz4IaMUX88CE-Ov6F4ndp1NjxE9m-pY4
+# Link de Google Sheets respuestas
+link.respuestas=https://docs.google.com/spreadsheets/d/1isV0oyTbiSGAWB5DZuNUjU8R3fm8H6pnPxcp_eOHb5s
+# Link para solicitudes extraordinarias (Google Forms)
+link.solicitudes.extraordinarias=https://docs.google.com/forms/d/1ABC123XYZ/edit
+
+# === PREGUNTAS DEL EXAMEN ===
+# Las preguntas están integradas en index.html
+# Para cambiar las preguntas, editar el array examData en index.html
+
+# ============================================
+# FORMATO: clave=valor
+# Los espacios alrededor del signo = son opcionales
+# Guardar como UTF‑8 sin BOM para caracteres especiales
+# ============================================

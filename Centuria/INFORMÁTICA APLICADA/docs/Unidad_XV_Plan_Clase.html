@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clase 15: IA Generativa en la Contabilidad | ICO3534</title>
+    <style>
+        :root { --primary: #0fbcf9; --accent: #34e7e4; --highlight: #ffdd59; --bg: #f5f6fa; --white: #ffffff; --border: #dcdde1; }
+        body { font-family: 'Outfit', 'Inter', sans-serif; background-color: var(--bg); color: #2f3640; line-height: 1.6; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: var(--white); box-shadow: 0 10px 40px rgba(0,0,0,0.1); box-sizing: border-box; border-top: 15px solid var(--primary); }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { font-size: 18pt; margin: 0; color: var(--primary); }
+        .badge { background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 9pt; font-weight: bold; }
+        .concept-card { border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #f0faff; }
+        .glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 9pt; background: #f1f2f6; padding: 20px; border-radius: 8px; }
+        .reflection-questions { background: #e3fafc; border-left: 5px solid var(--primary); padding: 15px; margin: 20px 0; }
+        .lab-activity { border: 2px solid var(--primary); padding: 20px; border-radius: 12px; margin-top: 30px; }
+        footer { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center; font-size: 8pt; color: #718093; }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; } .no-print { display: none; } }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL IA CONTABLE</button>
+    <div class="page">
+        <header>
+            <h1>Clase 15: IA Generativa en la Contabilidad</h1>
+            <div class="badge">ACTUALIZACIÓN UNIDAD IV | MUNDO ACTUAL</div>
+        </header>
+
+        <section class="concept-card">
+            <strong>🤖 EL CONTADOR DEL FUTURO:</strong>
+            <p>La IA no reemplaza al contador; reemplaza al contador que no sabe usar IA. Hoy analizamos cómo las herramientas tipo LLM (Large Language Models) pueden auditar catálogos de cuentas y detectar fraudes en milisegundos.</p>
+        </section>
+
+        <h2>1. Aplicaciones Críticas de IA en Contabilidad</h2>
+        <ul>
+            <li><strong>Clasificación Automática:</strong> IA sugiere cuentas contables basadas en el concepto de la factura.</li>
+            <li><strong>Análisis Predictivo:</strong> Proyectar flujos de caja (Cash Flow) basados en historial de 5 años.</li>
+            <li><strong>Detección de Anomalías:</strong> Identificación de patrones de gasto inusuales que escapan al ojo humano.</li>
+        </ul>
+
+        <h2>2. Glosario Tecnológico</h2>
+        <div class="glossary">
+            <dl>
+                <dt>Prompt Engineering</dt><dd>Arte de redactar instrucciones precisas para obtener resultados de la IA.</dd>
+                <dt>LLM</dt><dd>Modelos de lenguaje (GPT-4, Gemini) aplicados a textos técnicos.</dd>
+                <dt>Machine Learning</dt><dd>Programas que aprenden de los datos sin ser programados explícitamente.</dd>
+                <dt>Sesgo Algorítmico</dt><dd>Errores de la IA causados por datos incompletos o incorrectos.</dd>
+            </dl>
+        </div>
+
+        <div class="reflection-questions">
+            <strong>❓ PREGUNTAS DE REFLEXIÓN</strong>
+            <ol>
+                <li>¿Confiarías el balance final de tu empresa a una IA sin revisión humana?</li>
+                <li>¿Es ético usar IA para "maquillar" estados financieros de forma indetectable?</li>
+            </ol>
+        </div>
+
+        <section class="lab-activity">
+            <h2>3. Taller: IA Assist en Excel (60 min)</h2>
+            <ol>
+                <li>Usar IA (ChatGPT/Gemini) para generar una **Fórmula Avanzada de Excel** que calcule el IVA diferido de un proyecto complejo.</li>
+                <li>Pedir a la IA que audite un **Catálogo de Cuentas** ficticio y busque inconsistencias.</li>
+                <li>Comparar el tiempo de resolución humano vs. IA.</li>
+            </ol>
+        </section>
+
+        <footer>
+            <strong>Lectura Complementaria:</strong> Blog de la IFAC (International Federation of Accountants) sobre IA. <br>
+            © 2026 Centuria • Ingeniería Aplicada • Innovación Constante
+        </footer>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

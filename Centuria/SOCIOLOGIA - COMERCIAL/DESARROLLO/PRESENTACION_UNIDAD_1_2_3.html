@@ -1,0 +1,566 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Unidades 1, 2 y 3 - Sociología Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        body { font-family: var(--font-body); background-color: #f8fafc; color: #1e293b; overflow: hidden; margin: 0; padding: 0; }
+        h1, h2, h3, h4, .font-title { font-family: var(--font-title); color: var(--color-secondary); }
+        
+        .text-primary { color: var(--color-primary); }
+        .bg-primary { background-color: var(--color-primary); }
+        .text-secondary { color: var(--color-secondary); }
+        .bg-secondary { background-color: var(--color-secondary); }
+
+        #presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .btn-control {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-control:hover {
+            transform: scale(1.1);
+            background-color: #218838;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: var(--color-primary);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .logo-watermark {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="presentation-container">
+        <div class="progress-bar" id="progress-bar"></div>
+        <div class="logo-watermark">CENTURIA | Sociología</div>
+
+        <div class="slide active text-center">
+            <div class="text-6xl text-primary mb-4"><i class="fas fa-university"></i></div>
+            <h1 class="text-5xl font-bold mb-4">Sociología Aplicada</h1>
+            <h2 class="text-2xl text-gray-600 mb-8">Unidades 1, 2 y 3: Orígenes, Economía y Cultura</h2>
+            <div class="w-24 h-1 bg-primary mx-auto mb-8"></div>
+            <p class="text-lg text-gray-500 font-semibold">Ingeniería Comercial y Contabilidad</p>
+            <p class="text-sm text-gray-400 mt-2">Use las flechas del teclado para navegar</p>
+        </div>
+
+        <div class="slide">
+            <h2 class="text-4xl font-bold mb-10 border-b-4 border-primary pb-2 inline-block">Agenda de la Sesión</h2>
+            <div class="grid grid-cols-3 gap-8 w-full max-w-6xl">
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-primary">
+                    <h3 class="text-xl font-bold mb-4 text-secondary"><i class="fas fa-book text-primary mr-2"></i> Unidad 1</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Ciencia vs Sentido Común</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Augusto Comte y la Ley de los 3 Estados</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Padres Fundadores</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-secondary">
+                    <h3 class="text-xl font-bold mb-4 text-secondary"><i class="fas fa-chart-pie text-primary mr-2"></i> Unidad 2</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Homo Economicus vs Sociologicus</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Incrustación Social</li>
+                        <li><i class="fas fa-users text-blue-500 mr-2"></i>Debate: Decisiones de Mercado</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                    <h3 class="text-xl font-bold mb-4 text-secondary"><i class="fas fa-globe text-primary mr-2"></i> Unidad 3</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>La Acción Social</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Etnocentrismo y Relativismo</li>
+                        <li><i class="fas fa-users text-blue-500 mr-2"></i>Taller: Cultura Organizacional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= UNIDAD 1 (10 Diapositivas) ================= -->
+        <!-- U1 - Slide 1/10: Portada U1 -->
+        <div class="slide bg-primary text-white text-center">
+            <div class="text-7xl mb-6"><i class="fas fa-book-reader"></i></div>
+            <h2 class="text-5xl font-bold mb-4 font-title">UNIDAD 1</h2>
+            <p class="text-3xl opacity-90">La Sociología: Orígenes y Autores</p>
+            <div class="w-16 h-1 bg-white mx-auto mt-6"></div>
+        </div>
+
+        <!-- U1 - Slide 2/10: Definición -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">¿Qué es la Sociología?</h2>
+            <div class="bg-white p-8 rounded-lg shadow-md border-l-8 border-primary max-w-4xl">
+                <p class="text-2xl text-gray-700 italic leading-relaxed mb-6">
+                    "Es el estudio sistemático, riguroso y científico de la sociedad. Su objetivo no es juzgar, sino descubrir las leyes fundamentales que rigen el comportamiento humano condicionado por el grupo."
+                </p>
+                <div class="flex items-center gap-4 bg-red-50 p-4 rounded-lg border border-red-100">
+                    <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
+                    <p class="text-sm text-red-800">
+                        <strong>El reto principal:</strong> Vencer el "Sentido Común" (conocimiento cotidiano, no comprobado y lleno de prejuicios como "el pobre es pobre porque quiere").
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 3/10: Sentido Común vs Ciencia -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Sentido Común vs. Ciencia</h2>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-red-50 p-8 rounded-lg border-t-8 border-red-500 shadow"><h3 class="text-2xl font-bold text-red-700 mb-4"><i class="fas fa-comment-slash mr-2"></i>Sentido Común</h3><p class="text-gray-700">Subjetivo, basado en experiencias personales limitadas. Asume que "las cosas siempre han sido así". Suele culpar al individuo ignorando su entorno.</p></div>
+                <div class="bg-green-50 p-8 rounded-lg border-t-8 border-primary shadow"><h3 class="text-2xl font-bold text-primary mb-4"><i class="fas fa-microscope mr-2"></i>Sociología</h3><p class="text-gray-700">Objetiva, basada en el método científico y datos estadísticos. Busca patrones y relaciones de causalidad en las estructuras sociales.</p></div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 4/10: Contexto Histórico -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Contexto de Nacimiento</h2>
+            <p class="text-xl text-center text-gray-600 mb-8 max-w-4xl">La Sociología nace en el Siglo XIX como respuesta a dos crisis que destruyeron el viejo orden:</p>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-white p-6 rounded shadow border border-gray-200"><h3 class="text-xl font-bold text-secondary mb-2"><i class="fas fa-industry text-gray-500 mr-2"></i>Revolución Industrial</h3><p class="text-gray-600 text-sm">Migración masiva del campo a la ciudad. Aparición de fábricas, pobreza urbana y nuevas clases sociales (burguesía/proletariado).</p></div>
+                <div class="bg-white p-6 rounded shadow border border-gray-200"><h3 class="text-xl font-bold text-secondary mb-2"><i class="fas fa-flag text-blue-500 mr-2"></i>Revolución Francesa</h3><p class="text-gray-600 text-sm">Caída de las monarquías absolutas. Surgimiento de los derechos humanos, la democracia y el cuestionamiento a la religión como única verdad.</p></div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 5/10: Augusto Comte -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Augusto Comte (1798 - 1857)</h2>
+            <div class="bg-white p-8 rounded-xl shadow border-l-8 border-primary max-w-4xl flex items-center gap-8">
+                <div class="text-8xl text-primary"><i class="fas fa-user-tie"></i></div>
+                <div>
+                    <h3 class="text-2xl font-bold text-secondary mb-3">El Padre del Positivismo</h3>
+                    <p class="text-gray-700 text-lg leading-relaxed">Fue quien acuñó el término "Sociología". Creía que el estudio de la sociedad debía ser tan riguroso como la física o la matemática, utilizando la observación, experimentación y comparación (El método Positivo).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 6/10: Estática y Dinámica -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Las dos ramas de Comte</h2>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center"><i class="fas fa-building text-5xl text-gray-400 mb-4"></i><h3 class="text-2xl font-bold text-secondary mb-4">Estática Social</h3><p class="text-gray-600">Estudia el <strong>Orden</strong>. Cómo las instituciones (familia, Estado) logran que la sociedad se mantenga unida y estable.</p></div>
+                <div class="bg-blue-50 p-8 rounded-lg border border-blue-200 text-center shadow-md"><i class="fas fa-rocket text-5xl text-blue-500 mb-4"></i><h3 class="text-2xl font-bold text-blue-800 mb-4">Dinámica Social</h3><p class="text-gray-600">Estudia el <strong>Progreso</strong>. Cómo las sociedades se transforman a lo largo del tiempo (ej. de la agricultura a la era digital).</p></div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 7/10: Ley de los 3 Estados -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">La Ley de los Tres Estados</h2>
+            <p class="text-lg text-center text-gray-600 mb-10">Comte afirmó que la mente humana pasa por 3 etapas evolutivas obligatorias:</p>
+            
+            <div class="flex flex-col gap-4 w-full max-w-4xl">
+                <div class="bg-white border-l-4 border-red-500 p-4 rounded shadow flex items-center gap-4">
+                    <div class="bg-red-100 text-red-800 w-10 h-10 flex items-center justify-center rounded-full font-bold">1</div>
+                    <div><h4 class="font-bold">Teológico</h4><p class="text-sm text-gray-600">Explicaciones mágicas o divinas. El mundo regido por dioses.</p></div>
+                </div>
+                <div class="bg-white border-l-4 border-yellow-500 p-4 rounded shadow flex items-center gap-4">
+                    <div class="bg-yellow-100 text-yellow-800 w-10 h-10 flex items-center justify-center rounded-full font-bold">2</div>
+                    <div><h4 class="font-bold">Metafísico</h4><p class="text-sm text-gray-600">Explicaciones abstractas y filosóficas ("fuerzas de la naturaleza").</p></div>
+                </div>
+                <div class="bg-white border-l-4 border-green-500 p-4 rounded shadow flex items-center gap-4">
+                    <div class="bg-green-100 text-green-800 w-10 h-10 flex items-center justify-center rounded-full font-bold">3</div>
+                    <div><h4 class="font-bold">Positivo</h4><p class="text-sm text-gray-600">Explicaciones basadas en la ciencia, la observación empírica y los datos.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 8/10: Karl Marx -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Karl Marx: Perspectiva Crítica</h2>
+            <div class="bg-white p-8 rounded-xl shadow border-l-4 border-red-600 max-w-4xl">
+                <p class="text-xl text-gray-700 leading-relaxed mb-4">Para Marx, la economía (la estructura material) es la base de todo. Las leyes, la religión y la política son solo una superestructura diseñada para proteger los intereses de los ricos.</p>
+                <div class="bg-red-50 p-4 rounded text-red-800 font-bold"><i class="fas fa-fire mr-2"></i> Su postulado: El motor de la historia es la "Lucha de Clases" entre quienes poseen los medios de producción y quienes solo poseen su fuerza de trabajo.</div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 9/10: Émile Durkheim -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Émile Durkheim: Perspectiva Funcional</h2>
+            <div class="bg-white p-8 rounded-xl shadow border-l-4 border-primary max-w-4xl">
+                <p class="text-xl text-gray-700 leading-relaxed mb-4">Durkheim se enfocó en cómo las sociedades logran mantenerse unidas. Estudió los <strong>Hechos Sociales</strong>: formas de actuar, pensar y sentir externas al individuo, que tienen un poder coercitivo sobre él.</p>
+                <div class="bg-green-50 p-4 rounded text-green-800 font-bold"><i class="fas fa-link mr-2"></i> Su postulado: Un fenómeno social (como la tasa de suicidios o la empresa) solo puede ser explicado por otro fenómeno social, no por la psicología individual.</div>
+            </div>
+        </div>
+
+        <!-- U1 - Slide 10/10: Max Weber -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 1</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Max Weber: Perspectiva Comprensiva</h2>
+            <div class="bg-white p-8 rounded-xl shadow border-l-4 border-blue-500 max-w-4xl">
+                <p class="text-xl text-gray-700 leading-relaxed mb-4">A diferencia de Marx y Durkheim que veían grandes estructuras, Weber se enfocó en el individuo y sus motivaciones (Acción Social). Advirtió sobre los peligros de la excesiva "Burocratización".</p>
+                <div class="bg-blue-50 p-4 rounded text-blue-800 font-bold"><i class="fas fa-brain mr-2"></i> Su postulado: La tarea de la sociología es comprender (Verstehen) los significados subjetivos que las personas otorgan a sus acciones.</div>
+            </div>
+        </div>
+
+        <!-- ================= UNIDAD 2 (10 Diapositivas) ================= -->
+        <!-- U2 - Slide 1/10: Portada U2 -->
+        <div class="slide bg-blue-800 text-white text-center">
+            <div class="text-7xl mb-6"><i class="fas fa-chart-line text-blue-300"></i></div>
+            <h2 class="text-5xl font-bold mb-4 font-title">UNIDAD 2</h2>
+            <p class="text-3xl opacity-90">Campos de la Sociología y Economía</p>
+            <div class="w-16 h-1 bg-white mx-auto mt-6"></div>
+        </div>
+
+        <!-- U2 - Slide 2/10: Campos de Especialización -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Campos de Especialización</h2>
+            <div class="grid grid-cols-3 gap-6 w-full max-w-6xl">
+                <div class="bg-white p-6 rounded shadow border-t-4 border-primary"><h3 class="font-bold text-lg mb-2">Sociología del Trabajo</h3><p class="text-sm text-gray-600">Estudia las relaciones laborales, los sindicatos y el impacto de la tecnología en la rotación de personal.</p></div>
+                <div class="bg-white p-6 rounded shadow border-t-4 border-blue-500"><h3 class="font-bold text-lg mb-2">Sociología Política</h3><p class="text-sm text-gray-600">Analiza la distribución del poder, la formación del Estado y la creación de normativas públicas (empresas).</p></div>
+                <div class="bg-white p-6 rounded shadow border-t-4 border-orange-500"><h3 class="font-bold text-lg mb-2">Sociología Económica</h3><p class="text-sm text-gray-600">Estudia cómo los intercambios comerciales están sumergidos en redes de relaciones humanas y culturales.</p></div>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 3/10: El Mercado como Estructura -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Mercado no es un ente aislado</h2>
+            <div class="bg-white p-8 rounded-lg shadow-md border-l-8 border-blue-500 max-w-4xl">
+                <p class="text-2xl text-gray-700 italic leading-relaxed mb-6">"La economía asume que las decisiones de compra y venta ocurren en un vacío matemático. La sociología demuestra que ocurren en un mundo lleno de poder, estatus y normas."</p>
+                <ul class="list-disc ml-8 text-lg text-gray-600"><li>El mercado de valores se mueve por <strong>pánico o confianza</strong> (emociones sociales).</li><li>Los sueldos no solo reflejan oferta/demanda, sino también el <strong>prestigio social</strong> de la profesión.</li></ul>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 4/10: Homo Economicus -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Paradigma Clásico: Homo Economicus</h2>
+            <div class="w-full max-w-4xl bg-gray-50 p-8 rounded-xl border border-gray-200 text-center shadow">
+                <i class="fas fa-robot text-6xl text-gray-400 mb-4"></i>
+                <p class="text-xl text-gray-700 mb-4">Según la economía clásica, el ser humano es una "calculadora" perfecta.</p>
+                <ul class="text-left text-lg text-gray-600 ml-12 list-disc space-y-2 max-w-2xl mx-auto">
+                    <li>Siempre busca maximizar su beneficio y minimizar sus costos.</li>
+                    <li>Toma decisiones basadas al 100% en información lógica.</li>
+                    <li>No es influenciado por la ética, la amistad o el estatus.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 5/10: Homo Sociologicus -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Reto: Homo Sociologicus</h2>
+            <div class="w-full max-w-4xl bg-blue-50 p-8 rounded-xl border border-blue-200 text-center shadow">
+                <i class="fas fa-users text-6xl text-blue-600 mb-4"></i>
+                <p class="text-xl text-gray-700 mb-4">La sociología demuestra que somos actores sociales antes que calculadoras.</p>
+                <ul class="text-left text-lg text-gray-600 ml-12 list-disc space-y-2 max-w-2xl mx-auto">
+                    <li>Las decisiones de mercado están influenciadas por normas y modas.</li>
+                    <li>La presión del grupo y la necesidad de pertenencia alteran los precios.</li>
+                    <li><strong>Conclusión:</strong> La racionalidad económica está "limitada" por la cultura.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 6/10: Incrustación Social -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">La Incrustación Social (Embeddedness)</h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg border-l-8 border-primary max-w-4xl">
+                <p class="text-xl text-gray-700 leading-relaxed mb-6">Concepto propuesto por Karl Polanyi y Mark Granovetter. Afirma que las acciones económicas están "incrustadas" o sumergidas en redes de relaciones sociales personales.</p>
+                <div class="p-4 bg-gray-50 border rounded italic text-gray-600 text-lg text-center">"Las personas prefieren hacer negocios con individuos en quienes confían, incluso si sus precios son ligeramente más altos."</div>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 7/10: Capital Social -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Capital Social</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow text-center border border-gray-200">
+                <i class="fas fa-handshake text-6xl text-primary mb-6"></i>
+                <p class="text-xl text-gray-700 mb-6">Son los recursos (información, favores, acceso a contratos) a los que una persona puede acceder a través de su red de contactos y conocidos.</p>
+                <div class="bg-green-50 p-4 rounded text-green-800 font-bold">En la gestión comercial, un fuerte capital social agiliza ventas, cobranzas y negociaciones más rápido que el capital financiero.</div>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 8/10: Instituciones -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Papel de las Instituciones</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow text-center border border-gray-200">
+                <i class="fas fa-balance-scale text-6xl text-secondary mb-6"></i>
+                <p class="text-xl text-gray-700 mb-6">Los mercados libres no surgen de la nada. Necesitan instituciones (como el Estado, los tribunales o las empresas) que garanticen la "Seguridad Jurídica".</p>
+                <div class="bg-gray-100 p-4 rounded text-gray-800 font-bold">Sin el respaldo de las normas sociales sancionadas por el Estado, el mercado colapsaría en fraude y robo.</div>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 9/10: Efecto Veblen -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Consumo por Estatus</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow border-l-4 border-orange-500">
+                <h3 class="text-2xl font-bold text-orange-600 mb-4">El Efecto Veblen</h3>
+                <p class="text-lg text-gray-700 mb-4">Ocurre cuando la demanda de un bien aumenta a medida que aumenta su precio (contradiciendo la ley económica clásica).</p>
+                <p class="text-lg text-gray-600 italic">¿Por qué ocurre? Por pura sociología: El bien se compra para demostrar prestigio y riqueza al resto del grupo social (Ej. Relojes Rolex, autos de lujo).</p>
+            </div>
+        </div>
+
+        <!-- U2 - Slide 10/10: Caso Práctico -->
+        <div class="slide bg-gray-50">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm"><i class="fas fa-users-cog mr-2"></i>TRABAJO GRUPAL</div>
+            <h2 class="text-4xl font-bold mb-6 text-center text-orange-600">Caso U2: La Oferta Rechazada</h2>
+            <div class="w-full max-w-5xl bg-white p-8 rounded-xl shadow-lg border border-orange-200">
+                <p class="text-lg text-gray-700 mb-6 text-justify">
+                    Una empresa comercial contrata a un economista para negociar tarifas con una cooperativa de proveedores locales. El economista presenta una propuesta matemática perfecta que garantiza mayores ganancias. Sin embargo, no cultiva la confianza interpersonal, exige todo por escrito de inmediato y desconoce los códigos de trato del grupo. Los proveedores rechazan la oferta y firman con una empresa rival que paga menos, pero cuyo gerente es "conocido del pueblo".
+                </p>
+                <div class="bg-gray-50 p-6 rounded border">
+                    <h4 class="font-bold text-xl mb-4">Resolución en Equipos (10 min):</h4>
+                    <ol class="list-decimal ml-6 space-y-2 text-gray-700">
+                        <li>Expliquen el fracaso utilizando los conceptos de "Capital Social" e "Incrustación".</li>
+                        <li>¿Qué modelo mental utilizó el economista (Economicus o Sociologicus)?</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= UNIDAD 3 (10 Diapositivas) ================= -->
+        <!-- U3 - Slide 1/10: Portada U3 -->
+        <div class="slide bg-orange-600 text-white text-center">
+            <div class="text-7xl mb-6"><i class="fas fa-globe-americas text-orange-200"></i></div>
+            <h2 class="text-5xl font-bold mb-4 font-title">UNIDAD 3</h2>
+            <p class="text-3xl opacity-90">Conducta Humana y Cultura</p>
+            <div class="w-16 h-1 bg-white mx-auto mt-6"></div>
+        </div>
+
+        <!-- U3 - Slide 2/10: Acción Social -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">La Acción Social (Max Weber)</h2>
+            <div class="bg-white p-8 rounded-xl shadow-lg border-l-8 border-orange-500 max-w-4xl text-center">
+                <p class="text-2xl text-gray-700 italic leading-relaxed mb-6">Toda conducta humana que tiene un <strong>sentido subjetivo</strong> y está orientada hacia la conducta de otros.</p>
+                <p class="text-lg text-gray-500"><em>No todo lo que hacemos es acción social. (Ej. Parpadear es un reflejo biológico; pero guiñar el ojo para saludar es Acción Social).</em></p>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 3/10: Acciones Racionales -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Tipos de Acción: Racionales</h2>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-white p-8 rounded border-t-8 border-primary shadow"><h4 class="font-bold text-2xl mb-4 text-primary"><i class="fas fa-bullseye mr-2"></i>Con Arreglo a Fines</h4><p class="text-gray-600 text-lg mb-4">Calcula los medios para alcanzar un objetivo concreto.</p><div class="bg-gray-50 p-3 text-sm italic border rounded">Ej: Estudiar Sociología para aprobar y ser Licenciado.</div></div>
+                <div class="bg-white p-8 rounded border-t-8 border-purple-500 shadow"><h4 class="font-bold text-2xl mb-4 text-purple-600"><i class="fas fa-balance-scale mr-2"></i>Con Arreglo a Valores</h4><p class="text-gray-600 text-lg mb-4">Actuar por pura convicción ética, religiosa o moral, sin importar el costo.</p><div class="bg-gray-50 p-3 text-sm italic border rounded">Ej: Rechazar un soborno para alterar un balance, aun arriesgando el puesto.</div></div>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 4/10: Acciones No Racionales -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Tipos de Acción: No Racionales</h2>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-white p-8 rounded border-t-8 border-red-500 shadow"><h4 class="font-bold text-2xl mb-4 text-red-600"><i class="fas fa-heart mr-2"></i>Afectiva</h4><p class="text-gray-600 text-lg mb-4">Dictada por emociones, sentimientos o impulsos del momento.</p><div class="bg-gray-50 p-3 text-sm italic border rounded">Ej: Contratar a un familiar solo por cariño o gritar de enojo.</div></div>
+                <div class="bg-white p-8 rounded border-t-8 border-orange-500 shadow"><h4 class="font-bold text-2xl mb-4 text-orange-600"><i class="fas fa-landmark mr-2"></i>Tradicional</h4><p class="text-gray-600 text-lg mb-4">Dictada por costumbres arraigadas y la rutina.</p><div class="bg-gray-50 p-3 text-sm italic border rounded">Ej: "En esta oficina siempre lo hemos hecho así, no sé por qué".</div></div>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 5/10: ¿Qué es Cultura? -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">¿Qué es la Cultura?</h2>
+            <div class="w-full max-w-4xl bg-orange-50 p-8 rounded-xl border border-orange-200 text-center shadow">
+                <i class="fas fa-palette text-6xl text-orange-400 mb-6"></i>
+                <p class="text-xl text-gray-700 mb-4">Para la sociología, cultura no es "saber de arte o música".</p>
+                <p class="text-2xl text-orange-800 font-bold">Es el diseño general de vida de una sociedad.</p>
+                <p class="text-lg text-gray-600 mt-4">Incluye todo lo que aprendemos, compartimos y transmitimos de generación en generación.</p>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 6/10: Cultura Material -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Cultura Material</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow border-l-8 border-primary">
+                <p class="text-xl text-gray-700 mb-6">Las creaciones físicas y tangibles de los miembros de una sociedad. Refleja su nivel de desarrollo tecnológico y adaptación al entorno.</p>
+                <ul class="list-disc ml-8 text-lg text-gray-600 space-y-2">
+                    <li>Edificios e infraestructura portuaria.</li>
+                    <li>Herramientas, vehículos y computadoras.</li>
+                    <li>La vestimenta y el arte físico.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 7/10: Cultura Inmaterial -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">Cultura Inmaterial</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow border-l-8 border-secondary">
+                <p class="text-xl text-gray-700 mb-6">El "código de programación" intangible de la conducta humana. Guía nuestras decisiones diarias.</p>
+                <ul class="list-disc ml-8 text-lg text-gray-600 space-y-2">
+                    <li><strong>Valores:</strong> Lo que consideramos bueno o malo.</li>
+                    <li><strong>Normas:</strong> Reglas de conducta, leyes comerciales, tributarias y penales.</li>
+                    <li><strong>Símbolos:</strong> Idiomas, gestos corporales.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 8/10: Etnocentrismo -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center text-red-700">El Peligro del Etnocentrismo</h2>
+            <div class="w-full max-w-4xl bg-red-50 p-8 rounded-xl shadow border border-red-200 text-center">
+                <i class="fas fa-times-circle text-6xl text-red-500 mb-6"></i>
+                <p class="text-xl text-gray-800 font-bold mb-4">Juzgar a otras culturas utilizando los estándares de la propia, asumiendo que la nuestra es la "correcta" o "superior".</p>
+                <p class="text-lg text-gray-600">Es la principal causa de fracaso en las negociaciones de Gestión Comercial y expansión de empresas multinacionales.</p>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 9/10: Relativismo Cultural -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center text-green-700">La Solución: Relativismo Cultural</h2>
+            <div class="w-full max-w-4xl bg-green-50 p-8 rounded-xl shadow border border-green-200 text-center">
+                <i class="fas fa-check-circle text-6xl text-primary mb-6"></i>
+                <p class="text-xl text-gray-800 font-bold mb-4">Comprender las prácticas de otra cultura desde sus propios términos y contexto, sin juzgarlas moralmente de entrada.</p>
+                <p class="text-lg text-gray-600">Permite adaptar estrategias comerciales (marketing, contratos) a la mentalidad local de manera exitosa y empática.</p>
+            </div>
+        </div>
+
+        <!-- U3 - Slide 10/10: Socialización -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">El Proceso de Socialización</h2>
+            
+            <div class="flex flex-col gap-6 w-full max-w-4xl">
+                <div class="bg-green-50 border border-green-200 p-6 rounded-lg flex items-center gap-6">
+                    <div class="bg-primary text-white w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold flex-shrink-0">1</div>
+                    <div>
+                        <h3 class="font-bold text-xl text-primary mb-1">Socialización Primaria (Niñez)</h3>
+                        <p class="text-gray-700 text-sm">Ocurre en la familia. Se internaliza el lenguaje, la identidad básica y los cimientos de la moralidad (no negociable).</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg flex items-center gap-6">
+                    <div class="bg-secondary text-white w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold flex-shrink-0">2</div>
+                    <div>
+                        <h3 class="font-bold text-xl text-secondary mb-1">Socialización Secundaria (Adultez/Trabajo)</h3>
+                        <p class="text-gray-700 text-sm">Incorporación a sub-mundos institucionales. Aprender la "cultura inmaterial" al entrar a trabajar en una nueva empresa o ministerio.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CIERRE GENERAL ================= -->
+        <div class="slide text-center bg-secondary text-white">
+            <i class="fas fa-lightbulb text-6xl text-primary mb-6"></i>
+            <h2 class="text-4xl font-bold mb-6 font-title">Síntesis Institucional</h2>
+            <p class="text-xl max-w-3xl mx-auto leading-relaxed font-light mb-8">
+                El comercio no funciona con robots, funciona con personas socializadas. Comprender la <strong class="text-primary">cultura inmaterial</strong> de un mercado y construir <strong class="text-primary">capital social</strong> te convierte en un estratega superior frente al "Sentido Común".
+            </p>
+            <div class="bg-white/10 p-4 rounded-lg inline-block">
+                <p class="text-sm font-bold tracking-widest uppercase"><i class="fas fa-question-circle mr-2 text-primary"></i>Dudas y Preparación para el Parcial</p>
+            </div>
+        </div>
+
+        <!-- Controles de Navegación -->
+        <div class="controls">
+            <button class="btn-control" id="prev-btn" onclick="cambiarSlide(-1)" title="Anterior"><i class="fas fa-chevron-left"></i></button>
+            <button class="btn-control" id="next-btn" onclick="cambiarSlide(1)" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progress-bar');
+
+        function actualizarProgreso() {
+            const porcentaje = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = porcentaje + '%';
+        }
+
+        function cambiarSlide(direccion) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += direccion;
+            
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            if (currentSlide < 0) currentSlide = 0;
+            
+            slides[currentSlide].classList.add('active');
+            actualizarProgreso();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') cambiarSlide(1);
+            if (e.key === 'ArrowLeft') cambiarSlide(-1);
+        });
+
+        actualizarProgreso();
+    </script>
+</body>
+</html>

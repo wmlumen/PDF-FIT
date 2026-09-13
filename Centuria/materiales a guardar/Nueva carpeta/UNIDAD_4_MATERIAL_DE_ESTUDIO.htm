@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidad 4: Estratificación Social - Instituto Superior Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border-left: 6px solid #1e40af;
+        }
+
+        .step-header {
+            background: #f1f5f9;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #1e40af;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .content-padding {
+            padding: 1.5rem;
+        }
+
+        .highlight-box {
+            background: #eff6ff;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        .glossary-term {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .step-card { box-shadow: none; border: 1px solid #e2e8f0; border-left: 6px solid #1e40af; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Header Institucional -->
+    <header class="max-w-4xl mx-auto mb-10 text-center border-b-2 border-blue-900 pb-6">
+        <div class="flex flex-col items-center mb-4">
+            <div class="text-blue-900 font-bold text-3xl tracking-tighter mb-1">
+                INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span>
+            </div>
+            <p class="text-gray-500 uppercase tracking-widest text-sm font-semibold">Excelencia Académica</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 mt-4 italic">
+            <div><strong>Carrera:</strong> Administración Aduanera / Cs. Empresariales</div>
+            <div><strong>Asignatura:</strong> Sociología</div>
+            <div><strong>Docente:</strong> Lic. Christhian Keim</div>
+            <div><strong>Material:</strong> Unidad 4</div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+
+        <!-- 1. FICHA DE CLASE -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Ficha de Clase</h2>
+            </div>
+            <div class="content-padding grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <h3 class="font-bold text-lg mb-2"><i class="fas fa-book-open mr-2 text-blue-700"></i>Tema: Estratificación Social, Desigualdad y Status</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Resumen:</strong> En toda sociedad, los bienes valiosos (dinero, poder, prestigio) no se distribuyen equitativamente. Esta clase explora cómo se divide a los miembros en estratos y cómo esto afecta el mercado y las oportunidades.
+                    </p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm">
+                    <p class="mb-2"><strong><i class="fas fa-clock mr-1"></i> Duración:</strong> 3 horas</p>
+                    <p class="mb-2"><strong><i class="fas fa-users mr-1"></i> Modalidad:</strong> Presencial</p>
+                    <p><strong><i class="fas fa-bullseye mr-1"></i> Objetivo:</strong> Comprender la movilidad social en el entorno comercial y aduanero.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DESARROLLO TEÓRICO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Desarrollo Teórico y Lecturas</h2>
+            </div>
+            <div class="content-padding space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">A. ¿Qué es la Estratificación Social?</h3>
+                    <p class="text-gray-700">Es el proceso mediante el cual una sociedad divide a sus miembros en estratos de prestigio, poder y propiedad, estableciendo una distribución desigual de oportunidades.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">B. Evolución Histórica</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div class="p-4 bg-white border rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-2">Castas</h4>
+                            <p class="text-sm text-gray-600 italic">Pertenencia por nacimiento. Movilidad nula. Separación por ritos y religión.</p>
+                        </div>
+                        <div class="p-4 bg-white border rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-2">Estamentos</h4>
+                            <p class="text-sm text-gray-600 italic">Feudalismo. Basado en la posesión de tierra. Nobleza, Clero y Campesinado.</p>
+                        </div>
+                        <div class="p-4 bg-white border rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-2">Clases Sociales</h4>
+                            <p class="text-sm text-gray-600 italic">Sistema moderno. Movilidad posible. Indicadores económicos y educativos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-blue-800 border-b pb-1 mb-3">C. Indicadores y "Consumismo"</h3>
+                    <ul class="list-disc ml-6 space-y-2 text-gray-700">
+                        <li><strong>Nivel Educativo:</strong> Escolaridad y capacitación.</li>
+                        <li><strong>Ocupación:</strong> Prestigio social asignado al trabajo.</li>
+                        <li><strong>Posesiones Simbólicas:</strong> En la posmodernidad, el estilo de vida y capacidad de consumo (ocio, vestimenta) definen el estrato.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-50 p-4 border rounded-lg">
+                    <h3 class="text-sm font-bold uppercase text-gray-500 mb-3"><i class="fas fa-bookmark mr-2"></i>Bibliografía de la Unidad</h3>
+                    <ul class="text-sm space-y-1 text-gray-600">
+                        <li><strong>Obligatoria:</strong> Fichter, J. H. (1980). <em>Sociología</em> (Cap. Status y Clases).</li>
+                        <li><strong>Complementaria:</strong> Alberoni, F. (1980). <em>Cuestiones de Sociología</em>.</li>
+                        <li><strong>Multimedia:</strong> Video "Introducción a la Sociología" en Aula Virtual.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GUÍA DE ESTUDIO -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="text-xl font-bold uppercase text-blue-900">Guía de Estudio y Glosario</h2>
+            </div>
+            <div class="content-padding">
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-800 mb-4 italic">Resuelva durante la lectura:</h3>
+                    <ol class="list-decimal ml-6 space-y-4 text-gray-700">
+                        <li class="pl-2">Explique la diferencia fundamental en cuanto a "movilidad social" entre el sistema de Castas y el sistema moderno de Clases.</li>
+                        <li class="pl-2">¿Cuáles son los tres principales indicadores que la sociología moderna utiliza para ubicar a una persona en una clase social?</li>
+                        <li class="pl-2">Defina con sus palabras el concepto sociológico de "marginalización".</li>
+                    </ol>
+                </div>
+                
+                <div class="highlight-box">
+                    <h3 class="font-bold mb-3 text-blue-900"><i class="fas fa-language mr-2"></i>Glosario Clave</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div><span class="glossary-term">Status:</span> Nivel de prestigio en la estructura social.</div>
+                        <div><span class="glossary-term">Movilidad Social:</span> Capacidad de ascender o descender en la escala.</div>
+                        <div><span class="glossary-term">Consumismo:</span> Adquisición de bienes como símbolo de pertenencia.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ACTIVIDADES -->
+        <section class="step-card" style="border-left-color: #dc2626;">
+            <div class="step-header" style="background: #fef2f2;">
+                <div class="step-number" style="background: #dc2626;">4</div>
+                <h2 class="text-xl font-bold uppercase text-red-700">Actividades Presenciales</h2>
+            </div>
+            <div class="content-padding">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-red-100 text-red-700 p-3 rounded-full">
+                        <i class="fas fa-users-cog fa-2x"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold">Dinámica: "Análisis de Movilidad y Mercado"</h3>
+                        <p class="text-sm text-gray-600">Grupos de 4 personas. Trabajo con casos regionales.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mt-6">
+                    <div class="flex gap-4 p-3 border-b border-dashed">
+                        <span class="font-bold text-red-600">01.</span>
+                        <p class="text-gray-700">Identificar indicadores de estatus (educación, ocupación, consumo) en el caso entregado.</p>
+                    </div>
+                    <div class="flex gap-4 p-3 border-b border-dashed">
+                        <span class="font-bold text-red-600">02.</span>
+                        <p class="text-gray-700">Debatir: ¿Se observa movilidad social ascendente o marginalización estructural?</p>
+                    </div>
+                    <div class="flex gap-4 p-3">
+                        <span class="font-bold text-red-600">03.</span>
+                        <p class="text-gray-700">Elaborar un <strong>Papelógrafo</strong> con un Cuadro Comparativo relacionando la teoría con el público objetivo de una importadora ficticia.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 & 6. MATERIALES Y EVALUACIÓN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h2 class="text-md font-bold uppercase text-blue-900">Materiales</h2>
+                </div>
+                <div class="content-padding text-sm">
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Casos de estudio impresos.</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Papelógrafos y marcadores.</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Proyector multimedia.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="step-card mb-0">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <h2 class="text-md font-bold uppercase text-blue-900">Evaluación</h2>
+                </div>
+                <div class="content-padding text-sm">
+                    <p class="font-semibold text-blue-800 mb-2">Instrumento: Rúbrica de exposición</p>
+                    <p class="text-gray-600">Se evaluará el uso correcto de terminología técnica (status, indicadores, estratificación) y la calidad del cuadro comparativo final.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 7. SÍNTESIS FINAL -->
+        <section class="step-card" style="border-left-color: #1e3a8a;">
+            <div class="step-header" style="background: #1e3a8a; color: white;">
+                <div class="step-number" style="background: white; color: #1e3a8a;">7</div>
+                <h2 class="text-xl font-bold uppercase">Conexión Profesional</h2>
+            </div>
+            <div class="content-padding">
+                <p class="mb-4 text-gray-700 italic">"La sociedad no es plana; está estratificada. Comprender la riqueza y el prestigio es esencial para entender las tensiones económicas."</p>
+                
+                <div class="bg-blue-900 text-white p-5 rounded-lg shadow-inner">
+                    <h3 class="font-bold mb-2 flex items-center gap-2">
+                        <i class="fas fa-briefcase"></i> Vínculo con Administración y Aduanas:
+                    </h3>
+                    <p class="text-sm leading-relaxed opacity-90">
+                        Un administrador que comprende la estratificación puede diseñar mejores estrategias de segmentación de mercado e interpretar la marginalización en fronteras para tomar decisiones éticas y comerciales equitativas.
+                    </p>
+                </div>
+
+                <div class="mt-6 border-t pt-4">
+                    <h4 class="font-bold text-gray-800 mb-2 underline decoration-red-500 underline-offset-4">Autoevaluación:</h4>
+                    <p class="text-gray-600 italic text-sm">¿De qué manera el "consumismo" de bienes importados afecta la percepción de status social en Paraguay?</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-4xl mx-auto text-center py-10 no-print">
+        <button onclick="window.print()" class="bg-blue-900 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-800 transition shadow-lg">
+            <i class="fas fa-print mr-2"></i> Imprimir Material
+        </button>
+        <p class="text-xs text-gray-400 mt-6 uppercase tracking-widest">© 2024 Instituto Superior Centuria - Material Académico</p>
+    </footer>
+
+</body>
+</html>

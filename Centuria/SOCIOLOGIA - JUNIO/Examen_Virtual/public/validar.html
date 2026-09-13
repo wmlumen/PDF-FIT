@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validación de Alumno - Instituto Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+</head>
+<body class="page-card-center">
+
+    <div class="card max-w-lg w-full">
+        <div class="header-gradient p-6 text-center">
+            <div class="titulo-institucional text-2xl text-white mb-1">
+                INSTITUTO <span class="text-red-400">CENTURIA</span>
+            </div>
+            <h1 class="text-white text-xl font-bold">Validación de Alumno</h1>
+            <p class="text-green-200 text-sm">Examen de Sociología - Grupo ${CONFIG.grupo || 'S026'}</p>
+        </div>
+        
+        <div class="p-6">
+            <!-- Panel de Solicitud Extraordinaria -->
+            <div id="panel-extraordinario" class="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h3 class="font-bold text-yellow-800 mb-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>¿No pudiste rindir el examen?
+                </h3>
+                <p class="text-sm text-gray-600 mb-3">Si tienes justificativo, puedes solicitar un examen extraordinario.</p>
+                <button onclick="mostrarFormularioExtraordinario()" class="text-sm text-yellow-700 font-bold hover:underline">
+                    <i class="fas fa-plus-circle mr-1"></i> Solicitar Examen Extraordinario
+                </button>
+            </div>
+            
+            <!-- Formulario Extraordinario (inicialmente oculto) -->
+            <div id="form-extraordinario" class="hidden mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-300">
+                <h3 class="font-bold text-yellow-800 mb-3">
+                    <i class="fas fa-file-alt mr-2"></i>Solicitar Examen Extraordinario
+                </h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Código de Solicitud (enviado por email)</label>
+                        <input type="text" id="codigo-solicitud" 
+                            class="w-full border-2 border-yellow-300 rounded-lg px-3 py-2 text-center font-bold"
+                            placeholder="Ej: CE-EXT-26">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Cédula de Identidad</label>
+                        <input type="text" id="cedula-extra" 
+                            class="w-full border-2 border-gray-200 rounded-lg px-3 py-2"
+                            placeholder="Tu número de cédula">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Motivo de la Solicitud</label>
+                        <select id="motivo-solicitud" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2">
+                            <option value="">Selecciona un motivo...</option>
+                            <option value="enfermedad">Enfermedad</option>
+                            <option value="falta_pago">Falta de Pago</option>
+                            <option value="trabajo">Trabajo</option>
+                            <option value="familiar">Problema Familiar</option>
+                            <option value="otro">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Describe tu situación</label>
+                        <textarea id="descripcion-solicitud" 
+                            class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-sm"
+                            rows="3"
+                            placeholder="Explica detalladamente por qué no pudiste rindir el examen..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="enviarSolicitudExtraordinaria()" 
+                            class="flex-1 bg-yellow-600 text-white font-bold py-2 rounded-lg hover:bg-yellow-700">
+                            <i class="fas fa-paper-plane mr-2"></i>Enviar Solicitud
+                        </button>
+                        <button onclick="ocultarFormularioExtraordinario()" 
+                            class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-400">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Buscador Normal -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-600 mb-2">Ingrese su Cédula de Identidad</label>
+                <input type="text" id="cedula-input" 
+                    class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-lg focus:border-green-500 focus:outline-none text-center"
+                    placeholder="Ej: 12345678">
+            </div>
+            
+            <button onclick="validarAlumno()" 
+                class="btn-validar w-full text-white font-bold py-3 rounded-xl">
+                <i class="fas fa-check-circle mr-2"></i> Validar
+            </button>
+            
+            <div id="resultado" class="mt-6 hidden">
+            </div>
+            
+            <div class="mt-6 text-center text-xs text-gray-400">
+                <p>Verifique sus datos antes de continuar</p>
+            </div>
+        </div>
+        
+        <div class="bg-gray-50 p-4 text-center border-t">
+            <a href="index.html" class="text-green-600 text-sm hover:underline">
+                <i class="fas fa-home mr-1"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Código para examen extraordinario (se carga desde CONFIG o usa valor por defecto)
+        function formatearCarrera(carrera) {
+            const c = (carrera || '').toUpperCase().trim();
+            if (c === 'IC' || c === 'INGENIERIA COMERCIAL') return 'Ingeniería Comercial';
+            if (c === 'CONTABILIDAD') return 'Contabilidad';
+            return carrera || 'Sin carrera';
+        }
+
+        function getCodigoExtraordinario() {
+            return String(CONFIG.codigoExamenExtraordinario || CONFIG.codigo_examen_extraordinario || 'CE-EXT-26');
+        }
+        
+        // Función para cargar alumnos desde el archivo CSV
+        async function cargarAlumnos() {
+            try {
+                let response = null;
+                const fuentes = ['Listado_Alumnos.csv', '../data/Listado_Alumnos.csv', '../data/asistencia.txt', 'asistencia.txt'];
+                let origen = '';
+
+                for (const ruta of fuentes) {
+                    try {
+                        const intento = await fetch(ruta);
+                        if (intento.ok) {
+                            response = intento;
+                            origen = ruta;
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`No se pudo cargar ${ruta}:`, error);
+                    }
+                }
+                if (!response || !response.ok) throw new Error('No se pudo cargar');
+                
+                const texto = await response.text();
+                const lineas = texto.split('\n');
+                const alumnos = [];
+                if (origen.toLowerCase().includes('asistencia')) {
+                    for (let i = 1; i < lineas.length; i++) {
+                        const partes = lineas[i].split('\t');
+                        if (partes.length >= 3) {
+                            const nombre = (partes[1] || '').trim();
+                            const cedula = (partes[2] || '').trim().replace(/\D/g, '');
+                            if (!nombre || !cedula) continue;
+                            alumnos.push({
+                                carrera: (partes[3] || '').trim(),
+                                cedula,
+                                nombre,
+                                factura: '',
+                                estado: '*'
+                            });
+                        }
+                    }
+                    return alumnos;
+                }
+                
+                // Saltar la primera línea (encabezados)
+                for (let i = 1; i < lineas.length; i++) {
+                    const linea = lineas[i].trim();
+                    if (!linea) continue;
+                    
+                    const partes = linea.split(',');
+                    if (partes.length >= 6) {
+                        // Formato: Carrera,Cédula,Apellido Nombre,Ficha,Nro Factura,Estado
+                        const estado = partes[5].trim();
+                        // Solo incluir los que tienen * (habilitados) para validación
+                        if (estado === '*' || estado === 'consulta') {
+                            alumnos.push({
+                                carrera: partes[0].trim(),
+                                cedula: partes[1].trim().replace(/\D/g, ''),
+                                nombre: partes[2].trim(),
+                                factura: partes[4].trim(),
+                                estado: estado
+                            });
+                        }
+                    }
+                }
+                
+                return alumnos;
+            } catch (error) {
+                console.log('No se pudo cargar CSV, usando modo limitado');
+                return [];
+            }
+        }
+        
+        // Variables globales
+        let listaAlumnos = [];
+        
+        function mostrarFormularioExtraordinario() {
+            document.getElementById('form-extraordinario').classList.remove('hidden');
+            document.getElementById('panel-extraordinario').classList.add('hidden');
+        }
+        
+        function ocultarFormularioExtraordinario() {
+            document.getElementById('form-extraordinario').classList.add('hidden');
+            document.getElementById('panel-extraordinario').classList.remove('hidden');
+            
+            // Limpiar formulario
+            document.getElementById('cedula-extra').value = '';
+            document.getElementById('motivo-solicitud').value = '';
+            document.getElementById('descripcion-solicitud').value = '';
+        }
+        
+        async function enviarSolicitudExtraordinaria() {
+            const codigo = document.getElementById('codigo-solicitud').value.trim();
+            const cedula = document.getElementById('cedula-extra').value.trim();
+            const motivo = document.getElementById('motivo-solicitud').value;
+            const descripcion = document.getElementById('descripcion-solicitud').value.trim();
+            
+            if (!codigo || codigo !== getCodigoExtraordinario()) {
+                alert('Código de solicitud incorrecto. Contacte al docente.');
+                return;
+            }
+            
+            if (!cedula) {
+                alert('Por favor ingrese su cédula');
+                return;
+            }
+            
+            if (!motivo) {
+                alert('Por favor seleccione un motivo');
+                return;
+            }
+            
+            if (!descripcion || descripcion.length < 20) {
+                alert('Por favor describa su situación con más detalle (mínimo 20 caracteres)');
+                return;
+            }
+            
+            // Buscar el alumno en la lista cargada
+            if (listaAlumnos.length === 0) {
+                listaAlumnos = await cargarAlumnos();
+            }
+            const alumno = listaAlumnos.find(a => a.cedula === cedula);
+            
+            if (!alumno) {
+                alert('Cédula no encontrada en el sistema');
+                return;
+            }
+            
+            // Crear solicitud
+            const solicitud = {
+                tipo: 'EXTRAORDINARIO',
+                cedula: cedula,
+                nombre: alumno.nombre,
+                carrera: alumno.carrera,
+                motivo: motivo,
+                descripcion: descripcion,
+                fecha: new Date().toISOString(),
+                codigo: codigo
+            };
+            
+            // Guardar en localStorage
+            let solicitudes = JSON.parse(localStorage.getItem('solicitudesExtraordinarias') || '[]');
+            solicitudes.push(solicitud);
+            localStorage.setItem('solicitudesExtraordinarias', JSON.stringify(solicitudes));
+            
+            // Mostrar confirmación
+            alert(`Solicitud enviada exitosamente!\n\nAlumno: ${alumno.nombre}\nCédula: ${cedula}\nMotivo: ${motivo}\n\nEl docente revisará su solicitud. Recibirá una notificación cuando sea aprobada.`);
+            
+            // Ocultar formulario y limpiar
+            ocultarFormularioExtraordinario();
+        }
+        
+        async function validarAlumno() {
+            const cedula = document.getElementById('cedula-input').value.trim();
+            const resultado = document.getElementById('resultado');
+            
+            if (!cedula) {
+                alert('Por favor ingrese su cédula');
+                return;
+            }
+            
+            // Cargar lista si no está cargada
+            if (listaAlumnos.length === 0) {
+                listaAlumnos = await cargarAlumnos();
+            }
+            
+            const alumno = listaAlumnos.find(a => a.cedula === cedula);
+            
+            if (!alumno) {
+                resultado.className = 'mt-6 p-4 rounded-lg no-habilitado';
+                resultado.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-times-circle text-4xl text-red-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-red-700">Cédula no encontrada</h3>
+                        <p class="text-sm text-gray-600 mt-2">Su cédula no está registrada en el listado de exámenes.</p>
+                        <p class="text-xs text-gray-500 mt-1">Contacte al docente para verificar su situación.</p>
+                    </div>
+                `;
+                resultado.classList.remove('hidden');
+                return;
+            }
+            
+            if (alumno.estado === '*') {
+                resultado.className = 'mt-6 p-4 rounded-lg habilitado';
+                resultado.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-green-700">¡Está habilitado para rindir!</h3>
+                        <p class="text-sm text-gray-600 mt-2">${alumno.nombre}</p>
+                        <p class="text-xs text-gray-500">Carrera: ${formatearCarrera(alumno.carrera)} | Factura: ${alumno.factura}</p>
+                        <a href="index.html" class="inline-block mt-4 bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700">
+                            <i class="fas fa-pencil-alt mr-2"></i> Ir al Examen
+                        </a>
+                    </div>
+                `;
+            } else if (alumno.estado === 'consulta') {
+                resultado.className = 'mt-6 p-4 rounded-lg consulta';
+                resultado.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-search text-4xl text-amber-500 mb-3"></i>
+                        <h3 class="font-bold text-lg text-amber-700">Consultar Resultados</h3>
+                        <p class="text-sm text-gray-600 mt-2">${alumno.nombre}</p>
+                        <p class="text-xs text-gray-500">No está habilitado para rindir el examen.</p>
+                        <a href="consultar.html" class="inline-block mt-4 bg-amber-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-amber-700">
+                            <i class="fas fa-search mr-2"></i> Consultar mis Resultados
+                        </a>
+                    </div>
+                `;
+            }
+            
+            resultado.classList.remove('hidden');
+        }
+        
+        document.getElementById('cedula-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validarAlumno();
+            }
+        });
+        
+        // Cargar lista de alumnos al iniciar
+        cargarAlumnos().then(alumnos => {
+            listaAlumnos = alumnos;
+            console.log('Alumnos cargados:', listaAlumnos.length);
+        });
+    </script>
+
+</body>
+</html>

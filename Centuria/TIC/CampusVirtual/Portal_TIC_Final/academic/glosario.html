@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario Técnico - TIC</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="./accesibilidad.css">
+    <link rel="stylesheet" href="portal-layout.css">
+    <link rel="stylesheet" href="./paleta-oficial.css">
+</head>
+<body class="bg-light">
+<div class="container-fluid">
+    <div class="row portal-layout">
+
+<div id="top-user-bar" class="container my-3 d-flex justify-content-end align-items-center gap-3">
+    <div class="text-end">
+        <div id="sidebar-user-name" class="fw-bold small" style="color: #007A33;"></div>
+        <small id="sidebar-user-id" class="text-muted" style="font-size: 0.75rem;"></small>
+    </div>
+    <button id="btn-logout" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-right"></i> Salir</button>
+</div>
+<script>
+if(!sessionStorage.getItem('current_cedula')){location.replace('index.html');}
+document.addEventListener('DOMContentLoaded',()=>{
+  const n=sessionStorage.getItem('current_nombre'); const c=sessionStorage.getItem('current_cedula');
+  if(n){ const el=document.getElementById('sidebar-user-name'); if(el) el.textContent=n; }
+  if(c){ const el=document.getElementById('sidebar-user-id'); if(el) el.textContent='C.I: '+c; }
+});
+</script>
+
+        <nav id="portal-menu" aria-label="Navegación del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
+            <div class="p-2">
+                <a href="Materiales_Clases/programa.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-file-earmark-text me-2"></i>Programa Oficial</a>
+                <a href="../glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario Técnico</a>
+                <a href="../asistencia_presencial.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-person-raised-hand me-2"></i>Asistencia Presencial</a>
+                <a href="Materiales_Clases/planilla.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-graph-up me-2"></i>Planilla de Progreso</a>
+            </div>
+            <div class="px-3 pt-3 pb-2 text-uppercase small fw-bold text-white-50" style="letter-spacing:1px;">Unidades (10)</div>
+            <div class="px-2">
+                <a href="Unidad_01.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 1</a>
+                <a href="Unidad_02.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 2</a>
+                <a href="Unidad_03.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 3</a>
+                <a href="Unidad_04.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 4</a>
+                <a href="Unidad_05.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 5</a>
+                <a href="Unidad_06.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 6</a>
+                <a href="Unidad_07.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 7</a>
+                <a href="Unidad_08.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 8</a>
+                <a href="Unidad_09.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 9</a>
+                <a href="Unidad_10.html" class="menu-clase d-block text-white text-decoration-none p-2 rounded">Unidad 10</a>
+            </div>
+        </nav>
+        <main class="col-md-9 col-lg-10 content p-4" style="background:#f8f9fa; min-height:100vh;">
+            <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menú</button>
+            <div class="container">
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Volver al material donde estaba -->
+            <div id="volver-material" class="alert alert-success border-2 d-none d-flex justify-content-between align-items-center shadow-sm mb-3">
+                <span><i class="bi bi-arrow-left-circle me-2"></i>Volver a tu material: <strong id="volver-origen">Unidad</strong></span>
+                <button class="btn btn-success btn-sm" onclick="volverAlMaterial()"><i class="bi bi-box-arrow-in-left me-1"></i> Volver donde quedé</button>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="history.back()"><i class="bi bi-arrow-left me-1"></i> Volver atrás</button>
+                <div class="input-group" style="max-width: 320px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filtro-glosario" class="form-control" placeholder="Buscar acrónimo (ej. WiFi, LAN, DNS)...">
+                </div>
+            </div>
+            
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header text-white p-4 text-center rounded-top-4" style="background-color: #007A33;">
+                    <h1 class="mb-0 fw-bold"><img src="logo_centuria_blanco.png" alt="Centuria" style="height: 32px; vertical-align: middle; margin-right: 10px; background: white; border-radius: 4px; padding: 2px;"><i class="bi bi-journal-text text-white"></i> Glosario de Términos TIC</h1>
+                    <p class="mb-0 mt-2 opacity-75">Diccionario interactivo de acrónimos y siglas técnicas - Redes, WiFi y Dispositivos</p>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped align-middle mb-0">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th scope="col" class="py-3 px-4" style="width: 15%;">Acrónimo</th>
+                                    <th scope="col" class="py-3 px-4" style="width: 25%;">Inglés</th>
+                                    <th scope="col" class="py-3 px-4" style="width: 25%;">Español</th>
+                                    <th scope="col" class="py-3 px-4" style="width: 35%;">¿Qué es?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- A -->
+                                <tr>
+                                    <td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">AP</span></td>
+                                    <td class="px-4 text-muted"><em>Access Point</em></td>
+                                    <td class="px-4 fw-bold">Punto de Acceso</td>
+                                    <td class="px-4 text-secondary">Dispositivo que crea una red WiFi y permite que dispositivos se conecten a la red cableada.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">API</span></td>
+                                    <td class="px-4 text-muted"><em>Application Programming Interface</em></td>
+                                    <td class="px-4 fw-bold">Interfaz de Programación de Aplicaciones</td>
+                                    <td class="px-4 text-secondary">Conjunto de reglas que permite que dos aplicaciones se comuniquen entre sí.</td>
+                                </tr>
+                                <!-- C -->
+                                <tr>
+                                    <td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">CASE</span></td>
+                                    <td class="px-4 text-muted"><em>Computer Aided Software Engineering</em></td>
+                                    <td class="px-4 fw-bold">Ingeniería de Software Asistida por Computadora</td>
+                                    <td class="px-4 text-secondary">Herramientas de software utilizadas para automatizar y apoyar las distintas fases del ciclo de vida del desarrollo de sistemas.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">CPU</span></td>
+                                    <td class="px-4 text-muted"><em>Central Processing Unit</em></td>
+                                    <td class="px-4 fw-bold">Unidad Central de Procesamiento</td>
+                                    <td class="px-4 text-secondary">El "cerebro" de la computadora. Hardware encargado de interpretar y ejecutar instrucciones y procesar datos.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">CRM</span></td>
+                                    <td class="px-4 text-muted"><em>Customer Relationship Management</em></td>
+                                    <td class="px-4 fw-bold">Gestión de Relaciones con Clientes</td>
+                                    <td class="px-4 text-secondary">Estrategia y software utilizado para administrar y analizar las interacciones de una empresa con sus clientes.</td>
+                                </tr>
+                                <!-- D -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">DFD</span></td>
+                                    <td class="px-4 text-muted"><em>Data Flow Diagram</em></td>
+                                    <td class="px-4 fw-bold">Diagrama de Flujo de Datos</td>
+                                    <td class="px-4 text-secondary">Representación gráfica que muestra cómo se mueve la información a través de un sistema o proceso empresarial.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">DSS</span></td>
+                                    <td class="px-4 text-muted"><em>Decision Support System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Apoyo a la Toma de Decisiones</td>
+                                    <td class="px-4 text-secondary">Sistema de información gerencial interactivo que ayuda a los directivos a tomar decisiones analizando escenarios semiestructurados.</td>
+                                </tr>
+                                <!-- E -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">EIS</span></td>
+                                    <td class="px-4 text-muted"><em>Executive Information System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Información Ejecutiva</td>
+                                    <td class="px-4 text-secondary">Herramienta para la alta dirección que consolida métricas clave e información estratégica en paneles o tableros de control.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">ER</span></td>
+                                    <td class="px-4 text-muted"><em>Entity-Relationship</em></td>
+                                    <td class="px-4 fw-bold">Entidad-Relación</td>
+                                    <td class="px-4 text-secondary">Modelo conceptual que ilustra cómo las entidades (personas, objetos, conceptos) se relacionan entre sí en una base de datos.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">ERP</span></td>
+                                    <td class="px-4 text-muted"><em>Enterprise Resource Planning</em></td>
+                                    <td class="px-4 fw-bold">Planificación de Recursos Empresariales</td>
+                                    <td class="px-4 text-secondary">Software de gestión integral que unifica finanzas, RRHH, manufactura y ventas en una base de datos centralizada.</td>
+                                </tr>
+                                <!-- H -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">HDD</span></td>
+                                    <td class="px-4 text-muted"><em>Hard Disk Drive</em></td>
+                                    <td class="px-4 fw-bold">Unidad de Disco Duro</td>
+                                    <td class="px-4 text-secondary">Dispositivo de almacenamiento magnético tradicional utilizado para guardar información de forma permanente.</td>
+                                </tr>
+                                <!-- I -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">IT / TI</span></td>
+                                    <td class="px-4 text-muted"><em>Information Technology</em></td>
+                                    <td class="px-4 fw-bold">Tecnología de la Información</td>
+                                    <td class="px-4 text-secondary">Uso de computadoras, redes y almacenamiento para procesar y gestionar datos electrónicos en organizaciones.</td>
+                                </tr>
+                                <!-- L -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">LMS</span></td>
+                                    <td class="px-4 text-muted"><em>Learning Management System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Gestión de Aprendizaje</td>
+                                    <td class="px-4 text-secondary">Plataforma de software (como Moodle) utilizada para administrar, distribuir y evaluar educación virtual (e-learning).</td>
+                                </tr>
+                                <!-- M -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">MIS</span></td>
+                                    <td class="px-4 text-muted"><em>Management Information System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Información Gerencial</td>
+                                    <td class="px-4 text-secondary">Sistema enfocado en procesar datos operativos para generar informes estandarizados para gerentes de nivel medio.</td>
+                                </tr>
+                                <!-- R -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">RAM</span></td>
+                                    <td class="px-4 text-muted"><em>Random Access Memory</em></td>
+                                    <td class="px-4 fw-bold">Memoria de Acceso Aleatorio</td>
+                                    <td class="px-4 text-secondary">Memoria principal temporal de la computadora, extremadamente rápida pero volátil (se borra al apagar el equipo).</td>
+                                </tr>
+                                <!-- S -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">SaaS</span></td>
+                                    <td class="px-4 text-muted"><em>Software as a Service</em></td>
+                                    <td class="px-4 fw-bold">Software como Servicio</td>
+                                    <td class="px-4 text-secondary">Modelo en la nube donde una empresa aloja un software y el cliente lo utiliza a través de internet pagando una suscripción.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">SI</span></td>
+                                    <td class="px-4 text-muted"><em>Information System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Información</td>
+                                    <td class="px-4 text-secondary">Conjunto interrelacionado de hardware, software, personas y datos que procesa información para alcanzar un objetivo.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">SSD</span></td>
+                                    <td class="px-4 text-muted"><em>Solid State Drive</em></td>
+                                    <td class="px-4 fw-bold">Unidad de Estado Sólido</td>
+                                    <td class="px-4 text-secondary">Dispositivo moderno de almacenamiento sin partes móviles, significativamente más rápido y resistente que un HDD tradicional.</td>
+                                </tr>
+                                <!-- T -->
+                                <tr>
+                                    <td class="px-4"><span class="badge bg-primary fs-6">TPS</span></td>
+                                    <td class="px-4 text-muted"><em>Transaction Processing System</em></td>
+                                    <td class="px-4 fw-bold">Sistema de Procesamiento de Transacciones</td>
+                                    <td class="px-4 text-secondary">Sistemas operativos básicos que registran las operaciones rutinarias del día a día (ej. cajero de supermercado).</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">TQM</span></td>
+                                    <td class="px-4 text-muted"><em>Total Quality Management</em></td>
+                                    <td class="px-4 fw-bold">Aseguramiento de la Calidad Total</td>
+                                    <td class="px-4 text-secondary">Enfoque de gestión integral que busca la mejora continua y la excelencia en todas las fases de un producto o servicio.</td>
+                                </tr>
+                                <!-- Redes / WiFi -->
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">LAN</span></td><td class="px-4 text-muted"><em>Local Area Network</em></td><td class="px-4 fw-bold">Red de Área Local</td><td class="px-4 text-secondary">Red que conecta dispositivos en un área pequeña como casa, oficina o aula.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">WAN</span></td><td class="px-4 text-muted"><em>Wide Area Network</em></td><td class="px-4 fw-bold">Red de Área Amplia</td><td class="px-4 text-secondary">Red que cubre grandes distancias, como Internet que conecta ciudades y países.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">WLAN</span></td><td class="px-4 text-muted"><em>Wireless LAN</em></td><td class="px-4 fw-bold">Red Inalámbrica Local</td><td class="px-4 text-secondary">LAN sin cables, usando WiFi para conectar dispositivos.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">WiFi</span></td><td class="px-4 text-muted"><em>Wireless Fidelity</em></td><td class="px-4 fw-bold">Fidelidad Inalámbrica</td><td class="px-4 text-secondary">Tecnología que permite conexión a internet sin cables mediante ondas de radio.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">SSID</span></td><td class="px-4 text-muted"><em>Service Set Identifier</em></td><td class="px-4 fw-bold">Identificador de Red</td><td class="px-4 text-secondary">Nombre que identifica tu red WiFi (ej. "Centuria_Alumnos").</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">Router</span></td><td class="px-4 text-muted"><em>Router</em></td><td class="px-4 fw-bold">Enrutador</td><td class="px-4 text-secondary">Dispositivo que dirige el tráfico entre tu red local e Internet.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">Switch</span></td><td class="px-4 text-muted"><em>Switch</em></td><td class="px-4 fw-bold">Conmutador</td><td class="px-4 text-secondary">Conecta varios dispositivos cableados dentro de una LAN.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">DNS</span></td><td class="px-4 text-muted"><em>Domain Name System</em></td><td class="px-4 fw-bold">Sistema de Nombres de Dominio</td><td class="px-4 text-secondary">Traduce nombres (google.com) a direcciones IP.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">DHCP</span></td><td class="px-4 text-muted"><em>Dynamic Host Configuration Protocol</em></td><td class="px-4 fw-bold">Protocolo de Configuración Dinámica</td><td class="px-4 text-secondary">Asigna automáticamente direcciones IP a los dispositivos.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">IP</span></td><td class="px-4 text-muted"><em>Internet Protocol</em></td><td class="px-4 fw-bold">Protocolo de Internet</td><td class="px-4 text-secondary">Dirección única de cada dispositivo en la red (ej. 192.168.1.10).</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">TCP/IP</span></td><td class="px-4 text-muted"><em>Transmission Control Protocol / Internet Protocol</em></td><td class="px-4 fw-bold">Conjunto de Protocolos de Internet</td><td class="px-4 text-secondary">Base de la comunicación en Internet.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">HTTP/HTTPS</span></td><td class="px-4 text-muted"><em>HyperText Transfer Protocol (Secure)</em></td><td class="px-4 fw-bold">Protocolo Web</td><td class="px-4 text-secondary">HTTP es web sin cifrar, HTTPS es versión segura con candado.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">VPN</span></td><td class="px-4 text-muted"><em>Virtual Private Network</em></td><td class="px-4 fw-bold">Red Privada Virtual</td><td class="px-4 text-secondary">Túnel seguro para acceder a la red desde fuera.</td></tr>
+                                <!-- Dispositivos -->
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">IoT</span></td><td class="px-4 text-muted"><em>Internet of Things</em></td><td class="px-4 fw-bold">Internet de las Cosas</td><td class="px-4 text-secondary">Objetos cotidianos conectados (focos, aires, sensores) que envían datos por internet.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">Bluetooth</span></td><td class="px-4 text-muted"><em>Bluetooth</em></td><td class="px-4 fw-bold">Bluetooth</td><td class="px-4 text-secondary">Conexión inalámbrica de corto alcance para audio y datos.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">NFC</span></td><td class="px-4 text-muted"><em>Near Field Communication</em></td><td class="px-4 fw-bold">Comunicación de Campo Cercano</td><td class="px-4 text-secondary">Conexión por contacto (pagos con celular).</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">USB</span></td><td class="px-4 text-muted"><em>Universal Serial Bus</em></td><td class="px-4 fw-bold">Bus Universal en Serie</td><td class="px-4 text-secondary">Puerto estándar para conectar pendrives, celulares y periféricos.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">GPU</span></td><td class="px-4 text-muted"><em>Graphics Processing Unit</em></td><td class="px-4 fw-bold">Unidad de Procesamiento Gráfico</td><td class="px-4 text-secondary">Chip para gráficos y video, clave para juegos e IA.</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">URL</span></td><td class="px-4 text-muted"><em>Uniform Resource Locator</em></td><td class="px-4 fw-bold">Localizador de Recurso</td><td class="px-4 text-secondary">Dirección web completa (ej. https://centuria.edu.py).</td></tr>
+                                <tr><td class="px-4"><span class="badge fs-6" style="background-color:#007A33;">4G/5G</span></td><td class="px-4 text-muted"><em>Fourth/Fifth Generation</em></td><td class="px-4 fw-bold">Red Móvil 4ª/5ª Gen.</td><td class="px-4 text-secondary">Tecnologías móviles; 5G es 10x más rápida que 4G.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white p-3 text-center border-top">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i> Haz clic en cualquier sigla con <span class="badge bg-primary" style="background-color:#007A33 !important;">tooltip</span> en tu material para venir aquí. Usa el buscador arriba para filtrar por Redes/WiFi/Dispositivos.</small>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Volver donde quedé - guarda origen y filtra
+(function(){
+  // 1. Detectar origen
+  const ref = document.referrer;
+  const stored = sessionStorage.getItem('glosario_origen');
+  let origen = stored || (ref.includes('clase_') ? ref : '');
+  // Si viene de una clase, guardarlo
+  if(ref.includes('clase_') || ref.includes('Materiales_Clases')){
+    origen = ref;
+    sessionStorage.setItem('glosario_origen', ref);
+    // Extraer hash si tenía #def-xxx
+    try{ const u=new URL(ref); if(u.hash) sessionStorage.setItem('glosario_hash', u.hash); }catch(e){}
+  }
+  if(origen){
+    const banner=document.getElementById('volver-material');
+    const label=document.getElementById('volver-origen');
+    if(banner){
+      banner.classList.remove('d-none');
+      // Mostrar nombre amigable
+      let nombre='tu material';
+      try{ const u=new URL(origen); const f=u.pathname.split('/').pop(); const h=u.hash; nombre=f.replace('.html','').replace('clase_','Unidad ') + (h? ' '+h.replace('#def-','') : ''); }catch(e){ nombre=origen; }
+      if(label) label.textContent=nombre;
+    }
+  }
+  window.volverAlMaterial=function(){
+    const dest=sessionStorage.getItem('glosario_origen') || document.referrer || 'Materiales_Clases/Unidad_01.html';
+    const hash=sessionStorage.getItem('glosario_hash') || '';
+    // Si el destino tenía hash, volver exactamente a esa definición
+    if(dest.includes('#')) location.href=dest;
+    else if(hash) location.href=dest.split('#')[0]+hash;
+    else location.href=dest;
+  };
+  // 2. Filtro en vivo
+  const input=document.getElementById('filtro-glosario');
+  if(input){
+    input.addEventListener('input',()=>{
+      const q=input.value.toLowerCase().trim();
+      document.querySelectorAll('tbody tr').forEach(tr=>{
+        const txt=tr.innerText.toLowerCase();
+        tr.style.display = (!q || txt.includes(q)) ? '' : 'none';
+      });
+    });
+  }
+  // 3. Si viene con #def-xxx, resaltar
+  if(location.hash){
+    const el=document.querySelector(location.hash);
+    if(el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.background='#fff3cd'; setTimeout(()=>el.style.background='',2000); }
+  }
+})();
+// Guardar origen también cuando se hace clic en enlaces del glosario dentro del material (por si el material no lo hizo)
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href*="glosario.html"]');
+  if(a){
+    try{ sessionStorage.setItem('glosario_origen', location.href); if(a.hash) sessionStorage.setItem('glosario_hash', a.hash); }catch(e){}
+  }
+});
+</script>
+<script src="portal-layout.js"></script>
+    <script src="./accesibilidad.js"></script>
+<script src="./session-guard.js"></script>
+    </div>
+</div>
+</div>
+</body>
+</html>

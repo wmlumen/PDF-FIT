@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+        :root { --color-primary: #28a745; --color-secondary: #1e1e1e; --font-title: 'Playfair Display', serif; --font-body: 'Open Sans', sans-serif; }
+        body { font-family: var(--font-body); background-color: #f8fafc; color: #1e293b; user-select: none; }
+        h1, h2, h3, h4, .font-title { font-family: var(--font-title); color: var(--color-secondary); }
+        .step-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 2rem; overflow: hidden; border-left: 6px solid var(--color-primary); }
+        .step-header { background: #f7f7f7; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; }
+        .step-number { background: var(--color-primary); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+        .content-padding { padding: 1.5rem; }
+        @media print { .no-print { display: none !important; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="p-3 md:p-6" oncontextmenu="return false;">
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-2xl mt-8 animate-fade">
+    <div class="text-center mb-5">
+        <div class="font-bold text-xl tracking-tighter mb-1 font-title text-secondary">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+        <h1 class="text-lg font-bold mt-3">Acceso al Examen</h1>
+        <p class="text-sm text-gray-500 italic">Sociología - Primer Parcial</p>
+    </div>
+    <div class="space-y-3">
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre y Apellido Completos</label>
+            <input type="text" id="student-name" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: Juan Pérez">
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Cédula de Identidad</label>
+            <input type="text" id="student-id" class="w-full border-2 border-gray-200 rounded-lg px-3 py-2 text-base focus:border-green-500 focus:outline-none" placeholder="Ej: 1234567">
+        </div>
+        <div class="bg-blue-50 p-2 rounded-lg text-xs text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i> Tiempo: <strong>90 minutos</strong> | Total: 20 puntos
+        </div>
+        <div id="login-error" class="hidden bg-red-100 text-red-700 p-2 rounded-lg text-sm text-center"></div>
+        <button onclick="startExam()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-lg">
+            COMENZAR EXAMEN
+        </button>
+    </div>
+</div>
+
+<!-- TEACHER PANEL -->
+<div id="teacher-panel" class="hidden max-w-7xl mx-auto animate-fade">
+    <div class="bg-white rounded-xl shadow-lg p-5">
+        <div class="flex justify-between items-center mb-4 border-b-2 border-green-500 pb-3">
+            <div>
+                <h1 class="text-xl font-bold"><span class="text-red-600">INSTITUTO SUPERIOR CENTURIA</span></h1>
+                <p class="text-xs text-gray-500 uppercase">Panel del Docente - C.I. 1340130</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-green-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Entregados</p>
+                    <p id="total-count" class="text-xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-blue-100 px-3 py-2 rounded-lg text-center">
+                    <p class="text-xs text-gray-500 uppercase">Promedio</p>
+                    <p id="avg-score" class="text-xl font-bold text-blue-600">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="col-span-1 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2 flex justify-between">
+                    <span>Alumnos Entregados</span>
+                    <button onclick="actualizarPanel()" class="text-green-600 text-xs hover:underline"><i class="fas fa-sync"></i></button>
+                </h2>
+                <div id="students-list" class="space-y-2 text-sm"></div>
+            </div>
+            
+            <div class="col-span-3 bg-gray-50 rounded-lg p-3 max-h-[500px] overflow-y-auto">
+                <h2 class="font-bold text-sm mb-2 border-b pb-2">Detalle del Examen</h2>
+                <div id="exam-detail" class="text-gray-500 text-center py-8">Seleccione un alumno para ver su examen</div>
+            </div>
+        </div>
+        
+        <button onclick="location.reload()" class="mt-3 text-gray-500 hover:text-gray-700 text-xs"><i class="fas fa-arrow-left mr-1"></i> Salir</button>
+    </div>
+</div>
+
+<!-- EXAM CONTAINER -->
+<div id="exam-container" class="hidden max-w-4xl mx-auto animate-fade">
+
+<div class="bg-green-50 border-l-4 border-green-500 p-3 mb-4 rounded-r-lg">
+    <p class="text-sm font-bold text-green-700">Evaluación correspondiente a las Unidades I, II y III</p>
+    <p class="text-xs text-gray-600 mt-1">Tiempo máximo: 90 minutos | Total: 20 puntos</p>
+</div>
+
+<header class="max-w-4xl mx-auto mb-4 text-center border-b-2 pb-3" style="border-color: var(--color-primary);">
+    <div class="font-bold text-xl tracking-tighter mb-1 font-title text-secondary">INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span></div>
+    <p class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Excelencia Académica</p>
+    <h2 class="text-lg font-bold mt-1 uppercase text-primary">Primer Examen Parcial de Sociología</h2>
+</header>
+
+<section class="bg-white border-2 border-gray-200 rounded-lg p-3 mb-4 grid grid-cols-1 md:grid-cols-3 gap-3 shadow-sm">
+    <div class="md:col-span-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Nombre del Estudiante:</label>
+        <div id="display-name" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Cédula de Identidad:</label>
+        <div id="display-id" class="border-b border-gray-400 h-6 font-bold text-gray-800"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Fecha:</label>
+        <div id="display-date" class="border-b border-gray-400 h-6"></div>
+    </div>
+    <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Docente:</label>
+        <div class="border-b border-gray-400 h-6 font-bold text-gray-800">C.I. 1340130</div>
+    </div>
+    <div class="bg-green-50 p-2 rounded text-center border border-green-200">
+        <label class="text-xs font-bold text-primary uppercase">Tiempo Restante:</label>
+        <div id="timer" class="text-xl font-bold text-red-600 mt-1">90:00</div>
+    </div>
+</section>
+
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">1</div>
+        <h2 class="text-base font-bold uppercase text-secondary">I. Selección Múltiple (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Marque la respuesta correcta (1 pto cada una).</p>
+        <div id="section1-questions" class="space-y-4"></div>
+    </div>
+</section>
+
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">2</div>
+        <h2 class="text-base font-bold uppercase text-secondary">II. Verdadero o Falso (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Escriba 'V' o 'F' (1 pto cada una).</p>
+        <div id="section2-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">3</div>
+        <h2 class="text-base font-bold uppercase text-secondary">III. Define (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <p class="text-xs text-gray-500 mb-3 italic">Redacte brevemente (1 pto cada uno).</p>
+        <div id="section3-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<section class="step-card">
+    <div class="step-header">
+        <div class="step-number">4</div>
+        <h2 class="text-base font-bold uppercase text-secondary">IV. Estudio de Caso (5 Puntos)</h2>
+    </div>
+    <div class="content-padding">
+        <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mb-3">
+            <h3 class="font-bold text-sm text-gray-800 mb-1"><i class="fas fa-briefcase mr-1 text-primary"></i>Caso: "La Negociación Fallida"</h3>
+            <p class="text-xs text-gray-700 text-justify">Una agencia despachante contrata a un brillante economista para negociar tarifas con una delegación asiática. Durante la reunión, él omite saludos, interrumpe a los mayores y exige firmar rápido diciendo que "su cultura es superior". La delegación rechaza la oferta.</p>
+        </div>
+        <div id="section4-questions" class="space-y-3"></div>
+    </div>
+</section>
+
+<div class="text-center pb-10">
+    <button onclick="finalizarExamen()" class="bg-red-600 text-white px-10 py-3 rounded-full font-bold text-lg shadow-xl hover:bg-red-700 transition">
+        FINALIZAR EXAMEN
+    </button>
+</div>
+</div>
+
+<!-- RESULT MODAL -->
+<div id="result-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3">
+    <div class="bg-white max-w-lg w-full p-5 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div id="acta-content" class="p-4 border-4 border-double border-gray-300">
+            <div class="text-center border-b-2 border-green-600 pb-3 mb-4">
+                <h2 class="font-title text-xl">ACTA DE CALIFICACIÓN</h2>
+                <p class="text-xs uppercase tracking-widest">Instituto Superior Centuria</p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <p><strong>Fecha y Hora:</strong> <span id="res-date"></span></p>
+                <p><strong>Estudiante:</strong> <span id="res-name" class="uppercase font-bold"></span></p>
+                <p><strong>Cédula de Identidad:</strong> <span id="res-id"></span></p>
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><p class="text-base"><strong>Puntaje:</strong> <span id="res-score" class="text-green-600 font-bold text-xl"></span>/20</p></div>
+                        <div><p class="text-base"><strong>Porcentaje:</strong> <span id="res-percent" class="text-green-600 font-bold text-xl"></span>%</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Firma del Alumno</div>
+                </div>
+                <div class="text-center w-32">
+                    <div class="border-t border-black pt-1 text-[10px]">Lic. Christhian Keim</div>
+                    <p class="text-[8px] mt-1">C.I. 1340130</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-3 justify-center">
+            <button onclick="descargarActa()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">
+                <i class="fas fa-download mr-2"></i> Descargar Acta
+            </button>
+            <button onclick="location.reload()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold text-sm">Salir</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const examData = {
+    section1: [
+        { q: '1. Según A. Comte, el "Estado Positivo" de la sociedad se caracteriza por:', options: ['a) Creer en explicaciones divinas y mágicas.', 'b) Basarse en la deducción lógica abstracta.', 'c) El uso del método científico y la observación empírica.'], answer: 'c' },
+        { q: '2. El modelo del "Homo Sociologicus" sostiene que:', options: ['a) El humano es un actor racional que solo busca maximizar dinero.', 'b) Las decisiones de mercado están influenciadas por normas y valores sociales.', 'c) Las emociones no juegan ningún rol en el comercio.'], answer: 'b' },
+        { q: '3. La internalización de normas en la niñez, principalmente a través de la familia, se conoce como:', options: ['a) Socialización Secundaria.', 'b) Etnocentrismo.', 'c) Socialización Primaria.'], answer: 'c' },
+        { q: '4. La "Cultura Inmaterial" de una empresa incluye:', options: ['a) Sus oficinas, computadoras y vehículos.', 'b) Sus valores, lenguaje, ética y normas de conducta.', 'c) Sus productos de importación.'], answer: 'b' },
+        { q: '5. Analizar el comercio creyendo que nuestra cultura es superior a la del país con el que negociamos es un ejemplo de:', options: ['a) Relativismo Cultural.', 'b) Etnocentrismo.', 'c) Dinámica Social.'], answer: 'b' }
+    ],
+    section2: [
+        { q: '1. El "Sentido Común" se basa en conocimiento científico, empírico y sistemático.', answer: 'F' },
+        { q: '2. Para Karl Marx, el conflicto de clases es el principal motor del cambio en la sociedad.', answer: 'V' },
+        { q: '3. La "Estática Social" se ocupa del orden y la cooperación, como instituciones y familia.', answer: 'V' },
+        { q: '4. El concepto de "Incrustación" de Granovetter afirma que los mercados pueden funcionar perfectamente sin redes de confianza.', answer: 'F' },
+        { q: '5. Aprender la cultura de una nueva empresa al ser contratado es un proceso de Socialización Secundaria.', answer: 'V' }
+    ],
+    section3: ['1. Sociología:', '2. Acción Social (Weber):', '3. Cultura Material:', '4. Capital Social:', '5. Dinámica Social:'],
+    section4: [
+        { q: '4.1 ¿Por qué fracasó la oferta más barata analizando el concepto de "Incrustación Social"?', pts: 2.5 },
+        { q: '4.2 Identifique el Etnocentrismo del economistas y explique cómo debió actuar desde el "Relativismo Cultural".', pts: 2.5 }
+    ]
+};
+
+let currentStudent = { name: '', ci: '', isTest: false };
+let timeLeft = 5400;
+let timerInterval;
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getDate() {
+    return new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getTime() {
+    return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function getDevice() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf('mobile') > -1) return 'Móvil';
+    if (ua.indexOf('tablet') > -1) return 'Tablet';
+    return 'PC/Notebook';
+}
+
+function renderSection1() {
+    const container = document.getElementById('section1-questions');
+    const items = shuffleArray([...examData.section1]);
+    items.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mb-3';
+        div.innerHTML = `
+            <p class="text-sm font-semibold text-gray-800 mb-1">${idx + 1}. ${item.q}</p>
+            <div class="text-sm text-gray-700 space-y-1 ml-2">
+                ${item.options.map(o => {
+                    const letter = o.charAt(0);
+                    return `<label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="radio" name="q1_${idx}" value="${letter}" class="w-3 h-3 text-green-600">
+                        <span>${o}</span>
+                    </label>`;
+                }).join('')}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection2() {
+    const container = document.getElementById('section2-questions');
+    examData.section2.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between border-b pb-2';
+        div.innerHTML = `
+            <p class="text-sm text-gray-800 flex-1">${idx + 1}. ${item.q}</p>
+            <div class="flex gap-3 ml-3">
+                <label class="cursor-pointer text-sm"><input type="radio" name="q2_${idx}" value="V" class="w-3 h-3 text-green-600"> V</label>
+                <label class="cursor-pointer text-sm"><input type="radio" name="q2_${idx}" value="F" class="w-3 h-3 text-green-600"> F</label>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection3() {
+    const container = document.getElementById('section3-questions');
+    examData.section3.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <label class="font-bold text-sm text-primary">${item}</label>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="2" name="q3_${idx}" placeholder="Escriba su respuesta..."></textarea>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderSection4() {
+    const container = document.getElementById('section4-questions');
+    examData.section4.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <p class="text-sm font-semibold text-gray-800">${item.q} (${item.pts} Ptos)</p>
+            <textarea class="w-full border rounded p-2 text-sm mt-1" rows="3" name="q4_${idx}" placeholder="Escriba su respuesta..."></textarea>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function startExam() {
+    const name = document.getElementById('student-name').value.trim();
+    const ci = document.getElementById('student-id').value.trim();
+    
+    if (!name || !ci) {
+        document.getElementById('login-error').textContent = 'Por favor, complete todos los campos';
+        document.getElementById('login-error').classList.remove('hidden');
+        return;
+    }
+    
+    currentStudent = { name, ci };
+    
+    if (ci === '1340130') {
+        showTeacherPanel();
+        return;
+    }
+    
+    if (ci === '99') {
+        currentStudent.isTest = true;
+        alert('MODO PRUEBA: El examen no se guardará');
+    }
+    
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('exam-container').classList.remove('hidden');
+    document.getElementById('display-name').textContent = name;
+    document.getElementById('display-id').textContent = ci;
+    document.getElementById('display-date').textContent = getDate();
+    
+    renderSection1();
+    renderSection2();
+    renderSection3();
+    renderSection4();
+    
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        finalizarExamen();
+        return;
+    }
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    
+    if (timeLeft < 300) {
+        document.getElementById('timer').classList.add('text-red-600', 'animate-pulse');
+    }
+}
+
+function calcularPuntaje() {
+    let score = 0;
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q1_${i}"]:checked`);
+        if (selected) score++;
+    }
+    for (let i = 0; i < 5; i++) {
+        const selected = document.querySelector(`input[name="q2_${i}"]:checked`);
+        if (selected && selected.value === examData.section2[i].answer) score++;
+    }
+    for (let i = 0; i < 5; i++) {
+        const text = document.querySelector(`textarea[name="q3_${i}"]`)?.value?.trim();
+        if (text && text.length > 10) score++;
+    }
+    for (let i = 0; i < 2; i++) {
+        const text = document.querySelector(`textarea[name="q4_${i}"]`)?.value?.trim();
+        if (text && text.length > 20) score += 2.5;
+    }
+    return Math.min(score, 20);
+}
+
+function finalizarExamen() {
+    clearInterval(timerInterval);
+    
+    const score = calcularPuntaje();
+    const percent = ((score / 20) * 100).toFixed(0);
+    
+    document.getElementById('res-name').textContent = currentStudent.name;
+    document.getElementById('res-id').textContent = currentStudent.ci;
+    document.getElementById('res-date').textContent = `${getDate()} ${getTime()}`;
+    document.getElementById('res-score').textContent = score;
+    document.getElementById('res-percent').textContent = percent;
+    
+    document.getElementById('result-modal').classList.remove('hidden');
+    
+    if (!currentStudent.isTest) {
+        guardarResultado(score);
+    } else {
+        alert('Examen de prueba completado. Nota: ' + score + '/20');
+    }
+}
+
+function guardarResultado(score) {
+    const result = {
+        name: currentStudent.name,
+        ci: currentStudent.ci,
+        score: score,
+        date: getDate(),
+        time: getTime(),
+        datetime: new Date().toISOString(),
+        device: getDevice(),
+        userAgent: navigator.userAgent.substring(0, 100)
+    };
+    
+    let allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const existing = allResults.findIndex(r => r.ci === currentStudent.ci);
+    if (existing >= 0) {
+        allResults[existing] = result;
+    } else {
+        allResults.push(result);
+    }
+    
+    localStorage.setItem('examResults', JSON.stringify(allResults));
+}
+
+function descargarActa() {
+    const element = document.getElementById('acta-content');
+    html2canvas(element, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+        const link = document.createElement('a');
+        const parts = currentStudent.name.split(' ');
+        link.download = `Acta_${currentStudent.ci}_${parts[0] || 'Alumno'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+
+function showTeacherPanel() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('teacher-panel').classList.remove('hidden');
+    cargarDatosProfesor();
+}
+
+function cargarDatosProfesor() {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    document.getElementById('total-count').textContent = allResults.length;
+    
+    const avg = allResults.length > 0 
+        ? (allResults.reduce((sum, r) => sum + r.score, 0) / allResults.length).toFixed(1)
+        : '-';
+    document.getElementById('avg-score').textContent = avg;
+    
+    let html = '';
+    if (allResults.length === 0) {
+        html = '<p class="text-gray-400 text-center py-4">No hay exámenes entregados aún</p>';
+    } else {
+        allResults.sort((a, b) => new Date(b.datetime) - new Date(a.datetime)).forEach((r, i) => {
+            const percent = ((r.score / 20) * 100).toFixed(0);
+            html += `
+                <div class="bg-white p-2 rounded border cursor-pointer hover:bg-green-50" onclick="verDetalleExamen('${r.ci}')">
+                    <p class="font-bold text-xs">${r.name}</p>
+                    <p class="text-xs text-gray-500">C.I. ${r.ci} | Nota: ${r.score}/20 (${percent}%)</p>
+                    <p class="text-xs text-gray-400">${r.date} ${r.time}</p>
+                </div>
+            `;
+        });
+    }
+    document.getElementById('students-list').innerHTML = html;
+}
+
+function verDetalleExamen(ci) {
+    const allResults = JSON.parse(localStorage.getItem('examResults') || '[]');
+    const r = allResults.find(x => x.ci === ci);
+    
+    if (!r) return;
+    
+    document.getElementById('exam-detail').innerHTML = `
+        <div class="space-y-3 text-sm">
+            <div class="grid grid-cols-2 gap-2">
+                <div><strong>Nombre:</strong> ${r.name}</div>
+                <div><strong>C.I.:</strong> ${r.ci}</div>
+                <div><strong>Fecha:</strong> ${r.date}</div>
+                <div><strong>Hora:</strong> ${r.time}</div>
+            </div>
+            <div class="bg-green-50 p-3 rounded-lg border">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><strong>Puntaje:</strong> <span class="text-green-600 font-bold text-lg">${r.score}/20</span></div>
+                    <div><strong>Porcentaje:</strong> <span class="text-green-600 font-bold text-lg">${((r.score/20)*100).toFixed(0)}%</span></div>
+                </div>
+            </div>
+            <div class="border-t pt-2 mt-2">
+                <p class="font-bold text-xs text-gray-500 uppercase mb-1">Información Técnica</p>
+                <div class="grid grid-cols-2 gap-1 text-xs">
+                    <div><strong>Dispositivo:</strong> ${r.device || 'N/A'}</div>
+                    <div><strong>Navegador:</strong> ${r.userAgent ? r.userAgent.substring(0, 30) + '...' : 'N/A'}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function actualizarPanel() {
+    cargarDatosProfesor();
+}
+
+console.log('Examen Sociología Centuria v3 - Listo');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjetas Integradoras (1-6) - Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --color-primary: #dc2626;
+            --color-secondary: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .font-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 500px;
+            height: 320px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .card-front {
+            background-color: white;
+            color: var(--color-secondary);
+        }
+
+        .card-back {
+            background-color: var(--color-primary);
+            color: white;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <header class="max-w-4xl mx-auto mb-10 text-center border-b-2 pb-6 border-red-600">
+        <div class="font-bold text-3xl tracking-tighter mb-1 font-title text-gray-800">
+            INSTITUTO SUPERIOR <span class="text-red-600">CENTURIA</span>
+        </div>
+        <h2 class="text-xl font-bold uppercase text-red-600">Guía de Repaso Final: Unidades 1 a 6</h2>
+        <p class="text-sm text-gray-500 italic">Preparación Integral para el Segundo Parcial y Examen Final</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+
+        <!-- Flashcard Interface -->
+        <div class="flex flex-col items-center mb-12">
+            <div id="card-counter" class="mb-4 text-sm font-bold text-gray-400 uppercase tracking-widest">Tarjeta 1 de
+                30</div>
+
+            <div class="card-container" id="flashcard" onclick="this.classList.toggle('flipped')">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <p id="question-text" class="text-xl font-bold">Cargando...</p>
+                    </div>
+                    <div class="card-back">
+                        <p id="answer-text" class="text-lg">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button onclick="prevCard()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button onclick="nextCard()"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-8 rounded-full shadow-lg transition">
+                    Siguiente <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i class="fas fa-file-export text-red-500"></i> Exportar para Google Sheets
+            </h3>
+            <button onclick="copyToClipboard()"
+                class="w-full bg-gray-800 text-white p-3 rounded-lg hover:bg-black transition font-bold text-sm mb-4">
+                <i class="fas fa-copy mr-2"></i> Copiar contenido completo (Tabulado)
+            </button>
+            <textarea id="data-preview" readonly
+                class="w-full h-32 p-3 text-[10px] font-mono bg-gray-50 border rounded-lg text-gray-500"></textarea>
+        </section>
+
+        <div class="text-center no-print">
+            <a href="../index.html" class="text-gray-400 hover:text-red-600 text-sm font-bold transition">
+                <i class="fas fa-home mr-1"></i> Volver al Dashboard
+            </a>
+        </div>
+    </main>
+
+    <script>
+        const cardsData = [
+            // U1 & U2
+            { q: "¿Quién propuso la 'Ley de los Tres Estados'?", a: "Augusto Comte (Teológico, Metafísico y Positivo)." },
+            { q: "¿Qué es la 'Incrustación Social' (Embeddedness)?", a: "La idea de que las transacciones económicas dependen de redes de confianza y lazos sociales." },
+            { q: "¿Qué autor estudia la 'Acción Social' y el método 'Verstehen'?", a: "Max Weber." },
+            { q: "¿En qué se diferencia el Homo Economicus del Sociologicus?", a: "El primero es una calculadora racional aislada; el segundo actúa movido por normas, estatus y valores." },
+            // U3
+            { q: "¿Qué es la Socialización Primaria?", a: "Internalización de normas básicas en la familia durante la niñez." },
+            { q: "¿Qué es el Etnocentrismo?", a: "Juzgar otras culturas bajo los estándares de la propia, asumiendo superioridad." },
+            { q: "¿Cuál es la diferencia entre cultura material e inmaterial?", a: "Material: objetos y tecnología. Inmaterial: valores, símbolos, normas y leyes." },
+            // U4
+            { q: "¿Qué es la Solidaridad Mecánica (Durkheim)?", a: "Cohesión por similitud, típica de sociedades tradicionales con poca división del trabajo." },
+            { q: "¿Qué es la Solidaridad Orgánica?", a: "Cohesión por interdependencia funcional, típica de sociedades modernas especializadas." },
+            { q: "¿Qué caracteriza a un Grupo Primario?", a: "Relaciones afectivas, íntimas y cara a cara (ej. la familia)." },
+            { q: "¿Qué es un Grupo Secundario?", a: "Relaciones formales, impersonales y utilitarias (ej. una empresa o sindicato)." },
+            { q: "¿En qué consiste la Anomia?", a: "Estado de confusión o falta de normas claras que regulen la conducta social." },
+            // U5
+            { q: "¿Qué es la 'Agencia Humana'?", a: "La capacidad de los individuos para tomar decisiones libres frente a las presiones del entorno." },
+            { q: "¿Qué significa el concepto de 'Mala Fe' en Sartre?", a: "Autoengaño para evadir la responsabilidad moral diciendo 'solo seguía órdenes' o 'el sistema me obligó'." },
+            { q: "¿Qué es la Libertad Negativa?", a: "La ausencia de interferencia u obstáculos externos para actuar ('Libertad de...')." },
+            { q: "¿Qué es la Libertad Positiva?", a: "La capacidad real de autodeterminación y cumplimiento de un proyecto de vida ('Libertad para...')." },
+            { q: "¿Qué condición social es vital para el mercado en la U5?", a: "La Seguridad Jurídica: normas claras y aplicadas equitativamente." },
+            // U6
+            { q: "¿Qué es la Estratificación Social?", a: "División de la sociedad en capas jerárquicas con desigual acceso a recursos y poder." },
+            { q: "¿Qué es la Movilidad Social?", a: "Capacidad de ascender o descender de clase social por mérito o educación." },
+            { q: "¿Cuál es el motor del cambio para Karl Marx?", a: "La lucha de clases y el conflicto por los medios de producción." },
+            { q: "¿Qué es la Modernización?", a: "Transición de sociedades tradicionales a industriales, tecnológicas y burocráticas." },
+            { q: "¿Qué impacto tiene la Globalización en las fronteras?", a: "Genera interdependencia mundial y exige mayor relativismo cultural." },
+            { q: "¿Por qué surge la 'Resistencia al Cambio'?", a: "Por intereses creados (quienes se benefician del atraso) o inercia de la cultura antigua." },
+            // General
+            { q: "¿Qué estudia la Dinámica Social según Comte?", a: "El progreso y las leyes del cambio en la sociedad." },
+            { q: "¿Qué es el Capital Social?", a: "Recursos y favores obtenidos mediante redes de contactos y confianza." },
+            { q: "¿Qué autor analizó la Burocracia como forma racional?", a: "Max Weber." },
+            { q: "¿Qué es una Institución Social?", a: "Pautas estables de comportamiento que regulan la vida social (ej. el Estado)." },
+            { q: "¿Qué es el Relativismo Cultural?", a: "Comprender una cultura ajena desde sus propios términos, sin juzgarla." },
+            { q: "¿Qué es un Hecho Social (Durkheim)?", a: "Formas de actuar externas y coercitivas al individuo." },
+            { q: "¿Qué es la Socialización Secundaria?", a: "Aprendizaje de roles en instituciones específicas (ej. la universidad o el trabajo)." }
+        ];
+
+        let currentIndex = 0;
+        const cardElement = document.getElementById('flashcard');
+        const qText = document.getElementById('question-text');
+        const aText = document.getElementById('answer-text');
+        const counterText = document.getElementById('card-counter');
+        const previewText = document.getElementById('data-preview');
+
+        function updateCard() {
+            cardElement.classList.remove('flipped');
+            setTimeout(() => {
+                qText.textContent = cardsData[currentIndex].q;
+                aText.textContent = cardsData[currentIndex].a;
+                counterText.textContent = `Tarjeta ${currentIndex + 1} de ${cardsData.length}`;
+            }, 150);
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % cardsData.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + cardsData.length) % cardsData.length;
+            updateCard();
+        }
+
+        function initData() {
+            let text = "PREGUNTA\tRESPUESTA\n";
+            cardsData.forEach(c => { text += `${c.q}\t${c.a}\n`; });
+            previewText.value = text;
+        }
+
+        function copyToClipboard() {
+            previewText.select();
+            document.execCommand('copy');
+            alert('¡Copiado! Pégalo en Google Sheets para crear tu cuestionario.');
+        }
+
+        updateCard();
+        initData();
+    </script>
+</body>
+
+</html>

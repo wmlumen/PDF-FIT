@@ -1,0 +1,59 @@
+# ============================================
+# GITIGNORE - CENTURIA ASISTENCIA
+# ============================================
+# Este archivo define qué NO se sube a GitHub.
+# El alma del proyecto (datos, credenciales, config) se maneja LOCALMENTE.
+
+# Dependencias
+node_modules/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno (credenciales, URLs, API keys)
+.env
+.env.local
+.env.*.local
+
+# ============================================
+# DATOS SENSIBLES - NUNCA SUBIR A GITHUB
+# ============================================
+
+# Configuración con credenciales reales
+public/Datos_asistencia.txt
+public/*.txt
+!public/Datos_Generales.txt
+!public/*.txt.example
+
+# Base de datos local
+/database/data/
+/database/*.json
+/database/*.csv
+/database/*.sql
+/database/*.dump
+/database/*.backup
+
+# Exports y respaldos
+*.sql.dump
+*.backup
+*.dump
+/exports/
+/backups/
+
+# Archivos de configuración local
+*.local
+*.local.js
+*.local.json
+
+# ============================================
+# ARCHIVOS DE EJEMPLO (SI se suben)
+# ============================================
+# Los archivos .example SÍ se suben como plantillas:
+# - public/Datos_asistencia.txt.example
+# - database/.env.example
+# Estos NO tienen datos reales, solo la estructura.

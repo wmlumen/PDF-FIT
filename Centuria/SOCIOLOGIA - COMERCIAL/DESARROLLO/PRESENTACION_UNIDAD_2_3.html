@@ -1,0 +1,417 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Unidades 2 y 3 - Sociología Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --color-primary: #28a745;
+            --color-secondary: #1e1e1e;
+            --font-title: 'Playfair Display', serif;
+            --font-body: 'Open Sans', sans-serif;
+        }
+
+        body { font-family: var(--font-body); background-color: #f8fafc; color: #1e293b; overflow: hidden; margin: 0; padding: 0; }
+        h1, h2, h3, h4, .font-title { font-family: var(--font-title); color: var(--color-secondary); }
+        
+        .text-primary { color: var(--color-primary); }
+        .bg-primary { background-color: var(--color-primary); }
+        .text-secondary { color: var(--color-secondary); }
+        .bg-secondary { background-color: var(--color-secondary); }
+
+        #presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .btn-control {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-control:hover {
+            transform: scale(1.1);
+            background-color: #218838;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: var(--color-primary);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .logo-watermark {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="presentation-container">
+        <div class="progress-bar" id="progress-bar"></div>
+        <div class="logo-watermark">CENTURIA | Sociología</div>
+
+        <!-- Slide 1: Portada -->
+        <div class="slide active text-center">
+            <div class="text-6xl text-primary mb-4"><i class="fas fa-university"></i></div>
+            <h1 class="text-5xl font-bold mb-4">Sociología Aplicada</h1>
+            <h2 class="text-2xl text-gray-600 mb-8">Unidades 2 y 3: Economía, Conducta y Cultura</h2>
+            <div class="w-24 h-1 bg-primary mx-auto mb-8"></div>
+            <p class="text-lg text-gray-500 font-semibold">Ingeniería Comercial y Contabilidad</p>
+            <p class="text-sm text-gray-400 mt-2">Use las flechas del teclado para navegar</p>
+        </div>
+
+        <!-- Slide 2: Índice -->
+        <div class="slide">
+            <h2 class="text-4xl font-bold mb-10 border-b-4 border-primary pb-2 inline-block">Agenda de la Sesión</h2>
+            <div class="grid grid-cols-2 gap-12 w-full max-w-4xl">
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary">
+                    <h3 class="text-2xl font-bold mb-4 text-secondary"><i class="fas fa-chart-pie text-primary mr-2"></i> Unidad 2</h3>
+                    <ul class="space-y-3 text-lg text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>La Economía como fenómeno social</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Sociología vs. Economía</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>La Incrustación Social</li>
+                        <li><i class="fas fa-users text-blue-500 mr-2"></i>Debate y Caso Práctico 1</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-secondary">
+                    <h3 class="text-2xl font-bold mb-4 text-secondary"><i class="fas fa-globe text-primary mr-2"></i> Unidad 3</h3>
+                    <ul class="space-y-3 text-lg text-gray-700">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>La Acción Social</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Dimensiones de la Cultura</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Procesos de Socialización</li>
+                        <li><i class="fas fa-users text-blue-500 mr-2"></i>Actividad Integradora Final</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Intro Unidad 2 -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">El Mercado no es un ente aislado</h2>
+            <div class="bg-white p-8 rounded-lg shadow-md border-l-8 border-primary max-w-4xl">
+                <p class="text-2xl text-gray-700 italic leading-relaxed mb-6">
+                    "La economía asume que las decisiones de compra y venta ocurren en un vacío matemático. La sociología demuestra que ocurren en un mundo lleno de poder, estatus, normas y relaciones personales."
+                </p>
+                <ul class="list-disc ml-8 text-lg text-gray-600 space-y-2">
+                    <li>El mercado laboral es una <strong>estructura social</strong>.</li>
+                    <li>Los precios están influenciados por el <strong>estatus</strong> (Efecto Veblen).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Unidad 2 - Homo Economicus vs Sociologicus -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Paradigmas del Comportamiento</h2>
+            <div class="grid grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center">
+                    <i class="fas fa-robot text-5xl text-gray-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-secondary mb-4">Homo Economicus</h3>
+                    <p class="text-gray-600">Modelo clásico: El individuo es una calculadora aislada. Toma decisiones puramente racionales buscando siempre el máximo beneficio al menor costo.</p>
+                </div>
+                <div class="bg-green-50 p-8 rounded-lg border border-green-200 text-center shadow-md">
+                    <i class="fas fa-users text-5xl text-primary mb-4"></i>
+                    <h3 class="text-2xl font-bold text-primary mb-4">Homo Sociologicus</h3>
+                    <p class="text-gray-600">Modelo sociológico: Las decisiones están influenciadas por normas, valores, presión de grupo y confianza. <em>La racionalidad está limitada por la cultura.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: DEBATE -->
+        <div class="slide bg-gray-50">
+            <div class="absolute top-10 right-10 bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-bold text-sm"><i class="fas fa-comments mr-2"></i>DEBATE ABIERTO</div>
+            <i class="fas fa-bullhorn text-6xl text-blue-500 mb-6"></i>
+            <h2 class="text-4xl font-bold mb-8 text-center text-secondary">¿Somos 100% Racionales?</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow border border-blue-200">
+                <p class="text-xl text-gray-700 mb-6">Si el ser humano siempre busca maximizar su beneficio (Homo Economicus):</p>
+                <ul class="space-y-4 text-lg text-gray-600 font-semibold">
+                    <li><i class="fas fa-question-circle text-primary mr-2"></i> ¿Por qué la gente compra un iPhone que cuesta el triple que un Android con las mismas funciones?</li>
+                    <li><i class="fas fa-question-circle text-primary mr-2"></i> ¿Por qué un empresario prefiere hacer negocios con un proveedor conocido aunque sea 5% más caro que uno nuevo?</li>
+                </ul>
+                <div class="mt-8 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 italic">
+                    <strong>Tiempo de discusión:</strong> 10 minutos.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Unidad 2 - Incrustación -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-green-100 text-green-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 2</div>
+            <h2 class="text-4xl font-bold mb-6 text-center">La Incrustación Social (Embeddedness)</h2>
+            <p class="text-xl text-center text-gray-600 mb-10 max-w-3xl">La economía no flota en el vacío; está incrustada (sumergida) en estructuras sociales previas.</p>
+            
+            <div class="flex items-center justify-center gap-12 w-full max-w-5xl">
+                <div class="w-1/3 text-center">
+                    <div class="w-32 h-32 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-white text-4xl">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h4 class="font-bold text-xl">Capital Social</h4>
+                    <p class="text-sm text-gray-500 mt-2">Las redes de confianza y reciprocidad son esenciales para firmar contratos y hacer negocios seguros.</p>
+                </div>
+                <div class="w-1/3 text-center">
+                    <div class="w-32 h-32 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-white text-4xl">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4 class="font-bold text-xl">Instituciones</h4>
+                    <p class="text-sm text-gray-500 mt-2">La seguridad jurídica, las normas comerciales y la información contable confiable garantizan que el mercado no colapse en caos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: CASO PRÁCTICO 1 -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-sm"><i class="fas fa-users-cog mr-2"></i>TRABAJO GRUPAL</div>
+            <h2 class="text-4xl font-bold mb-6 text-center text-orange-600">Caso 1: La Oferta Rechazada</h2>
+            <div class="w-full max-w-5xl bg-white p-8 rounded-xl shadow-lg border-2 border-orange-200">
+                <p class="text-lg text-gray-700 mb-6 text-justify">
+                    Una empresa comercial contrata a un economista para negociar tarifas con una cooperativa de proveedores locales. El economista presenta una propuesta matemática perfecta que garantiza mayores ganancias para ambos. Sin embargo, no cultiva vínculos de confianza, exige todo por escrito inmediatamente y desconoce los códigos de trato del grupo. Los proveedores rechazan la oferta y firman con una empresa rival que paga menos, pero cuyo gerente es "conocido del pueblo".
+                </p>
+                <div class="bg-gray-50 p-6 rounded border">
+                    <h4 class="font-bold text-xl mb-4">Preguntas de Resolución (15 min):</h4>
+                    <ol class="list-decimal ml-6 space-y-2 text-gray-700">
+                        <li>Expliquen el fracaso utilizando el concepto de "Capital Social" e "Incrustación".</li>
+                        <li>¿Qué modelo mental utilizó el economista (Economicus o Sociologicus)?</li>
+                        <li>¿Qué acciones específicas debió tomar para salvar el negocio?</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: BREAK -->
+        <div class="slide bg-secondary text-white text-center">
+            <i class="fas fa-coffee text-8xl text-primary mb-6 animate-pulse"></i>
+            <h2 class="text-5xl font-bold mb-4 font-title">Pausa Activa</h2>
+            <p class="text-2xl text-gray-300">Regresamos en 15 minutos para la Unidad 3.</p>
+            <div class="mt-12 text-gray-400 italic">
+                "La mente que se abre a una nueva idea, jamás volverá a su tamaño original." - A. Einstein
+            </div>
+        </div>
+
+        <!-- Slide 9: Unidad 3 - Acción Social -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-gray-200 text-gray-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center">La Acción Social (Max Weber)</h2>
+            <p class="text-xl text-center text-gray-600 mb-10 max-w-4xl">Toda conducta humana que tiene un <strong>sentido subjetivo</strong> y está orientada hacia la conducta de otros. <em>No todo lo que hacemos es acción social (ej. un reflejo biológico).</em></p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl">
+                <div class="bg-white p-6 rounded border-l-4 border-primary shadow">
+                    <h4 class="font-bold text-lg mb-2"><i class="fas fa-bullseye text-primary mr-2"></i>Racional c/ Fines</h4>
+                    <p class="text-sm text-gray-600">Calcula medios para alcanzar un objetivo.</p>
+                    <div class="mt-4 p-2 bg-gray-50 text-xs italic rounded">Ej: Implementar un software para bajar costos.</div>
+                </div>
+                <div class="bg-white p-6 rounded border-l-4 border-purple-500 shadow">
+                    <h4 class="font-bold text-lg mb-2"><i class="fas fa-balance-scale text-purple-500 mr-2"></i>Racional c/ Valores</h4>
+                    <p class="text-sm text-gray-600">Actuar por convicción ética o religiosa, sin importar el costo.</p>
+                    <div class="mt-4 p-2 bg-gray-50 text-xs italic rounded">Ej: Rechazar un soborno para alterar un balance por ética.</div>
+                </div>
+                <div class="bg-white p-6 rounded border-l-4 border-blue-500 shadow">
+                    <h4 class="font-bold text-lg mb-2"><i class="fas fa-heart text-blue-500 mr-2"></i>Afectiva</h4>
+                    <p class="text-sm text-gray-600">Dictada por emociones o estados sentimentales.</p>
+                    <div class="mt-4 p-2 bg-gray-50 text-xs italic rounded">Ej: Contratar a un familiar por cariño.</div>
+                </div>
+                <div class="bg-white p-6 rounded border-l-4 border-orange-500 shadow">
+                    <h4 class="font-bold text-lg mb-2"><i class="fas fa-landmark text-orange-500 mr-2"></i>Tradicional</h4>
+                    <p class="text-sm text-gray-600">Dictada por costumbres arraigadas.</p>
+                    <div class="mt-4 p-2 bg-gray-50 text-xs italic rounded">Ej: "Siempre se ha hecho así en esta empresa".</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Dimensiones de la Cultura -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-gray-200 text-gray-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Las Dimensiones de la Cultura</h2>
+            
+            <div class="grid grid-cols-2 gap-10 w-full max-w-5xl">
+                <div class="bg-white p-8 rounded-xl shadow border-t-8 border-primary">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">Cultura Material</h3>
+                    <p class="text-gray-600 mb-4">Creaciones físicas y tangibles de una sociedad que reflejan su tecnología y adaptación al entorno.</p>
+                    <ul class="list-disc ml-5 text-gray-700">
+                        <li>Infraestructura portuaria.</li>
+                        <li>Herramientas y maquinaria.</li>
+                        <li>Sistemas informáticos (Software visible).</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow border-t-8 border-secondary">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">Cultura Inmaterial</h3>
+                    <p class="text-gray-600 mb-4">Creaciones intangibles. Es el verdadero "código de programación" de la conducta humana.</p>
+                    <ul class="list-disc ml-5 text-gray-700">
+                        <li>Valores éticos y morales.</li>
+                        <li>Leyes y normas de etiqueta.</li>
+                        <li>Símbolos, lenguaje y creencias.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Etnocentrismo -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-gray-200 text-gray-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-8 text-center text-red-700">Etnocentrismo vs Relativismo</h2>
+            <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
+                <div class="mb-8 border-b pb-6">
+                    <h3 class="text-2xl font-bold text-red-600 mb-2"><i class="fas fa-times-circle mr-2"></i>Etnocentrismo</h3>
+                    <p class="text-gray-700">Juzgar a otras culturas utilizando los estándares y valores de la propia cultura, asumiendo que la nuestra es la "correcta" o "superior". <em>(Grave error en negocios internacionales)</em>.</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-2"><i class="fas fa-check-circle mr-2"></i>Relativismo Cultural</h3>
+                    <p class="text-gray-700">Comprender las prácticas de otra cultura desde sus propios términos y contexto, sin juzgarlas como "buenas o malas" desde nuestra perspectiva.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Unidad 3 - Cultura y Socialización -->
+        <div class="slide">
+            <div class="absolute top-10 right-10 bg-gray-200 text-gray-800 px-4 py-1 rounded-full font-bold text-sm">UNIDAD 3</div>
+            <h2 class="text-4xl font-bold mb-10 text-center">Cultura y Socialización</h2>
+            
+            <div class="flex flex-col gap-6 w-full max-w-4xl">
+                <div class="bg-green-50 border border-green-200 p-6 rounded-lg flex items-center gap-6">
+                    <div class="bg-primary text-white w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold flex-shrink-0">1</div>
+                    <div>
+                        <h3 class="font-bold text-xl text-primary mb-1">Socialización Primaria (Niñez)</h3>
+                        <p class="text-gray-700 text-sm">Ocurre en la familia. Se internaliza el lenguaje, la identidad básica y los cimientos de la moralidad.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg flex items-center gap-6">
+                    <div class="bg-secondary text-white w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold flex-shrink-0">2</div>
+                    <div>
+                        <h3 class="font-bold text-xl text-secondary mb-1">Socialización Secundaria (Adultez/Trabajo)</h3>
+                        <p class="text-gray-700 text-sm">Incorporación a sub-mundos institucionales. Ej: Aprender la "cultura inmaterial" (reglas y jerarquías) al entrar a trabajar en empresas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: ACTIVIDAD INTEGRADORA -->
+        <div class="slide bg-green-50">
+            <div class="absolute top-10 right-10 bg-green-200 text-green-800 px-4 py-1 rounded-full font-bold text-sm"><i class="fas fa-flag-checkered mr-2"></i>PROYECTO DE CLASE</div>
+            <h2 class="text-4xl font-bold mb-6 text-center text-primary">Diseñando la "Socialización Organizacional"</h2>
+            <div class="w-full max-w-5xl bg-white p-8 rounded-xl shadow-lg border border-green-200">
+                <p class="text-gray-700 mb-6 text-lg">
+                    Imagina que te nombran gerente de una nueva empresa comercial o estudio contable. Tu objetivo es que los nuevos empleados adquieran los valores de <strong>Transparencia, Eficiencia y Cero Corrupción</strong>.
+                </p>
+                <h4 class="font-bold text-xl mb-4 text-secondary">Instrucciones (Grupos de 4 - 20 minutos):</h4>
+                <ol class="list-decimal ml-6 space-y-3 text-gray-700 mb-6">
+                    <li>Definan 2 elementos de la <strong>Cultura Material</strong> que implementarán para fomentar esto (Ej. Oficinas de vidrio, software de auditoría).</li>
+                    <li>Definan 2 elementos de la <strong>Cultura Inmaterial</strong> (Ej. Un lema, códigos de conducta, rituales de premio).</li>
+                    <li>Diseñen 1 acción específica de <strong>Socialización Secundaria</strong> para el primer día de trabajo del nuevo empleado.</li>
+                </ol>
+                <div class="text-center">
+                    <i class="fas fa-clock text-2xl text-gray-400"></i> Preparar para exponer al resto de la clase.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Cierre Profesional -->
+        <div class="slide text-center bg-secondary text-white">
+            <i class="fas fa-lightbulb text-6xl text-primary mb-6"></i>
+            <h2 class="text-4xl font-bold mb-6 font-title">Síntesis para el Perfil Centuria</h2>
+            <p class="text-xl max-w-3xl mx-auto leading-relaxed font-light mb-8">
+                Los negocios, empresas y mercados no funcionan con robots, sino con personas socializadas. Comprender la <strong class="text-primary">cultura inmaterial</strong> (valores) de un mercado y construir <strong class="text-primary">capital social</strong> (confianza) te convierte en un líder estratégico, evitando caer en la trampa del etnocentrismo.
+            </p>
+            <div class="bg-white/10 p-4 rounded-lg inline-block">
+                <p class="text-sm font-bold tracking-widest uppercase"><i class="fas fa-question-circle mr-2 text-primary"></i>¿Preguntas o debates?</p>
+            </div>
+        </div>
+
+        <!-- Controles de Navegación -->
+        <div class="controls">
+            <button class="btn-control" id="prev-btn" onclick="cambiarSlide(-1)" title="Anterior"><i class="fas fa-chevron-left"></i></button>
+            <button class="btn-control" id="next-btn" onclick="cambiarSlide(1)" title="Siguiente"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progress-bar');
+
+        function actualizarProgreso() {
+            const porcentaje = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = porcentaje + '%';
+        }
+
+        function cambiarSlide(direccion) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += direccion;
+            
+            // Ciclo infinito (opcional) o bloquear en extremos
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            if (currentSlide < 0) currentSlide = 0;
+            
+            slides[currentSlide].classList.add('active');
+            actualizarProgreso();
+        }
+
+        // Navegación por teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') cambiarSlide(1);
+            if (e.key === 'ArrowLeft') cambiarSlide(-1);
+        });
+
+        // Inicializar
+        actualizarProgreso();
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentos del Docente — Campus Virtual Centuria</title>
+    <style>
+        :root { --verde:#007A33; --verde-light:#00B140; --verde-claro:#E6F4EA; --dorado:#C5A55A; --oscuro:#2D2D2D; }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0f9ff 100%); min-height:100vh; color:var(--oscuro); }
+
+        .top-bar { background:linear-gradient(135deg,#003d19,#007A33);padding:12px 30px;display:flex;align-items:center;justify-content:space-between; }
+        .top-bar h1 { color:#fff;font-size:14px;font-weight:600;letter-spacing:1px;margin:0; }
+        .top-bar p { color:rgba(255,255,255,.6);font-size:10px;margin:0;letter-spacing:1px; }
+        .top-bar a { color:#fff;text-decoration:none;background:rgba(255,255,255,.12);padding:6px 14px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:6px;transition:.2s; }
+        .top-bar a:hover { background:rgba(255,255,255,.2); }
+
+        .container { max-width:1100px;margin:30px auto;padding:0 20px; }
+
+        .page-header { text-align:center;margin-bottom:36px; }
+        .page-header h2 { font-size:1.6rem;font-weight:700;color:var(--verde);letter-spacing:1px; }
+        .page-header p { font-size:.82rem;color:#666;margin-top:6px; }
+
+        /* Selector de programa */
+        .program-selector { display:flex;gap:8px;justify-content:center;margin-bottom:30px;flex-wrap:wrap; }
+        .prog-btn { padding:10px 22px;border-radius:12px;border:2px solid #e0e0e0;background:#fff;font-family:'Segoe UI',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;transition:.25s;display:flex;align-items:center;gap:8px; }
+        .prog-btn:hover { border-color:var(--verde-light);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,177,64,.15); }
+        .prog-btn.active { background:var(--verde);color:#fff;border-color:var(--verde);box-shadow:0 4px 16px rgba(0,122,51,.3); }
+
+        /* Cards de documentos */
+        .doc-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:40px; }
+        .doc-card { background:#fff;border-radius:16px;border:1px solid #e8e8e8;padding:24px 20px;text-decoration:none;color:var(--oscuro);transition:.3s;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;cursor:pointer; }
+        .doc-card:hover { transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.08);border-color:var(--verde-light); }
+        .doc-card .icon-wrap { width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.5rem; }
+        .doc-card h3 { font-size:.88rem;font-weight:700; }
+        .doc-card p { font-size:.7rem;color:#888;line-height:1.4; }
+        .doc-card .badge { font-size:.55rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px; }
+
+        .icon-acta { background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626; }
+        .icon-plan { background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#2563eb; }
+        .icon-planilla { background:linear-gradient(135deg,#d1fae5,#a7f3d0);color:#059669; }
+        .icon-registro { background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706; }
+
+        .info-box { background:#fff;border-radius:16px;border:1px solid #e8e8e8;padding:20px 24px;margin-top:20px; }
+        .info-box h4 { font-size:.82rem;font-weight:700;color:var(--verde);margin-bottom:8px; }
+        .info-box p { font-size:.72rem;color:#666;line-height:1.6; }
+        .info-box ul { font-size:.72rem;color:#666;padding-left:18px; }
+        .info-box li { margin-bottom:4px; }
+
+        @media(max-width:640px) { .doc-grid { grid-template-columns:1fr; } .prog-btn { padding:8px 14px;font-size:.72rem; } }
+    </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <div style="display:flex;align-items:center;gap:12px;">
+        <div>
+            <h1>Documentos del Docente</h1>
+            <p>Formatos oficiales descargables</p>
+        </div>
+    </div>
+    <a href="teacher_panel.html">Volver al Panel</a>
+</div>
+
+<div class="container">
+    <div class="page-header">
+        <h2>Formatos Oficiales</h2>
+        <p>Seleccione el programa académico y el documento que desea generar</p>
+    </div>
+
+    <!-- Selector de programa -->
+    <div class="program-selector">
+        <button class="prog-btn active" onclick="selectProgram('grado', this)">Grado</button>
+        <button class="prog-btn" onclick="selectProgram('especializacion', this)">Especialización</button>
+        <button class="prog-btn" onclick="selectProgram('maestria', this)">Maestría</button>
+        <button class="prog-btn" onclick="selectProgram('doctorado', this)">Doctorado</button>
+    </div>
+
+    <!-- Documentos -->
+    <div class="doc-grid">
+        <div class="doc-card" onclick="openDoc('acta')">
+            <div class="icon-wrap icon-acta">ACTA</div>
+            <h3>ACTA de Calificaciones</h3>
+            <p>Acta oficial con legalización de calificaciones finales por estudiante</p>
+            <span class="badge" style="background:#fee2e2;color:#dc2626;">OFICIAL</span>
+        </div>
+        <div class="doc-card" onclick="openDoc('plan_clases')">
+            <div class="icon-wrap icon-plan">PLAN</div>
+            <h3>Plan de Clases Modular</h3>
+            <p>Plan semanal con objetivos, contenidos, estrategias y medios auxiliares</p>
+            <span class="badge" style="background:#dbeafe;color:#2563eb;">ACADÉMICO</span>
+        </div>
+        <div class="doc-card" onclick="openDoc('planilla')">
+            <div class="icon-wrap icon-planilla">CAL</div>
+            <h3>Planilla de Calificaciones</h3>
+            <p>TP1-TP4, Asistencia, Trabajo Final y calificación final</p>
+            <span class="badge" style="background:#d1fae5;color:#059669;">CONTROL</span>
+        </div>
+        <div class="doc-card" onclick="openDoc('registro_clases')">
+            <div class="icon-wrap icon-registro">REG</div>
+            <h3>Registro de Clases</h3>
+            <p>Control de asistencia docente y temas desarrollados por clase</p>
+            <span class="badge" style="background:#fef3c7;color:#d97706;">SEGUIMIENTO</span>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="info-box">
+        <h4>Instrucciones de uso</h4>
+        <ul>
+            <li>Seleccione el <strong>programa académico</strong> (Grado, Especialización, Maestría o Doctorado).</li>
+            <li>Haga clic en el documento que desea generar.</li>
+            <li>Complete los datos en el <strong>panel de edición</strong> (lado izquierdo).</li>
+            <li>El documento se actualiza en tiempo real (lado derecho).</li>
+            <li>Presione <strong>"Imprimir / Guardar PDF"</strong> para descargar el documento final.</li>
+            <li>Solo los roles <strong>Docente</strong> y <strong>Académico</strong> pueden acceder a estos formatos.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let currentProgram = 'grado';
+const programNames = {
+    grado: 'LICENCIATURA / INGENIERÍA',
+    especializacion: 'ESPECIALIZACIÓN',
+    maestria: 'MAESTRÍA EN ADMINISTRACIÓN Y GESTIÓN PÚBLICA',
+    doctorado: 'DOCTORADO'
+};
+const programAreas = {
+    grado: 'CIENCIAS EMPRESARIALES',
+    especializacion: 'CIENCIAS EMPRESARIALES',
+    maestria: 'ADMINISTRACIÓN Y GESTIÓN PÚBLICA',
+    doctorado: 'CIENCIAS SOCIALES'
+};
+
+function selectProgram(prog, btn) {
+    currentProgram = prog;
+    document.querySelectorAll('.prog-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sessionStorage.setItem('docente_programa', prog);
+}
+
+function openDoc(tipo) {
+    sessionStorage.setItem('docente_programa', currentProgram);
+    window.location.href = tipo + '.html';
+}
+
+// Restaurar selección
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = sessionStorage.getItem('docente_programa');
+    if (saved) {
+        currentProgram = saved;
+        document.querySelectorAll('.prog-btn').forEach(b => {
+            b.classList.remove('active');
+            if (b.textContent.toLowerCase().includes(saved)) b.classList.add('active');
+        });
+    }
+});
+</script>
+
+</body>
+</html>

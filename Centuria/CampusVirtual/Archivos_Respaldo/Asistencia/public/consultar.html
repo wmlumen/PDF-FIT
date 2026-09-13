@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Resultados</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="institutional.css">
+    <link rel="stylesheet" href="student-premium.css">
+    <style>
+        /* Estilos específicos para consultar.html */
+        .resultado-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: fadeInUp 0.4s ease-out forwards;
+            opacity: 0;
+        }
+        .resultado-card:nth-child(1) { animation-delay: 0.1s; }
+        .resultado-card:nth-child(2) { animation-delay: 0.2s; }
+        .resultado-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .resultado-card:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .resultado-card.aprobado {
+            border-color: var(--success);
+        }
+        .resultado-card.reprobado {
+            border-color: var(--danger);
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .mejor-nota-card {
+            background: linear-gradient(135deg, var(--success-light) 0%, #c3e6cb 100%);
+            border: 2px solid var(--success);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .mejor-nota-card .label {
+            font-size: 12px;
+            color: #155724;
+            font-weight: 600;
+        }
+        .mejor-nota-card .nota {
+            font-size: 22px;
+            font-weight: 800;
+            color: #155724;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .grid-2 .stat-box {
+            background: var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+        .grid-2 .stat-box .stat-label {
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+        .grid-2 .stat-box .stat-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            color: #d1d5da;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .resultado-card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Institucional -->
+    <div class="institutional-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <img src="logo_centuria_blanco_1.png" alt="Logo Centuria">
+                <div>
+                    <h1>Instituto Superior Centuria</h1>
+                    <p>Consulta de Resultados</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-logout" onclick="cerrarSesion()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </button>
+                <a href="https://wmlumen.github.io/Asistencia/">
+                    <i class="fas fa-home"></i> Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="premium-container">
+        <div class="premium-card animate-in">
+            <div class="premium-card-header">
+                <h2><i class="fas fa-search"></i> Consultar Resultados</h2>
+            </div>
+            
+            <div class="premium-card-body">
+                <!-- Buscador -->
+                <div id="buscador">
+                    <div class="premium-form-group">
+                        <label><i class="fas fa-id-card"></i> Ingrese su Cédula de Identidad</label>
+                        <input type="text" id="cedula-buscar" class="premium-input" style="text-align:center;font-size:16px;"
+                            placeholder="Ej: 12345678">
+                    </div>
+                    
+                    <button onclick="buscarResultados()" class="premium-btn premium-btn-block" style="margin-top:6px;">
+                        <i class="fas fa-search"></i> Buscar Resultados
+                    </button>
+                    
+                    <div class="premium-status info" style="margin-top:16px;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Ingrese su cédula para ver sus intentos</span>
+                    </div>
+                </div>
+                
+                <!-- Cargando -->
+                <div id="cargando" class="hidden" style="text-align:center;padding:32px 0;">
+                    <div class="loader" style="margin:0 auto 12px;"></div>
+                    <p style="color:var(--text-muted);font-size:13px;">Buscando resultados...</p>
+                </div>
+                
+                <!-- Resultados -->
+                <div id="resultados" class="hidden">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <button onclick="nuevaBusqueda()" class="premium-btn premium-btn-secondary premium-btn-sm">
+                            <i class="fas fa-arrow-left"></i> Nueva búsqueda
+                        </button>
+                    </div>
+                    
+                    <div id="lista-resultados"></div>
+                </div>
+                
+                <!-- Sin resultados -->
+                <div id="sin-resultados" class="hidden" style="text-align:center;padding:32px 0;">
+                    <i class="fas fa-search empty-icon"></i>
+                    <p style="color:var(--text);font-weight:600;margin-bottom:4px;">No se encontraron resultados</p>
+                    <p style="color:var(--text-muted);font-size:13px;">Verifique su cédula e intente nuevamente</p>
+                    <button onclick="nuevaBusqueda()" class="premium-btn premium-btn-sm" style="margin-top:16px;">
+                        <i class="fas fa-redo"></i> Intentar nuevamente
+                    </button>
+                </div>
+            </div>
+            
+            <div style="background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);padding:12px 20px;text-align:center;border-top:1px solid var(--border-light);">
+                <a href="https://wmlumen.github.io/Asistencia/" style="color:var(--primary);font-weight:600;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function buscarResultados() {
+            const cedula = document.getElementById('cedula-buscar').value.trim();
+            
+            if (!cedula) {
+                alert('Por favor ingrese su cédula');
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('buscador').style.display = 'none';
+            document.getElementById('cargando').classList.remove('hidden');
+            
+            // Simular búsqueda
+            setTimeout(() => {
+                const resultados = JSON.parse(localStorage.getItem('socioResults') || '[]');
+                const intentos = resultados
+                    .filter(r => r.ci === cedula)
+                    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                
+                document.getElementById('cargando').classList.add('hidden');
+                
+                if (intentos.length > 0) {
+                    mostrarResultados(intentos);
+                } else {
+                    document.getElementById('sin-resultados').classList.remove('hidden');
+                }
+            }, 800);
+        }
+        
+        function mostrarResultados(intentos) {
+            const container = document.getElementById('lista-resultados');
+            let html = `<h3 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-user" style="color:var(--primary);"></i> ${intentos[0].name}
+            </h3>`;
+            
+            intentos.forEach((r, idx) => {
+                const percent = ((r.score / 30) * 100).toFixed(0);
+                const esAprobado = percent >= 60;
+                const estadoTexto = esAprobado ? 'APROBADO' : 'REPROBADO';
+                
+                html += `
+                    <div class="resultado-card ${esAprobado ? 'aprobado' : 'reprobado'}">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Intento #${idx + 1}</div>
+                                <div style="font-size:11px;color:var(--text-muted);">${r.date} - ${r.time}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:22px;font-weight:800;color:${esAprobado ? 'var(--success)' : 'var(--danger)'};">${r.score}/30</div>
+                                <div style="font-size:13px;font-weight:700;color:${esAprobado ? 'var(--success)' : 'var(--danger)'};">${percent}%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="stat-box">
+                                <div class="stat-label">Sel. Múltiple</div>
+                                <div class="stat-value">${r.summary ? r.summary[0].correct : '-'}/15</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Verd/Falso</div>
+                                <div class="stat-value">${r.summary ? r.summary[1].correct : '-'}/15</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align:center;margin-top:10px;">
+                            <span class="premium-badge ${esAprobado ? 'premium-badge-green' : 'premium-badge-red'}">
+                                ${estadoTexto}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Si hay mejor nota
+            const mejor = Math.max(...intentos.map(r => r.score));
+            const mejorPercent = ((mejor / 30) * 100).toFixed(0);
+            
+            html += `
+                <div class="mejor-nota-card">
+                    <div class="label">Mejor Nota</div>
+                    <div class="nota">${mejor}/30 (${mejorPercent}%)</div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            document.getElementById('resultados').classList.remove('hidden');
+        }
+        
+        function nuevaBusqueda() {
+            document.getElementById('resultados').classList.add('hidden');
+            document.getElementById('sin-resultados').classList.add('hidden');
+            document.getElementById('buscador').style.display = 'block';
+            document.getElementById('cedula-buscar').value = '';
+        }
+        
+        // Permitir buscar con Enter
+        document.getElementById('cedula-buscar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buscarResultados();
+            }
+        });
+    </script>
+
+<script src="script.js?v=5"></script>
+<script>
+(function() {
+    function checkModule() {
+        if (typeof isModuleEnabled !== 'function') {
+            setTimeout(checkModule, 50);
+            return;
+        }
+        if (!isModuleEnabled('student_consultar')) {
+            redirigirModuloDeshabilitado();
+        }
+    }
+    checkModule();
+})();
+</script>
+<script>
+(function() {
+    function initAuth() {
+        if (typeof isStudentSessionActive !== 'function') {
+            setTimeout(initAuth, 100);
+            return;
+        }
+        if (!isStudentSessionActive()) {
+            document.body.innerHTML = '';
+            const div = document.createElement('div');
+            div.id = 'student-login-container';
+            document.body.appendChild(div);
+            renderStudentLoginOverlay('student-login-container', function() {
+                window.location.reload();
+            });
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAuth);
+    } else {
+        initAuth();
+    }
+})();
+</script>
+
+</body>
+</html>

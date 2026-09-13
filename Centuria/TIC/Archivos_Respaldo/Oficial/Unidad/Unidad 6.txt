@@ -1,0 +1,1106 @@
+La **Unidad VI** del programa oficial es **“Infraestructura de Redes y Sistemas Empresariales”** y comprende: comunicación de datos, hardware de apoyo a la comunicación, conectividad, redes computacionales, Internet, dominios, servicios de Internet, Intranet, Extranet y protocolos inalámbricos para Internet. 
+
+Propongo desarrollarla como un material universitario completo, con orientación hacia **Administración y negocios**, no como un curso puramente técnico de redes.
+
+# UNIDAD VI — INFRAESTRUCTURA DE REDES Y SISTEMAS EMPRESARIALES
+
+**Asignatura:** Tecnología de la Información y la Comunicación
+**Código:** ADE18
+**Carrera:** Administración
+**Unidad:** VI
+**Tema:** Infraestructura de Redes y Sistemas Empresariales
+
+---
+
+# 1. INTRODUCCIÓN
+
+Las organizaciones actuales dependen de la capacidad de intercambiar información de manera rápida, confiable y segura.
+
+Una empresa puede disponer de computadoras, sistemas administrativos, bases de datos y aplicaciones especializadas; sin embargo, si estos recursos funcionan de manera aislada, su capacidad para compartir información es limitada.
+
+Las **redes computacionales** permiten conectar dispositivos, personas, aplicaciones y sistemas para que puedan intercambiar datos y utilizar recursos compartidos.
+
+Gracias a una infraestructura de comunicaciones una organización puede, por ejemplo:
+
+* compartir archivos;
+* utilizar sistemas administrativos centralizados;
+* acceder a bases de datos;
+* realizar videoconferencias;
+* utilizar aplicaciones en la nube;
+* conectar diferentes sucursales;
+* realizar operaciones comerciales por Internet;
+* permitir trabajo remoto;
+* integrar proveedores y clientes;
+* acceder a información en tiempo real.
+
+Por esta razón, las redes constituyen una parte fundamental de la infraestructura tecnológica de una organización.
+
+---
+
+# 2. COMUNICACIÓN DE DATOS
+
+## 2.1. Concepto
+
+La **comunicación de datos** es el proceso mediante el cual dos o más dispositivos intercambian información utilizando un medio de transmisión y un conjunto de reglas previamente establecidas.
+
+Puede representarse de manera simplificada como:
+
+**EMISOR → MEDIO DE TRANSMISIÓN → RECEPTOR**
+
+Por ejemplo, cuando una computadora envía una factura electrónica a un servidor, existe un dispositivo que origina los datos, una infraestructura que los transporta y otro dispositivo que los recibe.
+
+## 2.2. Elementos básicos
+
+Para que exista comunicación de datos normalmente intervienen:
+
+### Emisor
+
+Es el dispositivo que origina la información.
+
+Ejemplos:
+
+* computadora;
+* teléfono móvil;
+* servidor;
+* terminal de ventas;
+* sensor.
+
+### Receptor
+
+Es el dispositivo que recibe la información.
+
+### Mensaje
+
+Es la información transmitida.
+
+Puede contener:
+
+* texto;
+* imágenes;
+* documentos;
+* audio;
+* video;
+* registros de una base de datos;
+* instrucciones.
+
+### Medio de transmisión
+
+Es el canal utilizado para transportar los datos.
+
+Puede ser:
+
+**Cableado:** cobre, cable coaxial o fibra óptica.
+
+**Inalámbrico:** ondas de radio, Wi-Fi, redes móviles u otras tecnologías.
+
+### Protocolo
+
+Es el conjunto de reglas que establece cómo debe producirse la comunicación.
+
+Los dispositivos necesitan utilizar reglas compatibles para poder intercambiar correctamente la información.
+
+---
+
+# 3. TRANSMISIÓN DE INFORMACIÓN
+
+Los datos digitales son representados mediante bits.
+
+Un **bit** representa una unidad binaria:
+
+**0 o 1**
+
+Ocho bits forman normalmente un **byte**.
+
+La velocidad de una conexión de red se expresa habitualmente en **bits por segundo (bps)**.
+
+Algunas unidades utilizadas son:
+
+* Kbps — kilobits por segundo;
+* Mbps — megabits por segundo;
+* Gbps — gigabits por segundo.
+
+Es importante no confundir:
+
+**MB = megabytes**
+
+con
+
+**Mb = megabits**
+
+Esta diferencia resulta relevante al interpretar velocidades de Internet y tamaños de archivos.
+
+---
+
+# 4. ANCHO DE BANDA
+
+El **ancho de banda** representa la capacidad de transmisión disponible en una conexión.
+
+Puede imaginarse como una carretera.
+
+Una carretera pequeña permite el paso de una cantidad limitada de vehículos. Una carretera con numerosos carriles puede transportar simultáneamente una cantidad mucho mayor.
+
+En una red ocurre algo similar.
+
+Una conexión de mayor capacidad puede transportar más datos por unidad de tiempo.
+
+Sin embargo, una conexión rápida no depende exclusivamente del ancho de banda.
+
+También influyen:
+
+* congestión;
+* distancia;
+* calidad de la infraestructura;
+* servidores utilizados;
+* interferencias;
+* cantidad de usuarios;
+* configuración de la red.
+
+---
+
+# 5. LATENCIA
+
+La **latencia** es el tiempo que tarda la información en desplazarse desde un punto hasta otro y obtener una respuesta.
+
+Una conexión puede tener gran capacidad y, al mismo tiempo, presentar una latencia elevada.
+
+La latencia resulta especialmente importante en:
+
+* videoconferencias;
+* llamadas por Internet;
+* videojuegos;
+* sistemas interactivos;
+* operaciones en tiempo real;
+* acceso remoto.
+
+Por ello:
+
+**Ancho de banda ≠ latencia.**
+
+Son características diferentes de una conexión.
+
+---
+
+# 6. HARDWARE DE APOYO A LA COMUNICACIÓN
+
+Para construir una red se necesitan dispositivos especializados.
+
+## 6.1. Tarjeta o interfaz de red
+
+Permite que un dispositivo pueda conectarse a una red.
+
+Puede proporcionar conexión mediante:
+
+* Ethernet;
+* Wi-Fi;
+* otras tecnologías.
+
+## 6.2. Switch
+
+Un **switch** conecta múltiples dispositivos dentro de una misma red local.
+
+Por ejemplo:
+
+Una empresa posee:
+
+* 20 computadoras;
+* 3 impresoras;
+* 2 servidores.
+
+Un switch puede permitir que estos dispositivos formen parte de la misma infraestructura local.
+
+## 6.3. Router
+
+El **router** permite interconectar diferentes redes y dirigir el tráfico entre ellas.
+
+En una organización suele intervenir en la conexión entre:
+
+**Red interna ↔ otras redes ↔ Internet**
+
+### Diferencia fundamental
+
+**Switch:** conecta principalmente dispositivos dentro de una red.
+
+**Router:** comunica redes diferentes.
+
+## 6.4. Punto de acceso inalámbrico
+
+El **Access Point (AP)** proporciona conectividad inalámbrica a los dispositivos.
+
+Permite conectar:
+
+* notebooks;
+* teléfonos;
+* tablets;
+* terminales móviles;
+* otros dispositivos compatibles.
+
+## 6.5. Módem
+
+El módem permite establecer determinados tipos de conexión con la infraestructura del proveedor de telecomunicaciones.
+
+En instalaciones modernas sus funciones pueden estar incorporadas junto con otros equipos.
+
+## 6.6. Servidor
+
+Un servidor es un sistema que proporciona servicios o recursos a otros dispositivos denominados clientes.
+
+Puede existir un:
+
+* servidor de archivos;
+* servidor web;
+* servidor de correo;
+* servidor de aplicaciones;
+* servidor de bases de datos;
+* servidor de autenticación.
+
+---
+
+# 7. CONECTIVIDAD
+
+La **conectividad** es la capacidad de los dispositivos y sistemas para establecer comunicación e intercambiar información.
+
+En una organización, disponer de conectividad significa mucho más que simplemente “tener Internet”.
+
+Una infraestructura adecuada debe permitir que los recursos tecnológicos correctos puedan comunicarse de acuerdo con las necesidades de la organización.
+
+Por ejemplo:
+
+**Sucursal A → Sistema empresarial → Base de datos central**
+
+**Sucursal B → Sistema empresarial → Base de datos central**
+
+**Sucursal C → Sistema empresarial → Base de datos central**
+
+El gerente podría entonces consultar información consolidada proveniente de las tres sucursales.
+
+---
+
+# 8. REDES COMPUTACIONALES
+
+Una **red computacional** es un conjunto de dispositivos interconectados que pueden comunicarse y compartir información y recursos.
+
+Los dispositivos conectados pueden incluir:
+
+* computadoras;
+* servidores;
+* teléfonos;
+* impresoras;
+* cámaras;
+* sensores;
+* terminales de ventas;
+* dispositivos industriales.
+
+---
+
+# 9. CLASIFICACIÓN DE LAS REDES SEGÚN SU ALCANCE
+
+## PAN — Personal Area Network
+
+Red de alcance personal.
+
+Ejemplo:
+
+Un teléfono conectado mediante Bluetooth a auriculares o a otros dispositivos cercanos.
+
+## LAN — Local Area Network
+
+Red de área local.
+
+Normalmente conecta dispositivos dentro de un espacio relativamente limitado.
+
+Ejemplos:
+
+* oficina;
+* laboratorio;
+* edificio;
+* institución educativa.
+
+## MAN — Metropolitan Area Network
+
+Red que puede abarcar un área metropolitana.
+
+Puede interconectar diferentes ubicaciones dentro de una ciudad o área urbana.
+
+## WAN — Wide Area Network
+
+Red de área extensa.
+
+Permite comunicar dispositivos o redes ubicados a grandes distancias.
+
+Una empresa con oficinas en diferentes ciudades o países puede utilizar infraestructura WAN para integrar sus operaciones.
+
+---
+
+# 10. TOPOLOGÍAS DE RED
+
+La **topología** representa la forma en que los componentes de una red están organizados o interconectados.
+
+Entre las configuraciones tradicionales encontramos:
+
+### Estrella
+
+Los dispositivos se conectan a un elemento central.
+
+Es ampliamente utilizada en redes locales modernas.
+
+### Bus
+
+Los dispositivos comparten un medio principal de comunicación.
+
+Tiene importancia histórica y conceptual.
+
+### Anillo
+
+Los dispositivos forman una estructura circular de comunicación.
+
+### Malla
+
+Los nodos poseen múltiples conexiones entre sí.
+
+Puede proporcionar mayor redundancia y disponibilidad.
+
+---
+
+# 11. MODELO CLIENTE–SERVIDOR
+
+Muchas aplicaciones empresariales utilizan una arquitectura denominada **cliente-servidor**.
+
+El cliente solicita un recurso o servicio y el servidor responde.
+
+Ejemplo:
+
+**Computadora del empleado → solicitud → servidor**
+
+**Servidor → respuesta → computadora del empleado**
+
+Cuando un funcionario consulta los datos de un cliente mediante un sistema empresarial, su dispositivo puede actuar como cliente mientras otro sistema proporciona los datos o servicios requeridos.
+
+---
+
+# 12. INTERNET
+
+Internet es una infraestructura mundial de redes interconectadas que utilizan protocolos compatibles para intercambiar información.
+
+Internet permite que millones de dispositivos y redes puedan comunicarse.
+
+Debe diferenciarse entre:
+
+**Internet:** infraestructura global de comunicación.
+
+**Web:** uno de los servicios que funciona sobre Internet.
+
+Por lo tanto:
+
+**Internet y Web no son exactamente lo mismo.**
+
+---
+
+# 13. DIRECCIÓN IP
+
+Para que los dispositivos puedan comunicarse mediante redes basadas en Internet Protocol necesitan mecanismos de direccionamiento.
+
+Una **dirección IP** permite identificar una interfaz o dispositivo dentro de un contexto de red.
+
+Existen dos versiones ampliamente conocidas:
+
+### IPv4
+
+Ejemplo conceptual:
+
+**192.168.1.10**
+
+Utiliza direcciones de 32 bits.
+
+### IPv6
+
+Fue desarrollado, entre otros motivos, para ampliar considerablemente el espacio disponible para direcciones.
+
+Utiliza direcciones de 128 bits.
+
+---
+
+# 14. DOMINIOS DE INTERNET
+
+Recordar números de direcciones IP para acceder a los servicios sería poco práctico.
+
+Por ello existen nombres de dominio.
+
+Ejemplo:
+
+**[www.empresa.com](http://www.empresa.com)**
+
+Un dominio proporciona un nombre legible que puede asociarse con recursos disponibles en Internet.
+
+## DNS
+
+El **Domain Name System (DNS)** permite resolver nombres de dominio hacia información necesaria para localizar servicios en la red, como direcciones IP.
+
+Puede comprenderse de manera simplificada como un mecanismo de traducción:
+
+**Nombre de dominio → dirección correspondiente**
+
+---
+
+# 15. ESTRUCTURA DE UN DOMINIO
+
+Consideremos:
+
+**ventas.empresa.com**
+
+Podemos identificar diferentes niveles:
+
+**.com** → dominio de nivel superior.
+
+**empresa** → dominio registrado dentro de ese espacio.
+
+**ventas** → subdominio.
+
+Los dominios pueden utilizar diferentes extensiones.
+
+Ejemplos:
+
+* .com
+* .org
+* .edu
+* .net
+
+También existen dominios territoriales asociados con países.
+
+En Paraguay se utiliza:
+
+**.py**
+
+---
+
+# 16. SERVICIOS EN INTERNET
+
+Internet proporciona infraestructura para numerosos servicios.
+
+Entre ellos:
+
+### World Wide Web
+
+Acceso a sitios, aplicaciones y contenidos mediante tecnologías web.
+
+### Correo electrónico
+
+Permite intercambio de mensajes y archivos.
+
+### Transferencia de archivos
+
+Permite enviar y recibir archivos entre sistemas.
+
+### Videoconferencia
+
+Permite comunicación audiovisual en tiempo real.
+
+### Mensajería instantánea
+
+Facilita comunicaciones rápidas entre usuarios.
+
+### Almacenamiento y aplicaciones en la nube
+
+Permiten utilizar infraestructura y servicios informáticos accesibles mediante redes.
+
+### Comercio electrónico
+
+Permite realizar operaciones comerciales mediante plataformas digitales.
+
+---
+
+# 17. INTERNET EN LA EMPRESA
+
+Para una organización, Internet puede utilizarse para:
+
+**Comunicación**
+
+Correo, videoconferencias y mensajería.
+
+**Marketing**
+
+Sitios web, redes sociales y publicidad digital.
+
+**Ventas**
+
+Comercio electrónico y plataformas de pedidos.
+
+**Administración**
+
+Sistemas empresariales accesibles mediante Internet.
+
+**Atención al cliente**
+
+Portales, chat, seguimiento y soporte.
+
+**Trabajo remoto**
+
+Acceso autorizado a recursos empresariales desde ubicaciones externas.
+
+---
+
+# 18. INTRANET
+
+Una **Intranet** es una red o entorno privado de información utilizado dentro de una organización y basado frecuentemente en tecnologías similares a las empleadas en Internet.
+
+Puede contener:
+
+* documentos internos;
+* reglamentos;
+* procedimientos;
+* formularios;
+* noticias institucionales;
+* sistemas administrativos;
+* recursos humanos;
+* manuales;
+* calendarios.
+
+Ejemplo:
+
+Una empresa dispone de un portal al que solamente pueden acceder sus empleados.
+
+Ese portal puede formar parte de su Intranet.
+
+---
+
+# 19. EXTRANET
+
+Una **Extranet** extiende determinados recursos o servicios organizacionales hacia usuarios externos autorizados.
+
+Estos pueden ser:
+
+* proveedores;
+* distribuidores;
+* clientes;
+* socios comerciales.
+
+Ejemplo:
+
+Una empresa permite que sus proveedores ingresen a un portal privado para verificar órdenes de compra.
+
+Esto representa una aplicación típica de Extranet.
+
+---
+
+# 20. INTERNET, INTRANET Y EXTRANET
+
+La diferencia fundamental se encuentra principalmente en el alcance y en quién puede acceder.
+
+**Internet**
+
+Acceso público/global según el servicio publicado.
+
+**Intranet**
+
+Acceso restringido principalmente a miembros de una organización.
+
+**Extranet**
+
+Acceso controlado que incorpora determinados usuarios externos autorizados.
+
+Ejemplo empresarial:
+
+**Internet:** página pública de una empresa.
+
+**Intranet:** portal interno de empleados.
+
+**Extranet:** portal privado para proveedores.
+
+---
+
+# 21. PROTOCOLOS DE COMUNICACIÓN
+
+Un protocolo establece reglas para que los sistemas puedan comunicarse.
+
+Sin reglas comunes, los dispositivos no podrían interpretar correctamente los mensajes intercambiados.
+
+## TCP/IP
+
+La familia de protocolos TCP/IP constituye una base fundamental de las comunicaciones en Internet y numerosas redes empresariales.
+
+De manera simplificada:
+
+**IP** participa en el direccionamiento y encaminamiento de paquetes.
+
+**TCP** proporciona mecanismos para una comunicación confiable entre aplicaciones cuando se utiliza este protocolo de transporte.
+
+---
+
+# 22. HTTP Y HTTPS
+
+## HTTP
+
+**Hypertext Transfer Protocol**
+
+Se utiliza para la comunicación de recursos y aplicaciones web.
+
+## HTTPS
+
+Es HTTP utilizado con mecanismos criptográficos de seguridad proporcionados mediante TLS.
+
+Permite proteger la comunicación entre cliente y servidor frente a diversos riesgos de interceptación o modificación durante el tránsito.
+
+Para una empresa que maneja:
+
+* contraseñas;
+* información personal;
+* pagos;
+* documentos;
+* datos administrativos;
+
+la protección de las comunicaciones es fundamental.
+
+---
+
+# 23. PROTOCOLOS INALÁMBRICOS
+
+Las comunicaciones inalámbricas permiten intercambiar información sin necesidad de un cable físico entre los dispositivos.
+
+## Wi-Fi
+
+Permite establecer redes locales inalámbricas.
+
+Es ampliamente utilizado en:
+
+* hogares;
+* oficinas;
+* universidades;
+* comercios;
+* instituciones públicas.
+
+## Bluetooth
+
+Tecnología inalámbrica utilizada principalmente para comunicaciones de corto alcance.
+
+Ejemplos:
+
+* auriculares;
+* teclados;
+* dispositivos móviles;
+* periféricos;
+* determinados sensores.
+
+## Redes móviles
+
+Las tecnologías celulares permiten conectividad a través de infraestructura proporcionada por operadores de telecomunicaciones.
+
+Las generaciones tecnológicas han evolucionado desde sistemas anteriores hasta tecnologías como 4G y 5G.
+
+---
+
+# 24. RED CABLEADA VS. RED INALÁMBRICA
+
+No existe una solución universalmente superior. La elección depende de los requerimientos.
+
+### Cableada
+
+Puede proporcionar:
+
+* estabilidad;
+* altas velocidades;
+* menor exposición a determinadas interferencias;
+* conexiones predecibles.
+
+Pero requiere infraestructura física.
+
+### Inalámbrica
+
+Proporciona:
+
+* movilidad;
+* flexibilidad;
+* facilidad de conexión;
+* menor dependencia del cableado hasta el dispositivo.
+
+Sin embargo, deben considerarse:
+
+* cobertura;
+* interferencias;
+* capacidad;
+* seguridad;
+* cantidad de usuarios.
+
+Las organizaciones frecuentemente utilizan una combinación de ambas.
+
+---
+
+# 25. SEGURIDAD BÁSICA DE UNA RED EMPRESARIAL
+
+Aunque el programa de esta unidad se concentra en infraestructura y conectividad, no puede comprenderse una red empresarial sin introducir el concepto de seguridad.
+
+Una organización debería considerar, entre otros aspectos:
+
+* autenticación de usuarios;
+* contraseñas seguras;
+* permisos de acceso;
+* actualización de equipos;
+* cifrado;
+* segmentación;
+* copias de seguridad;
+* protección frente a software malicioso;
+* monitoreo;
+* políticas de uso.
+
+Una red empresarial no debe diseñarse solamente pensando:
+
+**“¿Cómo conectamos todo?”**
+
+También debe preguntarse:
+
+**“¿Qué debe conectarse, quién debe acceder y bajo qué condiciones?”**
+
+---
+
+# 26. INFRAESTRUCTURA DE RED COMO RECURSO EMPRESARIAL
+
+Desde la perspectiva administrativa, la infraestructura tecnológica constituye una inversión que debe responder a las necesidades del negocio.
+
+Una organización debe considerar:
+
+### Disponibilidad
+
+¿Los sistemas estarán disponibles cuando sean necesarios?
+
+### Rendimiento
+
+¿La infraestructura soportará la cantidad de usuarios y operaciones?
+
+### Escalabilidad
+
+¿Podrá crecer si aumenta la empresa?
+
+### Seguridad
+
+¿La información estará adecuadamente protegida?
+
+### Costos
+
+¿Cuánto cuesta adquirir, implementar, mantener y actualizar la infraestructura?
+
+### Continuidad
+
+¿Qué sucederá si falla Internet, un router, un servidor o un enlace entre sucursales?
+
+---
+
+# 27. CASO DE ESTUDIO — COMERCIAL CENTURIA S.A.
+
+Una empresa paraguaya posee:
+
+* casa central en Asunción;
+* sucursal en San Lorenzo;
+* sucursal en Ciudad del Este;
+* 60 funcionarios;
+* sistema de ventas;
+* sistema de inventario;
+* correo electrónico;
+* página web;
+* vendedores que utilizan notebooks;
+* proveedores que necesitan consultar órdenes de compra.
+
+Actualmente cada sucursal administra información parcialmente independiente.
+
+La gerencia desea integrar las operaciones.
+
+## Problemas identificados
+
+1. Los inventarios no se actualizan inmediatamente entre sucursales.
+
+2. Los gerentes reciben informes con retraso.
+
+3. Los vendedores necesitan consultar disponibilidad de productos.
+
+4. Los proveedores solicitan información sobre sus órdenes.
+
+5. Los funcionarios necesitan acceder a documentos institucionales.
+
+## Solución conceptual
+
+La organización podría desarrollar una infraestructura donde:
+
+**LAN de cada sucursal**
+
+↓
+
+**Conectividad entre ubicaciones y servicios empresariales**
+
+↓
+
+**Sistemas centralizados o integrados**
+
+↓
+
+**Base de datos**
+
+Además:
+
+**Intranet → funcionarios**
+
+**Extranet → proveedores autorizados**
+
+**Internet → clientes y servicios públicos**
+
+De esta manera, la red deja de ser simplemente infraestructura técnica y se convierte en un elemento que permite integrar procesos empresariales.
+
+---
+
+# 28. ACTIVIDAD PRÁCTICA
+
+## “Diseñando la red de una empresa”
+
+### Situación
+
+Una empresa posee:
+
+* 25 empleados;
+* 20 computadoras;
+* 5 notebooks;
+* 3 impresoras;
+* 1 servidor;
+* conexión a Internet;
+* área administrativa;
+* área comercial;
+* depósito;
+* sala de reuniones.
+
+La empresa necesita:
+
+* compartir archivos;
+* acceder a Internet;
+* utilizar impresoras compartidas;
+* conectarse mediante Wi-Fi;
+* acceder al sistema administrativo;
+* realizar videoconferencias.
+
+### Consigna
+
+En grupos, diseñar conceptualmente la infraestructura de red.
+
+El esquema debe incluir como mínimo:
+
+**Internet → Router → Switch → Equipos**
+
+y considerar:
+
+* servidor;
+* computadoras;
+* impresoras;
+* puntos de acceso Wi-Fi;
+* notebooks.
+
+Posteriormente responder:
+
+1. ¿Qué función cumple el router?
+
+2. ¿Qué función cumple el switch?
+
+3. ¿Por qué utilizarían Wi-Fi?
+
+4. ¿Qué recursos deberían protegerse especialmente?
+
+5. ¿Qué sucedería con la empresa si la red deja de funcionar durante toda una jornada?
+
+---
+
+# 29. SITUACIÓN PROBLEMÁTICA
+
+Una empresa contrata una conexión a Internet de alta velocidad.
+
+El gerente afirma:
+
+> “Ahora nuestra infraestructura tecnológica es excelente porque tenemos Internet muy rápido.”
+
+Analice la afirmación.
+
+La velocidad de Internet constituye solamente una variable.
+
+Una infraestructura empresarial debe considerar además:
+
+* diseño de la red;
+* equipos;
+* disponibilidad;
+* seguridad;
+* redundancia;
+* servidores;
+* sistemas;
+* cantidad de usuarios;
+* mantenimiento;
+* necesidades reales del negocio.
+
+Por ello, **mayor velocidad de Internet no significa automáticamente mejor infraestructura tecnológica empresarial**.
+
+---
+
+# 30. PREGUNTAS PARA DISCUSIÓN
+
+1. ¿Puede funcionar actualmente una empresa sin Internet?
+
+2. ¿Qué actividades podrían continuar si una organización pierde su conexión durante ocho horas?
+
+3. ¿Qué diferencia existe entre tener Internet y disponer de una infraestructura de red empresarial?
+
+4. ¿Por qué una empresa debería separar determinados accesos internos de los accesos de clientes y proveedores?
+
+5. ¿Qué riesgos aparecen cuando todos los empleados comparten una misma contraseña Wi-Fi?
+
+6. ¿Qué consecuencias económicas puede producir una falla de red?
+
+7. ¿Una red inalámbrica puede reemplazar completamente una red cableada en cualquier organización?
+
+8. ¿La infraestructura tecnológica representa un gasto o una inversión?
+
+---
+
+# 31. SÍNTESIS DE LA UNIDAD
+
+Al finalizar esta unidad debemos comprender una idea central:
+
+**Las redes permiten que la información circule dentro y fuera de una organización.**
+
+La secuencia conceptual puede representarse como:
+
+**DATOS**
+
+↓
+
+**DISPOSITIVOS**
+
+↓
+
+**RED**
+
+↓
+
+**COMUNICACIÓN**
+
+↓
+
+**SISTEMAS EMPRESARIALES**
+
+↓
+
+**INFORMACIÓN**
+
+↓
+
+**DECISIONES**
+
+La infraestructura de red no constituye un objetivo por sí misma.
+
+Su verdadero valor empresarial aparece cuando permite:
+
+* integrar personas;
+* conectar procesos;
+* compartir recursos;
+* acceder a sistemas;
+* reducir tiempos;
+* mejorar la comunicación;
+* obtener información oportunamente;
+* apoyar las decisiones de la organización.
+
+---
+
+# 32. EVALUACIÓN — SELECCIÓN MÚLTIPLE
+
+### 1.
+
+¿Cuál es la función principal de un switch en una red local?
+
+**A.** Crear páginas web.
+**B.** Conectar dispositivos dentro de una red.
+**C.** Registrar dominios.
+**D.** Crear bases de datos.
+
+### 2.
+
+¿Qué dispositivo se utiliza principalmente para comunicar diferentes redes?
+
+**A.** Router.
+**B.** Teclado.
+**C.** Impresora.
+**D.** Monitor.
+
+### 3.
+
+Una red dentro de una oficina corresponde normalmente a:
+
+**A.** PAN.
+**B.** LAN.
+**C.** MAN.
+**D.** WAN.
+
+### 4.
+
+¿Qué sistema permite relacionar nombres de dominio con información de direccionamiento necesaria para localizar servicios?
+
+**A.** DNS.
+**B.** CPU.
+**C.** USB.
+**D.** RAM.
+
+### 5.
+
+Una plataforma privada utilizada solamente por funcionarios de una empresa corresponde a:
+
+**A.** Internet.
+**B.** Extranet.
+**C.** Intranet.
+**D.** Web pública.
+
+### 6.
+
+Una empresa proporciona acceso privado a determinados proveedores para consultar órdenes de compra. Esto constituye:
+
+**A.** Intranet.
+**B.** Extranet.
+**C.** PAN.
+**D.** DNS.
+
+### 7.
+
+¿Cuál de las siguientes tecnologías permite crear redes locales inalámbricas?
+
+**A.** Wi-Fi.
+**B.** HDMI.
+**C.** SSD.
+**D.** CPU.
+
+### 8.
+
+¿Cuál es la diferencia fundamental entre Internet y Web?
+
+**A.** No existe ninguna diferencia.
+
+**B.** Internet es la infraestructura global de redes y la Web es uno de los servicios que funciona sobre ella.
+
+**C.** Internet solamente funciona en teléfonos.
+
+**D.** La Web es la infraestructura física de Internet.
+
+### 9.
+
+Una conexión posee gran ancho de banda pero demora en responder. ¿Qué variable podría estar afectando la experiencia?
+
+**A.** Latencia.
+**B.** Tamaño del monitor.
+**C.** Capacidad del teclado.
+**D.** Resolución de la impresora.
+
+### 10.
+
+¿Por qué las redes son estratégicamente importantes para las organizaciones?
+
+**A.** Porque eliminan la necesidad de administrar información.
+
+**B.** Porque solamente permiten navegar por Internet.
+
+**C.** Porque permiten integrar dispositivos, personas, información, aplicaciones y procesos.
+
+**D.** Porque sustituyen completamente a los trabajadores.
+
+## Respuestas
+
+**1-B | 2-A | 3-B | 4-A | 5-C | 6-B | 7-A | 8-B | 9-A | 10-C**
+
+Este desarrollo cubre **todos los contenidos expresamente establecidos para la Unidad VI en el programa ADE18**: comunicación de datos, hardware de comunicación, conectividad, redes, Internet, dominios, servicios, Intranet, Extranet y protocolos inalámbricos. 
+
+Además, mantuve el enfoque empresarial del programa: el objetivo no es formar técnicos instaladores de redes, sino que el futuro administrador comprenda la infraestructura tecnológica disponible para las organizaciones, coherente con los objetivos de la asignatura. 

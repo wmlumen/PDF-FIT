@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Referencia Académica: Unidades V y VI | ICO3534</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --highlight: #27ae60;
+            --bg: #f5f6fa;
+            --white: #ffffff;
+            --text: #2c3e50;
+            --border: #dcdde1;
+        }
+
+        body {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-top: 10px solid var(--primary);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 { color: var(--primary); font-size: 24pt; margin: 0; }
+        h2 { color: var(--secondary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; margin-top: 40px; }
+        h3 { color: var(--accent); margin-top: 25px; }
+
+        .info-box {
+            background-color: #ecf3f9;
+            border-left: 5px solid var(--accent);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+        th { background: var(--secondary); color: white; }
+
+        .biblio {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .biblio p { margin: 5px 0; padding-left: 20px; text-indent: -20px; }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        @media print {
+            body { background: none; }
+            .container { margin: 0; padding: 0; box-shadow: none; width: 100%; }
+            .btn-print { display: none; }
+        }
+
+        .btn-print {
+            position: fixed; top: 20px; right: 20px;
+            padding: 12px 24px; background: var(--accent);
+            color: white; border: none; border-radius: 30px;
+            cursor: pointer; font-weight: bold; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR MANUAL</button>
+
+    <div class="container">
+        <header>
+            <h1>Manual de Referencia Académica</h1>
+            <p><strong>Unidades V y VI: Contabilidad e Informática</strong></p>
+            <p>Materia: Informática Aplicada (ICO3534)</p>
+        </header>
+
+        <section id="intro">
+            <h2>1. Introducción a la Era de la Información Contable</h2>
+            <p>La evolución de la tecnología de la información ha transformado radicalmente la práctica contable. Lo que anteriormente se conocía como un proceso lineal de registro manual, hoy se define como un complejo <strong>Sistema de Información Contable (SIC)</strong> basado en la integración de datos en tiempo real.</p>
+        </section>
+
+        <section id="teneduria">
+            <h2>2. Marco Teórico: Contabilidad vs. Teneduría de Libros</h2>
+            <div class="info-box">
+                "De acuerdo con la literatura técnica contemporánea, es imperativo distinguir entre la operatividad de la teneduría y la analítica de la contabilidad."
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Teneduría de Libros (Digital)</th>
+                        <th>Contabilidad (Computarizada)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Enfoque</strong></td>
+                        <td>Recopilación y registro de transacciones.</td>
+                        <td>Análisis, interpretación y diseño del sistema.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rol de la IA</strong></td>
+                        <td>Automatización total del asiento contable.</td>
+                        <td>Auditoría de algoritmos y toma de decisiones.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Resultado</strong></td>
+                        <td>Libros balanceados y estructurados.</td>
+                        <td>Información para gestión y cumplimiento legal.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="archivos">
+            <h2>3. Gestión de Archivos Electrónicos</h2>
+            <p>En un sistema contable profesional, la información se organiza en tres tipologías de archivos esenciales:</p>
+            <ul>
+                <li><strong>Archivos Maestros:</strong> Contienen datos permanentes (Catálogo de Cuentas, Ficha de Proveedores).</li>
+                <li><strong>Archivos Transaccionales:</strong> Registran las operaciones del periodo (Libro Diario).</li>
+                <li><strong>Archivos de Resultados:</strong> Producto final del sistema (Balance General, Estados Financieros).</li>
+            </ul>
+        </section>
+
+        <section id="casopractico">
+            <h2>4. Caso Práctico: Conexión Gestión vs. Contabilidad</h2>
+            <p><strong>Escenario:</strong> Una empresa de retail vende un producto por Gs. 100.000.</p>
+            <ol>
+                <li><strong>Módulo de Gestión (Ventas):</strong> Genera la factura, descuenta el stock y registra el cliente.</li>
+                <li><strong>Capa de Integración:</strong> El sistema envía una "Interfaz" (XML/API) automática al módulo contable.</li>
+                <li><strong>Módulo Contable:</strong> Realiza el asiento automático impactando en Libros e Impuestos (DNIT).</li>
+            </ol>
+        </section>
+
+        <section id="bibliografia">
+            <h2>5. Referencias Bibliográficas (APA 7ma Ed.)</h2>
+            <div class="biblio">
+                <p>Andrada, A. M. (2010). <em>Tecnologías de la información y la comunicación</em>. Maipue.</p>
+                <p>Fowler Newton, E. (2020). <em>Tratado de contabilidad</em> (5ta ed.). La Ley.</p>
+                <p>García-Badell, J. J. (1994). <em>Informatización de empresas: Gestión y contabilidad</em>. Paraninfo.</p>
+                <p>Laudon, K. C., & Laudon, J. P. (2002). <em>Sistemas de información gerencial</em>. Pearson Educación.</p>
+                <p>Ovelar Fernández, W. (2008). <em>Sistemas de información gerencial UNA</em>. Asunción.</p>
+            </div>
+        </section>
+
+        <footer>
+            © 2026 Centuria • Ingeniería Aplicada • Material Académico Oficial en HTML
+        </footer>
+    </div>
+</body>
+</html>

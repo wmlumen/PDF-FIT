@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clase 17: Fintech y Medios de Pago en Paraguay | ICO3534</title>
+    <style>
+        :root { --primary: #34495e; --accent: #1abc9c; --highlight: #f1c40f; --bg: #f5f6fa; --white: #ffffff; --border: #dcdde1; }
+        body { font-family: 'Outfit', 'Inter', sans-serif; background-color: var(--bg); color: #2f3640; line-height: 1.6; margin: 0; padding: 0; }
+        .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: var(--white); box-shadow: 0 10px 40px rgba(0,0,0,0.1); box-sizing: border-box; border-top: 15px solid var(--accent); }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
+        header h1 { font-size: 18pt; margin: 0; color: var(--primary); }
+        .badge { background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 9pt; font-weight: bold; }
+        .concept-card { border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #e0f2f1; }
+        .glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 9pt; background: #f1f2f6; padding: 20px; border-radius: 8px; }
+        .reflection-questions { background: #e8f5e9; border-left: 5px solid var(--accent); padding: 15px; margin: 20px 0; }
+        .lab-activity { border: 2px solid var(--accent); padding: 20px; border-radius: 12px; margin-top: 30px; }
+        footer { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 15px; text-align: center; font-size: 8pt; color: #718093; }
+        @media print { body { background: none; } .page { margin: 0; box-shadow: none; } .no-print { display: none; } }
+        .btn-print { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; z-index: 1000; }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR MATERIAL FINTECH</button>
+    <div class="page">
+        <header>
+            <h1>Clase 17: Fintech y Medios de Pago en Paraguay</h1>
+            <div class="badge">ACTUALIZACIÓN UNIDAD VIII | E-COMMERCE</div>
+        </header>
+
+        <section class="concept-card">
+            <strong>💳 LA REVOLUCIÓN DEL DINERO DIGITAL:</strong>
+            <p>El sistema SIPAP y las EMPEs (Entidades de Medios de Pago Electrónico) como Tigo Money y Billetera Personal, han transformado la velocidad de la contabilidad de caja en Paraguay.</p>
+        </section>
+
+        <h2>1. Ecosistema de Pagos Digitales (SIPAP / SPI)</h2>
+        <p>Integración contable de pagos 24/7. El desafío del contador hoy es conciliar transacciones que ocurren en feriados y madrugadas de forma automática.</p>
+        <ul>
+            <li><strong>QR Bancard:</strong> Interoperabilidad total de pagos en comercios.</li>
+            <li><strong>Pasarelas de Pago:</strong> Checkout seguro para sitios web (vPOS).</li>
+            <li><strong>Contabilidad 1:1:</strong> Cada venta online debe disparar un asiento automático.</li>
+        </ul>
+
+        <h2>2. Glosario Fintech Paraguayo</h2>
+        <div class="glossary">
+            <dl>
+                <dt>EMPE</dt><dd>Entidades de Medios de Pago Electrónicos.</dd>
+                <dt>SIPAP</dt><dd>Sistema de Pagos del Paraguay (BCP).</dd>
+                <dt>Tokenización</dt><dd>Sustitución de datos sensibles de tarjetas por códigos únicos.</dd>
+                <dt>Gateway</dt><dd>Pasarela tecnológica que autoriza transacciones.</dd>
+            </dl>
+        </div>
+
+        <div class="reflection-questions">
+            <strong>❓ PREGUNTAS DE REFLEXIÓN</strong>
+            <ol>
+                <li>¿Por qué el efectivo sigue siendo el "Rey" en muchas PYMEs a pesar de las Fintech?</li>
+                <li>¿Cómo impacta el pago por QR en la trazabilidad del IVA?</li>
+            </ol>
+        </div>
+
+        <section class="lab-activity">
+            <h2>3. Taller: Conciliación Fintech (60 min)</h2>
+            <ol>
+                <li>Simular la recepción de un **Listado de Transacciones QR** en Excel.</li>
+                <li>Crear un modelo de **Conciliación Automatizada** usando la función `BUSCARV` o `XLOOKUP` entre el banco y los registros internos.</li>
+                <li>Calcular comisiones de pasarela y el Neto Liquidado real.</li>
+            </ol>
+        </section>
+
+        <footer>
+            <strong>Lectura Complementaria:</strong> Resoluciones del Banco Central del Paraguay (BCP) sobre Medios de Pago. <br>
+            © 2026 Centuria • Ingeniería Aplicada • Dinero en Movimiento
+        </footer>
+    </div>
+    <script src="core.js"></script>
+</body>
+</html>

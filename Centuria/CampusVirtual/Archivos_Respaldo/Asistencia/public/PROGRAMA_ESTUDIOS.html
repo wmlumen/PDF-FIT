@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programa de Estudios - Sociología</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="student-premium.css">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        
+        #doc-content {
+            padding: 2rem 2.5rem;
+        }
+        
+        .doc-section-title {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+        }
+        
+        .doc-identificacion table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .doc-identificacion td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        .doc-identificacion td:nth-child(odd) {
+            background-color: #f8fafc;
+            font-weight: bold;
+            width: 20%;
+        }
+        
+        .doc-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .doc-list {
+            list-style-type: disc;
+            padding-left: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #334155;
+            margin-bottom: 15px;
+        }
+        
+        .doc-list li {
+            margin-bottom: 6px;
+        }
+        
+        .doc-unit {
+            margin-bottom: 20px;
+        }
+        
+        .doc-unit-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .doc-table th, .doc-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+        }
+        
+        .doc-table th {
+            background-color: #f8fafc;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        @media print {
+            #doc-content { padding: 0 !important; }
+        }
+        
+        @media (max-width: 768px) {
+            #doc-content { padding: 1.5rem !important; }
+        }
+
+        #editorToolbar {
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 10px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-bottom: 1px solid #1e293b;
+        }
+        #editorToolbar button,
+        #editorToolbar label {
+            font-size: 13px;
+        }
+        #editorToolbar button[data-cmd] {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #f8fafc;
+            cursor: pointer;
+        }
+        #editorToolbar button[data-cmd]:hover {
+            background: #334155;
+        }
+        #editorToolbar label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        #editorToolbar input,
+        #editorToolbar select {
+            font-size: 13px;
+        }
+        .editor-actions {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <img class="page-header-logo" src="logo_centuria_blanco_1.png" alt="Centuria">
+        <h1><i class="fas fa-graduation-cap"></i> Programa de Estudios</h1>
+        <p>Sociología — Instituto Superior Centuria</p>
+        <div class="header-nav">
+            <a href="https://wmlumen.github.io/Asistencia/"><i class="fas fa-arrow-left"></i> Volver al Inicio</a>
+            <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.85);font-weight:600;">
+                <i class="fas fa-file-alt"></i> Documento Oficial
+            </span>
+            <button onclick="exportWord()"><i class="fas fa-file-word"></i> Exportar a Word</button>
+        </div>
+    </header>
+
+    <div class="editor-toolbar" id="editorToolbar">
+        <button type="button" data-cmd="bold" title="Negrita"><b>B</b></button>
+        <button type="button" data-cmd="italic" title="Cursiva"><i>I</i></button>
+        <button type="button" data-cmd="underline" title="Subrayado"><u>U</u></button>
+        <button type="button" data-cmd="justifyLeft" title="Alinear izquierda">Izq</button>
+        <button type="button" data-cmd="justifyCenter" title="Centrar">Centro</button>
+        <button type="button" data-cmd="insertUnorderedList" title="Lista">UL</button>
+        <button type="button" data-cmd="insertOrderedList" title="Numerada">OL</button>
+        <label title="Tamaño">Tamaño <input type="number" id="editorSize" value="16" min="10" max="72"></label>
+        <label title="Fuente">Fuente
+            <select id="editorFont">
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+        </label>
+        <span class="editor-actions">
+            <button type="button" id="btnSaveLocal" title="Guardar en este navegador">Guardar local</button>
+            <button type="button" id="btnImportJson" title="Importar JSON guardado">Importar JSON</button>
+            <input type="file" id="importJsonFile" accept="application/json" style="display:none">
+            <button type="button" id="btnExportDocx" title="Exportar a documento Word (HTML)">Exportar Word</button>
+            <button type="button" id="btnPublishJson" title="Exportar JSON para actualizar online">Publicar JSON</button>
+        </span>
+    </div>
+
+    <div style="position:fixed;bottom:18px;right:18px;z-index:9999;background:rgba(0,0,0,0.55);color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;">
+        <label style="cursor:pointer"><input type="checkbox" id="editorToggle"> Modo edición</label>
+    </div>
+
+    <script>
+        (function () {
+            const TOOLBAR = document.getElementById('editorToolbar');
+            const TOGGLE = document.getElementById('editorToggle');
+            const ROOT = document.getElementById('doc-content');
+            const sizeInput = document.getElementById('editorSize');
+            const fontSelect = document.getElementById('editorFont');
+            const AUTO_SAVE_DELAY = 800;
+            let autoSaveTimer = null;
+
+            TOGGLE.addEventListener('change', function () {
+                if (!TOGGLE.checked) {
+                    ROOT.contentEditable = 'false';
+                    document.querySelectorAll('.ce-paragraph.clicked')
+                        .forEach(n => n.style.outline = '');
+                    return;
+                }
+                ROOT.contentEditable = 'true';
+                try { document.documentElement.style.userSelect = 'text'; } catch (e) {}
+                try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+                ROOT.addEventListener('keydown', function (e) {
+                    try {
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            const ok = document.queryCommandSupported('insertHTML');
+                            document.execCommand(ok ? 'insertHTML' : 'insertText', false, '\u00A0\u00A0\u00A0\u00A0');
+                        }
+                    } catch (err) {}
+                }, true);
+            });
+
+            TOOLBAR.addEventListener('mousedown', function (e) {
+                const btn = e.target.closest('button[data-cmd]');
+                if (!btn) return;
+                e.preventDefault();
+                const cmd = btn.getAttribute('data-cmd');
+                ROOT.focus();
+                if (cmd === 'fontSize') {
+                    document.execCommand('fontSize', false, parseInt(sizeInput.value, 10) || 3);
+                } else if (cmd === 'fontName') {
+                    document.execCommand('fontName', false, fontSelect.value || 'Arial');
+                } else {
+                    document.execCommand(cmd, false, null);
+                }
+                scheduleAutoSave();
+            });
+
+            sizeInput.addEventListener('input', () => {
+                ROOT.focus();
+                document.execCommand('fontSize', false, parseInt(sizeInput.value, 10) || 3);
+                scheduleAutoSave();
+            });
+            fontSelect.addEventListener('change', () => {
+                ROOT.focus();
+                document.execCommand('fontName', false, fontSelect.value || 'Arial');
+                scheduleAutoSave();
+            });
+
+            ROOT.addEventListener('input', scheduleAutoSave);
+
+            function scheduleAutoSave() {
+                if (autoSaveTimer) clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(flushToStorage, AUTO_SAVE_DELAY);
+            }
+            function flushToStorage() {
+                try {
+                    localStorage.setItem('CE_programa_estudios_html', ROOT.innerHTML);
+                    showStatus('Cambios guardados');
+                } catch (err) {
+                    showStatus('No se pudo guardar');
+                }
+            }
+
+            try {
+                const saved = localStorage.getItem('CE_programa_estudios_html');
+                if (saved) {
+                    ROOT.innerHTML = saved;
+                }
+            } catch (err) { }
+
+            document.getElementById('btnSaveLocal').addEventListener('click', function () {
+                flushToStorage();
+            });
+
+            document.getElementById('btnExportDocx').addEventListener('click', function () {
+                const htmlContent = buildExportHtml();
+                const blob = new Blob(['\ufeff<!DOCTYPE html><html><head><meta charset="utf-8"><title>Programa de Estudios</title></head><body>' + htmlContent + '</body></html>'], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'PROGRAMA_ESTUDIOS.doc';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+                showStatus('Exportación lista');
+            });
+
+            document.getElementById('btnPublishJson').addEventListener('click', function () {
+                const payload = {
+                    url: location.href,
+                    title: document.title,
+                    updatedAt: new Date().toISOString(),
+                    html: ROOT.innerHTML
+                };
+                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'PROGRAMA_ESTUDIOS.update.json';
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
+                showStatus('JSON listo para subir o importar');
+            });
+
+            const importFileInput = document.getElementById('importJsonFile');
+            document.getElementById('btnImportJson').addEventListener('click', function () {
+                if (importFileInput) importFileInput.click();
+            });
+            if (importFileInput) {
+                importFileInput.addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function (ev) {
+                        try {
+                            const payload = JSON.parse(ev.target.result || '{}');
+                            if (payload.html) {
+                                ROOT.innerHTML = payload.html;
+                                flushToStorage();
+                                showStatus('JSON importado');
+                            } else {
+                                showStatus('JSON inválido');
+                            }
+                        } catch (err) {
+                            showStatus('Error leyendo JSON');
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            function buildExportHtml() {
+                const tmp = document.createElement('div');
+                tmp.appendChild(ROOT.cloneNode(true));
+                const editable = tmp.querySelector('[contenteditable]');
+                if (editable) editable.removeAttribute('contenteditable');
+                tmp.querySelectorAll('script').forEach(n => n.remove());
+                const hideToolbar = tmp.querySelector('#editorToolbar');
+                if (hideToolbar) hideToolbar.remove();
+                return tmp.innerHTML;
+            }
+
+            let statusTimer = null;
+            function showStatus(message) {
+                let badge = TOOLBAR.querySelector('.editor-status');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'editor-status';
+                    badge.style.marginLeft = '10px';
+                    TOOLBAR.appendChild(badge);
+                }
+                badge.textContent = message;
+                if (statusTimer) clearTimeout(statusTimer);
+                statusTimer = setTimeout(() => { badge.textContent = ''; }, 1800);
+            }
+        })();
+    </script>
+
+    <script>
+        function exportWord() {
+            var header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Programa de Estudios</title></head><body>";
+            var footer = "</body></html>";
+            var sourceHTML = header + document.getElementById("doc-content").innerHTML + footer;
+            
+            var source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            var fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'Programa_Estudios_Sociologia.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+    </script>
+
+    <div class="premium-container">
+        <div class="premium-card" style="margin-bottom:24px;">
+            <div class="premium-card-body">
+                <div id="doc-content" style="font-family: Arial, sans-serif; color: #000;">
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="margin-bottom: 5px; font-size: 22px; color: #1e1e1e; font-weight: bold;">INSTITUTO SUPERIOR CENTURIA</h2>
+                <h3 style="margin-top: 0; font-size: 16px; color: #555;">PROGRAMA DE ESTUDIOS</h3>
+            </div>
+
+            <!-- 1. IDENTIFICACION -->
+            <div class="doc-section-title">1. IDENTIFICACIÓN</div>
+            <div class="doc-identificacion">
+                <table>
+                    <tr>
+                        <td>ASIGNATURA</td>
+                        <td colspan="3">SOCIOLOGÍA</td>
+                    </tr>
+                    <tr>
+                        <td>CURSO</td>
+                        <td>Primero</td>
+                        <td>SEMESTRE</td>
+                        <td>Primer</td>
+                    </tr>
+                    <tr>
+                        <td>CARGA HORARIA</td>
+                        <td>75</td>
+                        <td>CÓDIGO</td>
+                        <td>ADU04</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- 2. FUNDAMENTACION -->
+            <div class="doc-section-title">2. FUNDAMENTACIÓN</div>
+            <div class="doc-text">
+                La asignatura enfoca en forma global la sociología. En la Carrera nos centraremos en el estudio de la persona repasando los diversos aspectos corpóreos de la naturaleza humana, las inmateriales, las diversas manifestaciones éticas y estéticas humanas, culminándose con un acceso a la intimidad personal. El fin de la materia es obtener hábitos de reflexión personal y sobre todo analizar y comprender algunas de las dimensiones de la persona humana individual y social, situación que encaminará al éxito al profesional de la carrera.
+            </div>
+
+            <!-- 3. OBJETIVOS -->
+            <div class="doc-section-title">3. OBJETIVOS</div>
+            <div class="doc-text">Formar una mentalidad crítica que conduzca a una comprensión renovada del hombre y la sociedad.</div>
+            <ul class="doc-list">
+                <li>Obtener hábitos de reflexión personal.</li>
+                <li>Formular conceptualmente la propia experiencia.</li>
+                <li>Analizar y comprender algunas de las dimensiones de la persona humana.</li>
+                <li>Tomar conciencia acerca de los temas fundamentales que hacen a la existencia de la persona y de la sociedad contemporánea.</li>
+                <li>Introducir los conceptos fundamentales del análisis sociológico y las diferentes perspectivas teóricas.</li>
+                <li>Analizar y comparar los distintos sistemas sociales a lo largo de la historia desde un punto de vista sociológico.</li>
+                <li>Conocer los principales componentes, indicadores y tasas de la población activa.</li>
+                <li>Analizar la estructura social y los sistemas de estratificación social.</li>
+                <li>Identificar las principales variables que determinan la dinámica de las sociedades contemporáneas.</li>
+                <li>Conocer las principales características e instituciones del periodo de posguerra.</li>
+                <li>Introducir los conceptos fundamentales del ámbito político moderno y analizar las diversas formas de autoridad.</li>
+            </ul>
+
+            <!-- 4. CONTENIDOS -->
+            <div class="doc-section-title">4. CONTENIDOS</div>
+            
+<div class="doc-unit">
+    <div class="doc-unit-title">UNIDAD I: LA SOCIOLOGÍA: SUS ORÍGENES, AUTORES Y DOCTRINAS</div>
+    <div class="doc-text">Sociología y sociólogos: autores y doctrinas. Aparición de la sociología – Los fundadores. Comte: el positivismo sociológico. Spencer: el organicismo evolucionista. Durkheim: el realismo social. Darwin: evolucionismo social. Weber: la sociología comprensiva. Marx: el materialismo histórico. Pareto: mecanicismo y psicologismo. Resumen: doctrinas y escuelas sociológicas.</div>
+    <div class="doc-text" style="margin-top: 10px; padding: 12px; background: #f0fdf4; border-left: 4px solid #28a745; border-radius: 4px;">
+        <strong style="color: #166534;">Actividad práctica:</strong> 
+        <a href="OBSERVACION_SOCIOLOGICA.html" style="color: #166534; text-decoration: underline;">Observación sociológica del entorno</a> 
+        &mdash; Los estudiantes observan situaciones cotidianas y las interpretan desde las perspectivas de los autores de la Unidad I. 
+        <span style="font-size: 12px; color: #666;">(6 puntos &middot; Descripción, identificación, relación, justificación y conclusión)</span>
+    </div>
+</div>
+
+            <div class="doc-unit">
+                <div class="doc-unit-title">UNIDAD II: DEFINICIONES Y CAMPOS DE LA SOCIOLOGÍA</div>
+                <div class="doc-text">La esfera de la sociología. Complejidad de la sociología. Fines de la sociología. Tres tareas. Definiciones. El objeto de la sociología. Visión de conjunto. La sociología y la Economía. Especialidades.</div>
+            </div>
+
+            <div class="doc-unit">
+                <div class="doc-unit-title">UNIDAD III: OBJETO DE LA SOCIOLOGÍA: LA CONDUCTA HUMANA</div>
+                <div class="doc-text">El concepto de naturaleza humana. La teoría de los instintos. Criterios de estabilidad. Los orígenes de la cultura. El hombre fuera de la cultura.</div>
+            </div>
+
+            <div class="doc-unit">
+                <div class="doc-unit-title">UNIDAD IV: EL HOMBRE COMO SER SOCIAL</div>
+                <div class="doc-text">La integración del hombre en la sociedad. La búsqueda del equilibrio en la integración. El individualismo. El colectivismo y la masificación. Planificación y manipulación. El primado de las relaciones interpersonales. Democracia: Participación y derechos humanos.</div>
+            </div>
+
+            <div class="doc-unit">
+                <div class="doc-unit-title">UNIDAD V: LA LIBERTAD Y LA EXISTENCIA HUMANA</div>
+                <div class="doc-text">La acción humana: Deliberación y responsabilidad. La libertad absoluta. La libertad condicionada y sus diversos aspectos. La libertad como proyecto de realización humana. El establecimiento de las condiciones sociales, económicas y políticas para la realización humana.</div>
+            </div>
+
+            <div class="doc-unit">
+                <div class="doc-unit-title">UNIDAD VI: CAMBIO Y CONFLICTO SOCIAL. LA DINÁMICA SOCIAL</div>
+                <div class="doc-text">La dinámica del cambio social. Estructura y proceso. La dinámica socioeconómica: leyes del desarrollo social. Modernización y racionalización. Las características de la fase de desarrollo de posguerra. La nueva política económica: el reformismo keynesiano. Cambios asociados: éxodo rural, urbanización e incorporación de la mujer al mundo laboral.</div>
+            </div>
+
+            <!-- 5. ESTRATEGIAS -->
+            <div class="doc-section-title">5. ESTRATEGIAS DE ENSEÑANZA – APRENDIZAJE</div>
+            <ul class="doc-list">
+                <li>El profesor expondrá los temas y su entorno explicativo necesario.</li>
+                <li>Mediante el método dialogado se analizará la temática del programa.</li>
+                <li>Se discutirá en grupos para favorecer la reflexión personal y acceder a conclusiones válidas.</li>
+                <li>Se desarrollará el sentido de cooperación mediante trabajos comunitarios.</li>
+                <li>Cada profesor, buscará ejemplos adecuados para la discusión.</li>
+                <li>Los grupos harán presentaciones orales, luego de una investigación temática conectada con la realidad que vivimos.</li>
+                <li>Interpretación crítica de los puntos del programa para favorecer a una mayor comprensión de la esencia humana.</li>
+                <li><strong>Actividad de observación sociológica:</strong> Los estudiantes aplican las perspectivas de los autores clásicos al análisis de situaciones cotidianas (Unidad I).</li>
+            </ul>
+
+            <!-- 6. EVALUACION -->
+            <div class="doc-section-title">6. EVALUACIÓN</div>
+            <div class="doc-text">El método de evaluación contempla la ponderación de pruebas parciales, participación en clase y prueba final. Por tanto, se pondera el proceso y el producto de acuerdo al siguiente detalle:</div>
+            <ul class="doc-list">
+                <li>Un examen parcial equivalente al <strong>30% de la nota final</strong>.</li>
+                <li>Participación en clase (asistencia) equivalente al <strong>10% de la nota final</strong>.</li>
+                <li>Actividades prácticas y trabajos (observación sociológica, trabajos prácticos) equivalente al <strong>10% de la nota final</strong>.</li>
+                <li>El examen final tendrá un valor hasta el <strong>50% de la nota final</strong>.</li>
+                <li>Totalizando el <strong>100%</strong>.</li>
+            </ul>
+            <div class="doc-text">Las calificaciones para la nota final se realizarán siguiendo la siguiente escala:</div>
+            <table class="doc-table">
+                <tr>
+                    <th colspan="2">Porcentaje</th>
+                    <th>Nota</th>
+                    <th>Concepto</th>
+                </tr>
+                <tr>
+                    <td>0%</td>
+                    <td>a 69%</td>
+                    <td>Uno (1)</td>
+                    <td>Insuficiente</td>
+                </tr>
+                <tr>
+                    <td>70%</td>
+                    <td>a 77%</td>
+                    <td>Dos (2)</td>
+                    <td>Aprobado</td>
+                </tr>
+                <tr>
+                    <td>78%</td>
+                    <td>a 85%</td>
+                    <td>Tres (3)</td>
+                    <td>Bueno</td>
+                </tr>
+                <tr>
+                    <td>86%</td>
+                    <td>a 93%</td>
+                    <td>Cuatro (4)</td>
+                    <td>Distinguido</td>
+                </tr>
+                <tr>
+                    <td>94%</td>
+                    <td>a 100%</td>
+                    <td>Cinco (5)</td>
+                    <td>Sobresaliente</td>
+                </tr>
+            </table>
+            <div class="doc-text">Los exámenes parciales y finales podrán rendirse en forma ordinaria y extraordinaria.<br>Para tener derecho a examen final el alumno debe tener <strong>80% de asistencia, aprobados los exámenes parciales, actividades prácticas y trabajo práctico</strong>.</div>
+
+            <!-- 7. BIBLIOGRAFIA -->
+            <div class="doc-section-title">7. BIBLIOGRAFÍA</div>
+            <ul class="doc-list" style="font-size: 13px;">
+                <li>Castells, Manuel 1942-, "La era de la información economía, sociedad y cultura", Madrid Alianza 2009</li>
+                <li>Chinoy, Ely: La sociedad, una introducción a la sociología, Fondo de Cultura Económica, México, 5ª. Edición, 1973.</li>
+                <li>Coreth, Emerich. "¿Qué es el hombre? Herder, Madrid, 1980.</li>
+                <li>Gevaert, Joseph. "El problema del hombre". Sígueme. Salamanca, 1998.</li>
+                <li>Jiménez, Emiliano. "¿Quién soy yo?". Biblioteca Catecumenal, Madrid, 1992.</li>
+                <li>LUCAS, Juan de S. "El hombre ¿quién es? Edit. Sociedad de Educación. Atenas, 1988</li>
+                <li>LUYPEN, W. "Fenomenología existencial". Herder, Madrid, 1980.</li>
+                <li>RECONDO, GREGORIO: Sociología y ciencias sociales, introducción a la sociología, Ediciones Pannedille, Buenos Aires, 1971.</li>
+                <li>VIDAL, Marciano. "Moral de actitudes". P.S. Madrid, 1979.</li>
+                <li>CHINOY, Ely: La sociedad, una introducción a la sociología, Fondo de Cultura Económica, México, 5ª. Edición, 1973.</li>
+                <li>En Antología: De la sociedad tradicional a la sociedad de masas, Departamento de Sociología, Universidad Nacional de Buenos Aires (UNBA), 1961.</li>
+                <li>Manual de Naciones Unidas: Población, desarrollo y salud reproductiva en el Paraguay, Manual para Institutos de Enseñanza Militar, Asunción, 1998.</li>
+                <li>RUMNEY, Jay & Maier, Joseph: Sociología, la ciencia de la sociedad, Editorial Paidos, Buenos Aires. 1952.</li>
+            </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportWord() {
+            var header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Programa de Estudios</title></head><body>";
+            var footer = "</body></html>";
+            var sourceHTML = header + document.getElementById("doc-content").innerHTML + footer;
+            
+            var source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            var fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'Programa_Estudios_Sociologia.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Primer Parcial - Sociología - Centuria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --primary: #28a745;
+            --secondary: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: var(--secondary);
+            padding: 40px;
+        }
+
+        h1,
+        h2 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .header-line {
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .question-block {
+            border-left: 4px solid #e2e8f0;
+            padding-left: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="max-w-4xl mx-auto">
+    <header class="text-center mb-8 pb-4 header-line">
+        <h1 class="text-3xl font-bold uppercase tracking-tight">Instituto Superior <span
+                class="text-red-600">Centuria</span></h1>
+        <p class="text-sm font-bold text-gray-500 mt-1">SOCIOLOGÍA (ADU04) - PRIMER EXAMEN PARCIAL</p>
+        <div class="grid grid-cols-2 gap-4 text-left mt-6 text-sm border p-4 bg-gray-50 rounded">
+            <div><strong>Alumno:</strong> ___________________________________</div>
+            <div><strong>C.I.:</strong> _______________________</div>
+            <div><strong>Fecha:</strong> ____/____/2026</div>
+            <div><strong>Puntaje:</strong> ____ / 20 pts. (20%)</div>
+        </div>
+    </header>
+
+    <section class="mb-8">
+        <h2 class="text-xl font-bold mb-4 bg-gray-800 text-white px-3 py-1 inline-block">BLOQUE I: TEORÍA Y AUTORES (8
+            pts)</h2>
+
+        <div class="question-block">
+            <p class="font-bold mb-2">1. ¿Qué autor definió a la Sociología como el estudio de la "Acción Social" y
+                utilizó el método de la comprensión (Verstehen)?</p>
+            <div class="space-y-1 text-sm">
+                <p>a) Auguste Comte</p>
+                <p>b) Max Weber</p>
+                <p>c) Karl Marx</p>
+                <p>d) Herbert Spencer</p>
+            </div>
+        </div>
+
+        <div class="question-block">
+            <p class="font-bold mb-2">2. El concepto de "Hecho Social" como algo externo y coercitivo para el individuo
+                pertenece a:</p>
+            <div class="space-y-1 text-sm">
+                <p>a) Vilfredo Pareto</p>
+                <p>b) Émile Durkheim</p>
+                <p>c) Adam Smith</p>
+            </div>
+        </div>
+
+        <div class="question-block">
+            <p class="font-bold mb-2">3. Defina brevemente la "Ley de los Tres Estados" de Comte:</p>
+            <div class="h-16 border-b border-dashed border-gray-400"></div>
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-xl font-bold mb-4 bg-gray-800 text-white px-3 py-1 inline-block">BLOQUE II: SOCIOLOGÍA Y
+            ECONOMÍA (6 pts)</h2>
+        <div class="question-block">
+            <p class="font-bold mb-2">4. Marque Verdadero (V) o Falso (F):</p>
+            <div class="space-y-2 text-sm">
+                <p>( ) La sociología y la economía son ciencias independientes que no poseen puntos de contacto en el
+                    análisis de mercados.</p>
+                <p>( ) El concepto de "Homo Sociologicus" sugiere que las decisiones económicas están incrustadas en
+                    redes sociales y normas.</p>
+                <p>( ) El objeto de estudio de la sociología es puramente el individuo aislado de su contexto grupal.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-xl font-bold mb-4 bg-gray-800 text-white px-3 py-1 inline-block">BLOQUE III: CULTURA Y CONDUCTA
+            (6 pts)</h2>
+        <div class="question-block">
+            <p class="font-bold mb-2">5. CASO PRÁCTICO: Un administrador aduanero nota que en una frontera específica,
+                el intercambio de regalos es visto como una norma de cortesía cultural, aunque el reglamento lo prohíbe
+                como corrupción. Analice este conflicto desde la tensión entre "Cultura" y "Norma Legal":</p>
+            <div class="h-32 border border-gray-200 rounded p-2 bg-gray-50"></div>
+        </div>
+    </section>
+
+    <footer class="mt-12 text-center no-print">
+        <button onclick="window.print()"
+            class="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-green-700">Imprimir
+            Examen</button>
+    </footer>
+</body>
+
+</html>
