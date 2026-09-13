@@ -610,63 +610,100 @@
             fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula))
                 .then(r => r.json())
                 .then(alumnoData => {
-                    if(!alumnoData.existe){
-                        hideLoading('btn-buscar');
-                        // No registrado → paso 2 (registro)
-                        document.getElementById('step-1-cedula').style.display = 'none';
-                        document.getElementById('step-2-register').style.display = 'block';
-                        return null; // Señal para cortar la cadena
+                    if(alumnoData.existe){
+                        // ─── Alumno encontrado ───
+                        const nombreCompleto = (alumnoData.nombre || '').trim();
+                        const parts = nombreCompleto.split(/\s+/);
+                        const nombre = parts[0] || '';
+                        const apellido = parts.slice(1).join(' ') || '';
+                        const primeraNombre = nombre.charAt(0).toUpperCase();
+                        const primeraApellido = apellido.charAt(0).toLowerCase();
+                        const cedulaLimpia = cedula.replace(/\./g, '');
+                        const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
+
+                        if(password !== passwordEsperada){
+                            hideLoading('btn-buscar');
+                            showLoginError("Contraseña incorrecta.");
+                            return null;
+                        }
+
+                        sessionStorage.setItem('current_cedula', cedulaActual);
+                        sessionStorage.setItem('current_nombre', alumnoData.nombre);
+                        if(alumnoData.carrera) sessionStorage.setItem('current_carrera', alumnoData.carrera);
+                        if(alumnoData.seccion) sessionStorage.setItem('current_seccion', alumnoData.seccion);
+                        if(alumnoData.grado) sessionStorage.setItem('current_grado', alumnoData.grado);
+                        if(alumnoData.nombre_separado) sessionStorage.setItem('current_nombre_separado', JSON.stringify(alumnoData.nombre_separado));
+                        else if(alumnoData.nombre){
+                            const p = alumnoData.nombre.trim().split(/\s+/);
+                            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:p[0]||'',apellido:p.slice(1).join(' ')}));
+                        }
+
+                        return fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
                     }
 
-                    // 2) Verificar contraseña: Primera letra Nombre(MAYÚS) + primera letra Apellido(minús) + cédula(sin puntos) + *
-                    const nombreCompleto = (alumnoData.nombre || '').trim();
-                    const parts = nombreCompleto.split(/\s+/);
-                    const nombre = parts[0] || '';
-                    const apellido = parts.slice(1).join(' ') || '';
-                    const primeraNombre = nombre.charAt(0).toUpperCase();
-                    const primeraApellido = apellido.charAt(0).toLowerCase();
-                    const cedulaLimpia = cedula.replace(/\./g, '');
-                    const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
+                    // ─── No está en RegistroAlumnos → buscar en Roles (docente/admin/académico) ───
+                    return fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula))
+                        .then(r => r.json())
+                        .then(rolesData => {
+                            if(!rolesData || !rolesData.roles || rolesData.roles.length === 0){
+                                hideLoading('btn-buscar');
+                                // No registrado en ningún lado → paso 2 (registro)
+                                document.getElementById('step-1-cedula').style.display = 'none';
+                                document.getElementById('step-2-register').style.display = 'block';
+                                return null;
+                            }
 
-                    if(password !== passwordEsperada){
-                        hideLoading('btn-buscar');
-                        showLoginError("Contraseña incorrecta. Formato: Primera letra nombre(MAYÚS) + primera letra apellido(minús) + cédula + *");
-                        return null;
-                    }
+                            // Encontrado en Roles → verificar contraseña con nombre de Roles
+                            const primerRol = rolesData.roles[0];
+                            const nombreRol = (primerRol.nombre || '').trim();
+                            const partsRol = nombreRol.split(/\s+/);
+                            const nombreR = partsRol[0] || '';
+                            const apellidoR = partsRol.slice(1).join(' ') || '';
+                            const primeraNombre = nombreR.charAt(0).toUpperCase();
+                            const primeraApellido = apellidoR.charAt(0).toLowerCase();
+                            const cedulaLimpia = cedula.replace(/\./g, '');
+                            const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
 
-                    // Contraseña correcta → guardar datos básicos
-                    sessionStorage.setItem('current_cedula', cedulaActual);
-                    sessionStorage.setItem('current_nombre', alumnoData.nombre);
-                    if(alumnoData.carrera) sessionStorage.setItem('current_carrera', alumnoData.carrera);
-                    if(alumnoData.seccion) sessionStorage.setItem('current_seccion', alumnoData.seccion);
-                    if(alumnoData.grado) sessionStorage.setItem('current_grado', alumnoData.grado);
-                    if(alumnoData.nombre_separado) sessionStorage.setItem('current_nombre_separado', JSON.stringify(alumnoData.nombre_separado));
-                    else if(alumnoData.nombre){
-                        const p = alumnoData.nombre.trim().split(/\s+/);
-                        sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:p[0]||'',apellido:p.slice(1).join(' ')}));
-                    }
+                            if(password !== passwordEsperada){
+                                hideLoading('btn-buscar');
+                                showLoginError("Contraseña incorrecta.");
+                                return null;
+                            }
 
-                    // 3) Traer roles de la hoja Roles
-                    return fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
+                            // Contraseña correcta → guardar datos
+                            sessionStorage.setItem('current_cedula', cedulaActual);
+                            sessionStorage.setItem('current_nombre', nombreRol);
+                            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:nombreR,apellido:apellidoR}));
+
+                            rolesActuales = rolesData.roles;
+                            sessionStorage.setItem('roles', JSON.stringify(rolesActuales));
+
+                            if(rolesActuales.length === 1){
+                                sessionStorage.setItem('rol', rolesActuales[0].rol);
+                                sessionStorage.setItem('current_carrera', rolesActuales[0].carrera || '');
+                                sessionStorage.setItem('current_seccion', rolesActuales[0].seccion || '');
+                                mostrarCursos(null);
+                            } else {
+                                mostrarSelectorRoles(rolesActuales);
+                            }
+                            return null;
+                        });
                 })
-                .then(r => r ? r.json() : null)
+                .then(r => { if(!r) return; return r.json(); })
                 .then(rolesData => {
                     if(!rolesData || !rolesData.roles) return;
                     rolesActuales = rolesData.roles;
                     sessionStorage.setItem('roles', JSON.stringify(rolesActuales));
 
                     if(rolesActuales.length === 0){
-                        // Sin roles explícitos → alumno por defecto
                         sessionStorage.setItem('rol', 'alumno');
                         mostrarCursos(null);
                     } else if(rolesActuales.length === 1){
-                        // Un solo rol → entrar directo
                         sessionStorage.setItem('rol', rolesActuales[0].rol);
                         sessionStorage.setItem('current_carrera', rolesActuales[0].carrera || sessionStorage.getItem('current_carrera'));
                         sessionStorage.setItem('current_seccion', rolesActuales[0].seccion || sessionStorage.getItem('current_seccion'));
                         mostrarCursos(null);
                     } else {
-                        // Múltiples roles → mostrar selector
                         mostrarSelectorRoles(rolesActuales);
                     }
                 })
