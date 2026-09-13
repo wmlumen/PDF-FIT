@@ -562,4 +562,81 @@ docker exec -i moodle_web php /var/www/html/import_indicators.php 3
 ### 🔴 Bloqueo actual
 - Docker daemon apagado al final de sesión. No es error de config, solo reiniciar Docker Desktop.
 
+---
+
+## 16. ANÁLISIS INTEGRAL CampusVirtual — 2026-09-13 20:00
+
+### 16.1 Inventario real (lo que existe)
+```
+CampusVirtual/  (10 dirs + 8 files en raíz)
+  app/          (14 dirs + 8 files)
+    moodle/     ← Moodle 5.3dev + CONTAMINADO con 4 carpetas del portal
+    css/ js/ images/ academic/ admin/ Backend_Scripts/ docs/ sociologia/ Materiales_Clases/ agents/ assets/ theme_custom.bak2/
+    index.html (48522 bytes) ✓
+    indicators.json ✓  import_indicators.php ✓  docker-compose.yml (DUPLICADO, obsoleto)
+  local/        (0 archivos) ← VACÍO
+  theme/        (0 archivos) ← VACÍO
+  mod/          (vacío)
+  maestria/     (vacío)
+  alumnos_cargados.json/csv ✓ (30 alumnos)
+```
+
+### 16.2 Bucle de testeo — Qué funciona / qué no (2026-09-13 20:00)
+| Test | Resultado | Detalle |
+|------|-----------|---------|
+| Docker daemon | ❌ FALLO | `failed to connect to npipe dockerDesktopLinuxEngine` — apagado |
+| config.php | ✅ OK | Existe, válido, mariadb/db/moodle_user/http://localhost |
+| index.html (portal) | ✅ OK | 48522 bytes, login localStorage |
+| sociologia/teacher_panel.html | ✅ OK | Existe |
+| local/ | ❌ FALLO | 0 archivos — plugins no creados |
+| theme/ | ❌ FALLO | 0 archivos — tema Centuria no creado |
+| XAMPP Alias | ✅ OK | `Alias /CampusVirtual → moodle/public` correcto pero residual |
+| Moodle DB (último estado) | ⚠️ PARCIAL | 428 tablas, upgraderunning=1789330044, upgrade PID 147 a medias |
+| Moodle HTTP | ❌ FALLO | Docker off → curl 000, con Docker on → 500 "Site is being upgraded" |
+| Composer vendor | ✅ OK | `vendor/autoload.php` existe |
+| Git moodle | ⚠️ SUBMÓDULO | `CampusVirtual/app/moodle` es git submodule no trackeado |
+
+### 16.3 Hallazgos críticos
+1. **CONTAMINACIÓN de moodle core**: `CampusVirtual/app/moodle/academic`, `admin`, `Backend_Scripts`, `Materiales_Clases` NO deben estar dentro de `moodle/`. Fueron copiados por robocopy erróneo y rompen upgrades. Deben moverse a `CampusVirtual/app/` (ya existen ahí duplicados, borrar los de dentro de moodle).
+2. **docker-compose.yml DUPLICADO**: `CampusVirtual/app/docker-compose.yml` tiene volumen `./moodle:/var/www/html` (bucle a sí mismo) y `MOODLE_PASSWORD=admin_pwd` viejo. El correcto es `moodle/docker-compose.yml` con `../CampusVirtual/app/moodle:/var/www/html` y `80:80/443:443`. **Borrar el de app/**.
+3. **XAMPP residual**: `httpd.conf` y `httpd-ssl.conf` aún tienen `Alias /CampusVirtual` apuntando a `moodle/public`. Si se usa Docker en 80/443, XAMPP debe estar detenido o sin ese Alias.
+4. **Instalación Moodle a medias**: `install_database.php` progresó 0→428 tablas pero `upgrade.php --allow-unstable` quedó colgado en `block_social_activities` con timeout. Es reanudable.
+5. **Puertos**: Con Docker en 80/443, XAMPP Apache y servicio `MySQL80` deben permanecer detenidos (ya se hizo `net stop MySQL80` pero vuelve al reiniciar).
+
+### 16.4 Por qué vamos 3 días sin avanzar — Registro
+| Causa raíz | Efecto | Veces |
+|------------|--------|-------|
+| **Cambio de estrategia Docker ↔ XAMPP** | Cada cambio invalida config.php, puertos, DocumentRoot | 3 cambios |
+| **PHP 7.4 vs 8.3** | XAMPP 7.4 incompatible con Moodle 5.3, se descubre tarde | 1 día perdido |
+| **DocumentRoot confuso** | `moodle/` vs `moodle/public/` — Moodle 5.3 usa `public/` | 2 reconfiguraciones |
+| **MySQL80 + XAMPP ocupando 80/443/3306** | Docker no puede bindear, "port already in use" | 4 bloqueos |
+| **install_database timeout + doble ejecución** | PID 38 + PID 83 simultáneos → upgraderunning | 2 sesiones bloqueadas |
+| **Sin prompt único** | Antigravity creó plan que nunca se usó, cada IA reinterpreta | 3 días sin checklist |
+| **Contaminación de moodle/** | Archivos del portal dentro del core → riesgo de upgrade corrupto | Desde robocopy inicial |
+| **Docker daemon no persistente** | Cada reinicio requiere `Docker Desktop` manual | Cada sesión |
+| **Git submodule no comiteado** | `CampusVirtual/app/moodle` y `moodle/moodle` aparecen como `?` | Commits incompletos |
+
+**Conclusión**: No es falta de código, es **falta de un único flujo bloqueante** y de **limpieza de artefactos contaminados**. El bucle de testeo arriba debe ejecutarse al inicio de cada sesión y solo avanzar si todo está en ✅ o ⚠️ conocido.
+
+### 16.5 Plan de cierre — Qué hace falta para concluir con éxito
+**Orden estricto, no saltar pasos. Marcar [x] al completar y pushear este archivo.**
+
+| Paso | Comando / Acción | Verifica |
+|------|------------------|----------|
+| 1 | Borrar contaminación: `Remove-Item CampusVirtual/app/moodle/academic,admin,Backend_Scripts,Materiales_Clases -Recurse -Force` | `Get-ChildItem moodle` ya no lista esas 4 carpetas |
+| 2 | Borrar duplicado: `Remove-Item CampusVirtual/app/docker-compose.yml -Force` | Solo queda `moodle/docker-compose.yml` |
+| 3 | Limpiar XAMPP residual (opcional si se queda con Docker): comentar `Alias /CampusVirtual` en `C:/xampp/apache/conf/httpd.conf` y `httpd-ssl.conf` | `Select-String CampusVirtual` vacío |
+| 4 | Reiniciar Docker Desktop (UI → Restart) | `docker ps` responde |
+| 5 | `cd moodle; docker compose up -d` | `docker ps` → `moodle_web Up 80->80/443->443`, `moodle_db healthy` |
+| 6 | `docker exec moodle_db mariadb -u root -pmoodle_root_pwd moodle -e "DELETE FROM mdl_config WHERE name='upgraderunning';"` | `SELECT` vacío |
+| 7 | `docker exec moodle_web php /var/www/html/admin/cli/upgrade.php --non-interactive --allow-unstable` (timeout 900s, repetir hasta `Upgrade completed`) | `echo $?` = 0, `SELECT upgraderunning` vacío |
+| 8 | `curl.exe -s -o NUL -w "%{http_code}" http://localhost/` → 200/302 No 500 | Navegador `http://localhost` muestra login Moodle |
+| 9 | Login `admin / Centuria2024*` → crear cursos TIC/Sociología/Maestría | Cursos visibles en `Mis cursos` |
+| 10 | `docker exec moodle_web php /var/www/html/import_indicators.php <courseid>` | Gradebook con 30 indicadores |
+| 11 | Crear `CampusVirtual/theme/centuria` y `CampusVirtual/local/campusvirtual` | `local/` y `theme/` ya no 0 archivos |
+| 12 | Test e2e: `http://localhost` (Moodle) + `CampusVirtual/app/index.html` (portal standalone) + `sociologia/teacher_panel.html` | Los 3 cargan sin 404 |
+| 13 | Actualizar FASE 2.7-2.9, 4.x, 5.x a [x] en este archivo + commit + push | `git push origin master` OK |
+
+> **Regla de bucle**: Antes de cualquier tarea nueva, ejecutar el **Bucle de testeo 16.2**. Si algún ❌ no es el esperado, reparar ese paso primero. No avanzar con ❌ pendientes.
+
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
