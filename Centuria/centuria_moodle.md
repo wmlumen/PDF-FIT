@@ -639,4 +639,58 @@ CampusVirtual/  (10 dirs + 8 files en raíz)
 
 > **Regla de bucle**: Antes de cualquier tarea nueva, ejecutar el **Bucle de testeo 16.2**. Si algún ❌ no es el esperado, reparar ese paso primero. No avanzar con ❌ pendientes.
 
+---
+
+## 17. HUECOS QUE ESTE MD AÚN NO CUBRÍA — Revisión 2026-09-13 20:15
+
+> Esta sección lista todo lo que **no estaba analizado** hasta la v16 y que bloquea un cierre real.
+
+### 17.1 Duplicación de fuente de verdad (no analizado)
+- `TIC/Portal_TIC_Final/` tiene `index.html` idéntico a `CampusVirtual/app/index.html` pero fue el origen. ¿Cuál es canónico? Hoy **CampusVirtual/app es canónico**, `TIC/Portal_TIC_Final` queda como respaldo. No había regla de sync. **Riesgo**: editar uno y olvidar el otro.
+- `CampusVirtual/maestria/` vacío vs `Maestria/` (raíz, con 4 clases + TAREAS) — **no sincronizados**. Falta copiar `Maestria/Clase*.md` a `CampusVirtual/maestria/`.
+
+### 17.2 moodledata fuera de DocumentRoot (no analizado)
+- `config.php` usa `/var/www/moodledata` (dentro del volumen Docker `moodledata_data`) — OK para Docker pero **no documentado**. Plan original pedía `C:/moodledata` externo. Con Docker no hace falta, pero si se migra a XAMPP sí. Falta nota.
+
+### 17.3 Servicios de Moodle no configurados (no analizado)
+| Servicio | Estado | Falta |
+|----------|--------|-------|
+| **Cron** | ❌ | `* * * * * docker exec moodle_web php /var/www/html/admin/cli/cron.php` no agendado. Sin cron, notificaciones y tareas no corren |
+| **Email** | ❌ | `admin@centuria.edu.py` sin SMTP. Moodle no enviará recuperación de contraseña |
+| **Idioma ES** | ❌ | Instalado `lang=en` solo. Falta `Español - Internacional (es)` |
+| **SSL real** | ⚠️ | Cert auto-firmado genera `NET::ERR_CERT_AUTHORITY_INVALID` en navegador. Para prod. necesita mkcert o Let's Encrypt |
+
+### 17.4 Moodle 5.3dev Alpha — riesgo productivo (no analizado)
+- Mensaje: `unstable Alpha not suitable for production`. Usar en producción es riesgo. **Alternativa**: clonar rama `MOODLE_405_STABLE` o `MOODLE_404_STABLE`. No se había evaluado downgrade. Si se mantiene 5.3dev, documentar que es solo para demo.
+
+### 17.5 Datos de alumnos no importables directo (no analizado)
+- `alumnos_cargados.json/csv` (30 alumnos) no tiene formato Moodle `users.csv` (username, password, firstname, lastname, email, course1). Falta script `csv_moodle.py` que convierta `cédula → username`, `Jp + cédula + * → password`.
+
+### 17.6 Sistemas huérfanos no integrados (no analizado)
+- `web_Asistencia/Asistencia-main/` y `SOCIOLOGIA - JUNIO/Asistencia/` — sistema de asistencia web con `reports/progreso_*.md` y `database/README.md` **no aparece en ningún checklist**. Duplicado también.
+- `Backend_Scripts/*.gs` (Apps Script Google) — legado, ya no se usa (todo localStorage) pero sigue en `app/` y contamina. Decidir: archivar a `docs/legado/`.
+- `agents/` y `shared_state.json` (170 bytes) — infraestructura de sub-agentes descrita en `prompt.md` pero **nunca creada**. `shared_state.json` vacío `{"courseId": null}`.
+- `CENTURIA_RESPALDO.zip` (raíz) — backup gigante no documentado, no se sabe si está actualizado.
+
+### 17.7 Seguridad y .gitignore (no analizado)
+- Contraseñas hardcodeadas en `docker-compose.yml` y `config.php` (`moodle_pwd`, `Centuria2024*`) comiteadas al repo. Para público, mover a `.env`.
+- `git status` muestra **40 `??` untracked** (APIs/, Ambiental/, CNDCH/, ...). `.gitignore` casi vacío. Cada `git add .` arriesga subir carpetas privadas. Falta `.gitignore` con `CampusVirtual/app/moodle/`, `moodle/moodle/`, `vendor/`, `moodledata/`.
+- `localStorage` sin cifrado — cédula visible en DevTools. Aceptable para demo local, no para internet.
+
+### 17.8 Infraestructura no automatizada (no analizado)
+- **Health check** del protocolo (git, DB, disco, permisos) mencionado en directrices del Orquestador pero **sin script**. Crear `scripts/healthcheck.ps1`.
+- **reports/** y `reports/logs/` no existen — el Orquestador pide audit log pero no hay carpeta.
+- Sin `C:/moodledata` externo ni permisos `daemon` (paso del plan Antigravity que se descartó al elegir Docker pero nunca se documentó el descarte).
+
+### 17.9 Checklist incompleto — Fases que faltaban
+- FASE 3 no incluía **asistencia** (web_Asistencia), **evaluación por indicadores** detallada, **import alumnos**.
+- FASE 8 no testea **offline/localStorage vs Moodle DB** (dos fuentes de usuarios), **responsive móvil**, **export PDF real** de actas.
+- Sin **Plan B**: si `upgrade.php` falla 3 veces, ¿resetear DB o cambiar a rama estable?
+
+### 17.10 Qué se añade a este MD a partir de ahora
+1. Este §17 se mantiene como registro de huecos.
+2. Próxima IA debe crear `scripts/healthcheck.ps1` y `scripts/bucle_test.ps1` que impriman tabla 16.2 automáticamente.
+3. Crear `.gitignore` mínimo y `.env.example`.
+4. Decidir rama Moodle (quedarse en 5.3dev Alpha o bajar a 405_STABLE) y anotarlo en §3.
+
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
