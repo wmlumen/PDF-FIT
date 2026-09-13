@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Docente — Sociología | Campus Virtual Centuria</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Tailwind (para el panel original) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Montserrat', 'Segoe UI', 'sans-serif'] },
+                    colors: {
+                        institucional: {
+                            dark: '#003d19',
+                            base: '#007A33',
+                            light: '#00B140',
+                            accent: '#81C784',
+                            gold: '#C5A55A',
+                            'gold-light': '#D4B96A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- jsPDF + html2canvas for PDF export -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        :root {
+            --verde-oscuro: #007A33;
+            --verde-medio: #00B140;
+            --verde-claro: #E6F4EA;
+            --verde-hover: #81C784;
+            --texto-oscuro: #2D2D2D;
+            --dorado: #C5A55A;
+            --dorado-claro: #D4B96A;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Montserrat', 'Segoe UI', sans-serif; }
+
+        /* =========== LOGIN OVERLAY =========== */
+        #login-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(0,177,64,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(129,199,132,.1) 0%, transparent 50%),
+                linear-gradient(160deg, #003d19 0%, #007A33 35%, #005c26 65%, #003d19 100%);
+            transition: opacity .4s, visibility .4s;
+        }
+        #login-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .login-card {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            backdrop-filter: blur(24px);
+            border-radius: 24px;
+            padding: 40px 36px 36px;
+            max-width: 440px; width: 92%;
+            box-shadow: 0 8px 32px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.1);
+            animation: fadeUp .6s cubic-bezier(.16,1,.3,1);
+        }
+        .login-card::before {
+            content:''; display:block; height:3px; border-radius:2px;
+            background: linear-gradient(90deg, transparent, var(--dorado), var(--verde-hover), var(--dorado), transparent);
+            margin-bottom: 28px;
+        }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        .login-logo { height:90px; filter:drop-shadow(0 4px 16px rgba(0,0,0,.4)); display:block; margin:0 auto 16px; }
+        .login-title { text-align:center; font-weight:200; font-size:1.35rem; letter-spacing:4px; text-transform:uppercase; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.3); }
+        .login-subtitle { text-align:center; font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--dorado); margin-top:2px; margin-bottom:24px; }
+        .login-label { font-size:.65rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--dorado); margin-bottom:5px; display:block; }
+        .login-input {
+            width:100%; padding:13px 15px; background:rgba(255,255,255,.08);
+            border:1px solid rgba(255,255,255,.15); border-radius:12px;
+            color:#fff; font-family:'Montserrat',sans-serif; font-weight:600; font-size:.9rem;
+            letter-spacing:1px; outline:none; transition:.3s;
+        }
+        .login-input::placeholder { color:rgba(255,255,255,.3); font-weight:400; letter-spacing:0; }
+        .login-input:focus { border-color:var(--dorado); box-shadow:0 0 0 3px rgba(197,165,90,.2); background:rgba(255,255,255,.12); }
+        .login-btn {
+            width:100%; padding:14px; margin-top:20px;
+            background:linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
+            color:#fff; border:none; border-radius:14px;
+            font-family:'Montserrat',sans-serif; font-weight:700; font-size:.88rem;
+            letter-spacing:1px; cursor:pointer; transition:.35s cubic-bezier(.16,1,.3,1);
+            position:relative; overflow:hidden;
+        }
+        .login-btn::before {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);
+            transform:translateX(-100%); transition:.5s;
+        }
+        .login-btn:hover::before { transform:translateX(100%); }
+        .login-btn:hover { transform:translateY(-2px); box-shadow:0 12px 35px rgba(0,122,51,.4); }
+        .login-btn:disabled { opacity:.5; transform:none!important; cursor:not-allowed; }
+        .login-error {
+            background:rgba(239,83,80,.12); border:1px solid rgba(239,83,80,.3);
+            border-radius:10px; color:#ef9a9a; font-size:.75rem; padding:10px 14px;
+            margin-bottom:14px; display:none; text-align:center;
+        }
+        .login-error.show { display:block; animation:shake .4s ease; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+        .login-divider { border:none; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); margin:18px 0; }
+        .login-footer { text-align:center; margin-top:20px; }
+        .login-footer p { font-size:.6rem; color:rgba(255,255,255,.3); letter-spacing:1px; }
+
+        /* =========== PANEL STRUCTURE =========== */
+        .sidebar-glass {
+            background: rgba(0,61,25,.95); backdrop-filter:blur(20px);
+            border-right:1px solid rgba(255,255,255,.08);
+        }
+        .header-glass {
+            background:rgba(255,255,255,.85); backdrop-filter:blur(12px);
+            border-bottom:1px solid rgba(226,232,240,.6);
+        }
+        .kpi-hover { transition:all .3s cubic-bezier(.4,0,.2,1); }
+        .kpi-hover:hover { transform:translateY(-2px); box-shadow:0 10px 25px -5px rgba(0,0,0,.08); }
+        tbody tr { transition:all .15s ease; }
+        tbody tr:hover { background:rgba(241,245,249,.8)!important; }
+        .nav-btn { transition:all .2s cubic-bezier(.4,0,.2,1); }
+        .nav-btn:hover { transform:translateX(4px); }
+        .custom-scrollbar::-webkit-scrollbar { width:6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+        .animate-fade { animation:fadeIn .4s cubic-bezier(.4,0,.2,1) forwards; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width:880px) {
+            .w-72 { width:15rem; }
+            .md\:pl-72 { padding-left:0!important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex"
+      x-data="{ sidebarOpen:true, activeTab:'live', showImport:false }">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- LOGIN OVERLAY — Cédula + Contraseña                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="login-overlay">
+    <div class="login-card">
+        <img src="../logo_centuria_blanco_1.png" alt="Instituto Superior Centuria" class="login-logo">
+        <h1 class="login-title">Campus Virtual</h1>
+        <p class="login-subtitle">Sociología — Panel Docente</p>
+
+        <div id="login-error" class="login-error">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            <span id="login-error-text">Cédula o contraseña incorrecta</span>
+        </div>
+
+        <label class="login-label">Cédula de Identidad</label>
+        <input type="text" id="login-cedula" class="login-input text-center" placeholder="SIN PUNTOS"
+               oninput="this.value=this.value.replace(/\./g,'')" style="font-size:1rem;letter-spacing:3px;">
+
+        <label class="login-label" style="margin-top:14px;">Contraseña</label>
+        <div style="position:relative;">
+            <input type="password" id="login-password" class="login-input" placeholder="Tu contraseña"
+                   style="padding-right:44px;font-size:.85rem;letter-spacing:.5px;"
+                   onkeydown="if(event.key==='Enter') loginDocente()">
+            <button type="button" onclick="togglePasswordVisibility()"
+                    style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;"
+                    title="Mostrar/ocultar contraseña">
+                <i id="pwd-toggle-icon" class="bi bi-eye"></i>
+            </button>
+        </div>
+
+        <button id="btn-login" class="login-btn" onclick="loginDocente()">
+            <i class="bi bi-shield-lock me-2"></i>Ingresar al Panel
+        </button>
+
+        <hr class="login-divider">
+
+        <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:12px 14px;font-size:.7rem;color:var(--dorado);">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Formato:</strong> Primera letra de tu nombre (MAYÚS) + primera letra apellido (minúscula) + cédula sin puntos + asterisco.<br>
+            <em style="opacity:.7;">Ej: Juan Pérez, CI 12345678 → <strong>Jp12345678*</strong></em>
+        </div>
+
+        <div class="login-footer">
+            <p><i class="bi bi-lock-fill me-1"></i>Acceso restringido — Instituto Superior Centuria 2026</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- HEADER INSTITUCIONAL                                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="institutional-header" style="position:fixed;top:0;left:0;right:0;z-index:50;padding:10px 30px;background:linear-gradient(135deg,#003d19 0%,#007A33 100%);">
+    <div style="display:flex;align-items:center;justify-content:space-between;max-width:1400px;margin:0 auto;">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <img src="../logo_centuria_blanco_1.png" alt="Logo Centuria" style="height:32px;">
+            <div>
+                <h1 style="font-size:14px;margin:0;color:#fff;font-weight:600;letter-spacing:1px;">Instituto Superior Centuria</h1>
+                <p style="font-size:10px;margin:0;color:rgba(255,255,255,.7);letter-spacing:1px;">Panel de Control Docente — Sociología</p>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span id="docente-badge" style="color:rgba(255,255,255,.8);font-size:11px;font-weight:500;"></span>
+            <a href="../index.html" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.12);padding:6px 14px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:6px;transition:.2s;">
+                <i class="bi bi-house-door"></i> Inicio
+            </a>
+            <button onclick="cerrarSesion()" style="background:rgba(239,83,80,.15);border:1px solid rgba(239,83,80,.3);color:#ef9a9a;padding:6px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:.2s;font-family:Montserrat;">
+                <i class="bi bi-box-arrow-right me-1"></i>Salir
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SIDEBAR                                                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<aside class="sidebar-glass text-white w-72 fixed inset-y-0 left-0 z-20 transform md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between"
+       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" style="top:52px;">
+    <div>
+        <div class="p-5 border-b border-white/10 flex items-center gap-3">
+            <img src="../logo_centuria_blanco_1.png" alt="Logo" style="height:36px;">
+            <div>
+                <h2 class="font-bold text-sm tracking-wide">Sociología</h2>
+                <span class="text-[10px] text-emerald-300/60 font-medium tracking-widest uppercase">Panel Docente</span>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-1.5">
+            <button @click="activeTab='live'" :class="activeTab==='live' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-broadcast text-base" :class="activeTab==='live'?'text-emerald-400':''"></i>
+                <span>Monitoreo en Vivo</span>
+                <span class="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm" id="sidebar-active-badge">0</span>
+            </button>
+            <button @click="activeTab='history'" :class="activeTab==='history' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-file-earmark-text text-base" :class="activeTab==='history'?'text-blue-400':''"></i>
+                <span>Exámenes Entregados</span>
+            </button>
+            <button @click="activeTab='analytics'" :class="activeTab==='analytics' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-pie-chart text-base" :class="activeTab==='analytics'?'text-violet-400':''"></i>
+                <span>Métricas y Carreras</span>
+            </button>
+            <button @click="activeTab='attendance'" :class="activeTab==='attendance' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-clipboard-check text-base" :class="activeTab==='attendance'?'text-amber-400':''"></i>
+                <span>Control de Asistencia</span>
+            </button>
+            <button @click="activeTab='progress'" :class="activeTab==='progress' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-bar-chart-steps text-base" :class="activeTab==='progress'?'text-orange-400':''"></i>
+                <span>Marcador de Grupos</span>
+            </button>
+            <button @click="activeTab='calendar'" :class="activeTab==='calendar' ? 'bg-white/10 text-white font-semibold shadow-inner' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm">
+                <i class="bi bi-calendar3 text-base" :class="activeTab==='calendar'?'text-cyan-400':''"></i>
+                <span>Calendario Docente</span>
+            </button>
+        </nav>
+    </div>
+    <div class="p-4 border-t border-white/10">
+        <button onclick="cerrarSesion()" class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all text-xs py-3 rounded-xl border border-white/10 font-medium">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </button>
+    </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MAIN CONTENT                                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<main class="flex-1 md:pl-72 flex flex-col min-h-screen transition-all duration-300" style="padding-top:52px;">
+
+    <!-- Header bar -->
+    <header class="header-glass h-14 px-6 flex items-center justify-between sticky top-[52px] z-10 shadow-sm">
+        <div class="flex items-center gap-4">
+            <button @click="sidebarOpen=!sidebarOpen" class="text-slate-400 hover:text-slate-700 focus:outline-none transition-colors">
+                <i class="bi bi-list text-lg"></i>
+            </button>
+            <div>
+                <h1 class="text-sm font-bold text-slate-900">Evaluación Parcial: <span class="text-emerald-700" id="header-materia">Sociología General</span></h1>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wide" id="header-grupo">Periodo Lectivo 2026</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button @click="showImport=!showImport" class="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-medium transition-all shadow-sm hover:shadow">
+                <i class="bi bi-cloud-upload text-emerald-600"></i> <span>Módulo de Carga</span>
+            </button>
+            <button onclick="renderAll()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-all" title="Forzar sincronización">
+                <i class="bi bi-arrow-clockwise text-xs"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Content wrapper -->
+    <div class="flex flex-row flex-1 overflow-hidden">
+        <div class="p-6 flex-1 space-y-6 max-w-[1600px] w-full mx-auto overflow-y-auto custom-scrollbar">
+
+            <!-- ===== IMPORT MODULE ===== -->
+            <div x-show="showImport" x-transition class="bg-white border border-emerald-100 rounded-2xl p-6 shadow-xl space-y-5 animate-fade">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-emerald-50 p-2.5 rounded-xl"><i class="bi bi-cloud-upload text-emerald-600 text-sm"></i></div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">Pasarela de Sincronización de Archivos</h3>
+                            <p class="text-xs text-slate-500">Carga masiva de matrices de respuestas generadas por los alumnos.</p>
+                        </div>
+                    </div>
+                    <button @click="showImport=false" class="text-slate-400 hover:text-slate-600 transition-colors p-1"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-5 items-start bg-slate-50 p-5 rounded-xl border border-dashed border-slate-200">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Paquetes de respuestas (.json)</label>
+                            <input type="file" id="import-file" accept=".json" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 file:shadow-sm cursor-pointer" multiple onchange="updateSelectedFilesLabel()">
+                            <p id="selected-files-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Resultados CSV (.csv)</label>
+                            <input type="file" id="import-csv" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-violet-600 file:text-white hover:file:bg-violet-700 file:shadow-sm cursor-pointer" onchange="updateSelectedCSVLabel()">
+                            <p id="selected-csv-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Configuración Datos_asistencia.txt</label>
+                            <input type="file" id="config-file" accept=".txt" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:shadow-sm cursor-pointer" onchange="updateSelectedConfigLabel()">
+                            <p id="selected-config-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Registro de asistencia (.txt)</label>
+                            <input type="file" id="attendance-file" accept=".txt,.csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-600 file:text-white hover:file:bg-teal-700 file:shadow-sm cursor-pointer" onchange="updateSelectedAttendanceLabel()">
+                            <p id="selected-attendance-label" class="mt-1.5 text-xs text-slate-400">Ningún archivo seleccionado</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-4 justify-between text-right">
+                        <button onclick="procesarTodo()" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5">
+                            <i class="bi bi-play-fill me-1"></i> Procesar Archivos
+                        </button>
+                        <button onclick="limpiarResultados()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-4 py-2.5 rounded-xl text-xs font-medium transition-all border border-rose-100">
+                            Limpiar Historial
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== KPI CARDS ===== -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Examen en Curso</span>
+                        <h3 id="active-count" class="text-3xl font-bold text-rose-600 tracking-tight">0</h3>
+                        <p class="text-[11px] text-rose-500 font-medium"><span class="inline-block w-2 h-2 rounded-full bg-rose-500 animate-ping me-1"></span> Alumnos respondiendo</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-rose-50 to-rose-100 p-3.5 rounded-xl text-rose-500"><i class="bi bi-person-video3 text-xl"></i></div>
+                </div>
+                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Evaluados</span>
+                        <h3 id="total-count" class="text-3xl font-bold text-slate-900 tracking-tight">0</h3>
+                        <p class="text-[11px] text-slate-500">Exámenes consolidados</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-3.5 rounded-xl text-slate-600"><i class="bi bi-file-earmark-text text-xl"></i></div>
+                </div>
+                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Rendimiento Promedio</span>
+                        <h3 id="avg-score" class="text-3xl font-bold text-emerald-600 tracking-tight">-</h3>
+                        <p class="text-[11px] text-emerald-500 font-medium">Media aritmética global</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-3.5 rounded-xl text-emerald-600"><i class="bi bi-calculator text-xl"></i></div>
+                </div>
+                <div class="kpi-hover bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Auto-refrescar</span>
+                        <div class="flex items-center gap-3 pt-1">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="auto-refresh" onchange="toggleAutoRefresh()" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            </label>
+                            <span class="text-xs font-medium text-slate-600">5s</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Sincronización en segundo plano</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-3.5 rounded-xl text-amber-600"><i class="bi bi-lightning text-xl"></i></div>
+                </div>
+            </section>
+
+            <!-- ===== TOOLBAR ===== -->
+            <section class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+                <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[300px]">
+                    <div class="relative flex-1 min-w-[240px]">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400"><i class="bi bi-search text-xs"></i></span>
+                        <input type="text" id="search-input" placeholder="Buscar por cédula, nombre o carrera..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400 outline-none transition-all" oninput="renderAll()">
+                    </div>
+                    <select id="career-filter" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-slate-600 font-medium" onchange="renderAll()">
+                        <option value="">Todas las carreras</option>
+                    </select>
+                    <select id="sort-select" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-slate-600 font-medium" onchange="renderAll()">
+                        <option value="nombre">Nombre</option>
+                        <option value="apellido">Apellido</option>
+                        <option value="ci">Cédula</option>
+                        <option value="puntaje">Puntaje</option>
+                        <option value="carrera">Carrera</option>
+                        <option value="intento">Nro. Intento</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportPanelPDF()" class="bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 shadow-sm hover:shadow">
+                        <i class="bi bi-file-pdf"></i> PDF Resumen
+                    </button>
+                </div>
+            </section>
+
+            <!-- ===== TABS CONTENT ===== -->
+            <div class="flex gap-6">
+                <div class="flex-1 min-w-0 space-y-6">
+
+                    <!-- LIVE TABLE -->
+                    <div x-show="activeTab==='live'||activeTab==='history'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
+                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <span class="flex h-2.5 w-2.5 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span></span>
+                                <h3 class="font-bold text-sm text-slate-900">Estudiantes en Sesión Activa</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-medium bg-slate-50 px-2.5 py-1 rounded-full">Tiempo real</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse" id="active-table">
+                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
+                                    <th class="py-3.5 px-5 font-semibold">Estudiante</th>
+                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Intento</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Estado</th>
+                                </tr></thead>
+                                <tbody id="active-students" class="divide-y divide-slate-100 text-xs text-slate-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- DELIVERED TABLE -->
+                    <div x-show="activeTab==='live'||activeTab==='history'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
+                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="bg-emerald-50 text-emerald-600 p-1.5 rounded-lg text-xs"><i class="bi bi-check-all"></i></div>
+                                <h3 class="font-bold text-sm text-slate-900">Exámenes Asentados y Finalizados</h3>
+                            </div>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium" id="delivered-count-badge">0 entregas</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse" id="delivered-table">
+                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
+                                    <th class="py-3.5 px-5 font-semibold">Estudiante</th>
+                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Puntaje 1</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Puntaje 2</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Fecha</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Estado</th>
+                                    <th class="py-3.5 px-5 font-semibold text-center">Acta</th>
+                                </tr></thead>
+                                <tbody id="students-list" class="divide-y divide-slate-100 text-xs text-slate-700">
+                                    <tr><td colspan="8" class="py-10 text-center text-slate-400"><i class="bi bi-inbox text-2xl text-slate-300 mb-2 block"></i>Use el módulo de carga para registrar envíos.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ANALYTICS -->
+                    <div x-show="activeTab==='analytics'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5 animate-fade">
+                        <div class="border-b border-slate-100 pb-4">
+                            <h3 class="font-bold text-sm text-slate-900">Distribución y Rendimiento por Carrera</h3>
+                            <p class="text-xs text-slate-500 mt-1">Métricas acumuladas del examen actual.</p>
+                        </div>
+                        <div id="stats-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- ATTENDANCE -->
+                    <div x-show="activeTab==='attendance'" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade">
+                        <div class="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="bg-amber-50 text-amber-600 p-1.5 rounded-lg text-xs"><i class="bi bi-clipboard-check"></i></div>
+                                <h3 class="font-bold text-sm text-slate-900">Registro de Asistencia</h3>
+                            </div>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium" id="attendance-count-badge">0 registros</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse" id="attendance-table">
+                                <thead><tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3.5 px-5 font-semibold">Marca Temporal</th>
+                                    <th class="py-3.5 px-5 font-semibold">Nombre y Apellido</th>
+                                    <th class="py-3.5 px-5 font-semibold">Cédula</th>
+                                    <th class="py-3.5 px-5 font-semibold">Carrera</th>
+                                </tr></thead>
+                                <tbody id="attendance-body" class="divide-y divide-slate-100 text-xs text-slate-700">
+                                    <tr><td colspan="4" class="py-10 text-center text-slate-400"><i class="bi bi-clipboard text-2xl text-slate-300 mb-2 block"></i>Use el módulo de carga para importar registros.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PROGRESS -->
+                    <div x-show="activeTab==='progress'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade space-y-4">
+                        <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Marcador de Grupos</h3>
+                        <p class="text-xs text-slate-500">Seguimiento del avance por grupos y unidades de Sociología.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-emerald-700" id="prog-total">0</p><p class="text-[11px] text-emerald-600 font-medium mt-1">Grupos Activos</p></div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-blue-700" id="prog-avance">0%</p><p class="text-[11px] text-blue-600 font-medium mt-1">Avance General</p></div>
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center"><p class="text-2xl font-bold text-amber-700" id="prog-unidad">U1</p><p class="text-[11px] text-amber-600 font-medium mt-1">Unidad Actual</p></div>
+                        </div>
+                    </div>
+
+                    <!-- CALENDAR -->
+                    <div x-show="activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade space-y-4">
+                        <h3 class="font-bold text-sm text-slate-900 border-b border-slate-100 pb-3">Calendario Docente</h3>
+                        <p class="text-xs text-slate-500">Planificación de exámenes y actividades de Sociología.</p>
+                        <div id="calendario-contenido" class="text-center py-8 text-slate-400"><i class="bi bi-calendar3 text-3xl text-slate-300 mb-2 block"></i>Próximamente</div>
+                    </div>
+                </div>
+
+                <!-- EXAM DETAIL PANEL -->
+                <div id="exam-detail-panel" class="hidden w-[420px] flex-shrink-0">
+                    <div class="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden sticky top-24">
+                        <div class="px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-emerald-800 to-emerald-900 text-white flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <i class="bi bi-person-check text-emerald-300 text-sm"></i>
+                                <h3 class="font-bold text-sm tracking-wide">Auditoría del Examen</h3>
+                            </div>
+                            <button onclick="cerrarPanel()" class="text-white/60 hover:text-white transition-all cursor-pointer p-1"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                        <div id="exam-detail" class="p-5 space-y-4 text-xs max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+                            <div class="text-center py-12 text-slate-400 space-y-3">
+                                <div class="text-4xl text-slate-300"><i class="bi bi-person-check"></i></div>
+                                <p class="font-medium max-w-[200px] mx-auto">Seleccione un alumno de la lista para revisar sus datos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- AUTH + PANEL SCRIPT                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+// === CAMPUS VIRTUAL BACKEND ===
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+const STORAGE_KEY = 'sociologia_teacherRecords';
+const STUDENT_RESULTS_KEY = 'socioResults';
+const ATTENDANCE_KEY = 'sociologia_attendanceRecords';
+
+// === SESSION GUARD (1hr inactivity) ===
+let lastActivity = Date.now();
+const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour
+function resetActivity() { lastActivity = Date.now(); }
+['click','keydown','mousemove','scroll','touchstart'].forEach(evt => document.addEventListener(evt, resetActivity, {passive:true}));
+setInterval(() => {
+    if (document.getElementById('login-overlay').classList.contains('hidden') && (Date.now() - lastActivity > INACTIVITY_LIMIT)) {
+        if (confirm('Tu sesión expirará por inactividad. ¿Deseas continuar?')) { resetActivity(); }
+        else { cerrarSesion(); }
+    }
+}, 60000);
+
+// === PASSWORD TOGGLE ===
+function togglePasswordVisibility() {
+    const inp = document.getElementById('login-password');
+    const icon = document.getElementById('pwd-toggle-icon');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+}
+
+// === LOGIN: Cédula + Contraseña ===
+async function loginDocente() {
+    const cedula = document.getElementById('login-cedula').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    const errorText = document.getElementById('login-error-text');
+    const btn = document.getElementById('btn-login');
+
+    if (!cedula || !password) {
+        errorText.textContent = 'Debes ingresar cédula y contraseña.';
+        errorDiv.classList.add('show'); return;
+    }
+
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
+    btn.disabled = true;
+    errorDiv.classList.remove('show');
+
+    try {
+        // 1) Verificar que la cédula exista en RegistroAlumnos
+        const res = await fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula));
+        const data = await res.json();
+
+        if (!data.existe) {
+            errorText.textContent = 'Cédula no registrada en el sistema.';
+            errorDiv.classList.add('show');
+            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
+            btn.disabled = false;
+            return;
+        }
+
+        // 2) Calcular contraseña esperada: Primera letra Nombre(Mayús) + primera letra Apellido(minús) + cédula(sin puntos) + *
+        const nombreCompleto = (data.nombre || '').trim();
+        const parts = nombreCompleto.split(/\s+/);
+        const nombre = parts[0] || '';
+        const apellido = parts.slice(1).join(' ') || '';
+        const primeraNombre = nombre.charAt(0).toUpperCase();
+        const primeraApellido = apellido.charAt(0).toLowerCase();
+        const cedulaLimpia = cedula.replace(/\./g, '');
+        const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
+
+        if (password !== passwordEsperada) {
+            errorText.textContent = 'Contraseña incorrecta. Intenta nuevamente.';
+            errorDiv.classList.add('show');
+            btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
+            btn.disabled = false;
+            return;
+        }
+
+        // 3) Verificar que tenga rol de docente
+        const rolesRes = await fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
+        const rolesData = await rolesRes.json();
+        const roles = rolesData.roles || [];
+        const esDocente = roles.some(r => r.rol === 'docente' && (r.asignatura || '').toLowerCase().includes('sociolog'));
+
+        if (!esDocente && roles.length > 0 && !roles.some(r => r.rol === 'admin')) {
+            // Si tiene roles pero ninguno es docente de Sociología, permitir acceso pero mostrar aviso
+            console.log('Rol detectado:', roles.map(r => r.rol).join(', '), '(acceso permitido)');
+        }
+
+        // 4) Guardar sesión
+        sessionStorage.setItem('teacher_cedula', cedula);
+        sessionStorage.setItem('teacher_nombre', nombreCompleto);
+        sessionStorage.setItem('teacher_session_active', '1');
+        sessionStorage.setItem('userRole', 'docente');
+        sessionStorage.setItem('current_cedula', cedula);
+        sessionStorage.setItem('current_nombre', nombreCompleto);
+
+        // Mostrar badge del docente
+        document.getElementById('docente-badge').textContent = nombreCompleto + ' (CI: ' + cedula + ')';
+
+        // 5) Ocultar login, mostrar panel
+        document.getElementById('login-overlay').classList.add('hidden');
+
+        // 6) Inicializar panel
+        initPanel();
+
+    } catch (e) {
+        console.error('Error de autenticación:', e);
+        errorText.textContent = 'Error de conexión. Revisa tu internet.';
+        errorDiv.classList.add('show');
+        btn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Ingresar al Panel';
+        btn.disabled = false;
+    }
+}
+
+// === LOGOUT ===
+function cerrarSesion() {
+    sessionStorage.clear();
+    localStorage.removeItem('userRole');
+    window.location.href = '../index.html';
+}
+
+// === INIT PANEL ===
+function initPanel() {
+    renderAll();
+    // Bind events
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-generar-acta')) {
+            const cedula = e.target.closest('[data-cedula]')?.dataset.cedula;
+            if (cedula) generarActa(cedula);
+        }
+        if (e.target.closest('#btn-cerrar-panel')) cerrarPanel();
+    });
+}
+
+// === DATA MANAGEMENT ===
+function readArrayStorage(key) {
+    try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : []; }
+    catch { return []; }
+}
+
+function normalizeRecord(r) {
+    if (!r || typeof r !== 'object') return null;
+    const score = parseFloat(r.score ?? r.puntaje ?? 0) || 0;
+    const total = parseFloat(r.puntajeTotal ?? 30) || 30;
+    const attempt = parseInt(r.attempt ?? r.intento ?? 1, 10) || 1;
+    const ci = (r.ci || r.cedula || '').toString().replace(/\D/g, '');
+    return {
+        ...r, cedula: ci, nombre: (r.name || r.nombre || '').trim(),
+        puntaje: score, puntajeTotal: total, intento: attempt,
+        fecha: r.date || r.fecha || '', hora: r.time || r.hora || '',
+        respuesta: r.rawAnswers || r.respuesta || '',
+        carrera: r.carrera || '', estado: r.estado || ''
+    };
+}
+
+function mergeRecords(records) {
+    const map = new Map();
+    records.forEach(r => {
+        const n = normalizeRecord(r);
+        if (!n) return;
+        const key = [n.cedula||'x', n.intento, n.fecha, n.hora, n.puntaje].join('|');
+        map.set(key, { ...(map.get(key)||{}), ...n });
+    });
+    return Array.from(map.values());
+}
+
+function loadRecords() { return mergeRecords([...readArrayStorage(STORAGE_KEY), ...readArrayStorage(STUDENT_RESULTS_KEY)]); }
+
+// === RENDER ALL ===
+function renderAll() {
+    const records = loadRecords();
+    const search = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+    const career = document.getElementById('career-filter')?.value || '';
+    const sort = document.getElementById('sort-select')?.value || 'nombre';
+
+    let filtered = records.filter(r => {
+        const matchSearch = (r.cedula||'').toLowerCase().includes(search) || (r.nombre||'').toLowerCase().includes(search) || (r.carrera||'').toLowerCase().includes(search);
+        const matchCareer = !career || r.carrera === career;
+        return matchSearch && matchCareer;
+    });
+
+    filtered.sort((a,b) => {
+        if (['nombre','apellido','carrera'].includes(sort)) return (a[sort]||'').localeCompare(b[sort]||'');
+        if (sort==='ci') return (a.cedula||0)-(b.cedula||0);
+        if (sort==='puntaje') return (b.puntaje||0)-(a.puntaje||0);
+        if (sort==='intento') return (a.intento||0)-(b.intento||0);
+        return 0;
+    });
+
+    const active = filtered.filter(r => r.estado === 'rendiendo');
+    const delivered = filtered.filter(r => r.estado !== 'rendiendo');
+
+    // Active students
+    const activeTbody = document.getElementById('active-students');
+    if (activeTbody) {
+        activeTbody.innerHTML = active.length ? active.map(r => `
+            <tr class="hover:bg-slate-50/80 cursor-pointer" onclick="showExamDetail(${escapeJSON(r)})">
+                <td class="py-3 px-5 font-mono font-semibold">${escapeHtml(r.cedula)}</td>
+                <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
+                <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera)}</td>
+                <td class="py-3 px-5 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Intento ${r.intento}</span></td>
+                <td class="py-3 px-5 text-center"><span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">Escribiendo...</span></td>
+            </tr>`).join('') : '<tr><td colspan="5" class="py-8 text-center text-slate-400"><i class="bi bi-hourglass text-xl text-slate-300 mb-1 block"></i>No hay alumnos respondiendo</td></tr>';
+    }
+
+    // Delivered
+    const deliveredTbody = document.getElementById('students-list');
+    if (deliveredTbody) {
+        deliveredTbody.innerHTML = delivered.length ? delivered.map(r => {
+            const pct = r.puntajeTotal > 0 ? Math.round((r.puntaje / r.puntajeTotal) * 100) : 0;
+            const aprobado = pct >= 60;
+            return `
+            <tr class="hover:bg-slate-50/80 cursor-pointer" onclick="showExamDetail(${escapeJSON(r)})">
+                <td class="py-3 px-5 font-mono font-semibold">${escapeHtml(r.cedula)}</td>
+                <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
+                <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera)}</td>
+                <td class="py-3 px-5 text-center font-bold ${aprobado?'text-emerald-600':'text-rose-600'}">${r.puntaje}/${r.puntajeTotal}</td>
+                <td class="py-3 px-5 text-center text-slate-500">${r.intento}</td>
+                <td class="py-3 px-5 text-center text-slate-400 text-[10px]">${r.fecha||'-'} ${r.hora||''}</td>
+                <td class="py-3 px-5 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${aprobado?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'}">${aprobado?'APROBADO':'REPROBADO'}</span></td>
+                <td class="py-3 px-5 text-center"><button class="btn-generar-acta text-emerald-600 hover:text-emerald-800 text-xs font-semibold" data-cedula="${escapeHtml(r.cedula)}"><i class="bi bi-file-pdf"></i> Acta</button></td>
+            </tr>`;
+        }).join('') : '<tr><td colspan="8" class="py-10 text-center text-slate-400"><i class="bi bi-inbox text-2xl text-slate-300 mb-2 block"></i>Sin exámenes registrados.</td></tr>';
+    }
+
+    // Counters
+    const el = id => document.getElementById(id);
+    if (el('active-count')) el('active-count').textContent = active.length;
+    if (el('total-count')) el('total-count').textContent = delivered.length;
+    if (el('sidebar-active-badge')) el('sidebar-active-badge').textContent = active.length;
+    if (el('delivered-count-badge')) el('delivered-count-badge').textContent = delivered.length + ' entregas';
+
+    // Average score
+    const scores = delivered.filter(r => r.puntaje > 0).map(r => (r.puntaje / r.puntajeTotal) * 100);
+    if (el('avg-score')) el('avg-score').textContent = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) + '%' : '-';
+
+    // Career filter
+    populateCareerFilter(records);
+    computeStats(delivered);
+}
+
+function populateCareerFilter(records) {
+    const sel = document.getElementById('career-filter');
+    if (!sel) return;
+    const current = sel.value;
+    const careers = [...new Set(records.map(r => r.carrera).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Todas las carreras</option>' + careers.map(c => `<option value="${escapeHtml(c)}" ${c===current?'selected':''}>${escapeHtml(c)}</option>`).join('');
+}
+
+function computeStats(records) {
+    const container = document.getElementById('stats-container');
+    if (!container) return;
+    const groups = {};
+    records.forEach(r => {
+        const c = r.carrera || 'Sin carrera';
+        if (!groups[c]) groups[c] = { count:0, total:0, passed:0, failed:0 };
+        groups[c].count++;
+        const pct = r.puntajeTotal > 0 ? (r.puntaje / r.puntajeTotal) * 100 : 0;
+        groups[c].total += pct;
+        if (pct >= 60) groups[c].passed++; else groups[c].failed++;
+    });
+    container.innerHTML = Object.entries(groups).map(([carrera, s]) => `
+        <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-5 space-y-2">
+            <h4 class="font-bold text-sm text-slate-900">${escapeHtml(carrera)}</h4>
+            <div class="flex justify-between text-xs text-slate-500"><span>Alumnos:</span><span class="font-bold text-slate-800">${s.count}</span></div>
+            <div class="flex justify-between text-xs text-slate-500"><span>Promedio:</span><span class="font-bold text-emerald-600">${s.count?Math.round(s.total/s.count):0}%</span></div>
+            <div class="flex justify-between text-xs text-slate-500"><span>Aprobados:</span><span class="font-bold text-emerald-600">${s.passed}</span></div>
+            <div class="flex justify-between text-xs text-slate-500"><span>Reprobados:</span><span class="font-bold text-rose-600">${s.failed}</span></div>
+        </div>`).join('') || '<p class="text-xs text-slate-400 text-center col-span-2 py-8">Sin datos de rendimiento aún.</p>';
+}
+
+// === EXAM DETAIL ===
+function showExamDetail(record) {
+    const panel = document.getElementById('exam-detail-panel');
+    const detail = document.getElementById('exam-detail');
+    if (!panel || !detail) return;
+    panel.classList.remove('hidden');
+
+    const pct = record.puntajeTotal > 0 ? Math.round((record.puntaje / record.puntajeTotal) * 100) : 0;
+    const aprobado = pct >= 60;
+
+    detail.innerHTML = `
+        <div class="space-y-3">
+            <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-4">
+                <div class="w-10 h-10 rounded-full ${aprobado?'bg-emerald-100 text-emerald-700':'bg-rose-100 text-rose-700'} flex items-center justify-center font-bold text-sm">${(record.nombre||'?').charAt(0)}</div>
+                <div><p class="font-bold text-sm text-slate-900">${escapeHtml(record.nombre)}</p><p class="text-[10px] text-slate-500">CI: ${escapeHtml(record.cedula)}</p></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Carrera</span><span class="font-semibold">${escapeHtml(record.carrera||'-')}</span></div>
+                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Intento</span><span class="font-semibold">${record.intento}</span></div>
+                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Fecha</span><span class="font-semibold">${record.fecha||'-'}</span></div>
+                <div class="bg-slate-50 rounded-lg p-3"><span class="text-slate-400 block text-[10px]">Hora</span><span class="font-semibold">${record.hora||'-'}</span></div>
+            </div>
+            <div class="text-center p-4 rounded-xl ${aprobado?'bg-emerald-50 border border-emerald-200':'bg-rose-50 border border-rose-200'}">
+                <p class="text-3xl font-bold ${aprobado?'text-emerald-700':'text-rose-700'}">${pct}%</p>
+                <p class="text-xs font-bold ${aprobado?'text-emerald-600':'text-rose-600'} mt-1">${aprobado?'APROBADO':'REPROBADO'}</p>
+                <p class="text-[10px] text-slate-500 mt-1">${record.puntaje}/${record.puntajeTotal} puntos</p>
+            </div>
+            ${record.respuesta ? `<div class="bg-slate-50 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-600 mb-2">RESPUESTAS:</p><div class="text-[10px] text-slate-600 whitespace-pre-wrap max-h-48 overflow-y-auto custom-scrollbar">${escapeHtml(String(record.respuesta))}</div></div>` : ''}
+        </div>`;
+}
+
+function cerrarPanel() {
+    const panel = document.getElementById('exam-detail-panel');
+    if (panel) panel.classList.add('hidden');
+}
+
+// === AUTO REFRESH ===
+let autoRefreshInterval = null;
+function toggleAutoRefresh() {
+    const on = document.getElementById('auto-refresh')?.checked;
+    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+    if (on) autoRefreshInterval = setInterval(renderAll, 5000);
+}
+
+// === IMPORT MODULE ===
+function updateSelectedFilesLabel() {
+    const f = document.getElementById('import-file');
+    document.getElementById('selected-files-label').textContent = f?.files.length ? f.files.length + ' archivo(s) seleccionado(s)' : 'Ningún archivo seleccionado';
+}
+function updateSelectedCSVLabel() {
+    const f = document.getElementById('import-csv');
+    document.getElementById('selected-csv-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
+}
+function updateSelectedConfigLabel() {
+    const f = document.getElementById('config-file');
+    document.getElementById('selected-config-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
+}
+function updateSelectedAttendanceLabel() {
+    const f = document.getElementById('attendance-file');
+    document.getElementById('selected-attendance-label').textContent = f?.files[0]?.name || 'Ningún archivo seleccionado';
+}
+
+async function procesarTodo() {
+    let imported = 0;
+    // JSON files
+    const jsonFiles = document.getElementById('import-file')?.files;
+    if (jsonFiles) {
+        for (const file of jsonFiles) {
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                const items = Array.isArray(data) ? data : [data];
+                const existing = readArrayStorage(STORAGE_KEY);
+                const merged = mergeRecords([...existing, ...items]);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                imported += items.length;
+            } catch(e) { console.error('Error importing JSON:', e); }
+        }
+    }
+    // CSV
+    const csvFile = document.getElementById('import-csv')?.files[0];
+    if (csvFile) {
+        try {
+            const text = await csvFile.text();
+            const lines = text.split('\n').filter(l => l.trim());
+            const existing = readArrayStorage(STORAGE_KEY);
+            const newRecords = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(';').map(c => c.trim().replace(/^"|"$/g, ''));
+                if (cols.length >= 2) {
+                    newRecords.push({ cedula: cols[1], nombre: cols[2]||'', puntaje: parseFloat(cols[0])||0, carrera: cols[3]||'', intento: parseInt(cols[4])||1, fecha: cols[5]||'', respuesta: cols[6]||'', estado: 'entregado' });
+                }
+            }
+            const merged = mergeRecords([...existing, ...newRecords]);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            imported += newRecords.length;
+        } catch(e) { console.error('Error importing CSV:', e); }
+    }
+    // Attendance
+    const attFile = document.getElementById('attendance-file')?.files[0];
+    if (attFile) {
+        try {
+            const text = await attFile.text();
+            const lines = text.split('\n').filter(l => l.trim());
+            const attRecords = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split('\t').map(c => c.trim());
+                if (cols.length >= 3) attRecords.push({ marcaTemporal: cols[0], nombre: cols[1], cedula: cols[2], carrera: cols[3]||'' });
+            }
+            localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attRecords));
+            renderAttendance();
+        } catch(e) { console.error('Error importing attendance:', e); }
+    }
+
+    if (imported > 0 || attFile) {
+        alert('Importación completada. ' + imported + ' registros de examen importados.');
+        renderAll();
+    } else {
+        alert('Selecciona al menos un archivo para procesar.');
+    }
+}
+
+function limpiarResultados() {
+    if (!confirm('¿Eliminar todos los resultados registrados?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STUDENT_RESULTS_KEY);
+    renderAll();
+}
+
+// === ATTENDANCE ===
+function renderAttendance() {
+    const records = readArrayStorage(ATTENDANCE_KEY);
+    const tbody = document.getElementById('attendance-body');
+    const badge = document.getElementById('attendance-count-badge');
+    if (badge) badge.textContent = records.length + ' registros';
+    if (!tbody) return;
+    tbody.innerHTML = records.length ? records.map(r => `
+        <tr class="hover:bg-slate-50/80">
+            <td class="py-3 px-5 text-[10px]">${escapeHtml(r.marcaTemporal||'-')}</td>
+            <td class="py-3 px-5 font-medium">${escapeHtml(r.nombre)}</td>
+            <td class="py-3 px-5 font-mono">${escapeHtml(r.cedula)}</td>
+            <td class="py-3 px-5 text-slate-500">${escapeHtml(r.carrera||'-')}</td>
+        </tr>`).join('') : '<tr><td colspan="4" class="py-10 text-center text-slate-400">Sin registros de asistencia.</td></tr>';
+}
+
+// === PDF EXPORT ===
+function exportPanelPDF() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    html2canvas(main, { scale: 2, useCORS: true }).then(canvas => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('Panel_Docente_Sociologia_' + new Date().toISOString().slice(0,10) + '.pdf');
+    });
+}
+
+// === GENERATE ACTA ===
+function generarActa(cedula) {
+    const records = loadRecords().filter(r => r.cedula === cedula);
+    if (!records.length) return alert('No se encontraron registros para esta cédula.');
+    const r = records[0];
+    const pct = r.puntajeTotal > 0 ? Math.round((r.puntaje / r.puntajeTotal) * 100) : 0;
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><title>Acta - ${r.nombre}</title>
+        <style>body{font-family:Montserrat,sans-serif;padding:40px;color:#2D2D2D;}h1{font-size:18px;text-align:center;}h2{font-size:14px;color:#007A33;}table{width:100%;border-collapse:collapse;margin:16px 0;}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}th{background:#f5f5f5;}.score{font-size:24px;font-weight:bold;color:${pct>=60?'#007A33':'#dc2626'};text-align:center;padding:20px;}</style></head><body>
+        <h1>Instituto Superior Centuria</h1>
+        <h2 style="text-align:center;">Acta de Evaluación — Sociología</h2>
+        <p><strong>Alumno:</strong> ${r.nombre}</p><p><strong>Cédula:</strong> ${r.cedula}</p><p><strong>Carrera:</strong> ${r.carrera||'-'}</p>
+        <p><strong>Fecha:</strong> ${r.fecha||'-'} ${r.hora||''}</p><p><strong>Intento:</strong> ${r.intento}</p>
+        <div class="score">${r.puntaje}/${r.puntajeTotal} (${pct}%) — ${pct>=60?'APROBADO':'REPROBADO'}</div>
+        <p style="text-align:center;margin-top:40px;font-size:11px;color:#999;">Generado por Campus Virtual Centuria</p>
+        </body></html>`);
+    win.document.close(); win.print();
+}
+
+// === HELPERS ===
+function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = String(t); return d.innerHTML; }
+function escapeJSON(obj) { return JSON.stringify(obj).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+// === AUTO-INIT: Check session on load ===
+window.addEventListener('DOMContentLoaded', () => {
+    const active = sessionStorage.getItem('teacher_session_active');
+    const cedula = sessionStorage.getItem('teacher_cedula');
+    if (active && cedula) {
+        document.getElementById('login-overlay').classList.add('hidden');
+        document.getElementById('docente-badge').textContent = (sessionStorage.getItem('teacher_nombre')||'Docente') + ' (CI: ' + cedula + ')';
+        initPanel();
+    }
+    renderAttendance();
+});
+</script>
+
+<!-- Session guard (optional, from Campus Virtual) -->
+<script>
+// Simple session guard inline (no external dependency needed)
+</script>
+
+</body>
+</html>
