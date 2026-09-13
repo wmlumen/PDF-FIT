@@ -577,7 +577,20 @@
             document.getElementById('login-error').style.display = 'none';
         }
 
-        // ═══ PASO 1: Verificar cédula + contraseña + traer roles ═══
+        // ═══ BASE DE DATOS LOCAL ═══
+        const USERS_KEY = 'centuria_users';
+        function getUsersDB() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch { return {}; } }
+        function saveUsersDB(db) { localStorage.setItem(USERS_KEY, JSON.stringify(db)); }
+        function buscarUsuarioLocal(cedula) { const db = getUsersDB(); return db[cedula] || null; }
+        function registrarUsuarioLocal(cedula, nombre, apellido, email, telefono) {
+            const db = getUsersDB();
+            const cedulaLimpia = cedula.replace(/\./g, '');
+            const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+            db[cedula] = { nombre, apellido, email, telefono, rol: 'sin_asignar', password, fechaRegistro: new Date().toISOString() };
+            saveUsersDB(db);
+        }
+
+        // ═══ PASO 1: Verificar cédula + contraseña (LOCAL) ═══
         function verificarCedula(){
             const cedula = document.getElementById('inp-cedula').value.trim();
             const password = document.getElementById('inp-password').value;
@@ -587,111 +600,35 @@
             hideLoginError();
             showLoading('btn-buscar');
 
-            // 1) Verificar si existe en RegistroAlumnos
-            fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula))
-                .then(r => r.json())
-                .then(alumnoData => {
-                    if(alumnoData.existe){
-                        // ─── Alumno encontrado ───
-                        const nombreCompleto = (alumnoData.nombre || '').trim();
-                        const parts = nombreCompleto.split(/\s+/);
-                        const nombre = parts[0] || '';
-                        const apellido = parts.slice(1).join(' ') || '';
-                        const primeraNombre = nombre.charAt(0).toUpperCase();
-                        const primeraApellido = apellido.charAt(0).toLowerCase();
-                        const cedulaLimpia = cedula.replace(/\./g, '');
-                        const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
+            // Buscar en base de datos local
+            const usuario = buscarUsuarioLocal(cedula);
 
-                        if(password !== passwordEsperada){
-                            hideLoading('btn-buscar');
-                            showLoginError("Contraseña incorrecta.");
-                            return null;
-                        }
+            if(!usuario){
+                // No registrado → paso 2 (registro)
+                hideLoading('btn-buscar');
+                document.getElementById('step-1-cedula').style.display = 'none';
+                document.getElementById('step-2-register').style.display = 'block';
+                return;
+            }
 
-                        sessionStorage.setItem('current_cedula', cedulaActual);
-                        sessionStorage.setItem('current_nombre', alumnoData.nombre);
-                        if(alumnoData.carrera) sessionStorage.setItem('current_carrera', alumnoData.carrera);
-                        if(alumnoData.seccion) sessionStorage.setItem('current_seccion', alumnoData.seccion);
-                        if(alumnoData.grado) sessionStorage.setItem('current_grado', alumnoData.grado);
-                        if(alumnoData.nombre_separado) sessionStorage.setItem('current_nombre_separado', JSON.stringify(alumnoData.nombre_separado));
-                        else if(alumnoData.nombre){
-                            const p = alumnoData.nombre.trim().split(/\s+/);
-                            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:p[0]||'',apellido:p.slice(1).join(' ')}));
-                        }
+            // Verificar contraseña
+            if(password !== usuario.password){
+                hideLoading('btn-buscar');
+                showLoginError("Contraseña incorrecta.");
+                return;
+            }
 
-                        return fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
-                    }
+            // Contraseña correcta → guardar datos
+            sessionStorage.setItem('current_cedula', cedula);
+            sessionStorage.setItem('current_nombre', usuario.nombre + ' ' + usuario.apellido);
+            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:usuario.nombre,apellido:usuario.apellido}));
+            sessionStorage.setItem('rol', usuario.rol || 'alumno');
 
-                    // ─── No está en RegistroAlumnos → buscar en Roles (docente/admin/académico) ───
-                    return fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula))
-                        .then(r => r.json())
-                        .then(rolesData => {
-                            if(!rolesData || !rolesData.roles || rolesData.roles.length === 0){
-                                hideLoading('btn-buscar');
-                                // No registrado en ningún lado → paso 2 (registro)
-                                document.getElementById('step-1-cedula').style.display = 'none';
-                                document.getElementById('step-2-register').style.display = 'block';
-                                return null;
-                            }
-
-                            // Encontrado en Roles → verificar contraseña con nombre de Roles
-                            const primerRol = rolesData.roles[0];
-                            const nombreRol = (primerRol.nombre || '').trim();
-                            const partsRol = nombreRol.split(/\s+/);
-                            const nombreR = partsRol[0] || '';
-                            const apellidoR = partsRol.slice(1).join(' ') || '';
-                            const primeraNombre = nombreR.charAt(0).toUpperCase();
-                            const primeraApellido = apellidoR.charAt(0).toLowerCase();
-                            const cedulaLimpia = cedula.replace(/\./g, '');
-                            const passwordEsperada = primeraNombre + primeraApellido + cedulaLimpia + '*';
-
-                            if(password !== passwordEsperada){
-                                hideLoading('btn-buscar');
-                                showLoginError("Contraseña incorrecta.");
-                                return null;
-                            }
-
-                            // Contraseña correcta → guardar datos
-                            sessionStorage.setItem('current_cedula', cedulaActual);
-                            sessionStorage.setItem('current_nombre', nombreRol);
-                            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:nombreR,apellido:apellidoR}));
-
-                            rolesActuales = rolesData.roles;
-                            sessionStorage.setItem('roles', JSON.stringify(rolesActuales));
-
-                            if(rolesActuales.length === 1){
-                                sessionStorage.setItem('rol', rolesActuales[0].rol);
-                                sessionStorage.setItem('current_carrera', rolesActuales[0].carrera || '');
-                                sessionStorage.setItem('current_seccion', rolesActuales[0].seccion || '');
-                                mostrarCursos(null);
-                            } else {
-                                mostrarSelectorRoles(rolesActuales);
-                            }
-                            return null;
-                        });
-                })
-                .then(r => { if(!r) return; return r.json(); })
-                .then(rolesData => {
-                    if(!rolesData || !rolesData.roles) return;
-                    rolesActuales = rolesData.roles;
-                    sessionStorage.setItem('roles', JSON.stringify(rolesActuales));
-
-                    if(rolesActuales.length === 0){
-                        sessionStorage.setItem('rol', 'alumno');
-                        mostrarCursos(null);
-                    } else if(rolesActuales.length === 1){
-                        sessionStorage.setItem('rol', rolesActuales[0].rol);
-                        sessionStorage.setItem('current_carrera', rolesActuales[0].carrera || sessionStorage.getItem('current_carrera'));
-                        sessionStorage.setItem('current_seccion', rolesActuales[0].seccion || sessionStorage.getItem('current_seccion'));
-                        mostrarCursos(null);
-                    } else {
-                        mostrarSelectorRoles(rolesActuales);
-                    }
-                })
-                .catch(e => { hideLoading('btn-buscar'); showLoginError("Error de conexión. Revisa tu internet."); console.error(e); });
+            hideLoading('btn-buscar');
+            mostrarCursos(null);
         }
 
-        // ═══ PASO 2: Registro de usuario nuevo ═══
+        // ═══ PASO 2: Registro de usuario nuevo (LOCAL) ═══
         function registrarYAcceder(){
             const cedula = cedulaActual;
             const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
@@ -699,24 +636,26 @@
             const email = document.getElementById('reg-email').value.trim();
             const telefono = document.getElementById('reg-telefono')?.value.trim() || '';
             if(!cedula || !nombre || !apellido){ alert("Completa CÉDULA, NOMBRE y APELLIDO."); return; }
-            showLoading('btn-registrar');
-            const nombreCompleto = nombre + ' ' + apellido;
-            fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({
-                action:'registrar_alumno', cedula, nombre:nombreCompleto,
-                nombre_separado:{nombre,apellido}, email, telefono,
-                grado:'', carrera:'', seccion:'',
-                observacion:'Registrado desde Portal Principal — pendiente de asignación'
-            })})
-            .then(r => r.json())
-            .then(data => {
-                hideLoading('btn-registrar');
+
+            // Verificar si ya existe
+            const existente = buscarUsuarioLocal(cedula);
+            if(existente){
+                // Ya existe → cargar datos y entrar
                 sessionStorage.setItem('current_cedula', cedula);
-                sessionStorage.setItem('current_nombre', nombreCompleto);
-                sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre,apellido}));
-                sessionStorage.setItem('rol', 'alumno');
+                sessionStorage.setItem('current_nombre', existente.nombre + ' ' + existente.apellido);
+                sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:existente.nombre,apellido:existente.apellido}));
+                sessionStorage.setItem('rol', existente.rol || 'alumno');
                 mostrarCursos(null);
-            })
-            .catch(e => { hideLoading('btn-registrar'); alert("Error al registrar."); console.error(e); });
+                return;
+            }
+
+            // Registrar nuevo
+            registrarUsuarioLocal(cedula, nombre, apellido, email, telefono);
+            sessionStorage.setItem('current_cedula', cedula);
+            sessionStorage.setItem('current_nombre', nombre + ' ' + apellido);
+            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre,apellido}));
+            sessionStorage.setItem('rol', 'alumno');
+            mostrarCursos(null);
         }
 
         function volverPaso1(){
@@ -993,10 +932,9 @@
     </div>
 
     <script>
-        // ═══ RECUPERAR CONTRASEÑA ═══
+        // ═══ RECUPERAR CONTRASEÑA (LOCAL) ═══
         function abrirRecuperarContrasena(){
-            const modal = document.getElementById('modal-recuperar');
-            modal.style.display = 'flex';
+            document.getElementById('modal-recuperar').style.display = 'flex';
             document.getElementById('recuperar-paso1').style.display = 'block';
             document.getElementById('recuperar-paso2').style.display = 'none';
             document.getElementById('recuperar-error').style.display = 'none';
@@ -1006,75 +944,29 @@
         function cerrarRecuperar(){
             document.getElementById('modal-recuperar').style.display = 'none';
         }
-        async function buscarContrasena(){
+        function buscarContrasena(){
             const cedula = document.getElementById('recuperar-cedula').value.trim();
             if(!cedula){ alert('Ingresa tu cédula.'); return; }
 
-            const btn = event.target;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Buscando...';
-            btn.disabled = true;
+            // Buscar en base de datos local
+            const usuario = buscarUsuarioLocal(cedula);
 
-            try {
-                // 1) Buscar en RegistroAlumnos
-                const res = await fetch(SCRIPT_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedula));
-                const data = await res.json();
-
-                if(data.existe){
-                    // Encontrado en RegistroAlumnos
-                    const nombreCompleto = (data.nombre || '').trim();
-                    const parts = nombreCompleto.split(/\s+/);
-                    const nombre = parts[0] || '';
-                    const apellido = parts.slice(1).join(' ') || '';
-                    const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
-
-                    document.getElementById('recuperar-password').textContent = password;
-                    document.getElementById('recuperar-paso1').style.display = 'none';
-                    document.getElementById('recuperar-paso2').style.display = 'block';
-                    document.getElementById('recuperar-error').style.display = 'none';
-                    btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
-                    btn.disabled = false;
-                    return;
-                }
-
-                // 2) No está en RegistroAlumnos → buscar en Roles
-                const rolesRes = await fetch(SCRIPT_URL + '?action=verificar_roles&cedula=' + encodeURIComponent(cedula));
-                const rolesData = await rolesRes.json();
-
-                if(rolesData && rolesData.roles && rolesData.roles.length > 0){
-                    // Encontrado en Roles
-                    const primerRol = rolesData.roles[0];
-                    const nombreRol = (primerRol.nombre || '').trim();
-                    const partsRol = nombreRol.split(/\s+/);
-                    const nombreR = partsRol[0] || '';
-                    const apellidoR = partsRol.slice(1).join(' ') || '';
-                    const password = nombreR.charAt(0).toUpperCase() + apellidoR.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
-
-                    document.getElementById('recuperar-password').textContent = password;
-                    document.getElementById('recuperar-paso1').style.display = 'none';
-                    document.getElementById('recuperar-paso2').style.display = 'block';
-                    document.getElementById('recuperar-error').style.display = 'none';
-                    btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
-                    btn.disabled = false;
-                    return;
-                }
-
-                // 3) No encontrado en ningún lado
+            if(usuario){
+                const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+                document.getElementById('recuperar-password').textContent = password;
+                document.getElementById('recuperar-paso1').style.display = 'none';
+                document.getElementById('recuperar-paso2').style.display = 'block';
+                document.getElementById('recuperar-error').style.display = 'none';
+            } else {
                 document.getElementById('recuperar-error').style.display = 'block';
-                document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada en el sistema.';
-
-            } catch(e) {
-                document.getElementById('recuperar-error').style.display = 'block';
-                document.getElementById('recuperar-error-text').textContent = 'Error de conexión.';
+                document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada. Regístrese primero.';
+                document.getElementById('recuperar-paso2').style.display = 'none';
             }
-
-            btn.innerHTML = '<i class="bi bi-search me-2"></i>Buscar mi contraseña';
-            btn.disabled = false;
         }
         function copiarContrasena(){
             const pwd = document.getElementById('recuperar-password').textContent;
             navigator.clipboard.writeText(pwd).then(()=>{
-                document.getElementById('recuperar-copiado').style.display = 'block';
-                setTimeout(()=>{ document.getElementById('recuperar-copiado').style.display = 'none'; }, 2000);
+                alert('Contraseña copiada: ' + pwd);
             });
         }
         // Cerrar modal con Escape
