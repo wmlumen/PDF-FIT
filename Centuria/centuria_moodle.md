@@ -693,4 +693,62 @@ CampusVirtual/  (10 dirs + 8 files en raíz)
 3. Crear `.gitignore` mínimo y `.env.example`.
 4. Decidir rama Moodle (quedarse en 5.3dev Alpha o bajar a 405_STABLE) y anotarlo en §3.
 
+---
+
+## 18. 20 CASOS DE ANÁLISIS — Bucle de validación integral
+
+> Cada caso es un test independiente que cualquier IA puede ejecutar. Formato: **Precondición → Pasos → Esperado → Estado**. Si un caso falla, no avanzar al siguiente bloque.
+
+### BLOQUE A — Infraestructura (casos 1-5)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C01** | Docker daemon responde | Docker Desktop instalado | `docker ps` | Lista `moodle_web` + `moodle_db` | ❌ OFF (2026-09-13) |
+| **C02** | Puertos 80/443 libres para Docker | XAMPP y MySQL80 detenidos | `netstat -ano \| Select-String ":80 \|443"` | Solo PID de `moodle_web` | ⚠️ XAMPP Alias residual |
+| **C03** | MariaDB healthy | `docker compose up -d` ejecutado | `docker ps` → `healthy` + `mariadb -e "SELECT 1"` | `1` | ❌ daemon off |
+| **C04** | config.php válido | Archivo existe en `CampusVirtual/app/moodle/config.php` | `cat config.php \| Select-String dbhost` | `db`, `mariadb`, `http://localhost` | ✅ OK |
+| **C05** | Moodle HTTP responde | DB con ≥400 tablas, sin `upgraderunning` | `curl -s -o NUL -w "%{http_code}" http://localhost/` | `200` o `302` (no `500`) | ❌ 500 `Site is being upgraded` |
+
+### BLOQUE B — Instalación Moodle (casos 6-8)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C06** | install_database completa | `config.php` correcto, DB vacía | `php admin/cli/install_database.php --agree-license ...` | `Success` sin timeout, 430 tablas | ⚠️ 428 tablas, timeout |
+| **C07** | upgrade --allow-unstable completa | C06 parcial | `php admin/cli/upgrade.php --non-interactive --allow-unstable` | `Upgrade completed` | ❌ colgado en `block_social_activities` |
+| **C08** | Login admin | C07 OK | Navegador `http://localhost/login` → `admin / Centuria2024*` | Dashboard admin | ❌ bloqueado por C07 |
+
+### BLOQUE C — Portal standalone (sin Moodle) (casos 9-12)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C09** | Login cédula + contraseña (portal) | `CampusVirtual/app/index.html` abierto | Ingresar cédula `1234567` + pass `Jp1234567*` | Sesión `centuria_users` creada | ✅ OK |
+| **C10** | Recuperar contraseña | Usuario registrado en localStorage | Modal "¿Olvidaste?" → ingresar cédula → copiar pass generada | Pass `Jp...*` mostrada | ✅ OK |
+| **C11** | Registro unificado + asignación rol | Form registro completo | Cédula nueva → nombre/apellido/email → admin asigna `docente` | `sociologia_users` con `rol=docente` | ✅ OK |
+| **C12** | Navegación Sociología teacher_panel | Login docente | Sidebar → Mi Perfil / Documentos / Asistencia / Calendario | Todas las secciones cargan | ✅ OK |
+
+### BLOQUE D — Contenido académico (casos 13-15)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C13** | 10 Unidades TIC accesibles | `Materiales_Clases/Unidad_01-10.html` existen | Abrir `Unidad_01.html` → `Unidad_10.html` secuencial | 10 HTML sin 404, estilos `css/` cargan | ✅ standalone, ❌ vía Moodle |
+| **C14** | Documentos imprimibles self-contained | `sociologia/*.html` abiertos sin internet | Abrir `acta.html` → `planilla.html` → `plan_clases.html` → imprimir | Sin Google Fonts, solo system fonts, imprime OK | ✅ OK |
+| **C15** | indicators.json válido | Archivo existe | `Get-Content indicators.json \| ConvertFrom-Json` → 10 unidades × 3 indicadores | 30 indicadores, 5 pts c/u | ✅ OK |
+
+### BLOQUE E — Integración Moodle (casos 16-18)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C16** | Crear curso + importar indicadores | C08 OK | Crear curso `TIC - Centuria` → anotar `id=3` → `php import_indicators.php 3` | Gradebook con 3 categorías × 10 unidades | ❌ bloqueado por C07 |
+| **C17** | Matricular 30 alumnos | `alumnos_cargados.csv` + curso C16 | Convertir csv → `users.csv` Moodle → `admin/tool/uploaduser` | 30 users en `mdl_user`, matriculados | ❌ script `csv_moodle.py` no existe |
+| **C18** | Marcar como leído → Moodle | Plugin `local/marcado` + `marcar_leido_moodle.js` | Alumno pulsa "Marcar como Leído" en Unidad_01 | `mdl_user_preferences` `marcado_%` = 1 | ⚠️ plugin no desplegado |
+
+### BLOQUE F — Transversal y cierre (casos 19-20)
+| # | Caso | Precondición | Pasos | Esperado | Estado |
+|---|------|--------------|-------|----------|--------|
+| **C19** | Tema Centuria + responsive | `CampusVirtual/theme/centuria` creado | Activar tema → abrir en móvil 360px → login | Paleta #007A33/#00B140/#C5A55A, Montserrat, responsive | ❌ theme/ vacío |
+| **C20** | Bucle healthcheck automatizado | `scripts/bucle_test.ps1` existe | `.\scripts\bucle_test.ps1` imprime tabla 16.2 + 20 casos | 0 ❌ inesperados, log en `reports/logs/` | ❌ script no existe |
+
+### Resumen 20 casos — 2026-09-13 20:15
+- ✅ **7 OK** (C04, C09-C15 sin Moodle)
+- ⚠️ **3 PARCIAL** (C02, C06, C18)
+- ❌ **10 FALLO** (C01, C03, C05, C07, C08, C16, C17, C19, C20 + C02 residual)
+- **Bloqueante**: C07 (`upgrade.php`) — sin él, todo el BLOQUE E y C08 quedan bloqueados. Es el cuello de botella de los 3 días.
+
+> **Instrucción para la IA**: Ejecuta los 20 casos en orden. Si C01-C05 no son ✅, repara infraestructura primero. No toques C16-C20 hasta que C07 sea ✅.
+
 *Este documento es la fuente de verdad para el proyecto Campus Virtual Centuria. Cualquier IA que trabaje aquí debe consultarlo primero y actualizarlo al finalizar.*
