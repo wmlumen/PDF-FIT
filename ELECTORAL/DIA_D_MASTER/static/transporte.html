@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Transporte y Logística</title>
+  <script src="vendor/tailwind.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="config.js"></script>
+    <script src="auth.js"></script>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <link rel="stylesheet" href="vendor/leaflet/markercluster/MarkerCluster.css" />
+  <link rel="stylesheet" href="vendor/leaflet/markercluster/MarkerCluster.Default.css" />
+  <script src="vendor/leaflet/markercluster/leaflet.markercluster.js"></script>
+  <style>
+    /* Sin tiles externos (app offline): fondo de cuadricula en vez de imagen satelital/calles */
+    .leaflet-container { background: repeating-linear-gradient(0deg, #e2e8f0, #e2e8f0 24px, #f1f5f9 25px),
+                                      repeating-linear-gradient(90deg, transparent, transparent 24px, #cbd5e1 25px); }
+    .card { transition: all 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .gps-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .gps-dot.ok { background: #2e7d32; }
+    .gps-dot.old { background: #d97706; }
+    .gps-dot.none { background: #c62828; }
+    .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; border-radius: 999px; font-size: 0.65rem; font-weight: 700; border: 1px solid transparent; }
+    .badge-green { background: var(--state-success-bg); border-color: var(--state-success-border); color: var(--state-success-text); }
+    .badge-yellow { background: var(--state-warning-bg); border-color: var(--state-warning-border); color: var(--state-warning-text); }
+    .badge-red { background: var(--state-error-bg); border-color: var(--state-error-border); color: var(--state-error-text); }
+    .badge-blue { background: var(--state-info-bg); border-color: var(--state-info-border); color: var(--state-info-text); }
+    .badge-gray { background: var(--state-info-bg); border-color: var(--state-info-border); color: var(--gray-text-secondary); }
+    .mini-chart { display: flex; gap: 2px; align-items: flex-end; height: 40px; }
+    .mini-chart .bar { width: 8px; border-radius: 2px 2px 0 0; transition: height 0.5s ease; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .modal-content { background: white; border-radius: 1.5rem; padding: 1.5rem; max-width: 500px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .activity-item { border-left: 3px solid #e2e8f0; padding: 0.5rem 0 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+    .activity-item .time { font-size: 0.6rem; color: #94a3b8; font-weight: 600; }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = '/api';
+    const USER_KEY = 'seccional40_user';
+
+    function getUser() { try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; } }
+
+    let state = {
+      autenticado: !!getUser(),
+      usuario: getUser(),
+      transportes: [],
+      ubicaciones: [],
+      rutas: [],
+      conductores: [],
+      solicitudes: [],
+      actividad: [],
+      cargando: false,
+      mensaje: '',
+      pestaña: 'dashboard',
+      formVehiculo: { cedula: '', nombre: '', tipo: 'vehiculo', placa: '', telefono: '', capacidad: 4, seccional: '' },
+      formUbicacion: { transporte_id: '', lat: '', lng: '' },
+      formRuta: { transporte_id: '', origen: '', destino: '', cedula_conductor: '' },
+      filtroVivo: '',
+      editandoVehiculo: null,
+      editandoConductor: null,
+      conductorDetalleCache: {},
+      // Traslado ida y vuelta (busqueda + ida + vuelta, trazado por calles)
+      trasladoActivo: null,  // { transporte_id, cedula_conductor, votante_nombre, viajes: [...] }
+      trasladoArmando: false,
+      trasladoStats: null,
+      simulando: false,
+      simProgreso: null,
+      registrandoGasto: null,  // { transporteId, nombreVehiculo } | null
+      optimizando: false,
+      ultimaOptimizacion: ''
+    };
+
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+      app.innerHTML = renderDashboard();
+      if (state.cargando) return;
+      afterRender();
+    }
+
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 w-full max-w-md text-center fade-in">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-900 to-black border border-amber-500/40 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/10">
+              <i class="fas fa-truck text-amber-400 text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-black uppercase tracking-tight text-gray-900">Transporte</h1>
+            <p class="text-xs uppercase tracking-widest text-slate-400 mt-1 mb-6">DIA D MASTER · Logística</p>
+            <div class="space-y-3 text-left">
+              <input id="loginCedula" type="text" placeholder="Cédula" class="w-full border-2 border-slate-200 rounded-2xl p-3 text-sm focus:border-[#c5a059] outline-none">
+              <input id="loginPassword" type="password" placeholder="Contraseña" class="w-full border-2 border-slate-200 rounded-2xl p-3 text-sm focus:border-[#c5a059] outline-none">
+              <button onclick="login()" class="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-3 rounded-2xl shadow-lg shadow-amber-500/20 transition">Ingresar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function login() {
+      const ced = document.getElementById('loginCedula').value.replace(/[.\s,-]/g, '').trim();
+      const pw = document.getElementById('loginPassword').value.trim();
+      if (!ced || !pw) { alert('Ingrese cédula y contraseña.'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', cedula: ced, password: pw }) });
+        const d = await r.json();
+        if (!d.success) { alert(d.error || 'Credenciales inválidas'); return; }
+        sessionStorage.setItem(USER_KEY, JSON.stringify(d.usuario));
+        state.autenticado = true;
+        state.usuario = d.usuario;
+        await loadAll();
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    function logout() { sessionStorage.removeItem(USER_KEY); window.location.href = 'acceso.html'; }
+
+    async function loadAll() {
+      state.cargando = true;
+      state.mensaje = 'Cargando...';
+      render();
+      try {
+        const [t, u, r, c, s, a] = await Promise.all([
+          fetch(API_URL + '?action=transportes&v=' + Date.now()).then(r => r.json()),
+          fetch(API_URL + '?action=ubicaciones&v=' + Date.now()).then(r => r.json()),
+          fetch(API_URL + '?action=rutas&v=' + Date.now()).then(r => r.json()),
+          fetch('/api/conductor/lista?v=' + Date.now()).then(r => r.json()),
+          fetch('/api/solicitudes_recogida?v=' + Date.now()).then(r => r.json()),
+          fetch('/api/actividad_reciente?limite=30&v=' + Date.now()).then(r => r.json())
+        ]);
+        state.transportes = t.transportes || [];
+        state.ubicaciones = u.ubicaciones || [];
+        state.rutas = r.rutas || [];
+        state.conductores = c.conductores || [];
+        state.solicitudes = s.solicitudes || [];
+        state.actividad = a.actividad || [];
+      } catch (e) { state.mensaje = 'Error al cargar: ' + e.message; }
+      state.cargando = false;
+      render();
+    }
+
+    function renderDashboard() {
+      const u = state.usuario || {};
+      const nom = u.nombre || 'Usuario';
+      const nivel = u.nivel || '';
+      const ts = state.transportes;
+      const conds = state.conductores;
+      const rs = state.rutas;
+      const sols = state.solicitudes;
+
+      const activos = ts.filter(t => t.estado === 'disponible').length;
+      const ocupados = ts.filter(t => t.estado === 'ocupado').length;
+      const rutasHoy = rs.filter(r => {
+        if (!r.created_at) return false;
+        const hoy = new Date().toISOString().slice(0,10);
+        return r.created_at.slice(0,10) === hoy;
+      });
+      const completadosHoy = rutasHoy.filter(r => r.estado === 'completado').length;
+      const pendientesHoy = rutasHoy.filter(r => r.estado === 'pendiente').length;
+      const solicitudesPendientes = sols.filter(s => s.estado === 'pendiente').length;
+
+      const btn = (pest, icon, txt) =>
+        `<button onclick="state.pestaña='${pest}';render()" class="px-4 py-2 rounded-xl text-sm font-semibold transition ${state.pestaña === pest ? 'bg-slate-900 text-amber-400 border border-amber-500/30 shadow-md' : 'bg-white text-gray-700 border border-slate-200 hover:bg-slate-50'}"><i class="fas ${icon} mr-1"></i>${txt}</button>`;
+
+      return `
+        <div class="max-w-7xl mx-auto p-4 space-y-4 fade-in">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between bg-slate-950 text-white rounded-2xl p-4 shadow-xl border border-amber-500/20">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 flex items-center justify-center"><i class="fas fa-truck text-amber-400"></i></div>
+              <div><h1 class="text-xl font-bold text-white">Transporte</h1><p class="text-xs text-slate-400">${nom} · <span class="text-amber-400 font-bold">${nivel}</span></p></div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="loadAll()" class="px-3 py-2 bg-slate-800 text-slate-300 hover:text-white rounded-xl text-sm border border-slate-700"><i class="fas fa-sync-alt mr-1"></i>Actualizar</button>
+              <button onclick="logout()" class="px-3 py-2 bg-slate-800 text-slate-300 hover:text-amber-400 rounded-xl text-sm border border-slate-700"><i class="fas fa-sign-out-alt mr-1"></i>Salir</button>
+            </div>
+          </div>
+
+          <!-- Stats Dashboard -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 card">
+              <p class="text-2xl font-black text-slate-900">${ts.length}</p>
+              <p class="text-xs text-gray-500">Vehículos</p>
+              <div class="flex gap-2 mt-1 text-[10px] font-bold">
+                <span class="text-emerald-600">${activos} disp.</span>
+                <span class="text-amber-600">${ocupados} ocup.</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-green-100 card">
+              <p class="text-2xl font-black text-green-600">${completadosHoy}</p>
+              <p class="text-xs text-gray-500">Viajes hoy</p>
+              <p class="text-[10px] text-gray-400 mt-1 font-semibold">${pendientesHoy} pendientes</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-blue-100 card">
+              <p class="text-2xl font-black text-blue-600">${conds.length}</p>
+              <p class="text-xs text-gray-500">Conductores</p>
+              <p class="text-[10px] text-gray-400 mt-1 font-semibold">${activos} activos</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-yellow-100 card">
+              <p class="text-2xl font-black text-yellow-600">${solicitudesPendientes}</p>
+              <p class="text-xs text-gray-500">Solicitudes</p>
+              <p class="text-[10px] text-gray-400 mt-1 font-semibold">${sols.filter(s => s.estado === 'autorizado').length} autorizadas</p>
+            </div>
+          </div>
+
+          <!-- Mini bar chart: viajes últimos 7 días -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100 card">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-gray-700"><i class="fas fa-chart-bar text-party-500 mr-2"></i>Actividad últimos 7 días</h3>
+              <span class="text-[10px] text-gray-400 font-semibold">Completados</span>
+            </div>
+            <div id="miniChartContainer">
+              ${renderMiniChart()}
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex flex-wrap gap-2">
+            ${btn('dashboard','fa-chart-pie','Dashboard')}
+            ${btn('lista','fa-list','Vehículos')}
+            ${btn('conductores','fa-users','Conductores')}
+            ${btn('rutas','fa-route','Rutas')}
+            ${btn('vivo','fa-satellite-dish','En Vivo')}
+            ${btn('solicitudes','fa-clipboard-list','Solicitudes')}
+            ${btn('traslado','fa-road','Traslado')}
+            ${btn('log','fa-history','Actividad')}
+            ${btn('registrar','fa-plus-circle','Registrar')}
+          </div>
+
+          ${state.pestaña === 'dashboard' ? renderDashboardTab() : ''}
+          ${state.pestaña === 'lista' ? renderLista() : ''}
+          ${state.pestaña === 'conductores' ? renderConductores() : ''}
+          ${state.pestaña === 'rutas' ? renderRutas() : ''}
+          ${state.pestaña === 'vivo' ? renderVivo() : ''}
+          ${state.pestaña === 'solicitudes' ? renderSolicitudes() : ''}
+          ${state.pestaña === 'traslado' ? renderTraslado() : ''}
+          ${state.pestaña === 'log' ? renderLog() : ''}
+          ${state.pestaña === 'registrar' ? renderRegistrar() : ''}
+
+          ${state.mensaje ? `<div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 text-sm text-yellow-800">${state.mensaje}</div>` : ''}
+        </div>`;
+    }
+
+    function renderMiniChart() {
+      const rs = state.rutas;
+      const dias = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const ds = d.toISOString().slice(0,10);
+        const count = rs.filter(r => r.created_at && r.created_at.slice(0,10) === ds && r.estado === 'completado').length;
+        dias.push({ fecha: ds, count, label: d.toLocaleDateString('es', { weekday: 'short' }).slice(0,3) });
+      }
+      const max = Math.max(...dias.map(d => d.count), 1);
+      return `<div class="mini-chart">${dias.map(d => {
+        const h = Math.max(4, (d.count / max) * 36);
+        return `<div class="flex flex-col items-center gap-0.5 flex-1">
+          <span class="text-[8px] font-bold text-gray-400">${d.count}</span>
+          <div class="bar bg-party-500" style="height:${h}px;"></div>
+          <span class="text-[7px] font-semibold text-gray-400">${d.label}</span>
+        </div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderDashboardTab() {
+      const ts = state.transportes;
+      const rs = state.rutas;
+      const sols = state.solicitudes;
+      const actividad = state.actividad.slice(0, 10);
+
+      const activos = ts.filter(t => t.estado === 'disponible').length;
+      const ocupados = ts.filter(t => t.estado === 'ocupado').length;
+
+      return `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Estado flota -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100 card">
+            <h3 class="font-bold text-sm mb-3"><i class="fas fa-truck text-party-500 mr-2"></i>Estado de flota</h3>
+            <div class="space-y-2">
+              ${ts.length === 0 ? '<p class="text-xs text-gray-400 text-center py-4">Sin vehículos registrados</p>' :
+                ts.map(t => `
+                  <div class="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full ${t.estado === 'disponible' ? 'bg-emerald-500' : 'bg-party-400'}"></span>
+                      <span class="text-sm font-semibold text-gray-800">${t.nombre}</span>
+                      <span class="text-[10px] text-gray-400">${t.placa || ''}</span>
+                    </div>
+                    <span class="badge ${t.estado === 'disponible' ? 'badge-green' : 'badge-red'}">${t.estado}</span>
+                  </div>
+                `).join('')}
+            </div>
+            <div class="flex gap-3 mt-3 pt-2 border-t border-gray-100 text-[10px] font-bold">
+              <span class="text-emerald-600">⬤ ${activos} disponibles</span>
+              <span class="text-party-600">⬤ ${ocupados} ocupados</span>
+            </div>
+          </div>
+
+          <!-- Solicitudes rápidas -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100 card">
+            <h3 class="font-bold text-sm mb-3"><i class="fas fa-clipboard-list text-blue-500 mr-2"></i>Últimas solicitudes</h3>
+            <div class="space-y-1">
+              ${sols.length === 0 ? '<p class="text-xs text-gray-400 text-center py-4">Sin solicitudes</p>' :
+                sols.slice(0, 8).map(s => `
+                  <div class="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-semibold text-gray-800 truncate">${s.votante_nombre || '?'}</p>
+                      <p class="text-[9px] text-gray-400">${s.created_at ? formatTime(s.created_at) : ''}</p>
+                    </div>
+                    <span class="badge ${s.estado === 'pendiente' ? 'badge-yellow' : s.estado === 'autorizado' ? 'badge-green' : 'badge-red'} flex-shrink-0 ml-2">${s.estado}</span>
+                  </div>
+                `).join('')}
+            </div>
+          </div>
+
+          <!-- Actividad reciente -->
+          <div class="lg:col-span-2 bg-white rounded-2xl p-4 border border-gray-100 card">
+            <h3 class="font-bold text-sm mb-3"><i class="fas fa-history text-gray-500 mr-2"></i>Actividad reciente</h3>
+            <div class="space-y-0 max-h-48 overflow-y-auto">
+              ${actividad.length === 0 ? '<p class="text-xs text-gray-400 text-center py-4">Sin actividad aún</p>' :
+                actividad.map(a => `
+                  <div class="activity-item">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[9px] font-black text-gray-400 time">${formatTime(a.timestamp)}</span>
+                      <span class="badge ${a.estado === 'completado' || a.estado === 'autorizado' ? 'badge-green' : a.estado === 'pendiente' ? 'badge-yellow' : 'badge-gray'}">${a.estado}</span>
+                    </div>
+                    <p class="text-xs text-gray-700 font-medium">${a.desc}</p>
+                  </div>
+                `).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderLista() {
+      if (state.transportes.length === 0) {
+        return `<div class="bg-white rounded-2xl p-8 text-center border border-party-100"><i class="fas fa-truck text-4xl text-gray-300 mb-3"></i><p class="text-gray-400">No hay vehículos registrados</p><button onclick="state.pestaña='registrar';render()" class="mt-3 text-sm bg-party-600 text-white px-4 py-2 rounded-xl">Registrar primero</button></div>`;
+      }
+
+      const ubiMap = {};
+      state.ubicaciones.forEach(u => { ubiMap[u.transporte_id] = u; });
+
+      let html = `<div class="bg-white rounded-2xl p-4 border border-party-100">
+        <h2 class="font-bold text-lg mb-3"><i class="fas fa-truck text-party-600 mr-2"></i>Vehículos
+          <span class="text-sm font-normal text-gray-400 ml-2">${state.transportes.length} total</span>
+        </h2>
+        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">Nombre</th><th class="pb-2">Placa</th><th class="pb-2">Tipo</th><th class="pb-2">Teléfono</th><th class="pb-2">Cap.</th><th class="pb-2">Estado</th><th class="pb-2">GPS</th><th class="pb-2">Acciones</th></tr></thead><tbody>`;
+      state.transportes.forEach(t => {
+        const esPropio = !!t.es_propio_dirigente;
+        const u = ubiMap[t.id];
+        let gpsOk = 'none';
+        let gpsTitulo = 'Sin ubicación GPS';
+        if (esPropio && t.ubicacion_lat && t.ubicacion_lng) {
+          gpsOk = 'ok'; gpsTitulo = 'Ubicación marcada por el dirigente';
+        } else if (u && u.timestamp) {
+          const tms = new Date(String(u.timestamp).replace(' ', 'T')).getTime();
+          const min = Math.floor((Date.now() - tms) / 60000);
+          if (min <= 5) { gpsOk = 'ok'; gpsTitulo = 'GPS actualizado (hace ' + min + ' min)'; }
+          else { gpsOk = 'old'; gpsTitulo = 'GPS desactualizado (hace ' + min + ' min)'; }
+        }
+        html += `<tr class="border-b border-gray-100 hover:bg-gray-50 ${esPropio ? 'bg-indigo-50/40' : ''}">
+          <td class="py-2 font-medium">${t.nombre}${esPropio ? ' <span class="badge" style="background:#e0e7ff;color:#4338ca;font-size:9px;">DIRIGENTE</span>' : ''}</td>
+          <td class="py-2">${t.placa || '—'}</td>
+          <td class="py-2">${esPropio ? 'propio' : t.tipo}</td>
+          <td class="py-2">${t.telefono || '—'}</td>
+          <td class="py-2">${t.capacidad ?? '—'}</td>
+          <td class="py-2"><span class="badge ${t.estado === 'disponible' ? 'badge-green' : 'badge-red'}">${t.estado}</span></td>
+          <td class="py-2"><span class="gps-dot ${gpsOk}" title="${gpsTitulo}"></span></td>
+          <td class="py-2">
+            ${esPropio ? '<span class="text-xs text-gray-400">Gestionado por el dirigente</span>' : `
+            <button onclick="toggleDisponibilidadVehiculo('${t.cedula}','${t.estado}')" class="text-xs font-bold mr-2 ${t.estado === 'disponible' ? 'text-amber-600 hover:text-amber-800' : 'text-emerald-600 hover:text-emerald-800'}" title="${t.estado === 'disponible' ? 'Marcar como ocupado' : 'Marcar como disponible'}"><i class="fas fa-${t.estado === 'disponible' ? 'pause' : 'play'} mr-0.5"></i>${t.estado === 'disponible' ? 'Ocupar' : 'Liberar'}</button>
+            <button onclick="editarVehiculo(${t.id})" class="text-blue-600 hover:text-blue-800 text-xs font-bold mr-2"><i class="fas fa-edit mr-0.5"></i>Editar</button>
+            <button onclick="abrirRegistrarGasto(${t.id},'${(t.nombre||'').replace(/'/g,"\\'")}')" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold mr-2"><i class="fas fa-coins mr-0.5"></i>Gasto</button>
+            <button onclick="eliminarVehiculo(${t.id},'${t.nombre}')" class="text-party-600 hover:text-party-800 text-xs font-bold"><i class="fas fa-trash mr-0.5"></i></button>`}
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+
+      // Modal editar vehículo
+      if (state.editandoVehiculo) {
+        const ev = state.editandoVehiculo;
+        html += `
+          <div class="modal-overlay" style="display:flex;">
+            <div class="modal-content">
+              <h3 class="font-bold text-lg mb-3"><i class="fas fa-edit text-blue-600 mr-2"></i>Editar vehículo</h3>
+              <div class="space-y-2">
+                <input id="evNombre" type="text" placeholder="Nombre" value="${ev.nombre}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="evCedula" type="text" placeholder="Cédula responsable" value="${ev.cedula}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <select id="evTipo" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                  <option value="vehiculo" ${ev.tipo==='vehiculo'?'selected':''}>Vehículo</option>
+                  <option value="camioneta" ${ev.tipo==='camioneta'?'selected':''}>Camioneta</option>
+                  <option value="moto" ${ev.tipo==='moto'?'selected':''}>Moto</option>
+                  <option value="bus" ${ev.tipo==='bus'?'selected':''}>Bus</option>
+                </select>
+                <input id="evPlaca" type="text" placeholder="Placa" value="${ev.placa}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="evTelefono" type="text" placeholder="Teléfono" value="${ev.telefono}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="evCapacidad" type="number" placeholder="Capacidad" value="${ev.capacidad}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="evSeccional" type="text" placeholder="Seccional" value="${ev.seccional}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <div class="flex gap-2 mt-3">
+                  <button onclick="state.editandoVehiculo=null;render()" class="btn-outline flex-1 text-sm" style="background:white;border:2px solid #e2e8f0;border-radius:999px;padding:0.75rem;font-weight:700;">Cancelar</button>
+                  <button onclick="guardarEditarVehiculo()" class="flex-1 text-sm" style="background:#1e293b;color:white;border-radius:999px;padding:0.75rem;font-weight:700;">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      // Modal registrar gasto
+      if (state.registrandoGasto) {
+        const g = state.registrandoGasto;
+        html += `
+          <div class="modal-overlay" style="display:flex;">
+            <div class="modal-content">
+              <h3 class="font-bold text-lg mb-1"><i class="fas fa-coins text-emerald-600 mr-2"></i>Registrar gasto</h3>
+              <p class="text-xs text-gray-400 mb-3">${g.nombreVehiculo}</p>
+              <div class="space-y-2">
+                <input id="gastoMonto" type="number" placeholder="Monto (Gs.)" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <select id="gastoMedio" onchange="document.getElementById('gastoAliasWrap').style.display = this.value==='transferencia' ? 'block' : 'none'" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                  <option value="efectivo">Efectivo</option>
+                  <option value="transferencia">Transferencia</option>
+                </select>
+                <div id="gastoAliasWrap" style="display:none;">
+                  <input id="gastoAlias" type="text" placeholder="Alias o número de cuenta" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                </div>
+                <input id="gastoMotivo" type="text" placeholder="Motivo (combustible, peaje, vianda...)" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <div class="flex gap-2 mt-3">
+                  <button onclick="state.registrandoGasto=null;render()" class="btn-outline flex-1 text-sm" style="background:white;border:2px solid #e2e8f0;border-radius:999px;padding:0.75rem;font-weight:700;">Cancelar</button>
+                  <button onclick="guardarGasto()" class="flex-1 text-sm" style="background:#059669;color:white;border-radius:999px;padding:0.75rem;font-weight:700;">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      return html;
+    }
+
+    function abrirRegistrarGasto(transporteId, nombreVehiculo) {
+      state.registrandoGasto = { transporteId, nombreVehiculo };
+      render();
+    }
+
+    async function guardarGasto() {
+      const g = state.registrandoGasto;
+      const monto = parseFloat(document.getElementById('gastoMonto').value);
+      const medio = document.getElementById('gastoMedio').value;
+      const alias = document.getElementById('gastoAlias') ? document.getElementById('gastoAlias').value.trim() : '';
+      const motivo = document.getElementById('gastoMotivo').value.trim();
+      if (!monto || monto <= 0) { alert('Ingresá un monto válido'); return; }
+      const user = state.usuario;
+      try {
+        const r = await fetch('/api/transporte/gastos', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transporte_id: g.transporteId, monto, medio, alias_o_cuenta: alias, motivo,
+            entregado_por_cedula: user?.cedula || '', entregado_por_nombre: user?.nombre || ''
+          })
+        });
+        const d = await r.json();
+        if (!d.success) { alert('Error: ' + (d.error || '')); return; }
+        state.registrandoGasto = null;
+        alert('Gasto registrado');
+        render();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    function editarVehiculo(id) {
+      const t = state.transportes.find(x => x.id === id);
+      if (t) { state.editandoVehiculo = { ...t }; render(); }
+    }
+
+    function eliminarVehiculo(id, nombre) {
+      if (!confirm(`¿Eliminar "${nombre}"? Se borrarán también sus ubicaciones GPS.`)) return;
+      fetch('/api/transporte/eliminar', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ id })
+      }).then(r => r.json()).then(d => {
+        if (d.success) { alert('Vehículo eliminado'); loadAll(); }
+        else alert('Error: ' + (d.error || ''));
+      });
+    }
+
+    async function toggleDisponibilidadVehiculo(cedula, estadoActual) {
+      const nuevo = estadoActual === 'disponible' ? 'ocupado' : 'disponible';
+      try {
+        const r = await fetch('/api/conductor/disponibilidad', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ cedula, estado: nuevo })
+        });
+        const d = await r.json();
+        if (d.success) { await loadAll(); }
+        else alert('Error: ' + (d.error || ''));
+      } catch(e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    async function guardarEditarVehiculo() {
+      const ev = state.editandoVehiculo;
+      const data = { id: ev.id };
+      const campos = {
+        nombre: document.getElementById('evNombre').value.trim(),
+        cedula: document.getElementById('evCedula').value.trim(),
+        tipo: document.getElementById('evTipo').value,
+        placa: document.getElementById('evPlaca').value.trim(),
+        telefono: document.getElementById('evTelefono').value.trim(),
+        capacidad: parseInt(document.getElementById('evCapacidad').value) || 4,
+        seccional: document.getElementById('evSeccional').value.trim()
+      };
+      Object.keys(campos).forEach(k => {
+        if (campos[k] !== ev[k]) data[k] = campos[k];
+      });
+      if (Object.keys(data).length <= 1) { alert('No hay cambios'); return; }
+      try {
+        const r = await fetch('/api/transporte/editar', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+        });
+        const d = await r.json();
+        if (d.success) { alert('Vehículo actualizado'); state.editandoVehiculo = null; loadAll(); }
+        else alert('Error: ' + (d.error || ''));
+      } catch(e) { alert('Error de conexión'); }
+    }
+
+    function renderConductores() {
+      const conds = state.conductores;
+      if (conds.length === 0) {
+        return `<div class="bg-white rounded-2xl p-8 text-center border border-blue-100"><i class="fas fa-users text-4xl text-gray-300 mb-3"></i><p class="text-gray-400">No hay conductores registrados. Los conductores se crean al registrar vehículos con contraseña.</p></div>`;
+      }
+
+      let html = `<div class="bg-white rounded-2xl p-4 border border-blue-100">
+        <h2 class="font-bold text-lg mb-3"><i class="fas fa-users text-blue-600 mr-2"></i>Conductores</h2>
+        <div class="overflow-x-auto"><table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">Nombre</th><th class="pb-2">Cédula</th><th class="pb-2">Vehículo</th><th class="pb-2">Placa</th><th class="pb-2">Teléfono</th><th class="pb-2">Estado</th><th class="pb-2">Contacto</th></tr></thead><tbody>`;
+      conds.forEach(c => {
+        html += `<tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-2 font-medium">${c.nombre}</td>
+          <td class="py-2 font-mono text-xs">${c.cedula}</td>
+          <td class="py-2">${c.tipo}</td>
+          <td class="py-2">${c.placa || '—'}</td>
+          <td class="py-2">${c.telefono || '—'}</td>
+          <td class="py-2"><span class="badge ${c.estado === 'disponible' ? 'badge-green' : 'badge-red'}">${c.estado}</span></td>
+          <td class="py-2">
+            <a href="https://wa.me/595${(c.telefono||'').replace(/^0+/,'')}" target="_blank" class="text-green-600 hover:text-green-800 mr-2" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="tel:+595${(c.telefono||'').replace(/^0+/,'')}" class="text-blue-600 hover:text-blue-800 mr-2" title="Llamar"><i class="fas fa-phone"></i></a>
+            <button onclick="editarConductor('${c.cedula}')" class="text-blue-700 hover:text-blue-900 text-xs font-bold" title="Editar"><i class="fas fa-edit mr-0.5"></i>Editar</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+
+      // Modal detalle conductor si hay
+      if (state.editandoConductor) {
+        const ec = state.editandoConductor;
+        html += `
+          <div class="modal-overlay" style="display:flex;">
+            <div class="modal-content">
+              <h3 class="font-bold text-lg mb-3"><i class="fas fa-user-edit text-blue-600 mr-2"></i>Editar conductor</h3>
+              <div class="space-y-2">
+                <p class="text-xs text-gray-500 font-semibold">Cédula: ${ec.cedula}</p>
+                <input id="ecNombre" type="text" placeholder="Nombre" value="${ec.nombre}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="ecTelefono" type="text" placeholder="Teléfono" value="${ec.telefono}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <input id="ecPlaca" type="text" placeholder="Placa" value="${ec.placa}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <div class="flex gap-2 mt-3">
+                  <button onclick="state.editandoConductor=null;render()" class="btn-outline flex-1 text-sm" style="background:white;border:2px solid #e2e8f0;border-radius:999px;padding:0.75rem;font-weight:700;">Cancelar</button>
+                  <button onclick="guardarEditarConductor()" class="flex-1 text-sm" style="background:#1e293b;color:white;border-radius:999px;padding:0.75rem;font-weight:700;">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }
+      return html;
+    }
+
+    function editarConductor(cedula) {
+      const c = state.conductores.find(x => x.cedula === cedula);
+      if (c) { state.editandoConductor = { ...c }; render(); }
+    }
+
+    async function guardarEditarConductor() {
+      const ec = state.editandoConductor;
+      const data = { id: state.transportes.find(t => t.cedula === ec.cedula)?.id };
+      if (!data.id) { alert('No se encontró el vehículo asociado'); return; }
+      data.nombre = document.getElementById('ecNombre').value.trim();
+      data.telefono = document.getElementById('ecTelefono').value.trim();
+      data.placa = document.getElementById('ecPlaca').value.trim();
+      if (!data.nombre) { alert('Nombre requerido'); return; }
+      try {
+        const r = await fetch('/api/transporte/editar', {
+          method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+        });
+        const d = await r.json();
+        if (d.success) { alert('Conductor actualizado'); state.editandoConductor = null; loadAll(); }
+        else alert('Error: ' + (d.error || ''));
+      } catch(e) { alert('Error de conexión'); }
+    }
+
+    function renderRutas() {
+      let html = `<div class="bg-white rounded-2xl p-4 border border-party-100"><h2 class="font-bold text-lg mb-3"><i class="fas fa-route text-party-600 mr-2"></i>Rutas</h2>`;
+
+      const activas = state.rutas.filter(r => r.estado === 'pendiente' || r.estado === 'en_curso');
+      const completadas = state.rutas.filter(r => r.estado === 'completado');
+
+      if (state.rutas.length === 0) {
+        html += `<div class="text-center py-6 text-gray-400"><i class="fas fa-map text-3xl mb-2"></i><p>Sin rutas registradas</p></div>`;
+      } else {
+        // Filtros rápidos
+        html += `<div class="flex gap-2 mb-3">
+          <button onclick="filtrarRutas('todas')" id="rfTodas" class="px-3 py-1 text-[10px] font-black rounded-full ${!state.filtroRuta||state.filtroRuta==='todas'?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Todas (${state.rutas.length})</button>
+          <button onclick="filtrarRutas('pendiente')" id="rfPendiente" class="px-3 py-1 text-[10px] font-black rounded-full ${state.filtroRuta==='pendiente'?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Activas (${activas.length})</button>
+          <button onclick="filtrarRutas('completado')" id="rfCompletado" class="px-3 py-1 text-[10px] font-black rounded-full ${state.filtroRuta==='completado'?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Completadas (${completadas.length})</button>
+        </div>`;
+
+        let filtradas = state.rutas;
+        if (state.filtroRuta === 'pendiente') filtradas = activas;
+        else if (state.filtroRuta === 'completado') filtradas = completadas;
+
+        html += `<div class="space-y-2">`;
+        filtradas.forEach(r => {
+          const t = state.transportes.find(tr => tr.id === r.transporte_id);
+          const cond = state.conductores.find(c => c.cedula === r.cedula_conductor);
+          const badgeClass = r.estado === 'pendiente' ? 'badge-yellow' : r.estado === 'en_curso' ? 'badge-blue' : 'badge-green';
+          html += `<div class="border border-gray-200 rounded-xl p-3">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <span class="font-medium text-sm">${r.origen || '?'} → ${r.destino || '?'}</span>
+                <span class="text-[10px] text-gray-400 ml-2">${t ? t.nombre : '?'}</span>
+              </div>
+              <span class="badge ${badgeClass} flex-shrink-0 ml-2">${r.estado}</span>
+            </div>
+            <div class="flex items-center justify-between mt-1">
+              <div class="flex items-center gap-2 text-[10px] text-gray-500">
+                ${cond ? `<span><i class="fas fa-user mr-0.5"></i>${cond.nombre}</span>` : '<span class="text-orange-500">Sin conductor</span>'}
+                <span>${formatTime(r.created_at) || ''}</span>
+              </div>
+              <div class="flex gap-1">
+                ${cond && cond.telefono ? `
+                  <a href="https://wa.me/595${cond.telefono.replace(/^0+/,'')}" target="_blank" class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center text-green-600 hover:bg-green-200 text-xs" title="WhatsApp conductor"><i class="fab fa-whatsapp"></i></a>
+                  <a href="tel:+595${cond.telefono.replace(/^0+/,'')}" class="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 text-xs" title="Llamar"><i class="fas fa-phone"></i></a>
+                ` : ''}
+                ${r.estado === 'pendiente' ? `
+                  <button onclick="reAsignarRuta(${r.id})" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-1"><i class="fas fa-exchange-alt mr-0.5"></i></button>
+                ` : ''}
+              </div>
+            </div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+
+      // Modal reasignar
+      if (state.reasignandoRuta) {
+        html += `
+          <div class="modal-overlay" style="display:flex;">
+            <div class="modal-content">
+              <h3 class="font-bold text-lg mb-3"><i class="fas fa-exchange-alt text-blue-600 mr-2"></i>Reasignar ruta</h3>
+              <p class="text-xs text-gray-500 mb-2">Seleccioná un conductor para esta ruta:</p>
+              <select id="rsConductor" class="w-full border border-gray-300 rounded-xl p-2 text-sm mb-3">
+                <option value="">Seleccionar conductor...</option>
+                ${state.conductores.map(c => `<option value="${c.cedula}">${c.nombre} · ${c.placa || c.tipo}</option>`).join('')}
+              </select>
+              <div class="flex gap-2">
+                <button onclick="state.reasignandoRuta=null;render()" class="btn-outline flex-1 text-sm" style="background:white;border:2px solid #e2e8f0;border-radius:999px;padding:0.75rem;font-weight:700;">Cancelar</button>
+                <button onclick="confirmarReasignar()" class="flex-1 text-sm" style="background:#1e293b;color:white;border-radius:999px;padding:0.75rem;font-weight:700;">Reasignar</button>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      return html;
+    }
+
+    let filtroRutaGlobal = 'todas';
+    function filtrarRutas(f) {
+      state.filtroRuta = f;
+      render();
+    }
+
+    function reAsignarRuta(rutaId) {
+      state.reasignandoRuta = rutaId;
+      render();
+    }
+
+    async function confirmarReasignar() {
+      const sel = document.getElementById('rsConductor');
+      const cedula = sel.value;
+      if (!cedula) { alert('Seleccioná un conductor'); return; }
+      try {
+        const r = await fetch('/api/conductor/asignar', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ ruta_id: state.reasignandoRuta, cedula_conductor: cedula })
+        });
+        const d = await r.json();
+        if (d.success) {
+          alert('Ruta reasignada');
+          state.reasignandoRuta = null;
+          await loadAll();
+        } else { alert('Error: ' + (d.error || '')); }
+      } catch(e) { alert('Error de conexión'); }
+    }
+
+    function renderSolicitudes() {
+      const pendientes = state.solicitudes.filter(s => s.estado === 'pendiente');
+      const autorizadas = state.solicitudes.filter(s => s.estado === 'autorizado');
+      const rechazadas = state.solicitudes.filter(s => s.estado === 'rechazado');
+
+      let html = `<div class="bg-white rounded-2xl p-4 border border-blue-100">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 class="font-bold text-lg m-0"><i class="fas fa-clipboard-list text-blue-600 mr-2"></i>Solicitudes de recogida</h2>
+          <button onclick="optimizarAsignaciones()" ${state.optimizando ? 'disabled' : ''} class="px-3 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-xs font-black rounded-xl disabled:opacity-50">
+            <i class="fas fa-${state.optimizando ? 'spinner fa-spin' : 'route'} mr-1"></i>Optimizar asignaciones
+          </button>
+        </div>
+        ${state.ultimaOptimizacion ? `
+          <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-2.5 mb-3 text-xs text-indigo-700">
+            <i class="fas fa-circle-check mr-1"></i>${state.ultimaOptimizacion}
+          </div>
+        ` : ''}`;
+
+      // Tabs de estado
+      html += `<div class="flex gap-2 mb-3">
+        <button onclick="filtrarSolicitudes('pendiente')" id="sfPendiente" class="px-3 py-1 text-[10px] font-black rounded-full ${state.filtroSol==='pendiente'||!state.filtroSol?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Pendientes (${pendientes.length})</button>
+        <button onclick="filtrarSolicitudes('autorizado')" id="sfAutorizado" class="px-3 py-1 text-[10px] font-black rounded-full ${state.filtroSol==='autorizado'?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Autorizadas (${autorizadas.length})</button>
+        <button onclick="filtrarSolicitudes('rechazado')" id="sfRechazado" class="px-3 py-1 text-[10px] font-black rounded-full ${state.filtroSol==='rechazado'?'bg-slate-900 text-white':'bg-slate-100 text-slate-500'}">Rechazadas (${rechazadas.length})</button>
+      </div>`;
+
+      let mostrar = pendientes;
+      if (state.filtroSol === 'autorizado') mostrar = autorizadas;
+      else if (state.filtroSol === 'rechazado') mostrar = rechazadas;
+
+      if (mostrar.length === 0) {
+        html += `<div class="text-center py-8 text-gray-400"><i class="fas fa-inbox text-4xl mb-2"></i><p>Sin solicitudes en este estado</p></div>`;
+      } else {
+        html += `<div class="space-y-2">`;
+        mostrar.forEach(s => {
+          const badgeClass = s.estado === 'pendiente' ? 'badge-yellow' : s.estado === 'autorizado' ? 'badge-green' : 'badge-red';
+          html += `
+            <div class="border ${s.estado === 'pendiente' ? 'border-blue-200 bg-blue-50/30' : 'border-gray-200 bg-gray-50/50'} rounded-xl p-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="badge ${badgeClass}">${s.estado}</span>
+                    <span class="text-[10px] text-gray-400">#${s.id}</span>
+                  </div>
+                  <p class="font-bold text-slate-900 text-sm">${s.votante_nombre || '?'}</p>
+                  <p class="text-[10px] text-slate-500 font-mono font-semibold">CC ${s.votante_cedula || '?'}</p>
+                  <div class="mt-1 space-y-0.5 text-[11px] text-slate-600">
+                    <div><i class="fas fa-clock text-blue-500 w-3.5 mr-1"></i>${s.hora_recogida || '—'}</div>
+                    <div><i class="fas fa-location-dot text-party-500 w-3.5 mr-1"></i>${s.ubicacion || '—'}</div>
+                    <div class="text-[10px] text-slate-400"><i class="fas fa-user mr-1"></i>Solicitó: ${s.dirigente_nombre || s.dirigente_cedula || '?'}</div>
+                    ${s.ruta_id ? `<div class="text-[10px] text-blue-600"><i class="fas fa-route mr-1"></i>Ruta #${s.ruta_id}</div>` : ''}
+                  </div>
+                </div>
+                ${s.estado === 'pendiente' ? `
+                  <div class="flex flex-col gap-1.5 flex-shrink-0">
+                    <button onclick="autorizarSolicitud(${s.id})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black rounded-xl transition-all active:scale-95">
+                      <i class="fas fa-check mr-1"></i> Autorizar
+                    </button>
+                    <button onclick="rechazarSolicitud(${s.id})" class="px-3 py-1.5 bg-party-100 hover:bg-party-200 text-party-600 text-[10px] font-black rounded-xl transition-all active:scale-95">
+                      <i class="fas fa-times mr-1"></i> Rechazar
+                    </button>
+                  </div>
+                ` : s.estado === 'autorizado' && s.ruta_id ? `
+                  <div class="flex flex-col gap-1.5 flex-shrink-0">
+                    <button onclick="armarTrasladoRedondo(${s.ruta_id}, '${s.votante_cedula}', ${s.id})" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black rounded-xl transition-all active:scale-95">
+                      <i class="fas fa-road mr-1"></i> Armar traslado
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    let filtroSolGlobal = 'pendiente';
+    function filtrarSolicitudes(f) {
+      state.filtroSol = f;
+      render();
+    }
+
+    async function autorizarSolicitud(id) {
+      if (!confirm('¿Autorizar esta solicitud de recogida? Se creará una ruta automáticamente.')) return;
+      const user = state.usuario;
+      try {
+        const r = await fetch('/api/autorizar_recogida', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ solicitud_id: id, accion: 'autorizado', admin_cedula: user?.cedula || '' })
+        });
+        const d = await r.json();
+        if (d.success) {
+          alert('Solicitud autorizada. Ruta #' + d.ruta_id + ' creada.');
+          await loadAll();
+          state.pestaña = 'rutas';
+          render();
+        } else { alert('Error: ' + (d.error || 'desconocido')); }
+      } catch(e) { alert('Error de conexión'); }
+    }
+
+    async function optimizarAsignaciones() {
+      state.optimizando = true;
+      render();
+      try {
+        const r = await fetch('/api/transporte/optimizar_asignaciones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const d = await r.json();
+        state.optimizando = false;
+        if (!d.success) { alert(d.error || 'No se pudo optimizar'); render(); return; }
+        if ((d.asignaciones || []).length === 0) {
+          state.ultimaOptimizacion = d.mensaje || 'No había nada para asignar';
+        } else {
+          state.ultimaOptimizacion = `${d.asignaciones.length} asignación(es) · ${d.km_total_asignacion} km totales (algoritmo húngaro: minimiza la distancia de toda la flota, no solo la de cada viaje por separado)`;
+        }
+        await loadAll();
+      } catch (e) {
+        state.optimizando = false;
+        alert('Error: ' + e.message);
+        render();
+      }
+    }
+
+    async function rechazarSolicitud(id) {
+      if (!confirm('¿Rechazar esta solicitud?')) return;
+      const user = state.usuario;
+      try {
+        const r = await fetch('/api/autorizar_recogida', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ solicitud_id: id, accion: 'rechazado', admin_cedula: user?.cedula || '' })
+        });
+        const d = await r.json();
+        if (d.success) {
+          alert('Solicitud rechazada.');
+          await loadAll();
+        } else { alert('Error: ' + (d.error || 'desconocido')); }
+      } catch(e) { alert('Error de conexión'); }
+    }
+
+    function renderLog() {
+      const act = state.actividad;
+      let html = `<div class="bg-white rounded-2xl p-4 border border-gray-100">
+        <h2 class="font-bold text-lg mb-3"><i class="fas fa-history text-gray-600 mr-2"></i>Actividad reciente</h2>`;
+      if (act.length === 0) {
+        html += `<div class="text-center py-8 text-gray-400"><i class="fas fa-stream text-4xl mb-2"></i><p>Sin actividad registrada</p></div>`;
+      } else {
+        html += `<div class="space-y-0 max-h-96 overflow-y-auto">`;
+        act.forEach(a => {
+          const badgeClass = a.estado === 'completado' || a.estado === 'autorizado' ? 'badge-green' :
+            a.estado === 'pendiente' ? 'badge-yellow' : a.estado === 'rechazado' ? 'badge-red' : 'badge-gray';
+          const icon = a.tipo === 'ruta' ? 'fa-route text-party-500' : 'fa-clipboard text-blue-500';
+          html += `<div class="activity-item flex items-start gap-2">
+            <i class="fas ${icon} text-xs mt-0.5"></i>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-black text-gray-400 time">${formatTime(a.timestamp)}</span>
+                <span class="badge ${badgeClass}">${a.estado}</span>
+              </div>
+              <p class="text-xs text-gray-700 font-medium">${a.desc}</p>
+            </div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function renderRegistrar() {
+      const f = state.formVehiculo;
+      return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Nuevo vehículo -->
+          <div class="bg-white rounded-2xl p-4 border border-party-100">
+            <h3 class="font-bold mb-3"><i class="fas fa-plus-circle text-party-600 mr-2"></i>Registrar vehículo</h3>
+            <div class="space-y-2">
+              <input id="fvCedula" type="text" placeholder="Cédula responsable" value="${f.cedula}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvNombre" type="text" placeholder="Nombre conductor" value="${f.nombre}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvPassword" type="text" placeholder="Contraseña (para login del conductor)" value="" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <select id="fvTipo" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <option value="vehiculo" ${f.tipo === 'vehiculo' ? 'selected' : ''}>Vehículo</option>
+                <option value="camioneta" ${f.tipo === 'camioneta' ? 'selected' : ''}>Camioneta</option>
+                <option value="moto" ${f.tipo === 'moto' ? 'selected' : ''}>Moto</option>
+                <option value="bus" ${f.tipo === 'bus' ? 'selected' : ''}>Bus</option>
+              </select>
+              <input id="fvPlaca" type="text" placeholder="Placa" value="${f.placa}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvTelefono" type="text" placeholder="Teléfono" value="${f.telefono}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvCapacidad" type="number" placeholder="Capacidad" value="${f.capacidad}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvSeccional" type="text" placeholder="Seccional" value="${f.seccional}" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <button onclick="registrarVehiculo()" class="w-full bg-gradient-to-r from-party-600 to-party-800 text-white font-bold py-2 rounded-xl hover:scale-[1.01] transition">Guardar vehículo</button>
+            </div>
+          </div>
+
+          <!-- Nueva ruta -->
+          <div class="bg-white rounded-2xl p-4 border border-blue-100">
+            <h3 class="font-bold mb-3"><i class="fas fa-route text-blue-600 mr-2"></i>Registrar ruta</h3>
+            <div class="space-y-2">
+              <select id="frTransporte" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <option value="">Seleccionar vehículo...</option>
+                ${state.transportes.map(t => `<option value="${t.id}">${t.nombre} (${t.placa})</option>`).join('')}
+              </select>
+              <input id="frOrigen" type="text" placeholder="Origen" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="frDestino" type="text" placeholder="Destino" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <select id="frConductor" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <option value="">Asignar a conductor (opcional)...</option>
+                ${state.conductores.map(c => `<option value="${c.cedula}">${c.nombre} · ${c.placa || c.tipo}</option>`).join('')}
+              </select>
+              <button onclick="registrarRuta()" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white font-bold py-2 rounded-xl hover:scale-[1.01] transition">Crear ruta</button>
+            </div>
+          </div>
+
+          <!-- Actualizar ubicación -->
+          <div class="md:col-span-2 bg-white rounded-2xl p-4 border border-green-100">
+            <h3 class="font-bold mb-3"><i class="fas fa-map-pin text-green-600 mr-2"></i>Actualizar ubicación GPS</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <select id="fuTransporte" class="border border-gray-300 rounded-xl p-2 text-sm">
+                <option value="">Vehículo...</option>
+                ${state.transportes.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('')}
+              </select>
+              <input id="fuLat" type="text" placeholder="Latitud (ej: -25.2867)" class="border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fuLng" type="text" placeholder="Longitud (ej: -57.6082)" class="border border-gray-300 rounded-xl p-2 text-sm">
+              <button onclick="actualizarUbicacion()" class="bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-2 rounded-xl hover:scale-[1.01] transition">Actualizar</button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2"><i class="fas fa-info-circle mr-1"></i>Usar coordenadas decimales. Ej: Asunción = -25.2867, -57.6082</p>
+          </div>
+        </div>`;
+    }
+
+    async function registrarVehiculo() {
+      const pw = document.getElementById('fvPassword').value.trim();
+      const d = {
+        action: 'registrar_transporte',
+        cedula: document.getElementById('fvCedula').value.trim(),
+        nombre: document.getElementById('fvNombre').value.trim(),
+        tipo: document.getElementById('fvTipo').value,
+        placa: document.getElementById('fvPlaca').value.trim(),
+        telefono: document.getElementById('fvTelefono').value.trim(),
+        capacidad: parseInt(document.getElementById('fvCapacidad').value) || 4,
+        seccional: document.getElementById('fvSeccional').value.trim(),
+        contrasena: pw
+      };
+      if (!d.cedula || !d.nombre) { alert('Cédula y nombre requeridos'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) });
+        const data = await r.json();
+        if (data.success) {
+          alert('Vehículo registrado' + (pw ? ' con cuenta de conductor creada' : ''));
+          await loadAll();
+        } else { alert('Error: ' + (data.error || 'desconocido')); }
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    async function registrarRuta() {
+      const sel = document.getElementById('frTransporte');
+      const conductorSel = document.getElementById('frConductor');
+      const d = {
+        action: 'registrar_ruta',
+        transporte_id: parseInt(sel.value),
+        origen: document.getElementById('frOrigen').value.trim(),
+        destino: document.getElementById('frDestino').value.trim()
+      };
+      if (!d.transporte_id || !d.destino) { alert('Vehículo y destino requeridos'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) });
+        const data = await r.json();
+        if (data.success) {
+          const condCedula = conductorSel ? conductorSel.value : '';
+          if (condCedula && data.id) {
+            await fetch('/api/conductor/asignar', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ ruta_id: data.id, cedula_conductor: condCedula })
+            });
+          }
+          alert('Ruta creada' + (condCedula ? ' y asignada' : ''));
+          await loadAll();
+        } else { alert('Error: ' + (data.error || 'desconocido')); }
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    async function actualizarUbicacion() {
+      const sel = document.getElementById('fuTransporte');
+      const lat = parseFloat(document.getElementById('fuLat').value);
+      const lng = parseFloat(document.getElementById('fuLng').value);
+      if (!sel.value || isNaN(lat) || isNaN(lng)) { alert('Seleccione vehículo e ingrese coordenadas válidas'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({
+          action: 'registrar_ubicacion', transporte_id: parseInt(sel.value), lat, lng
+        })});
+        const data = await r.json();
+        if (data.success) { alert('Ubicación actualizada'); await loadAll(); }
+        else { alert('Error: ' + (data.error || 'desconocido')); }
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    function nuevaUbicacion(id) {
+      state.pestaña = 'registrar';
+      render();
+      setTimeout(() => {
+        const sel = document.getElementById('fuTransporte');
+        if (sel) sel.value = id;
+      }, 100);
+    }
+
+    function renderVivo() {
+      return `
+        <div class="bg-white rounded-2xl p-4 border border-party-100">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-bold text-lg"><i class="fas fa-satellite-dish text-party-600 mr-2"></i>En Vivo</h2>
+            <div class="flex gap-2">
+              <input id="vivoFiltro" type="text" placeholder="Filtrar conductor..." value="${state.filtroVivo}" oninput="state.filtroVivo=this.value;initMapaVivo()" class="border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-medium w-32 focus:border-party-400 outline-none">
+              <button onclick="document.getElementById('vivoFiltro').value='';state.filtroVivo='';initMapaVivo()" class="px-2 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-xl hover:bg-gray-200"><i class="fas fa-times"></i></button>
+              <button onclick="centrarMapaVivo()" class="px-2 py-1.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-200"><i class="fas fa-crosshairs mr-1"></i></button>
+              <button onclick="recargarVivo()" class="px-2 py-1.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-200"><i class="fas fa-sync-alt mr-1"></i></button>
+            </div>
+          </div>
+          <div id="vivo-stats" class="mb-2 px-3 py-2 bg-gray-50 rounded-xl text-xs text-gray-600 font-semibold flex items-center gap-2 flex-wrap">
+            <span><span id="vivo-count-activos" class="font-black text-gray-900">0</span> conductores</span>
+            <span class="text-gray-300">·</span>
+            <span><span id="vivo-count-viaje" class="font-black text-green-600">0</span> con viaje</span>
+            <span class="text-gray-300">·</span>
+            <span><span id="vivo-count-disponible" class="font-black text-blue-600">0</span> disponibles</span>
+            <span class="text-gray-300">·</span>
+            <span><span id="vivo-count-sin-gps" class="font-black text-gray-400">0</span> sin GPS</span>
+          </div>
+          <div id="vivo-map" style="height:500px;border-radius:12px;border:2px solid #e5e7eb;" class="z-0"></div>
+        </div>`;
+    }
+
+    function initMapaVivo() {
+      if (!window.vivoMap) {
+        window.vivoMap = L.map('vivo-map').setView([-25.2867, -57.6082], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(window.vivoMap);
+        setTimeout(() => { if (window.vivoMap) window.vivoMap.invalidateSize(); }, 300);
+      }
+      // Clusteriza los conductores que caen cerca entre si (en vez de superponer
+      // decenas de autos en el mismo punto), y se desarma solo al hacer zoom/click.
+      if (!window.vivoCluster) {
+        window.vivoCluster = L.markerClusterGroup({
+          maxClusterRadius: 60,
+          iconCreateFunction: (cluster) => {
+            const n = cluster.getChildCount();
+            const size = n >= 10 ? 46 : n >= 5 ? 40 : 34;
+            return L.divIcon({
+              html: `<div style="background:#1e293b;color:#fbbf24;width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.35);">${n}</div>`,
+              className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2]
+            });
+          }
+        });
+        window.vivoMap.addLayer(window.vivoCluster);
+      }
+      window.vivoCluster.clearLayers();
+      window.vivoMarkers = [];
+
+      const filtro = (state.filtroVivo || '').toLowerCase().trim();
+
+      fetch('/api/conductor/todas_ubicaciones?v=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+          if (!data.success) return;
+          let conds = data.conductores || [];
+          // Filter
+          if (filtro) {
+            conds = conds.filter(c =>
+              (c.nombre || '').toLowerCase().includes(filtro) ||
+              (c.placa || '').toLowerCase().includes(filtro) ||
+              (c.cedula || '').includes(filtro)
+            );
+          }
+          document.getElementById('vivo-count-activos').textContent = conds.length;
+          const conViaje = conds.filter(c => c.viaje_estado && c.viaje_estado !== 'completado' && c.viaje_estado !== '');
+          const disponibles = conds.filter(c => !c.viaje_estado || c.viaje_estado === 'completado' || c.viaje_estado === '');
+          const sinGps = conds.filter(c => !c.lat || !c.lng);
+          document.getElementById('vivo-count-viaje').textContent = conViaje.length;
+          document.getElementById('vivo-count-disponible').textContent = disponibles.length;
+          document.getElementById('vivo-count-sin-gps').textContent = sinGps.length;
+          const bounds = [];
+          conds.forEach(c => {
+            if (!c.lat || !c.lng) return;
+            const tieneViaje = c.viaje_estado && c.viaje_estado !== 'completado' && c.viaje_estado !== '';
+            const color = tieneViaje ? '#22c55e' : '#3b82f6';
+            const icono = L.divIcon({
+              html: `<div style="background:${color};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.3);"><i class="fas fa-car"></i></div>`,
+              className: '', iconSize: [34, 34], iconAnchor: [17, 17]
+            });
+            const popup = `
+              <div style="min-width:180px">
+                <strong>${c.nombre}</strong><br>
+                <span style="font-size:11px;color:#666;">${c.placa} · ${c.velocidad || 0} km/h</span>
+                ${c.viaje_origen ? `<br><span style="font-size:11px;">🚗 ${c.viaje_origen} → ${c.viaje_destino}</span>` : '<br><span style="font-size:11px;color:#22c55e;">✅ Disponible</span>'}
+                <br><span style="font-size:10px;color:#999;">${c.timestamp || ''}</span>
+                <br><a href="https://wa.me/595${(c.telefono||'').replace(/^0+/,'')}" target="_blank" style="font-size:11px;color:#25D366;">📱 Contactar</a>
+              </div>`;
+            const marker = L.marker([c.lat, c.lng], { icon: icono });
+            marker.bindPopup(popup);
+            window.vivoCluster.addLayer(marker);
+            window.vivoMarkers.push(marker);
+            bounds.push([c.lat, c.lng]);
+          });
+          if (bounds.length > 0) window.vivoMap.fitBounds(bounds, { padding: [50, 50] });
+        })
+        .catch(() => {});
+
+      if (window.vivoInterval) clearInterval(window.vivoInterval);
+      window.vivoInterval = setInterval(() => {
+        if (state.pestaña === 'vivo') recargarVivo();
+        else { clearInterval(window.vivoInterval); window.vivoInterval = null; }
+      }, 8000);
+    }
+
+    function centrarMapaVivo() {
+      if (window.vivoMap) window.vivoMap.setView([-25.2867, -57.6082], 13);
+    }
+
+    function recargarVivo() {
+      if (state.pestaña === 'vivo') initMapaVivo();
+    }
+
+    // ============ TRASLADO IDA Y VUELTA (busqueda + ida + vuelta por calles) ============
+    async function armarTrasladoRedondo(rutaId, votanteCedula, solicitudId) {
+      const ruta = state.rutas.find(r => r.id === rutaId);
+      if (!ruta) { alert('No se encontró la ruta/conductor asignado'); return; }
+      state.pestaña = 'traslado';
+      state.trasladoArmando = true;
+      state.trasladoActivo = null;
+      render();
+      try {
+        const r = await fetch('/api/transporte/armar_viaje_redondo', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transporte_id: ruta.transporte_id, votante_cedula: votanteCedula, solicitud_id: solicitudId })
+        });
+        const d = await r.json();
+        state.trasladoArmando = false;
+        if (!d.success) { alert(d.error || 'No se pudo armar el traslado'); render(); return; }
+        state.trasladoActivo = { transporte_id: ruta.transporte_id, cedula_conductor: d.cedula_conductor || ruta.cedula_conductor, votante_nombre: d.votante_nombre, viajes: d.viajes };
+        await cargarStatsTraslado(ruta.transporte_id);
+        render();
+      } catch (e) {
+        state.trasladoArmando = false;
+        alert('Error: ' + e.message);
+        render();
+      }
+    }
+
+    async function cargarStatsTraslado(transporteId) {
+      try {
+        const r = await fetch('/api/transporte/stats_conductor?transporte_id=' + transporteId);
+        const d = await r.json();
+        if (d.success) state.trasladoStats = d;
+      } catch (e) { /* silent */ }
+    }
+
+    async function completarTramo(viajeId) {
+      try {
+        const r = await fetch('/api/transporte/completar_tramo', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ viaje_id: viajeId, cedula: state.trasladoActivo.cedula_conductor, transporte_id: state.trasladoActivo.transporte_id })
+        });
+        const d = await r.json();
+        if (!d.success) { alert('No se pudo completar el tramo'); return; }
+        const v = state.trasladoActivo.viajes.find(x => x.id === viajeId);
+        if (v) v.estado = 'completado';
+        await cargarStatsTraslado(state.trasladoActivo.transporte_id);
+        render();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    function siguienteViaje() {
+      state.trasladoActivo = null;
+      state.simulando = false;
+      state.pestaña = 'solicitudes';
+      state.filtroSol = 'autorizado';
+      render();
+    }
+
+    // ============ SIMULAR VIAJE (GPS avanzando por calles, tramo por tramo) ============
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // Reduce la geometria real (puede tener decenas de puntos) a como mucho N pasos,
+    // para que la simulacion avance a un ritmo demostrable en vez de tardar minutos.
+    function pasosSimulacion(geometria, maxPasos = 24) {
+      if (geometria.length <= maxPasos) return geometria;
+      const salto = Math.ceil(geometria.length / maxPasos);
+      const pasos = geometria.filter((_, i) => i % salto === 0);
+      if (pasos[pasos.length - 1] !== geometria[geometria.length - 1]) pasos.push(geometria[geometria.length - 1]);
+      return pasos;
+    }
+
+    async function simularTramo(v) {
+      const cedCond = state.trasladoActivo.cedula_conductor;
+      const pasos = pasosSimulacion(v.geometria);
+      for (let i = 0; i < pasos.length; i++) {
+        if (!state.simulando) return false;  // se canceló
+        const [lat, lng] = pasos[i];
+        try {
+          await fetch('/api/conductor/ubicacion', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cedula: cedCond, lat, lng, velocidad: 25 + Math.round(Math.random() * 15), direccion: LABEL_TRAMO[v.tipo] })
+          });
+        } catch (e) { /* silent, seguimos igual */ }
+        if (marcadorConductorSim && mapaTraslado) marcadorConductorSim.setLatLng([lat, lng]);
+        state.simProgreso = { tipo: v.tipo, paso: i + 1, total: pasos.length };
+        actualizarBarraSimulacion();
+        await sleep(350);
+      }
+      return true;
+    }
+
+    function actualizarBarraSimulacion() {
+      const el = document.getElementById('simProgresoTexto');
+      if (!el || !state.simProgreso) return;
+      el.textContent = `${LABEL_TRAMO[state.simProgreso.tipo]} — paso ${state.simProgreso.paso}/${state.simProgreso.total}`;
+    }
+
+    async function simularViajeCompleto() {
+      if (!state.trasladoActivo || state.simulando) return;
+      state.simulando = true;
+      render();
+      for (const v of state.trasladoActivo.viajes) {
+        if (v.estado === 'completado') continue;
+        const terminó = await simularTramo(v);
+        if (!terminó) { state.simulando = false; render(); return; }  // se canceló a mitad de tramo
+        await completarTramo(v.id);  // ya hace render() -> afterRender() -> initMapaTraslado()
+      }
+      state.simulando = false;
+      state.simProgreso = null;
+      render();
+    }
+
+    function cancelarSimulacion() {
+      state.simulando = false;
+      render();
+    }
+
+    const COLOR_TRAMO = { busqueda: '#f97316', ida: '#22c55e', vuelta: '#38bdf8' };
+    const LABEL_TRAMO = { busqueda: 'Búsqueda (conductor → votante)', ida: 'Ida (casa → local)', vuelta: 'Vuelta (local → casa)' };
+
+    function renderTraslado() {
+      if (state.trasladoArmando) {
+        return `<div class="bg-white rounded-2xl p-10 border border-gray-100 text-center">
+          <i class="fas fa-spinner fa-spin text-3xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-gray-600">Calculando el trazado por calles...</p>
+        </div>`;
+      }
+      const t = state.trasladoActivo;
+      if (!t) {
+        return `<div class="bg-white rounded-2xl p-10 border border-gray-100 text-center text-gray-400">
+          <i class="fas fa-road text-4xl mb-3"></i>
+          <p class="font-bold">Elegí una solicitud autorizada y tocá "Armar traslado"</p>
+          <button onclick="state.pestaña='solicitudes'; state.filtroSol='autorizado'; render()" class="mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black rounded-xl">Ir a Solicitudes</button>
+        </div>`;
+      }
+      const stats = state.trasladoStats;
+      const todosCompletos = t.viajes.every(v => v.estado === 'completado');
+      return `
+        <div class="space-y-3">
+          <div class="bg-white rounded-2xl p-4 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-bold text-lg"><i class="fas fa-road text-amber-500 mr-2"></i>Traslado de ${t.votante_nombre || ''}</h2>
+              ${stats ? `
+                <div class="text-right text-xs text-gray-500 font-semibold">
+                  <span class="text-emerald-600 font-black">${stats.tramos_completados}</span> tramos ·
+                  <span class="text-blue-600 font-black">${stats.km_recorridos}</span> km ·
+                  <span class="text-purple-600 font-black">${stats.votantes_trasladados}</span> votantes
+                </div>
+              ` : ''}
+            </div>
+            <div id="traslado-map" style="height:420px;border-radius:12px;border:2px solid #e5e7eb;" class="mb-3"></div>
+
+            ${!todosCompletos ? `
+              <div class="mb-3">
+                ${!state.simulando ? `
+                  <button onclick="simularViajeCompleto()" class="w-full py-3 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-black rounded-xl text-sm">
+                    <i class="fas fa-play mr-1"></i> Simular viaje completo
+                  </button>
+                ` : `
+                  <div class="bg-slate-900 rounded-xl p-3 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <i class="fas fa-car-side text-amber-400 animate-pulse"></i>
+                      <p id="simProgresoTexto" class="text-xs font-bold text-white truncate">Iniciando simulación...</p>
+                    </div>
+                    <button onclick="cancelarSimulacion()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-black rounded-lg flex-shrink-0">Detener</button>
+                  </div>
+                `}
+              </div>
+            ` : ''}
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              ${t.viajes.map(v => `
+                <div class="rounded-xl p-3 border" style="border-color:${COLOR_TRAMO[v.tipo]}33;background:${COLOR_TRAMO[v.tipo]}0d;">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full" style="background:${COLOR_TRAMO[v.tipo]}"></span>
+                    <p class="text-[10px] font-black uppercase text-gray-600">${LABEL_TRAMO[v.tipo]}</p>
+                  </div>
+                  <p class="text-sm font-black text-gray-900">${v.distancia_km} km <span class="text-[10px] font-bold text-gray-400">· ${v.duracion_min} min</span></p>
+                  ${v.estado === 'completado' ? `
+                    <p class="text-[10px] font-black text-emerald-600 mt-1"><i class="fas fa-check-circle mr-1"></i>Completado</p>
+                  ` : `
+                    <button onclick="completarTramo(${v.id})" ${state.simulando ? 'disabled' : ''} class="mt-1.5 w-full py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-black rounded-lg disabled:opacity-40">Marcar completado</button>
+                  `}
+                </div>
+              `).join('')}
+            </div>
+            ${todosCompletos ? `
+              <button onclick="siguienteViaje()" class="w-full mt-3 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black rounded-xl text-sm">
+                <i class="fas fa-arrow-right mr-1"></i> Traslado completo — Asignar otro viaje
+              </button>
+            ` : ''}
+          </div>
+        </div>`;
+    }
+
+    let mapaTraslado = null, lineasTraslado = [], marcadorConductorSim = null;
+    const iconoConductor = L.divIcon({ className: '', html: '<div style="background:#1e293b;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fbbf24;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,.4);"><i class="fas fa-car" style="font-size:14px;"></i></div>', iconSize: [32, 32], iconAnchor: [16, 16] });
+
+    function initMapaTraslado() {
+      const el = document.getElementById('traslado-map');
+      const t = state.trasladoActivo;
+      if (!el || typeof L === 'undefined' || !t) return;
+      if (mapaTraslado) { mapaTraslado.remove(); mapaTraslado = null; marcadorConductorSim = null; }
+      lineasTraslado = [];
+      mapaTraslado = L.map('traslado-map');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapaTraslado);
+
+      const bounds = [];
+      t.viajes.forEach(v => v.geometria.forEach(p => bounds.push(p)));
+
+      // Solo se dibuja el tramo activo (punteado), nunca los tres juntos: ida y vuelta
+      // recorren casi las mismas calles en sentido contrario y se solapaban, y una vez
+      // completado un tramo no tiene sentido seguir mostrando su traza.
+      const ida = t.viajes.find(v => v.tipo === 'ida');
+      const tramoActual = t.viajes.find(v => v.estado !== 'completado') || t.viajes[t.viajes.length - 1];
+      if (tramoActual) {
+        const color = COLOR_TRAMO[tramoActual.tipo];
+        const linea = L.polyline(tramoActual.geometria, { color, weight: 5, opacity: 0.95, dashArray: '10 8' }).addTo(mapaTraslado);
+        linea.bindTooltip(LABEL_TRAMO[tramoActual.tipo] + ' · ' + tramoActual.distancia_km + ' km');
+        lineasTraslado.push(linea);
+      }
+      // Marcador del conductor: arranca en el origen del tramo activo (o en el punto
+      // donde quedó la simulación), y se mueve en vivo al simular.
+      if (tramoActual) {
+        marcadorConductorSim = L.marker([tramoActual.origen.lat, tramoActual.origen.lng], { icon: iconoConductor, zIndexOffset: 1000 })
+          .addTo(mapaTraslado).bindPopup('Conductor');
+      }
+      if (ida) {
+        L.marker([ida.origen.lat, ida.origen.lng], {
+          icon: L.divIcon({ className: '', html: '<div style="background:#22c55e;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;border:3px solid white;"><i class="fas fa-house" style="font-size:11px;"></i></div>', iconSize: [26, 26], iconAnchor: [13, 13] })
+        }).addTo(mapaTraslado).bindPopup(ida.origen.nombre);
+        L.marker([ida.destino.lat, ida.destino.lng], {
+          icon: L.divIcon({ className: '', html: '<div style="background:#dfc07b;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#09090b;border:3px solid white;"><i class="fas fa-landmark" style="font-size:11px;"></i></div>', iconSize: [26, 26], iconAnchor: [13, 13] })
+        }).addTo(mapaTraslado).bindPopup(ida.destino.nombre);
+      }
+      if (bounds.length) mapaTraslado.fitBounds(bounds, { padding: [30, 30] });
+      else mapaTraslado.setView([-25.2637, -57.5759], 13);
+      setTimeout(() => { if (mapaTraslado) mapaTraslado.invalidateSize(); }, 200);
+    }
+
+    function formatTime(iso) {
+      if (!iso) return '';
+      try {
+        const d = new Date(iso.replace(' ','T'));
+        return d.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+      } catch { return iso; }
+    }
+
+    function afterRender() {
+      if (state.pestaña === 'vivo') {
+        initMapaVivo();
+      } else {
+        if (window.vivoInterval) { clearInterval(window.vivoInterval); window.vivoInterval = null; }
+      }
+      if (state.pestaña === 'dashboard') renderMiniChart();
+      if (state.pestaña === 'traslado' && state.trasladoActivo) initMapaTraslado();
+    }
+
+    // Init
+    if (state.autenticado) { loadAll(); } else { render(); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIA D MASTER - Admin Usuarios</title>
+  <script src="config.js"></script>
+    <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" />
+  <style>
+    body { margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; background: #f8fafc; }
+    .page { max-width: 1180px; margin: 0 auto; padding: 24px; }
+    .panel { border: 1px solid #e2e8f0; border-radius: 24px; background: white; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.04); }
+    .panel-sm { padding: 24px; }
+    .badge { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700; border-radius: 999px; padding: 0.35rem 0.75rem; }
+    .badge.green { background: var(--state-success-bg); color: var(--state-success-text); border: 1px solid var(--state-success-border); }
+    .badge.red { background: var(--state-error-bg); color: var(--state-error-text); border: 1px solid var(--state-error-border); }
+    .badge.blue { background: var(--state-info-bg); color: var(--state-info-text); border: 1px solid var(--state-info-border); }
+    .badge.gray { background: var(--state-info-bg); color: var(--gray-text-secondary); border: 1px solid var(--state-info-border); }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; border-radius: 999px; background: #0f172a; color: white; border: none; padding: 0.95rem 1.2rem; font-weight: 700; cursor: pointer; transition: background 0.2s ease; }
+    .btn-primary:hover { background: #111827; }
+    .btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; border-radius: 999px; border: 1px solid #cbd5e1; background: white; color: #475569; padding: 0.95rem 1.2rem; font-weight: 700; cursor: pointer; transition: background 0.2s ease; }
+    .btn-secondary:hover { background: #f8fafc; }
+    .tab-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+    .tab-button { border-radius: 999px; border: 1px solid transparent; padding: 0.9rem 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; background: #f8fafc; color: #475569; }
+    .tab-button.active { background: #0f172a; color: white; border-color: #0f172a; }
+    .input-field { width: 100%; border-radius: 1rem; border: 1px solid #e2e8f0; background: #f8fafc; padding: 0.95rem 1rem; font-size: 0.95rem; color: #0f172a; outline: none; }
+    .input-field:focus { border-color: #0f172a; }
+    .table-smooth { width: 100%; border-collapse: collapse; }
+    .table-smooth th, .table-smooth td { padding: 16px; text-align: left; vertical-align: top; }
+    .table-smooth thead { background: #f8fafc; color: #475569; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; }
+    .table-smooth tbody tr { border-top: 1px solid #e2e8f0; }
+    .table-smooth tbody tr:hover { background: #f8fafc; }
+    .modal-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 23, 42, 0.68); z-index: 50; }
+    .modal-backdrop.show { display: flex; }
+    .modal-card { width: 100%; max-width: 720px; border-radius: 28px; background: white; overflow: hidden; }
+    .modal-header, .modal-footer { padding: 24px; }
+    .modal-body { padding: 0 24px 24px; }
+    .modal-title { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; }
+    @media (max-width: 900px) { .page { padding: 16px; } }
+    @media (max-width: 640px) { .tab-list { gap: 8px; } .btn-primary, .btn-secondary { width: 100%; justify-content: center; } }
+  </style>
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body>
+  <div class="page">
+    <div class="panel panel-sm">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="max-width:720px;">
+          <p style="margin:0 0 10px; font-size:0.78rem; letter-spacing:0.16em; color:#64748b; text-transform:uppercase;">Administración</p>
+          <h1 style="margin:0; font-size:2.25rem; line-height:1.05; color:#0f172a;">Gestión de usuarios y roles</h1>
+          <p style="margin:12px 0 0; color:#64748b; font-size:1rem;">Dashboard para ver usuarios, editar estados y asignar roles directamente al backend.</p>
+        </div>
+        <button onclick="recargarTodo()" class="btn-secondary" type="button"><i class="fas fa-sync-alt"></i> Actualizar datos</button>
+      </div>
+    </div>
+
+    <div class="tab-list" role="tablist">
+      <button class="tab-button active" data-tab="usuarios" onclick="cambiarTab('usuarios')">Usuarios</button>
+      <button class="tab-button" data-tab="roles" onclick="cambiarTab('roles')">Roles</button>
+      <button class="tab-button" data-tab="paquetes" onclick="cambiarTab('paquetes')">Paquetes de Elección</button>
+      <button class="tab-button" data-tab="auditoria" onclick="cambiarTab('auditoria')">Auditoría</button>
+      <button class="tab-button" data-tab="seguridad" onclick="cambiarTab('seguridad')">Seguridad</button>
+    </div>
+
+    <section id="usuarios" class="panel panel-sm">
+      <div style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:24px;">
+        <article><p style="margin:0 0 8px;font-size:0.82rem;color:#64748b;">Usuarios</p><p id="statTotal" style="margin:0;font-size:2rem;font-weight:800;color:#0f172a;">0</p></article>
+        <article><p style="margin:0 0 8px;font-size:0.82rem;color:#64748b;">Activos</p><p id="statActivos" style="margin:0;font-size:2rem;font-weight:800;color:#047857;">0</p></article>
+        <article><p style="margin:0 0 8px;font-size:0.82rem;color:#64748b;">Inactivos</p><p id="statInactivos" style="margin:0;font-size:2rem;font-weight:800;color:#b91c1c;">0</p></article>
+        <article><p style="margin:0 0 8px;font-size:0.82rem;color:#64748b;">Roles asignados</p><p id="statRoles" style="margin:0;font-size:2rem;font-weight:800;color:#0f172a;">0</p></article>
+        <article><p style="margin:0 0 8px;font-size:0.82rem;color:#64748b;">Roles disponibles</p><p id="statRolesTotal" style="margin:0;font-size:2rem;font-weight:800;color:#0f172a;">0</p></article>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:24px;">
+        <input id="searchInput" class="input-field" type="text" placeholder="Buscar por nombre, cédula o email" oninput="renderUsuarios()" />
+        <select id="filtroRol" class="input-field" onchange="renderUsuarios()" style="max-width:240px;"><option value="">Todos los roles</option></select>
+        <div style="margin-left:auto; color:#64748b; font-size:0.95rem;" id="resultCount"></div>
+        <button onclick="mostrarModalUsuario()" class="btn-primary" type="button"><i class="fas fa-plus"></i> Nuevo usuario</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="table-smooth" aria-label="Lista de usuarios">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Contacto</th>
+              <th>Roles</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"><tr><td colspan="5" style="padding:40px 16px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando usuarios...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="emptyState" style="display:none; padding:32px 16px; text-align:center; color:#94a3b8;"><i class="fas fa-users-slash" style="font-size:1.75rem;"></i><p style="margin-top:12px;font-weight:700;">No hay usuarios disponibles.</p></div>
+    </section>
+
+    <section id="roles" class="panel panel-sm" style="display:none;">
+      <h2 style="margin:0 0 12px;font-size:1.25rem;font-weight:800;color:#0f172a;">Roles disponibles</h2>
+      <div id="rolesGrid" style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));"></div>
+    </section>
+
+    <section id="paquetes" class="panel panel-sm" style="display:none;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0 0 6px;font-size:1.25rem;font-weight:800;color:#0f172a;">Paquetes de Elección</h2>
+          <p style="margin:0; color:#64748b; font-size:0.92rem;">Definí qué cargos incluye cada paquete, y asignaselo a los clientes que lo compraron. Un cliente sin ningún paquete asignado ve todo sin restricción.</p>
+        </div>
+        <button onclick="mostrarModalPaquete()" class="btn-primary" type="button"><i class="fas fa-plus"></i> Nuevo paquete</button>
+      </div>
+      <div id="paquetesGrid" style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));">
+        <p style="color:#94a3b8;">Cargando paquetes...</p>
+      </div>
+
+      <div style="margin-top:32px; padding-top:24px; border-top:1px solid #e2e8f0;">
+        <h3 style="margin:0 0 12px;font-size:1rem;font-weight:800;color:#0f172a;">Asignar paquete a un cliente</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+          <input id="asignarClienteCedula" class="input-field" type="text" placeholder="Cédula del cliente" style="max-width:220px;">
+          <select id="asignarPaqueteId" class="input-field" style="max-width:280px;"><option value="">Elegir paquete...</option></select>
+          <button onclick="asignarPaqueteACliente()" class="btn-primary" type="button"><i class="fas fa-link"></i> Asignar</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="modalPaquete" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+          <h2 class="modal-title">Nuevo paquete de elección</h2>
+          <button onclick="cerrarModalPaquete()" class="btn-secondary" type="button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <label style="display:block; margin-bottom:16px;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Nombre del paquete</span>
+            <input id="paqNombre" class="input-field" type="text" placeholder="Ej. Internas Seccional 2026">
+          </label>
+          <label style="display:block; margin-bottom:16px;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Descripción (opcional)</span>
+            <input id="paqDescripcion" class="input-field" type="text" placeholder="Para qué convocatoria es este paquete">
+          </label>
+          <label style="display:block; margin-bottom:16px;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Completar desde una convocatoria (opcional)</span>
+            <select id="paqEleccion" class="input-field" onchange="autocompletarCargosDesdeEleccion(this.value)">
+              <option value="">— Elegir cargos a mano —</option>
+            </select>
+            <span style="display:block; margin-top:6px; font-size:0.78rem; color:#64748b;">Al elegir una convocatoria se tildan automáticamente sus cargos; podés sumar o sacar cargos después.</span>
+          </label>
+          <p style="margin:0 0 12px; font-weight:700; color:#0f172a;">Cargos incluidos</p>
+          <div id="paqCargosGrid" style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); max-height:320px; overflow-y:auto;"></div>
+        </div>
+        <div class="modal-footer" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-end; border-top:1px solid #e2e8f0;">
+          <button onclick="cerrarModalPaquete()" class="btn-secondary" type="button">Cancelar</button>
+          <button onclick="guardarPaquete()" class="btn-primary" type="button">Guardar paquete</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="auditoria" class="panel panel-sm" style="display:none;">
+      <h2 style="margin:0 0 12px;font-size:1.25rem;font-weight:800;color:#0f172a;">Auditoría</h2>
+      <p style="margin:0 0 16px; color:#64748b;">Sección preparada para acciones y eventos de usuario.</p>
+      <div style="padding:32px; border:1px dashed #e2e8f0; border-radius:20px; text-align:center; color:#94a3b8;">Próximamente.</div>
+    </section>
+
+    <section id="seguridad" class="panel panel-sm" style="display:none;">
+      <h2 style="margin:0 0 12px;font-size:1.25rem;font-weight:800;color:#0f172a;">Seguridad</h2>
+      <p style="margin:0; color:#64748b;">Espacio reservado para políticas de seguridad y monitoreo.</p>
+    </section>
+  </div>
+
+  <div id="modalUsuario" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header" style="border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <div>
+          <h2 id="modalTitle" class="modal-title">Nuevo usuario</h2>
+          <p style="margin:8px 0 0; color:#64748b;">Crea un usuario nuevo o edita uno existente.</p>
+        </div>
+        <button onclick="cerrarModal()" class="btn-secondary" type="button"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; gap:16px; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));">
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Cédula</span>
+            <input id="formCedula" class="input-field" type="text" placeholder="1234567" />
+          </label>
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Nombre</span>
+            <input id="formNombre" class="input-field" type="text" placeholder="Nombre completo" />
+          </label>
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Email</span>
+            <input id="formEmail" class="input-field" type="email" placeholder="usuario@dominio.com" />
+          </label>
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Teléfono</span>
+            <input id="formTelefono" class="input-field" type="tel" placeholder="0991 000 000" />
+          </label>
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Contraseña</span>
+            <input id="formPassword" class="input-field" type="password" placeholder="Mínimo 4 caracteres" />
+          </label>
+          <label style="display:block;">
+            <span style="display:block; margin-bottom:8px; font-weight:700; color:#0f172a;">Estado</span>
+            <select id="formActivo" class="input-field"><option value="1">Activo</option><option value="0">Inactivo</option></select>
+          </label>
+        </div>
+        <div style="margin-top:24px;">
+          <p style="margin:0 0 12px; font-weight:700; color:#0f172a;">Roles</p>
+          <div id="formRoles" style="display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-end; border-top:1px solid #e2e8f0;">
+        <button onclick="cerrarModal()" class="btn-secondary" type="button">Cancelar</button>
+        <button onclick="guardarUsuario()" class="btn-primary" type="button">Guardar usuario</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const endpoints = {
+      users: '/api/usuarios/lista',
+      create: '/api/usuarios/crear',
+      edit: '/api/usuarios/editar',
+      toggle: '/api/usuarios/toggle',
+      assign: '/api/usuarios/asignar_rol',
+      remove: '/api/usuarios/quitar_rol',
+      roles: '/api/usuarios/roles_disponibles',
+      resetPassword: '/api/usuarios/resetear_password',
+      toggleBranding: '/api/usuarios/toggle_branding'
+    };
+
+    let usuarios = [];
+    let roles = [];
+    let modoEdicion = false;
+    let usuarioActivo = null;
+    let paquetes = [];
+    let cargosDisponibles = [];
+    let eleccionesDisponibles = [];
+    let paquetesCargados = false;
+
+    function cambiarTab(tab) {
+      document.querySelectorAll('section[id]').forEach(sec => sec.style.display = sec.id === tab ? 'block' : 'none');
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      if (tab === 'paquetes' && !paquetesCargados) {
+        paquetesCargados = true;
+        cargarCargosDisponibles();
+        cargarElecciones();
+        cargarPaquetes();
+      }
+    }
+
+    // ─── PAQUETES DE ELECCIÓN ────────────────────────────
+    async function cargarCargosDisponibles() {
+      try {
+        const r = await fetch('/api?action=cargos_electivos&v=' + Date.now());
+        const d = await r.json();
+        cargosDisponibles = d.cargos || [];
+      } catch (e) { cargosDisponibles = []; }
+    }
+
+    async function cargarElecciones() {
+      try {
+        const r = await fetch('/api?action=elecciones_lista&v=' + Date.now());
+        const d = await r.json();
+        eleccionesDisponibles = d.success ? (d.elecciones || []) : [];
+      } catch (e) { eleccionesDisponibles = []; }
+    }
+
+    async function autocompletarCargosDesdeEleccion(eleccionId) {
+      if (!eleccionId) return;
+      try {
+        const r = await fetch('/api?action=cargos_por_eleccion&eleccion_id_filtro=' + encodeURIComponent(eleccionId) + '&v=' + Date.now());
+        const d = await r.json();
+        if (!d.success) return;
+        const idsConvocatoria = new Set((d.cargos || []).map(cg => cg.id));
+        document.querySelectorAll('.paq-cargo').forEach(chk => {
+          if (idsConvocatoria.has(Number(chk.value))) chk.checked = true;
+        });
+      } catch (e) { /* silent */ }
+    }
+
+    async function cargarPaquetes() {
+      const grid = document.getElementById('paquetesGrid');
+      try {
+        const r = await fetch('/api?action=paquetes_eleccion&v=' + Date.now());
+        const d = await r.json();
+        paquetes = d.paquetes || [];
+        renderPaquetes();
+        renderSelectAsignarPaquete();
+      } catch (e) {
+        grid.innerHTML = '<p style="color:#dc2626;">Error cargando paquetes.</p>';
+      }
+    }
+
+    function renderPaquetes() {
+      const grid = document.getElementById('paquetesGrid');
+      if (!paquetes.length) {
+        grid.innerHTML = '<div style="padding:32px; border:1px dashed #e2e8f0; border-radius:20px; color:#94a3b8; text-align:center; grid-column:1/-1;">Todavía no hay paquetes creados.</div>';
+        return;
+      }
+      grid.innerHTML = paquetes.map(p => `
+        <div style="border:1px solid #e2e8f0; border-radius:20px; padding:20px; background:${p.activo ? '#f8fafc' : '#fef2f2'};">
+          <div style="display:flex; align-items:center; justify-content:between; gap:8px;">
+            <p style="margin:0 0 6px;font-weight:800;color:#0f172a;flex:1;">${esc(p.nombre)}</p>
+            <button onclick="eliminarPaquete(${p.id})" class="btn-secondary" type="button" style="padding:0.4rem 0.7rem;" title="Eliminar paquete"><i class="fas fa-trash"></i></button>
+          </div>
+          ${p.descripcion ? `<p style="margin:0 0 10px;color:#64748b;font-size:0.85rem;">${esc(p.descripcion)}</p>` : ''}
+          ${p.eleccion_nombre ? `<p style="margin:0 0 10px;"><span class="badge gray"><i class="fas fa-calendar-check" style="margin-right:4px;"></i>${esc(p.eleccion_nombre)}</span></p>` : ''}
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            ${p.cargos.map(cg => `<span class="badge blue">${esc(cg.nombre)}</span>`).join('') || '<span class="badge gray">Sin cargos</span>'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSelectAsignarPaquete() {
+      const sel = document.getElementById('asignarPaqueteId');
+      sel.innerHTML = '<option value="">Elegir paquete...</option>' +
+        paquetes.filter(p => p.activo).map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
+    }
+
+    function mostrarModalPaquete() {
+      document.getElementById('paqNombre').value = '';
+      document.getElementById('paqDescripcion').value = '';
+      const selEleccion = document.getElementById('paqEleccion');
+      selEleccion.value = '';
+      selEleccion.innerHTML = '<option value="">— Elegir cargos a mano —</option>' +
+        eleccionesDisponibles.map(e => `<option value="${e.id}">${esc(e.nombre)} (${esc(e.tipo_nombre)})</option>`).join('');
+      const grid = document.getElementById('paqCargosGrid');
+      grid.innerHTML = cargosDisponibles.map(cg => `
+        <label style="display:flex; align-items:center; gap:10px; border:1px solid #e2e8f0; border-radius:14px; padding:12px; background:#f8fafc; cursor:pointer;">
+          <input type="checkbox" class="paq-cargo" value="${cg.id}">
+          <span style="font-weight:700;color:#0f172a;font-size:0.88rem;">${esc(cg.nombre)}</span>
+        </label>
+      `).join('') || '<p style="color:#94a3b8;">No hay cargos cargados en el catálogo.</p>';
+      document.getElementById('modalPaquete').classList.add('show');
+    }
+
+    function cerrarModalPaquete() {
+      document.getElementById('modalPaquete').classList.remove('show');
+    }
+
+    async function guardarPaquete() {
+      const nombre = document.getElementById('paqNombre').value.trim();
+      const descripcion = document.getElementById('paqDescripcion').value.trim();
+      const eleccionId = document.getElementById('paqEleccion').value;
+      const cargoIds = Array.from(document.querySelectorAll('.paq-cargo:checked')).map(el => Number(el.value));
+      if (!nombre) return alert('El nombre del paquete es obligatorio.');
+      if (!cargoIds.length && !eleccionId) return alert('Elegí al menos un cargo, o una convocatoria.');
+      try {
+        const r = await fetch('/api', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'crear_paquete', nombre, descripcion, cargo_ids: cargoIds, eleccion_id: eleccionId || null })
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || 'Error desconocido');
+        cerrarModalPaquete();
+        await cargarPaquetes();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function eliminarPaquete(paqueteId) {
+      if (!confirm('¿Eliminar este paquete? Los clientes que lo tengan asignado dejarán de estar restringidos por él.')) return;
+      try {
+        const r = await fetch('/api', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'eliminar_paquete', paquete_id: paqueteId })
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || 'Error desconocido');
+        await cargarPaquetes();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function asignarPaqueteACliente() {
+      const cedula = document.getElementById('asignarClienteCedula').value.trim();
+      const paqueteId = document.getElementById('asignarPaqueteId').value;
+      if (!cedula || !paqueteId) return alert('Ingresá la cédula del cliente y elegí un paquete.');
+      try {
+        const r = await fetch('/api', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'asignar_paquete_cliente', cliente_cedula: cedula, paquete_id: Number(paqueteId) })
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || 'Error desconocido');
+        alert('Paquete asignado correctamente.');
+        document.getElementById('asignarClienteCedula').value = '';
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function recargarTodo() {
+      await Promise.all([cargarRoles(), cargarUsuarios()]);
+    }
+
+    window.addEventListener('DOMContentLoaded', recargarTodo);
+
+    async function cargarUsuarios() {
+      const body = document.getElementById('userTableBody');
+      body.innerHTML = '<tr><td colspan="5" style="padding:40px 16px;text-align:center;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>';
+      try {
+        const response = await fetch(`${endpoints.users}?v=${Date.now()}`);
+        const data = await response.json();
+        usuarios = Array.isArray(data.usuarios) ? data.usuarios : [];
+        renderUsuarios();
+        actualizarEstadisticas();
+      } catch (error) {
+        body.innerHTML = '<tr><td colspan="5" style="padding:40px 16px;text-align:center;color:#dc2626;">Error al cargar usuarios.</td></tr>';
+      }
+    }
+
+    async function cargarRoles() {
+      try {
+        const response = await fetch(`${endpoints.roles}?v=${Date.now()}`);
+        const data = await response.json();
+        roles = Array.isArray(data.roles) ? data.roles : [];
+        renderRoles();
+        renderFiltroRoles();
+      } catch (error) {
+        roles = [];
+      }
+    }
+
+    function renderRoles() {
+      const container = document.getElementById('rolesGrid');
+      if (!roles.length) {
+        container.innerHTML = '<div style="padding:32px; border:1px dashed #e2e8f0; border-radius:24px; color:#94a3b8; text-align:center;">No hay roles configurados.</div>';
+        return;
+      }
+      container.innerHTML = roles.map(role => {
+        return `<div style="border:1px solid #e2e8f0; border-radius:24px; padding:20px; background:#f8fafc;">
+          <p style="margin:0 0 6px;font-weight:800;color:#0f172a;">${esc(role.label)}</p>
+          <p style="margin:0 0 12px;color:#475569;font-size:0.92rem;">${esc(role.rol)}</p>
+          <p style="margin:0;color:#64748b;font-size:0.9rem;">${esc(role.descripcion || 'Sin descripción')}</p>
+        </div>`;
+      }).join('');
+    }
+
+    function renderFiltroRoles() {
+      const select = document.getElementById('filtroRol');
+      select.innerHTML = '<option value="">Todos los roles</option>';
+      roles.forEach(role => {
+        select.insertAdjacentHTML('beforeend', `<option value="${esc(role.rol)}">${esc(role.label)}</option>`);
+      });
+    }
+
+    function renderUsuarios() {
+      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const roleFilter = document.getElementById('filtroRol').value;
+      const filtered = usuarios.filter(user => {
+        const text = [user.nombre, user.cedula, user.email, user.telefono].filter(Boolean).join(' ').toLowerCase();
+        const roleMatch = roleFilter ? (user.roles || []).some(r => r.rol === roleFilter) : true;
+        return text.includes(query) && roleMatch;
+      });
+
+      document.getElementById('resultCount').textContent = `${filtered.length} de ${usuarios.length}`;
+      const body = document.getElementById('userTableBody');
+      const emptyState = document.getElementById('emptyState');
+      if (!filtered.length) {
+        body.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+      emptyState.style.display = 'none';
+      body.innerHTML = filtered.map(user => {
+        const status = user.activo ? '<span class="badge green">Activo</span>' : '<span class="badge red">Inactivo</span>';
+        const rolesHtml = (user.roles || []).map(role => `<span class="badge blue">${esc(getRoleLabel(role.rol))}</span>`).join(' ') || '<span class="badge gray">Sin roles</span>';
+        const contact = [user.email, user.telefono].filter(Boolean).join('<br>');
+        const brandingBtn = (user.es_cliente && user.dominio) ? `
+            <button onclick="toggleBranding('${esc(user.cedula)}', '${esc(user.nombre)}', ${user.branding_activo})" class="btn-secondary" type="button"
+              title="Dominio: ${esc(user.dominio)}"
+              style="background:${user.branding_activo ? '#ecfdf5' : '#fffbeb'}; color:${user.branding_activo ? '#047857' : '#92400e'}; border-color:${user.branding_activo ? '#a7f3d0' : '#fde68a'};">
+              <i class="fas fa-palette"></i> ${user.branding_activo ? 'Branding: ON' : 'Branding: OFF'}
+            </button>` : '';
+        return `<tr>
+          <td>${esc(user.nombre)}<div style="margin-top:8px;color:#64748b;font-size:0.9rem;">${esc(user.cedula)}</div></td>
+          <td style="color:#475569; font-size:0.95rem;">${contact || '<span style="color:#94a3b8;">Sin contacto</span>'}</td>
+          <td>${rolesHtml}</td>
+          <td>${status}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="editarUsuario('${esc(user.cedula)}')" class="btn-secondary" type="button">Editar</button>
+            <button onclick="resetearPassword('${esc(user.cedula)}', '${esc(user.nombre)}')" class="btn-secondary" type="button" title="Resetea la contraseña a cédula + *">Resetear clave</button>
+            ${brandingBtn}
+            <button onclick="toggleActivo('${esc(user.cedula)}')" class="btn-secondary" type="button" style="background:${user.activo ? '#fef2f2' : '#ecfdf5'}; color:${user.activo ? '#b91c1c' : '#047857'}; border-color:${user.activo ? '#fecaca' : '#a7f3d0'};">${user.activo ? 'Desactivar' : 'Activar'}</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function actualizarEstadisticas() {
+      const total = usuarios.length;
+      const activos = usuarios.filter(u => u.activo).length;
+      const inactivos = total - activos;
+      const totalRoles = usuarios.reduce((sum, user) => sum + ((user.roles || []).length), 0);
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statActivos').textContent = activos;
+      document.getElementById('statInactivos').textContent = inactivos;
+      document.getElementById('statRoles').textContent = totalRoles;
+      document.getElementById('statRolesTotal').textContent = roles.length;
+    }
+
+    function mostrarModalUsuario() {
+      modoEdicion = false;
+      usuarioActivo = null;
+      document.getElementById('modalTitle').textContent = 'Crear nuevo usuario';
+      document.getElementById('formCedula').removeAttribute('disabled');
+      document.getElementById('formCedula').value = '';
+      document.getElementById('formNombre').value = '';
+      document.getElementById('formEmail').value = '';
+      document.getElementById('formTelefono').value = '';
+      document.getElementById('formPassword').value = '';
+      document.getElementById('formActivo').value = '1';
+      renderFormRoles([]);
+      abrirModal();
+    }
+
+    function editarUsuario(cedula) {
+      const user = usuarios.find(u => u.cedula === cedula);
+      if (!user) return;
+      modoEdicion = true;
+      usuarioActivo = user;
+      document.getElementById('modalTitle').textContent = 'Editar usuario';
+      document.getElementById('formCedula').value = user.cedula;
+      document.getElementById('formCedula').setAttribute('disabled', 'disabled');
+      document.getElementById('formNombre').value = user.nombre || '';
+      document.getElementById('formEmail').value = user.email || '';
+      document.getElementById('formTelefono').value = user.telefono || '';
+      document.getElementById('formPassword').value = '';
+      document.getElementById('formActivo').value = user.activo ? '1' : '0';
+      renderFormRoles((user.roles || []).map(r => r.rol));
+      abrirModal();
+    }
+
+    function abrirModal() {
+      document.getElementById('modalUsuario').classList.add('show');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalUsuario').classList.remove('show');
+    }
+
+    function renderFormRoles(selectedRoles) {
+      const container = document.getElementById('formRoles');
+      if (!roles.length) {
+        container.innerHTML = '<div style="padding:18px; border:1px dashed #e2e8f0; border-radius:20px; color:#94a3b8; text-align:center;">No hay roles cargados.</div>';
+        return;
+      }
+      container.innerHTML = roles.map(role => {
+        const checked = selectedRoles.includes(role.rol) ? 'checked' : '';
+        return `<label style="display:flex; align-items:center; gap:10px; border:1px solid #e2e8f0; border-radius:18px; padding:14px; background:#f8fafc; cursor:pointer;">
+          <input type="checkbox" class="form-role" value="${esc(role.rol)}" ${checked} />
+          <span style="font-weight:700;color:#0f172a;">${esc(role.label)}</span>
+        </label>`;
+      }).join('');
+    }
+
+    async function guardarUsuario() {
+      const cedula = document.getElementById('formCedula').value.trim();
+      const nombre = document.getElementById('formNombre').value.trim();
+      const email = document.getElementById('formEmail').value.trim();
+      const telefono = document.getElementById('formTelefono').value.trim();
+      const password = document.getElementById('formPassword').value.trim();
+      const activo = Number(document.getElementById('formActivo').value);
+      const rolesSeleccionados = Array.from(document.querySelectorAll('.form-role:checked')).map(el => el.value);
+
+      if (!cedula || !nombre) {
+        return alert('Cédula y nombre son obligatorios.');
+      }
+      if (!modoEdicion && password.length < 4) {
+        return alert('La contraseña debe tener al menos 4 caracteres.');
+      }
+
+      const payload = { cedula, nombre, email, telefono, activo };
+      if (password) payload.contrasena = password;
+      if (!modoEdicion) payload.roles = rolesSeleccionados.map(rol => ({ rol }));
+
+      try {
+        const url = modoEdicion ? endpoints.edit : endpoints.create;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error || 'Error desconocido');
+        }
+        if (modoEdicion) {
+          await actualizarRolesUsuario(cedula, rolesSeleccionados);
+        }
+        cerrarModal();
+        await cargarUsuarios();
+      } catch (error) {
+        alert('Error: ' + (error.message || error));
+      }
+    }
+
+    async function actualizarRolesUsuario(cedula, selectedRoles) {
+      if (!usuarioActivo) return;
+      const currentRoles = (usuarioActivo.roles || []).map(r => r.rol);
+      const rolesAAgregar = selectedRoles.filter(r => !currentRoles.includes(r));
+      const rolesAEliminar = currentRoles.filter(r => !selectedRoles.includes(r));
+      for (const rol of rolesAAgregar) {
+        await fetch(endpoints.assign, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula, rol })
+        });
+      }
+      for (const rol of rolesAEliminar) {
+        await fetch(endpoints.remove, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula, rol })
+        });
+      }
+    }
+
+    async function toggleActivo(cedula) {
+      try {
+        const response = await fetch(endpoints.toggle, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Error desconocido');
+        await cargarUsuarios();
+      } catch (error) {
+        alert('Error: ' + (error.message || error));
+      }
+    }
+
+    async function resetearPassword(cedula, nombre) {
+      if (!confirm(`Resetear la contraseña de ${nombre} (#${cedula}) a su valor por defecto (cédula + "*")?`)) return;
+      try {
+        const response = await fetch(endpoints.resetPassword, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Error desconocido');
+        alert(`Contraseña reseteada. Nueva contraseña temporal: ${result.password_default}\nEl usuario deberá cambiarla en su próximo inicio de sesión.`);
+        await cargarUsuarios();
+      } catch (error) {
+        alert('Error: ' + (error.message || error));
+      }
+    }
+
+    async function toggleBranding(cedula, nombre, activoActual) {
+      const accion = activoActual ? 'desactivar' : 'activar (el cliente contrató el servicio)';
+      if (!confirm(`¿Confirmás ${accion} el branding de ${nombre} (#${cedula})?`)) return;
+      try {
+        const response = await fetch(endpoints.toggleBranding, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || 'Error desconocido');
+        await cargarUsuarios();
+      } catch (error) {
+        alert('Error: ' + (error.message || error));
+      }
+    }
+
+    function getRoleLabel(rol) {
+      const found = roles.find(r => r.rol === rol);
+      return found ? found.label : rol;
+    }
+
+    function esc(value) {
+      if (value === null || value === undefined) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Votación</title>
+  <script src="config.js"></script>
+    <script src="vendor/tailwind.js"></script>
+  <script src="lucide.min.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    .grid-mesa { display: grid; gap: 4px; }
+    .btn-mesa { aspect-ratio: 1; font-size: 11px; font-weight: 700; border-radius: 6px; transition: all 0.2s; }
+    .btn-mesa:hover { transform: scale(1.05); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 640px) { .grid-mesa { gap: 2px !important; } .btn-mesa { font-size: 9px; border-radius: 3px; } }
+    @media print { .no-print { display: none !important; } }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = '/api';
+    const MAX_VOTOS = 350;
+
+    function getGridColumns() {
+      const w = window.innerWidth;
+      let cols = w < 480 ? 5 : w < 640 ? 10 : Math.floor(w / 55);
+      cols = Math.max(5, Math.min(cols, 30));
+      return Math.floor(cols / 5) * 5;
+    }
+
+    function getVotoKey(mesa, orden) { return mesa + '-' + orden; }
+
+    let state = {
+      autenticado: isLoggedIn(),
+      usuario: getSessionUser(),
+      cargando: false,
+      mensaje: '',
+      padron: [],
+      votos: {},
+      mesaSeleccionada: 1,
+      mesaBloqueada: false,
+      consultaCedula: '',
+      consultaResultado: null,
+      mostrarOpciones: null,
+      verificacion: null,
+      showQR: false,
+      vista: 'grilla',   // 'grilla' | 'lista'
+      elecciones: [],
+      eleccionId: null,
+      eleccionNombre: '',
+      requiereEleccion: false
+    };
+
+    const ELECCION_KEY = 'votacion_eleccion_id';
+
+    async function cargarElecciones() {
+      try {
+        const ctx = await fetchApi(API_URL + '?action=elecciones_trabajables&v=' + Date.now());
+        state.elecciones = ctx.elecciones_trabajables || [];
+        state.requiereEleccion = !!ctx.requiere_seleccion;
+        const guardada = sessionStorage.getItem(ELECCION_KEY);
+        if (guardada && state.elecciones.some(e => String(e.id) === String(guardada))) {
+          seleccionarEleccion(guardada);
+        } else if (state.elecciones.length === 1) {
+          seleccionarEleccion(state.elecciones[0].id);
+        } else if (ctx.eleccion_por_defecto && !state.requiereEleccion) {
+          seleccionarEleccion(ctx.eleccion_por_defecto.id);
+        }
+      } catch (e) {
+        state.elecciones = [];
+      }
+    }
+
+    function seleccionarEleccion(id) {
+      const e = state.elecciones.find(x => String(x.id) === String(id));
+      if (!e) return;
+      state.eleccionId = e.id;
+      state.eleccionNombre = e.nombre;
+      state.requiereEleccion = false;
+      sessionStorage.setItem(ELECCION_KEY, String(e.id));
+      render();
+    }
+
+    async function fetchApi(url, options) {
+      const r = await fetch(url, options);
+      const txt = await r.text();
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('text/html') || txt.trim().toLowerCase().startsWith('<!doctype html'))
+        throw new Error('Backend no disponible.');
+      return JSON.parse(txt);
+    }
+
+    async function cargarDatos() {
+      state.cargando = true;
+      state.mensaje = 'Cargando datos...';
+      render();
+      try {
+        const [padronData, votosData] = await Promise.all([
+          fetchApi(API_URL + '?action=padron&v=' + Date.now()),
+          fetchApi(API_URL + '?action=votos&v=' + Date.now())
+        ]);
+        state.padron = (padronData.electores || []).map(e => ({
+          cedula: e.cedula, apellido: e.apellido || '', nombre: e.nombre || '',
+          nombreCompleto: e.nombreCompleto || (e.apellido + ' ' + e.nombre).trim(),
+          mesa: parseInt(e.mesa) || 0, orden: parseInt(e.orden) || 0,
+          dirigente: e.dirigente || ''
+        }));
+        state.votos = {};
+        (votosData.registros || []).forEach(r => {
+          const mesa = parseInt(r.mesa) || 0, orden = parseInt(r.orden) || 0;
+          if ((r.estado === 'voto' || r.estado === 'ausente') && mesa > 0 && orden > 0) {
+            const key = getVotoKey(mesa, orden);
+            if (!state.votos[key]) state.votos[key] = { tipo: r.estado, timestamp: r.timestamp, dirigente: r.dirigente || 'API' };
+          }
+        });
+        state.cargando = false;
+        state.mensaje = '';
+      } catch (e) {
+        state.cargando = false;
+        state.mensaje = 'Error: ' + e.message;
+      }
+      render();
+    }
+
+    function seleccionarMesa() {
+      const v = parseInt(document.getElementById('mesaInput')?.value || 0);
+      if (v > 0) { state.mesaSeleccionada = v; state.consultaResultado = null; render(); }
+    }
+
+    function marcarVoto(orden, tipo) {
+      const key = getVotoKey(state.mesaSeleccionada, orden);
+      state.votos[key] = { tipo, timestamp: Date.now(), dirigente: state.usuario?.nombre || 'Usuario' };
+      render();
+    }
+
+    function mostrarOpcionesVoto(orden) { state.mostrarOpciones = orden; render(); }
+
+    function mostrarVerificacion(orden, tipo) {
+      state.verificacion = { orden, tipo, nombre: '', cedula: '', mesa: '', ordenP: '', error: '' };
+      render();
+    }
+
+    function confirmarVoto() {
+      const v = state.verificacion;
+      if (!v) return;
+      if (!state.eleccionId) { v.error = 'Primero elegí la elección en la que trabajás'; render(); return; }
+      if (!v.nombre || !v.cedula || !v.mesa || !v.ordenP) { v.error = 'Complete todos los campos'; render(); return; }
+      const elector = state.padron.find(p => p.mesa === state.mesaSeleccionada && p.orden === v.orden);
+      if (!elector) { v.error = 'Elector no encontrado'; render(); return; }
+      const payload = {
+        action: 'registrar', cedula: elector.cedula, nombre: elector.nombreCompleto,
+        mesa: state.mesaSeleccionada, orden: v.orden, estado: v.tipo, accion: 'voto_web',
+        dirigente: state.usuario?.nombre || 'Dirigente',
+        dirigenteNombre: state.usuario?.nombre || 'Dirigente',
+        origen: 'web', eleccion_id: state.eleccionId,
+        verificacion: { nombre: v.nombre, cedula: v.cedula, mesa: parseInt(v.mesa), orden: parseInt(v.ordenP) }
+      };
+      fetchApi(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(r => {
+          if (r.success) { state.verificacion = null; state.mostrarOpciones = null; marcarVoto(v.orden, v.tipo); }
+          else { state.verificacion.error = r.error || 'Verificación fallida'; render(); }
+        })
+        .catch(e => { state.verificacion.error = 'Error de conexión: ' + e.message; render(); });
+    }
+
+    function buscarCedula() {
+      const ced = String(document.getElementById('cedulaInput')?.value || '').replace(/\D/g, '');
+      if (!ced) { state.consultaResultado = null; render(); return; }
+      const e = state.padron.find(p => p.cedula === ced);
+      state.consultaResultado = e ? { encontrado: true, ...e } : { encontrado: false, cedula: ced };
+      render();
+    }
+
+    function logout() { logoutGlobal(); }
+    function formatearCC(ced) { if (!ced) return ced; return String(ced).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+    // ==================== RENDER ====================
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { window.location.href = 'acceso.html'; return; }
+
+      const electoresMesa = state.padron.filter(p => p.mesa === state.mesaSeleccionada);
+      const cantBotones = electoresMesa.length || MAX_VOTOS;
+      const vals = Object.entries(state.votos).filter(([k]) => k.startsWith(state.mesaSeleccionada + '-'));
+      const totalVotos = vals.filter(([, v]) => v.tipo === 'voto').length;
+      const totalAusentes = vals.filter(([, v]) => v.tipo === 'ausente').length;
+
+      app.innerHTML = `
+        <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg no-print">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-xl text-amber-400"><i class="fas fa-check-circle text-white text-xl"></i></div>
+              <div>
+                <h1 class="text-lg font-black uppercase tracking-tighter leading-none">VOTACIÓN</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Mesa ${state.mesaSeleccionada}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="acceso.html" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold transition-all">
+                <i class="fas fa-th-large mr-1"></i> Panel
+              </a>
+              <button onclick="logout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                <i class="fas fa-sign-out-alt mr-1"></i> Salir
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-3 md:p-6">
+          ${state.requiereEleccion ? `
+            <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-4 fade-in">
+              <div class="flex items-center gap-3 mb-3">
+                <i class="fas fa-exclamation-triangle text-amber-600 text-xl"></i>
+                <div>
+                  <h2 class="font-black text-amber-900 text-sm uppercase">Hay elecciones simultáneas</h2>
+                  <p class="text-xs text-amber-700">Elegí en cuál vas a trabajar antes de registrar votos.</p>
+                </div>
+              </div>
+              <div class="grid gap-2">
+                ${state.elecciones.map(e => `
+                  <button onclick="seleccionarEleccion(${e.id})"
+                    class="w-full text-left p-3 bg-white hover:bg-amber-100 border-2 border-amber-200 rounded-xl transition-all flex items-center gap-3">
+                    <i class="fas fa-vote-yea text-amber-600"></i>
+                    <div class="flex-1">
+                      <p class="font-black text-slate-800 text-sm">${e.nombre}</p>
+                      <p class="text-[10px] text-slate-500">${e.tipo_nombre || e.tipo_codigo} · ${e.fecha_eleccion || 'sin fecha'} · ${e.estado}</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-amber-500"></i>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : `
+            ${state.eleccionId ? `
+              <div class="bg-slate-800 text-white rounded-2xl px-4 py-3 mb-4 flex items-center gap-3">
+                <i class="fas fa-vote-yea text-amber-400"></i>
+                <div class="flex-1">
+                  <p class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Trabajando en</p>
+                  <p class="font-black text-sm">${state.eleccionNombre || 'Elección ' + state.eleccionId}</p>
+                </div>
+                ${state.elecciones.length > 1 ? `
+                  <button onclick="state.requiereEleccion=true; state.eleccionId=null; state.eleccionNombre=''; sessionStorage.removeItem('votacion_eleccion_id'); render();"
+                    class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-[10px] font-black uppercase">
+                    <i class="fas fa-exchange-alt mr-1"></i> Cambiar
+                  </button>
+                ` : ''}
+              </div>
+            ` : ''}
+          `}
+          ${state.cargando && state.padron.length === 0 ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-party-200 border-t-party-600 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">${state.mensaje || 'Cargando...'}</p>
+            </div>
+          ` : `
+            <div class="fade-in space-y-4">
+              <!-- CONSULTA -->
+              <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100">
+                <div class="flex gap-3 items-center">
+                  <div class="flex-1 relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="cedulaInput" placeholder="Buscar por cédula..."
+                      class="w-full pl-12 pr-4 py-3 text-lg font-bold border-2 border-slate-100 rounded-xl focus:border-[#c5a059] focus:outline-none"
+                      onkeypress="if(event.key === 'Enter') buscarCedula()">
+                  </div>
+                  <button onclick="buscarCedula()" class="px-6 py-3 bg-party-600 hover:bg-party-700 text-white font-black rounded-xl transition-all">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+                ${state.consultaResultado ? (state.consultaResultado.encontrado ? `
+                  <div class="mt-3 bg-green-50 border-2 border-green-200 rounded-xl p-3 flex items-center gap-3">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    <div class="flex-1">
+                      <p class="font-bold text-green-800">${state.consultaResultado.nombreCompleto}</p>
+                      <p class="text-xs text-green-600">Mesa ${state.consultaResultado.mesa} · Ord. ${state.consultaResultado.orden} · Céd. ${state.consultaResultado.cedula}</p>
+                    </div>
+                    <button onclick="marcarVoto(${state.consultaResultado.orden}, 'voto'); state.consultaResultado=null; render();" class="px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg">
+                      MARCAR VOTO
+                    </button>
+                  </div>
+                ` : `
+                  <div class="mt-3 bg-rose-50 border-2 border-rose-200 rounded-xl p-3">
+                    <p class="font-bold text-rose-700"><i class="fas fa-times-circle mr-1"></i> Cédula ${state.consultaResultado.cedula} no encontrada</p>
+                  </div>
+                `) : ''}
+              </div>
+
+              <!-- STATS + MESA SELECTOR -->
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+                  <p class="text-[10px] uppercase font-black text-slate-400">Electores</p>
+                  <span class="text-2xl font-black text-slate-900">${cantBotones}</span>
+                </div>
+                <div class="bg-green-600 p-4 rounded-xl shadow-sm text-white text-center">
+                  <p class="text-[10px] uppercase font-black text-green-200">Votaron</p>
+                  <span class="text-2xl font-black">${totalVotos}</span>
+                </div>
+                <div class="bg-slate-500 p-4 rounded-xl shadow-sm text-white text-center">
+                  <p class="text-[10px] uppercase font-black text-slate-200">Ausentes</p>
+                  <span class="text-2xl font-black">${totalAusentes}</span>
+                </div>
+                <div class="bg-amber-500 p-4 rounded-xl shadow-sm text-white text-center">
+                  <p class="text-[10px] uppercase font-black text-amber-200">Pendientes</p>
+                  <span class="text-2xl font-black">${cantBotones - totalVotos - totalAusentes}</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-2">
+                  <div class="flex-1">
+                    <p class="text-[10px] uppercase font-black text-slate-400">Mesa</p>
+                    <input type="number" id="mesaInput" value="${state.mesaSeleccionada}" min="1"
+                      class="w-full text-lg font-black border-0 p-0 focus:outline-none" onchange="seleccionarMesa()">
+                  </div>
+                  <button onclick="seleccionarMesa()" class="px-3 py-2 bg-party-600 text-white text-xs font-bold rounded-lg">
+                    <i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- TOGGLE GRILLA / LISTA -->
+              <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-2xl w-fit mx-auto">
+                <button onclick="state.vista='grilla';render();"
+                  class="px-5 py-2 rounded-xl font-black text-sm transition-all ${state.vista === 'grilla' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}">
+                  <i class="fas fa-th mr-1"></i> Grilla
+                </button>
+                <button onclick="state.vista='lista';render();"
+                  class="px-5 py-2 rounded-xl font-black text-sm transition-all ${state.vista === 'lista' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}">
+                  <i class="fas fa-list mr-1"></i> Lista
+                </button>
+              </div>
+
+              <!-- GRILLA -->
+              ${state.vista === 'grilla' ? `
+              <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-100">
+                <div class="grid-mesa" style="grid-template-columns: repeat(${Math.min(getGridColumns(), cantBotones || 1)}, 1fr)">
+                  ${Array.from({ length: cantBotones }, (_, i) => {
+                    const orden = i + 1;
+                    const voto = state.votos[getVotoKey(state.mesaSeleccionada, orden)];
+                    const elector = electoresMesa.find(e => e.orden === orden);
+                    let cls = elector ? 'bg-party-50 text-party-400 border-party-200 font-bold' : 'bg-white text-slate-300 border-slate-200';
+                    if (voto?.tipo === 'voto') cls = 'bg-green-600 text-white font-bold border-green-700';
+                    else if (voto?.tipo === 'ausente') cls = 'bg-slate-300 text-white font-bold border-slate-400';
+                    const tip = elector ? elector.nombreCompleto : '';
+                    return `<button id="btn-${orden}" onclick="mostrarOpcionesVoto(${orden})" class="btn-mesa w-full ${cls}" title="${tip}">${orden}</button>`;
+                  }).join('')}
+                </div>
+              </div>
+              ` : ''}
+
+              <!-- LISTA -->
+              ${state.vista === 'lista' ? `
+              <div class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="text-left px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">N°</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Cédula</th>
+                        <th class="text-left px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Nombre</th>
+                        <th class="text-center px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Estado</th>
+                        <th class="text-center px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${Array.from({ length: cantBotones }, (_, i) => {
+                        const orden = i + 1;
+                        const elector = electoresMesa.find(e => e.orden === orden);
+                        const voto = state.votos[getVotoKey(state.mesaSeleccionada, orden)];
+                        const cedula = elector ? formatearCC(elector.cedula) : '—';
+                        const nombre = elector ? elector.nombreCompleto : '—';
+                        let badge = '<span class="text-[10px] font-bold text-slate-300">Sin elector</span>';
+                        let rowBg = 'bg-white';
+                        if (voto?.tipo === 'voto') { badge = '<span class="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black rounded-full">VOTÓ</span>'; rowBg = 'bg-green-50/30'; }
+                        else if (voto?.tipo === 'ausente') { badge = '<span class="inline-block px-2 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-black rounded-full">AUSENTE</span>'; rowBg = 'bg-slate-50/50'; }
+                        else if (elector) { badge = '<span class="inline-block px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-black rounded-full border border-amber-200">PENDIENTE</span>'; }
+                        return `
+                          <tr class="${rowBg} border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td class="px-4 py-3 font-black text-slate-900">${orden}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-slate-600">${cedula}</td>
+                            <td class="px-4 py-3 font-semibold text-slate-800">${nombre}</td>
+                            <td class="px-4 py-3 text-center">${badge}</td>
+                            <td class="px-4 py-3 text-center">
+                              ${elector ? `
+                                <button onclick="mostrarOpcionesVoto(${orden})" class="px-3 py-1.5 bg-party-600 hover:bg-party-700 text-white text-[10px] font-black rounded-lg transition-all active:scale-95">
+                                  MARCAR
+                                </button>
+                              ` : `<span class="text-[10px] text-slate-300">—</span>`}
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              ` : ''}
+
+              <!-- LEYENDA -->
+              <div class="flex flex-wrap gap-3 justify-center text-xs">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 bg-white border border-slate-200 rounded"></span> Vacío</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 bg-party-50 border border-party-200 rounded"></span> En padrón</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-600 rounded"></span> Votó</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-300 rounded"></span> Ausente</span>
+              </div>
+            </div>
+          `}
+        </main>
+
+        ${state.mostrarOpciones ? renderModal() : ''}
+        ${state.verificacion ? renderVerificacionModal() : ''}
+      `;
+      lucide.createIcons();
+    }
+
+    function renderModal() {
+      const orden = state.mostrarOpciones;
+      const elector = state.padron.find(p => p.mesa === state.mesaSeleccionada && p.orden === orden);
+      return `
+        <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="state.mostrarOpciones=null; render();">
+          <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl fade-in" onclick="event.stopPropagation()">
+            <div class="text-center mb-6">
+              <span class="text-5xl font-black text-slate-900">${orden}</span>
+              ${elector ? `<p class="text-sm font-bold text-slate-600 mt-1">${elector.nombreCompleto}</p>` : ''}
+            </div>
+            <div class="space-y-3">
+              <button onclick="mostrarVerificacion(${orden}, 'voto')"
+                class="w-full flex items-center justify-center gap-3 p-4 bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-2xl font-black text-green-800 transition-all">
+                <i class="fas fa-check-circle text-xl"></i> VOTÓ
+              </button>
+              <button onclick="mostrarVerificacion(${orden}, 'ausente')"
+                class="w-full flex items-center justify-center gap-3 p-4 bg-slate-50 hover:bg-slate-100 border-2 border-slate-200 rounded-2xl font-black text-slate-700 transition-all">
+                <i class="fas fa-user-slash text-xl"></i> AUSENTE
+              </button>
+              <button onclick="state.mostrarOpciones=null; render();" class="w-full py-3 text-slate-400 hover:text-slate-600 font-bold text-sm">
+                CANCELAR
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderVerificacionModal() {
+      const v = state.verificacion;
+      const elector = state.padron.find(p => p.mesa === state.mesaSeleccionada && p.orden === v.orden);
+      const titulo = v.tipo === 'voto' ? 'Confirmar VOTO' : 'Confirmar AUSENCIA';
+      const icono = v.tipo === 'voto' ? 'fa-check-circle text-green-600' : 'fa-user-slash text-slate-500';
+      return `
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onclick="state.verificacion=null; render();">
+          <div class="bg-white rounded-[2rem] w-full max-w-md p-6 shadow-2xl fade-in" onclick="event.stopPropagation()">
+            <div class="text-center mb-6">
+              <i class="fas ${icono} text-4xl mb-3"></i>
+              <h3 class="text-xl font-black text-slate-900">${titulo}</h3>
+              ${elector ? `<p class="text-sm text-slate-500 mt-1">${elector.nombreCompleto} · Mesa ${state.mesaSeleccionada} Ord. ${v.orden}</p>` : ''}
+            </div>
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-3 mb-5 text-center">
+              <p class="text-xs font-black text-amber-700 uppercase tracking-wider"><i class="fas fa-shield-alt mr-1"></i> Verificación de identidad</p>
+              <p class="text-[10px] text-amber-600 mt-1">El elector debe confirmar sus datos para completar el registro</p>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-black text-slate-500 uppercase mb-1">1. Nombre completo</label>
+                <input type="text" value="${v.nombre}" placeholder="Nombre y apellido"
+                  class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none font-bold text-sm"
+                  oninput="state.verificacion.nombre=this.value; state.verificacion.error='';">
+              </div>
+              <div>
+                <label class="block text-xs font-black text-slate-500 uppercase mb-1">2. Cédula</label>
+                <input type="text" value="${v.cedula}" placeholder="Número de cédula"
+                  class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none font-bold text-sm"
+                  oninput="state.verificacion.cedula=this.value; state.verificacion.error='';">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-black text-slate-500 uppercase mb-1">3a. Mesa</label>
+                  <input type="number" value="${v.mesa}" placeholder="Mesa"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none font-bold text-sm"
+                    oninput="state.verificacion.mesa=this.value; state.verificacion.error='';">
+                </div>
+                <div>
+                  <label class="block text-xs font-black text-slate-500 uppercase mb-1">3b. Orden</label>
+                  <input type="number" value="${v.ordenP}" placeholder="Orden"
+                    class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none font-bold text-sm"
+                    oninput="state.verificacion.ordenP=this.value; state.verificacion.error='';">
+                </div>
+              </div>
+              ${v.error ? `<div class="bg-rose-50 border-2 border-rose-200 rounded-xl p-3 text-center"><p class="text-xs font-bold text-rose-700"><i class="fas fa-exclamation-triangle mr-1"></i> ${v.error}</p></div>` : ''}
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button onclick="state.verificacion=null; state.mostrarOpciones=null; render();"
+                class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 rounded-xl font-black text-slate-600 text-sm">CANCELAR</button>
+              <button onclick="confirmarVoto()"
+                class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-sm shadow-lg">
+                <i class="fas fa-shield-alt mr-1"></i> VERIFICAR</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ==================== INIT ====================
+    if (!state.autenticado) { window.location.href = 'acceso.html'; }
+    else { cargarElecciones().then(cargarDatos); }
+  </script>
+</body>
+</html>

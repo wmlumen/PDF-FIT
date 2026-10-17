@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Sistema Electoral Unificado</title>
+  <meta name="description" content="Sistema todo-en-uno para campañas electorales: CRM de dirigentes, voto seguro, logística de transporte, control de veedores y cómputo D'Hondt en tiempo real.">
+  <meta property="og:title" content="DIA D MASTER — Sistema Electoral Unificado">
+  <meta property="og:description" content="Un solo sistema para ganar la elección: dirigentes, transporte, veedores y escrutinio en tiempo real.">
+  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0f'/%3E%3Cpath d='M32 10 L54 24 H10 Z' fill='%23dfc07b'/%3E%3Crect x='14' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='26' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='38' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='10' y='54' width='44' height='6' rx='2' fill='%23dfc07b'/%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0f'/%3E%3Cpath d='M32 10 L54 24 H10 Z' fill='%23dfc07b'/%3E%3Crect x='14' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='26' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='38' y='28' width='6' height='24' fill='%23dfc07b'/%3E%3Crect x='10' y='54' width='44' height='6' rx='2' fill='%23dfc07b'/%3E%3C/svg%3E">
+  <script src="config.js"></script>
+    <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+  <style>
+    body { background: var(--gray-bg); }
+    .hero-bg { background: var(--black-gradient); }
+    .font-display { font-family: Georgia, 'Iowan Old Style', 'Noto Serif', 'Times New Roman', serif; font-weight: 700; letter-spacing: -0.01em; }
+    .plan-card { transition: all 0.2s; }
+    .plan-card:hover { transform: translateY(-3px); }
+    .plan-card.destacado { border: 1px solid var(--gold-border); box-shadow: 0 16px 36px var(--gold-glow); }
+    .contact-link { transition: all 0.15s; }
+    .contact-link:hover { transform: translateY(-2px); }
+    .acta-item { border-top: 1px solid var(--gray-border); transition: background 0.15s; }
+    .acta-item:last-child { border-bottom: 1px solid var(--gray-border); }
+    .acta-item:hover { background: rgba(197,160,89,0.05); }
+    .acta-num { font-family: Georgia, 'Iowan Old Style', 'Noto Serif', 'Times New Roman', serif; color: var(--gold-border); font-size: 2.25rem; line-height: 1; font-weight: 700; }
+  </style>
+  <script src="party_theme.js"></script>
+</head>
+<body class="min-h-screen text-slate-800">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-40" style="background: var(--black-rich); border-bottom: 1px solid rgba(197,160,89,0.2);">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gold-gradient">
+          <i class="fas fa-landmark text-black"></i>
+        </div>
+        <div>
+          <h1 class="text-white font-black text-lg tracking-tight leading-none">DIA D MASTER</h1>
+          <p class="text-[10px] font-bold tracking-widest uppercase" style="color:var(--gold-primary);">Sistema Electoral Unificado</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="acceso.html" class="inline-flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-sm text-white border border-white/20 hover:bg-white/10 transition-all" title="Ingresar">
+          <i class="fas fa-sign-in-alt"></i> <span class="hidden sm:inline">Ingresar</span>
+        </a>
+        <a href="#contacto" class="inline-flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-sm text-black bg-gold-gradient gold-glow" title="Contactanos">
+          <i class="fas fa-paper-plane"></i> <span class="hidden sm:inline">Contactanos</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-bg">
+    <div class="max-w-6xl mx-auto px-4 py-20 md:py-28 text-center">
+      <div class="inline-flex items-center gap-3 mb-8">
+        <span class="h-px w-8" style="background:var(--gold-border);"></span>
+        <span class="text-xs font-bold uppercase tracking-wider" style="color:var(--gold-primary);">Control de campaña y jornada electoral</span>
+        <span class="h-px w-8" style="background:var(--gold-border);"></span>
+      </div>
+      <h2 class="font-display text-white text-4xl md:text-6xl leading-tight mb-6 text-balance">
+        Un solo sistema para <span class="text-gold-gradient" style="-webkit-background-clip:text;background-clip:text;color:transparent;">ganar la elección</span>
+      </h2>
+      <p class="text-slate-300 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+        Gestión de dirigentes, voto seguro, logística de transporte, control de veedores,
+        escrutinio y cómputo D'Hondt en tiempo real — todo en una sola plataforma, con la
+        marca de tu candidato en cada pantalla que ve el votante.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#contacto" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-black bg-gold-gradient gold-glow">
+          <i class="fas fa-rocket mr-2"></i> Quiero usarlo en mi campaña
+        </a>
+        <a href="#funcionalidades" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-black text-white border border-white/15 hover:bg-white/5 transition-all">
+          Ver qué incluye
+        </a>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 text-slate-400 text-xs font-bold uppercase tracking-wide">
+        <span><i class="fas fa-bolt mr-1.5" style="color:var(--gold-primary);"></i>100% funciona offline</span>
+        <span><i class="fas fa-database mr-1.5" style="color:var(--gold-primary);"></i>Datos en tu propio servidor</span>
+        <span><i class="fas fa-mobile-alt mr-1.5" style="color:var(--gold-primary);"></i>PWA + Android</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUNCIONALIDADES -->
+  <section id="funcionalidades" class="max-w-6xl mx-auto px-4 py-20">
+    <div class="text-center mb-14">
+      <h3 class="font-display text-3xl md:text-4xl text-slate-900 mb-3">Funcionalidades principales</h3>
+      <p class="text-slate-500 max-w-xl mx-auto">Desde el primer contacto con tu equipo territorial hasta el cómputo final de actas.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">01</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">CRM de dirigentes</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">Cada dirigente carga a su equipo y a sus votos seguros por cédula, con jerarquía propia y seguimiento territorial.</p>
+        </div>
+      </div>
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">02</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">Marca de tu candidato</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">La página pública "Dónde Votás" se puede personalizar con tu dominio, logo, colores y mensaje de campaña.</p>
+        </div>
+      </div>
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">03</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">Estadísticas en vivo</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">Participación por departamento, distrito, seccional y local, y cuánta gente vio el nombre de tu candidato.</p>
+        </div>
+      </div>
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">04</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">Logística de transporte</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">Pedidos de traslado, choferes, vehículos y seguimiento GPS para que nadie se quede sin llegar a votar.</p>
+        </div>
+      </div>
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">05</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">Veedores y escrutinio</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">Control de mesa en tiempo real, doble verificación de votantes y cómputo de actas el día de la elección.</p>
+        </div>
+      </div>
+      <div class="acta-item flex items-start gap-5 py-6">
+        <span class="acta-num">06</span>
+        <div>
+          <h4 class="font-black text-slate-900 mb-1">Simulador D'Hondt</h4>
+          <p class="text-sm text-slate-500 leading-relaxed">Proyectá la distribución de bancas antes de la elección y comparala con el resultado real.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANES -->
+  <section class="py-20" style="background: var(--gray-surface); border-top: 1px solid var(--gray-border); border-bottom: 1px solid var(--gray-border);">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="text-center mb-14">
+        <h3 class="font-display text-3xl md:text-4xl text-slate-900 mb-3">Planes</h3>
+        <p class="text-slate-500 max-w-xl mx-auto">Un plan para cada tamaño de campaña, de la seccional a la nacional.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="plan-card bg-white rounded-2xl p-8 border-2 border-emerald-200 relative shadow-lg shadow-emerald-500/10">
+          <span class="absolute -top-3 left-8 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500 text-white shadow-md shadow-emerald-500/30"><i class="fas fa-gift mr-1"></i>Gratis</span>
+          <p class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Arranque</p>
+          <p class="font-display text-3xl text-slate-900 mb-4">Gratis</p>
+          <ul class="space-y-2 text-sm text-slate-500 mb-6">
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Panel de campaña y dirigentes</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Voto seguro y transporte</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Página pública genérica</li>
+          </ul>
+          <a href="dirigente.html" class="block w-full text-center px-5 py-3 rounded-xl font-black text-sm text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 active:scale-95">
+            <i class="fas fa-user-plus mr-2"></i>Registrate como Dirigente, gratis
+          </a>
+        </div>
+        <div class="plan-card destacado bg-white rounded-2xl p-8 relative">
+          <span class="gold-badge absolute -top-3 left-8 px-3 py-1 rounded-full text-[10px] font-black uppercase">Más elegido</span>
+          <p class="text-xs font-black uppercase tracking-wider mb-2" style="color:var(--gold-dark);">Campaña Competitiva</p>
+          <p class="font-display text-3xl text-slate-900">desde ₲1.350.000</p>
+          <p class="text-xs text-slate-400 font-bold mb-4">por ciclo electoral (~US$ 182) · estimado, a confirmar</p>
+          <ul class="space-y-2 text-sm text-slate-500 mb-6">
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Todo lo del plan Arranque</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Marca propia + dominio distrital en "Dónde Votás"</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Pack de 2.000 mensajes SMS/WhatsApp</li>
+          </ul>
+          <a href="#contacto" class="block w-full text-center px-5 py-3 rounded-xl font-black text-sm text-black bg-gold-gradient gold-glow hover:brightness-105 transition-all active:scale-95">
+            <i class="fas fa-paper-plane mr-2"></i>Consultar por este plan
+          </a>
+        </div>
+        <div class="plan-card bg-white rounded-2xl p-8 border border-slate-200">
+          <p class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">Campaña Full</p>
+          <p class="font-display text-3xl text-slate-900">desde ₲2.800.000</p>
+          <p class="text-xs text-slate-400 font-bold mb-4">por ciclo electoral (~US$ 378) · estimado, a confirmar</p>
+          <ul class="space-y-2 text-sm text-slate-500 mb-6">
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Todo lo del plan Competitiva</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Branding departamental/nacional + soporte prioritario</li>
+            <li><i class="fas fa-check text-emerald-500 mr-2"></i>Mensajería ilimitada</li>
+          </ul>
+          <a href="#contacto" class="block w-full text-center px-5 py-3 rounded-xl font-black text-sm text-slate-900 border-2 border-slate-200 hover:border-slate-900 transition-all active:scale-95">
+            <i class="fas fa-paper-plane mr-2"></i>Consultar por este plan
+          </a>
+        </div>
+      </div>
+      <p class="text-center text-sm text-slate-400 mt-8">Los montos son una referencia, no precios finales — varían según alcance (seccional, distrital, departamental o nacional). Escribinos para una cotización a medida.</p>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section id="contacto" class="hero-bg">
+    <div class="max-w-4xl mx-auto px-4 py-20">
+      <div class="text-center mb-12">
+        <h3 class="font-display text-3xl md:text-4xl text-white mb-4">Llevá este sistema a tu campaña</h3>
+        <p class="text-slate-300 max-w-xl mx-auto">Escribinos por WhatsApp o dejanos tu mensaje y te respondemos a la brevedad.</p>
+      </div>
+
+      <div class="flex justify-center mb-10">
+        <a href="https://wa.me/595994340472?text=Hola%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20DIA%20D%20MASTER"
+           target="_blank" rel="noopener"
+           class="contact-link inline-flex items-center justify-center gap-3 px-7 py-4 rounded-2xl font-black text-black bg-gold-gradient gold-glow">
+          <i class="fab fa-whatsapp text-xl"></i>
+          <span>Escribinos por WhatsApp</span>
+        </a>
+      </div>
+
+      <form id="formContacto" class="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 max-w-xl mx-auto backdrop-blur">
+        <div class="space-y-4">
+          <div>
+            <label for="ctNombre" class="block text-xs font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nombre</label>
+            <input id="ctNombre" type="text" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[var(--gold-primary)]" placeholder="Tu nombre">
+          </div>
+          <div>
+            <label for="ctEmail" class="block text-xs font-bold uppercase tracking-wide text-slate-400 mb-1.5">Email</label>
+            <input id="ctEmail" type="email" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[var(--gold-primary)]" placeholder="tu@email.com">
+          </div>
+          <div>
+            <label for="ctMensaje" class="block text-xs font-bold uppercase tracking-wide text-slate-400 mb-1.5">Mensaje</label>
+            <textarea id="ctMensaje" required rows="4" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[var(--gold-primary)] resize-none" placeholder="Contanos sobre tu campaña..."></textarea>
+          </div>
+          <button type="submit" id="ctBtn" class="w-full py-4 rounded-xl font-black text-black bg-gold-gradient gold-glow">
+            <i class="fas fa-paper-plane mr-2"></i>Enviar mensaje
+          </button>
+          <p id="ctEstado" class="text-sm text-center font-bold"></p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-8" style="background: var(--black-rich);">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <p>&copy; 2026 DIA D MASTER — Sistema Electoral Unificado</p>
+      <a href="https://wa.me/595994340472" target="_blank" rel="noopener" class="hover:text-white transition-colors">
+        <i class="fab fa-whatsapp mr-1"></i>Contactanos por WhatsApp
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('formContacto').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('ctBtn');
+      const estado = document.getElementById('ctEstado');
+      const payload = {
+        nombre: document.getElementById('ctNombre').value.trim(),
+        email: document.getElementById('ctEmail').value.trim(),
+        mensaje: document.getElementById('ctMensaje').value.trim()
+      };
+      if (!payload.nombre || !payload.email || !payload.mensaje) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+      estado.textContent = '';
+      try {
+        const r = await fetch('/api/contacto', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (d.success) {
+          estado.style.color = 'var(--gold-primary)';
+          estado.textContent = '¡Gracias! Te vamos a contactar pronto.';
+          document.getElementById('formContacto').reset();
+        } else {
+          estado.style.color = '#f87171';
+          estado.textContent = d.error || 'No se pudo enviar. Probá de nuevo.';
+        }
+      } catch (err) {
+        estado.style.color = '#f87171';
+        estado.textContent = 'Error de conexión. Probá de nuevo.';
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Enviar mensaje';
+    });
+  </script>
+
+</body>
+</html>

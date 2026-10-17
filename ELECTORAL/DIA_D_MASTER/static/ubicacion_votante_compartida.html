@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Ubicación y destino compartidos</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;margin:0;padding:20px}
+    main{max-width:640px;margin:auto}.card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin:12px 0}
+    #map{height:360px;border-radius:12px;background:#334155}.muted{color:#cbd5e1;font-size:14px}.status{font-weight:700}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Ubicación y destino</h1>
+  <p class="muted">Se muestran dos puntos actualizados. Este enlace no comparte el trayecto.</p>
+  <section class="card"><div id="status" class="status">Cargando...</div><div id="map" class="hidden"></div></section>
+  <section class="card"><strong>Destino</strong><p id="destino" class="muted">Cargando...</p></section>
+</main>
+<script>
+  const token = new URLSearchParams(location.search).get('t') || '';
+  const markers = { votante: null, local: null };
+  let map = null;
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  async function refresh() {
+    const status = document.getElementById('status');
+    if (!token) { status.textContent = 'Enlace inválido.'; return; }
+    try {
+      const response = await fetch(`/api/votante_publico?t=${encodeURIComponent(token)}&v=${Date.now()}`);
+      const data = await response.json();
+      if (!data.success) { status.textContent = data.error || 'Enlace no disponible.'; return; }
+      const pos = data.votante_track || ((data.votante_lat != null && data.votante_lng != null) ? {lat:data.votante_lat,lng:data.votante_lng,timestamp:data.votante_ubicacion_en} : null);
+      const local = data.local_lat != null && data.local_lng != null ? [Number(data.local_lat),Number(data.local_lng)] : null;
+      document.getElementById('destino').textContent = data.local_nombre || (local ? `${local[0].toFixed(5)}, ${local[1].toFixed(5)}` : 'Coordenadas no disponibles');
+      if (!pos) { status.textContent = 'El votante todavía no compartió su ubicación.'; return; }
+      const voterPoint = [Number(pos.lat),Number(pos.lng)];
+      status.textContent = `Ubicación del votante actualizada: ${pos.timestamp || 'hora no disponible'}`;
+      const mapEl = document.getElementById('map'); mapEl.classList.remove('hidden');
+      if (!map) {
+        map = L.map(mapEl).setView(voterPoint, 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+      }
+      if (markers.votante) markers.votante.setLatLng(voterPoint);
+      else markers.votante = L.marker(voterPoint).addTo(map).bindPopup('Ubicación del votante');
+      if (local) {
+        if (markers.local) markers.local.setLatLng(local);
+        else markers.local = L.marker(local).addTo(map).bindPopup('Destino: local de votación');
+        map.fitBounds([voterPoint,local],{padding:[30,30]});
+      } else map.setView(voterPoint,15);
+    } catch (_) { status.textContent = 'No se pudo actualizar. Se reintentará automáticamente.'; }
+  }
+  refresh();
+  setInterval(refresh, 20000);
+</script>
+</body>
+</html>

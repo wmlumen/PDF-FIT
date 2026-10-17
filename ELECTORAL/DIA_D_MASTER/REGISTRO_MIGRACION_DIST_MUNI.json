@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-10-17T14:33:00Z",
+  "proceso": "unificar_distrital_y_municipal",
+  "accione": [
+    "eliminar tabla duplicada 'municipios' (si exist\u00eda)",
+    "actualizar todas las referencias de FK a distritos",
+    "eliminar constantes/conflictos de nivel de c\u00f3digo fuente (distrital/municipal)"
+  ],
+  "verificaciones": {
+    "tabla_duplicada_eliminada": true,
+    "distritos_mantiene_filas": true,
+    "codigo_fuente_unificado": true
+  },
+  "afectados": [
+    "propietario: servidor pc (no ha perdido datos)",
+    "candidatos con cliente_cedula roto \u2192 no modificado (sin resolver)",
+    "pc_candidatos.distrito_id \u2192 sin resolver (referencia incorrecta)"
+  ]
+}

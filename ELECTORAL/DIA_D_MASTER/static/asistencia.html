@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIA D MASTER - Seguimiento de Cargas y Asistencia</title>
+    <script src="vendor/tailwind.js"></script>
+    <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="party_theme.js"></script>
+    <style>
+        * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background-color: #f8fafc; color: #0f172a; min-height: 100vh; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+        .card-custom:hover {
+            border-color: rgba(197, 160, 89, 0.4);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+        }
+        .input-box {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.85rem;
+            padding: 0.65rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+        .input-box:focus {
+            border-color: #c5a059;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+        }
+        .mesa-row {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .mesa-row:hover {
+            background-color: #f1f5f9;
+        }
+        .mesa-row.active {
+            background-color: rgba(197, 160, 89, 0.12);
+            border-left: 4px solid #c5a059;
+        }
+        .only-mobile { display: none; }
+        .only-desktop { display: block; }
+        @media (max-width: 768px) {
+            .only-mobile { display: block; }
+            .only-desktop { display: none; }
+        }
+    </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <div id="app"></div>
+
+    <script src="auth.js"></script>
+    <script>
+        const API_URL = '/api';
+
+        const state = {
+            autenticado: isLoggedIn(),
+            cargando: false,
+            respuestas: [],
+            mesas: [],
+            busqueda: '',
+            mesaActiva: 'TODAS',
+            mensaje: '',
+            ultimaActualizacion: null,
+            votosSeguros: [],
+            vspCargando: false,
+            vspFiltroTipo: 'TODOS',
+            vspPorDirigente: [],
+            pestania: 'seguimiento', // seguimiento | asistencia
+            asistencias: [],
+            asisCargando: false,
+            asisForm: { cedula: '', nombre: '', mesa: '', accion: 'ingreso', estado: 'presente', observacion: '' }
+        };
+
+        function normalizeText(value) {
+            return String(value || '').trim();
+        }
+
+        function normalizeKey(value) {
+            return normalizeText(value)
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+        }
+
+        function cleanCedula(value) {
+            return normalizeText(value).replace(/[.\s,-]/g, '');
+        }
+
+        function logout() { logoutGlobal(); }
+
+        // ============ VOTOS SEGUROS PENDIENTES ============
+        async function cargarVotosSegurosPendientes() {
+            state.vspCargando = true;
+            try {
+                const r = await fetch(API_URL + '?action=votos_seguros_pendientes&v=' + Date.now());
+                const d = await r.json();
+                state.votosSeguros = d.pendientes || [];
+                state.vspPorDirigente = d.por_dirigente || [];
+            } catch (e) {
+                state.votosSeguros = [];
+                state.vspPorDirigente = [];
+                console.error('Error VSP:', e);
+            }
+            state.vspCargando = false;
+            render();
+        }
+
+        function getVSPFiltrados() {
+            if (state.vspFiltroTipo === 'TODOS') return state.vspPorDirigente || [];
+            return (state.vspPorDirigente || []).filter(g => g.tipo === state.vspFiltroTipo);
+        }
+
+        async function login() {
+            const input = document.getElementById('passwordInput');
+            const password = input ? input.value.trim() : '';
+            if (!password) { alert('Ingrese la contraseña.'); return; }
+            try {
+                const d = await loginConCredenciales('1', password);
+                if (d.success) {
+                    guardarPassword(password);
+                    state.autenticado = true;
+                    state.usuario = d.usuario;
+                    loadAll();
+                } else {
+                    alert('Contraseña incorrecta.');
+                }
+            } catch(e) { alert('Error de conexión: ' + e.message); }
+        }
+
+        async function loadResponses() {
+            const resp = await fetch(API_URL + '?action=votos&v=' + Date.now());
+            const data = await resp.json();
+
+            if (!data || !data.registros) {
+                throw new Error('No se pudieron cargar los registros');
+            }
+
+            const records = data.registros.map((r, i) => {
+                const mesa = normalizeText(r.mesa || '');
+                return {
+                    index: i,
+                    marcaTemporal: r.timestamp || '',
+                    timestamp: r.timestamp ? new Date(r.timestamp) : new Date(0),
+                    cedula: cleanCedula(r.cedula || ''),
+                    mesa: mesa,
+                    orden: normalizeText(r.orden || ''),
+                    mesaKey: mesa || 'SIN_MESA',
+                    busqueda: normalizeKey(`${r.timestamp || ''} ${r.cedula || ''} ${mesa} ${r.orden || ''}`)
+                };
+            });
+
+            records.sort((a, b) => {
+                const aTime = a.timestamp ? a.timestamp.getTime() : 0;
+                const bTime = b.timestamp ? b.timestamp.getTime() : 0;
+                return bTime - aTime;
+            });
+
+            state.respuestas = records;
+        }
+
+        function buildMesas() {
+            const byMesa = new Map();
+
+            state.respuestas.forEach(item => {
+                if (!byMesa.has(item.mesaKey)) {
+                    byMesa.set(item.mesaKey, {
+                        key: item.mesaKey,
+                        mesa: item.mesa || 'Sin mesa',
+                        registros: [],
+                        cedulas: new Set(),
+                        ordenes: new Set(),
+                        ultimoRegistro: null
+                    });
+                }
+
+                const mesa = byMesa.get(item.mesaKey);
+                mesa.registros.push(item);
+                if (item.cedula) mesa.cedulas.add(item.cedula);
+                if (item.orden) mesa.ordenes.add(item.orden);
+                if (!mesa.ultimoRegistro || ((item.timestamp ? item.timestamp.getTime() : 0) > (mesa.ultimoRegistro.timestamp ? mesa.ultimoRegistro.timestamp.getTime() : 0))) {
+                    mesa.ultimoRegistro = item;
+                }
+            });
+
+            state.mesas = Array.from(byMesa.values())
+                .map(mesa => ({
+                    ...mesa,
+                    totalRegistros: mesa.registros.length,
+                    totalCedulas: mesa.cedulas.size,
+                    totalOrdenes: mesa.ordenes.size
+                }))
+                .sort((a, b) => {
+                    const aMesa = parseInt(a.mesa, 10);
+                    const bMesa = parseInt(b.mesa, 10);
+                    if (!Number.isNaN(aMesa) && !Number.isNaN(bMesa)) return aMesa - bMesa;
+                    return a.mesa.localeCompare(b.mesa, 'es');
+                });
+
+            if (state.mesaActiva === 'TODAS' && state.mesas.length > 0) {
+                state.mesaActiva = state.mesas[0].key;
+            }
+        }
+
+        function getGlobalStats() {
+            const cedulas = new Set(state.respuestas.map(item => item.cedula).filter(Boolean));
+            const mesas = new Set(state.respuestas.map(item => item.mesa).filter(Boolean));
+            return {
+                totalRegistros: state.respuestas.length,
+                totalCedulas: cedulas.size,
+                totalMesas: mesas.size,
+                ultimoRegistro: state.respuestas[0] || null
+            };
+        }
+
+        function getFilteredMesas() {
+            const query = normalizeKey(state.busqueda);
+            if (!query) return state.mesas;
+
+            return state.mesas.filter(mesa =>
+                normalizeKey(`mesa ${mesa.mesa}`).includes(query) ||
+                mesa.registros.some(item => item.busqueda.includes(query))
+            );
+        }
+
+        function getActiveMesa() {
+            return state.mesas.find(mesa => mesa.key === state.mesaActiva) || null;
+        }
+
+        async function loadAll() {
+            state.cargando = true;
+            state.mensaje = 'Cargando datos...';
+            render();
+
+            try {
+                await Promise.all([
+                    loadResponses(),
+                    cargarVotosSegurosPendientes(),
+                    cargarAsistencia()
+                ]);
+                buildMesas();
+                state.ultimaActualizacion = new Date();
+                state.mensaje = `Registros cargados: ${state.respuestas.length}`;
+            } catch (error) {
+                console.error(error);
+                state.mensaje = error.message || 'No se pudieron sincronizar los datos';
+            }
+
+            state.cargando = false;
+            render();
+        }
+
+        // ============ ASISTENCIA ============
+        async function cargarAsistencia() {
+            state.asisCargando = true;
+            try {
+                const r = await fetch(API_URL + '?action=asistencia&v=' + Date.now());
+                const d = await r.json();
+                state.asistencias = d.asistencia || [];
+            } catch (e) {
+                state.asistencias = [];
+                console.error('Error asistencia:', e);
+            }
+            state.asisCargando = false;
+            render();
+        }
+
+        async function registrarAsistencia() {
+            const f = state.asisForm;
+            if (!f.cedula) { alert('Cédula requerida'); return; }
+            if (!isLoggedIn()) { alert('Debe iniciar sesión primero'); return; }
+            try {
+                const d = await apiPost({
+                    action: 'asistencia_register',
+                    cedula: f.cedula.replace(/[.\s,-]/g, '').trim(),
+                    nombre: f.nombre.trim(),
+                    mesa: parseInt(f.mesa) || 0,
+                    estado: f.estado,
+                    accion: f.accion,
+                    observacion: f.observacion.trim()
+                });
+                if (d.success) {
+                    alert(f.accion === 'ingreso' ? 'Ingreso registrado con éxito' : 'Salida registrada con éxito');
+                    state.asisForm = { cedula: '', nombre: '', mesa: '', accion: 'ingreso', estado: 'presente', observacion: '' };
+                    await cargarAsistencia();
+                } else {
+                    alert('Error: ' + (d.error || 'desconocido'));
+                }
+            } catch (e) {
+                alert('Error de conexión: ' + e.message);
+            }
+        }
+
+        function selectMesa(key) {
+            state.mesaActiva = key;
+            render();
+        }
+
+        function updateSearch(value) {
+            state.busqueda = value;
+            render();
+        }
+
+        function updateMesa(value) {
+            state.mesaActiva = value;
+            render();
+        }
+
+        function exportMesa() {
+            const mesa = getActiveMesa();
+            if (!mesa) return;
+
+            const text = [
+                `Mesa: ${mesa.mesa}`,
+                `Registros: ${mesa.totalRegistros}`,
+                `Cedulas unicas: ${mesa.totalCedulas}`,
+                `Ordenes unicos: ${mesa.totalOrdenes}`,
+                `Ultimo registro: ${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : '-'}`
+            ].join('\n');
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Resumen de la mesa copiado al portapapeles.');
+            }).catch(() => {
+                alert(text);
+            });
+        }
+
+        // ============ RENDER ============
+        function renderLogin() {
+            return `
+                <div class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+                    <div class="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-amber-500/30 max-w-md w-full text-center fade-in text-white">
+                        <div class="w-20 h-20 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/40 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/10">
+                            <i class="fas fa-clipboard-check text-amber-400 text-3xl"></i>
+                        </div>
+                        <h1 class="text-2xl font-black text-white uppercase tracking-tight mb-1">DIA D <span class="text-amber-400">MASTER</span></h1>
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-8">Seguimiento de Cargas y Mesas</p>
+                        <div class="space-y-4 text-left">
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                                <input id="passwordInput" type="password" placeholder="Contraseña de acceso"
+                                    class="w-full pl-12 pr-4 py-4 text-lg font-bold bg-slate-950 border border-slate-800 rounded-2xl focus:border-amber-400 focus:outline-none transition-all text-center text-white placeholder-slate-600"
+                                    onkeypress="if(event.key === 'Enter') login()">
+                            </div>
+                            <button onclick="login()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black rounded-2xl transition-all shadow-lg shadow-amber-500/20">
+                                <i class="fas fa-arrow-right-to-bracket mr-2"></i> ACCEDER
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-6">Acceso unificado para operadores y veedores</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStats(stats) {
+            return `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 fade-in">
+                    <div class="card-custom p-4 text-center">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1"><i class="fas fa-database text-amber-500 mr-1"></i>Registros</div>
+                        <div class="text-3xl font-black text-slate-900">${stats.totalRegistros}</div>
+                    </div>
+                    <div class="card-custom p-4 text-center">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1"><i class="fas fa-id-card text-blue-500 mr-1"></i>Cédulas Únicas</div>
+                        <div class="text-3xl font-black text-blue-600">${stats.totalCedulas}</div>
+                    </div>
+                    <div class="card-custom p-4 text-center">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1"><i class="fas fa-landmark text-purple-500 mr-1"></i>Mesas con Carga</div>
+                        <div class="text-3xl font-black text-purple-600">${stats.totalMesas}</div>
+                    </div>
+                    <div class="card-custom p-4 text-center">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1"><i class="fas fa-clock text-emerald-500 mr-1"></i>Último Registro</div>
+                        <div class="text-xs font-mono font-bold text-emerald-600 mt-2 truncate">${stats.ultimoRegistro ? stats.ultimoRegistro.marcaTemporal : '-'}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMesasTable(mesas) {
+            if (!mesas.length) {
+                return `<div class="card-custom p-8 text-center text-slate-400 font-bold"><i class="fas fa-search text-2xl mb-2 text-slate-300"></i><p>No hay mesas que coincidan con la búsqueda.</p></div>`;
+            }
+
+            // Vista móvil en tarjetas
+            const cardsMobile = `
+                <div class="space-y-2 mb-4">
+                    ${mesas.map(mesa => `
+                        <div class="card-custom p-3.5 mesa-row ${mesa.key === state.mesaActiva ? 'active' : ''}" onclick="selectMesa('${mesa.key}')">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-black text-sm text-slate-900">Mesa ${mesa.mesa}</h4>
+                                    <p class="text-[10px] text-slate-400">${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : 'Sin registros recientes'}</p>
+                                </div>
+                                <span class="gold-chip">Reg. ${mesa.totalRegistros}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="pill">CI: ${mesa.totalCedulas}</span>
+                                <span class="pill">Órdenes: ${mesa.totalOrdenes}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Vista escritorio en tabla
+            const tableDesktop = `
+                <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table class="tabla-responsive">
+                        <thead>
+                            <tr>
+                                <th>Mesa</th>
+                                <th>Registros</th>
+                                <th>Cédulas</th>
+                                <th>Órdenes</th>
+                                <th>Último Envío</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${mesas.map(mesa => `
+                                <tr class="mesa-row ${mesa.key === state.mesaActiva ? 'active' : ''}" onclick="selectMesa('${mesa.key}')">
+                                    <td class="font-black text-slate-900"><i class="fas fa-table mr-1.5 text-amber-500"></i>Mesa ${mesa.mesa}</td>
+                                    <td><span class="pill font-black text-slate-900 bg-slate-100">${mesa.totalRegistros}</span></td>
+                                    <td><span class="pill font-bold text-slate-600">${mesa.totalCedulas}</span></td>
+                                    <td><span class="pill font-bold text-slate-600">${mesa.totalOrdenes}</span></td>
+                                    <td class="text-xs text-slate-500 font-mono">${mesa.ultimoRegistro ? mesa.ultimoRegistro.marcaTemporal : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return `
+                <div class="only-mobile">${cardsMobile}</div>
+                <div class="only-desktop">${tableDesktop}</div>
+            `;
+        }
+
+        function renderActiveDetail(mesa) {
+            if (!mesa) {
+                return `<div class="card-custom p-8 text-center text-slate-400 font-bold"><i class="fas fa-hand-pointer text-2xl mb-2 text-slate-300"></i><p>Seleccione una mesa para visualizar sus detalles.</p></div>`;
+            }
+
+            const registros = [...mesa.registros].sort((a, b) => {
+                const aTime = a.timestamp ? a.timestamp.getTime() : 0;
+                const bTime = b.timestamp ? b.timestamp.getTime() : 0;
+                return bTime - aTime;
+            });
+
+            return `
+                <div class="card-custom p-5 space-y-4">
+                    <div class="flex justify-between items-start gap-4 border-b border-slate-100 pb-4">
+                        <div>
+                            <h3 class="text-xl font-black uppercase text-slate-900 flex items-center gap-2">
+                                <i class="fas fa-clipboard-list text-amber-500"></i> Mesa ${mesa.mesa}
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Cargas registradas en urna electoral</p>
+                        </div>
+                        <button class="btn-obsidian !py-1.5 !px-3 !text-xs" onclick="exportMesa()">
+                            <i class="fas fa-copy mr-1 text-amber-400"></i> Copiar
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                            <span class="text-[9px] uppercase font-black tracking-wider text-slate-400">Registros</span>
+                            <p class="text-xl font-black text-slate-900">${mesa.totalRegistros}</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                            <span class="text-[9px] uppercase font-black tracking-wider text-slate-400">Cédulas</span>
+                            <p class="text-xl font-black text-blue-600">${mesa.totalCedulas}</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                            <span class="text-[9px] uppercase font-black tracking-wider text-slate-400">Órdenes</span>
+                            <p class="text-xl font-black text-purple-600">${mesa.totalOrdenes}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 max-h-[58vh] overflow-y-auto pr-1">
+                        ${registros.map(item => `
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 hover:border-amber-500/40 transition-all flex items-center justify-between gap-3">
+                                <div>
+                                    <p class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                                        <i class="fas fa-id-card text-slate-400 text-xs"></i> CI ${item.cedula || 'S/N'}
+                                    </p>
+                                    <p class="text-[10px] text-slate-400 font-mono mt-0.5">${item.marcaTemporal || 'Sin fecha'}</p>
+                                </div>
+                                <div class="text-right flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 rounded-md text-[10px] font-black">
+                                        Orden ${item.orden || '-'}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAsistencia() {
+            const asis = state.asistencias;
+            const f = state.asisForm;
+            const hoy = new Date().toISOString().split('T')[0];
+            const hoyRegs = asis.filter(a => a.fecha === hoy);
+            const presentes = hoyRegs.filter(a => a.estado === 'presente' && (!a.hora_salida || a.hora_salida === ''));
+            const salieron = hoyRegs.filter(a => a.estado === 'salida' || a.hora_salida);
+
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 fade-in">
+                    <!-- FORMULARIO REGISTRO -->
+                    <div class="card-custom p-5">
+                        <div class="flex items-center gap-3 border-b border-slate-100 pb-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 flex items-center justify-center text-amber-400">
+                                <i class="fas fa-user-clock text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-black uppercase text-slate-900">Registrar Asistencia</h2>
+                                <p class="text-xs text-slate-400">Control de ingreso y salida en centros de votación</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            <input class="input-box" placeholder="Cédula" value="${f.cedula}" onchange="state.asisForm.cedula=this.value">
+                            <input class="input-box" placeholder="Nombre completo" value="${f.nombre}" onchange="state.asisForm.nombre=this.value">
+                            <input class="input-box" type="number" placeholder="Nro. de Mesa" value="${f.mesa}" onchange="state.asisForm.mesa=this.value">
+                            <select class="input-box" onchange="state.asisForm.estado=this.value">
+                                <option value="presente" ${f.estado === 'presente' ? 'selected' : ''}>Presente</option>
+                                <option value="tardanza" ${f.estado === 'tardanza' ? 'selected' : ''}>Tardanza</option>
+                                <option value="ausente" ${f.estado === 'ausente' ? 'selected' : ''}>Ausente</option>
+                            </select>
+                            <select class="input-box" onchange="state.asisForm.accion=this.value">
+                                <option value="ingreso" ${f.accion === 'ingreso' ? 'selected' : ''}>Ingreso</option>
+                                <option value="salida" ${f.accion === 'salida' ? 'selected' : ''}>Salida</option>
+                            </select>
+                            <input class="input-box" placeholder="Observación (opcional)" value="${f.observacion}" onchange="state.asisForm.observacion=this.value">
+                        </div>
+
+                        <button class="btn-gold w-full !py-3" onclick="registrarAsistencia()">
+                            <i class="fas ${f.accion === 'ingreso' ? 'fa-sign-in-alt' : 'fa-sign-out-alt'} mr-1"></i>
+                            ${f.accion === 'ingreso' ? 'REGISTRAR INGRESO' : 'REGISTRAR SALIDA'}
+                        </button>
+                    </div>
+
+                    <!-- RESUMEN HOY -->
+                    <div class="card-custom p-5">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                            <div>
+                                <h2 class="text-base font-black uppercase text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-users text-amber-500"></i> Asistencia Hoy
+                                </h2>
+                                <p class="text-xs text-slate-400">${hoyRegs.length} registros totales</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
+                                    ${presentes.length} presentes
+                                </span>
+                                <span class="px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold">
+                                    ${salieron.length} salieron
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                            ${hoyRegs.length === 0 ? `
+                                <div class="p-8 text-center text-slate-400 font-bold">
+                                    <i class="fas fa-calendar-check text-2xl text-slate-300 mb-2"></i>
+                                    <p>Sin registros de asistencia hoy.</p>
+                                </div>
+                            ` : hoyRegs.map(a => `
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3 ${a.hora_salida ? 'opacity-60' : ''}">
+                                    <div>
+                                        <p class="font-bold text-sm text-slate-900">${a.nombre || a.cedula}</p>
+                                        <p class="text-[10px] text-slate-400">Mesa ${a.mesa} · ${a.fecha}</p>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-lg text-xs font-black ${a.hora_salida ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'}">
+                                        ${a.hora_salida ? 'Salió ' + a.hora_salida : 'Ingreso ' + a.hora_ingreso}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTORIAL RECIENTE -->
+                <div class="card-custom p-5 mt-4">
+                    <h2 class="text-base font-black uppercase text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-history text-amber-500"></i> Historial General de Asistencia
+                    </h2>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                        <table class="tabla-responsive">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Nombre / CI</th>
+                                    <th>Mesa</th>
+                                    <th>Ingreso</th>
+                                    <th>Salida</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${asis.length === 0 ? `
+                                    <tr><td colspan="6" class="text-center py-6 text-slate-400 font-bold">Sin registros cargados</td></tr>
+                                ` : asis.slice(0, 50).map(a => `
+                                    <tr>
+                                        <td class="font-mono text-xs">${a.fecha}</td>
+                                        <td class="font-bold text-slate-900">${a.nombre || a.cedula}</td>
+                                        <td>Mesa ${a.mesa}</td>
+                                        <td class="font-mono text-xs">${a.hora_ingreso || '—'}</td>
+                                        <td class="font-mono text-xs">${a.hora_salida || '—'}</td>
+                                        <td>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${a.estado === 'presente' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                                                ${a.estado}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            if (!state.autenticado) {
+                app.innerHTML = renderLogin();
+                return;
+            }
+
+            const stats = getGlobalStats();
+            const filtered = getFilteredMesas();
+            const active = getActiveMesa();
+
+            app.innerHTML = `
+                <!-- HEADER INSTITUCIONAL -->
+                <header class="bg-slate-950 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20 no-print">
+                    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-xl">
+                                <i class="fas fa-clipboard-check text-amber-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tight leading-none text-white">SEGUIMIENTO</h1>
+                                <p class="text-[10px] text-amber-400 font-bold uppercase tracking-widest">DIA D MASTER</p>
+                            </div>
+                        </div>
+
+                        <!-- SUB-MENÚ DE NAVEGACIÓN -->
+                        <div class="flex flex-wrap items-center gap-1.5 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-amber-500/30">
+                            <span class="text-[10px] text-amber-400 font-bold uppercase mr-2">📍 ${sessionStorage.getItem('seccional40_escuela') || 'Centro Electoral'}</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Colegio:</span>
+                            <a href="acceso.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Inicio</a>
+                            <a href="mesas.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Mesas</a>
+                            <a href="No_voto.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">No Voto</a>
+                            <a href="padron_unificado.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Padrón</a>
+                            <span class="text-[10px] text-slate-600 mx-1">|</span>
+                            <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">PC:</span>
+                            <a href="anomalias.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Anomalías</a>
+                            <a href="escrutinio.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Escrutinio</a>
+                            <a href="javascript:void(0)" onclick="state.pestania='seguimiento';render()" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${state.pestania === 'seguimiento' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-amber-400'}">Seguimiento</a>
+                            <a href="javascript:void(0)" onclick="state.pestania='asistencia';render();if(state.asistencias.length===0)cargarAsistencia()" class="px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${state.pestania === 'asistencia' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-sm' : 'text-slate-300 hover:bg-slate-800 hover:text-amber-400'}"><i class="fas fa-user-clock mr-1"></i>Asistencia</a>
+                        </div>
+
+                        <!-- ACCIONES DE CABECERA -->
+                        <div class="flex items-center gap-3">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Actualizado</p>
+                                <p class="text-xs font-mono font-bold text-amber-400">${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleTimeString('es-PY') : 'Sin actualizar'}</p>
+                            </div>
+                            <button onclick="loadAll()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Recargar">
+                                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                            </button>
+                            <button onclick="logout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Salir
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <main class="max-w-7xl mx-auto p-4 md:p-6 fade-in space-y-6">
+                    ${state.pestania === 'asistencia' ? renderAsistencia() : `
+                        <!-- STATS ROW -->
+                        ${renderStats(stats)}
+
+                        <!-- VOTOS SEGUROS PENDIENTES -->
+                        <section class="card-custom overflow-hidden">
+                            <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-4 border-b border-amber-500/20 text-white flex flex-wrap justify-between items-center gap-3">
+                                <div>
+                                    <h2 class="text-sm md:text-base font-black uppercase tracking-tight flex items-center gap-2">
+                                        <i class="fas fa-shield-alt text-amber-400"></i> Votos Seguros Pendientes
+                                    </h2>
+                                    <p class="text-xs text-slate-400 font-semibold mt-0.5">
+                                        ${state.votosSeguros.length} electores comprometidos que aún no han sufragado
+                                    </p>
+                                </div>
+                                <div class="flex gap-1.5 flex-wrap items-center">
+                                    ${['TODOS', 'dirigente', 'seccional', 'pc'].map(tipo => `
+                                        <button class="px-3 py-1 text-xs font-bold rounded-lg transition-all ${state.vspFiltroTipo === tipo ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'}"
+                                            onclick="state.vspFiltroTipo='${tipo}'; render();">
+                                            ${tipo === 'TODOS' ? 'Todos' : (tipo === 'seccional' ? (window.PartyTheme ? window.PartyTheme.getNombreUnidad() : 'Seccional') : (tipo === 'pc' ? (window.PartyTheme ? window.PartyTheme.getNombrePC() : 'PC') : (tipo.charAt(0).toUpperCase() + tipo.slice(1))))}
+                                        </button>
+                                    `).join('')}
+                                    <button class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 border border-slate-700 rounded-lg text-xs font-bold transition-all ml-1"
+                                        onclick="cargarVotosSegurosPendientes()" title="Actualizar">
+                                        <i class="fas ${state.vspCargando ? 'fa-spinner fa-spin' : 'fa-sync-alt'}"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 max-h-[420px] overflow-y-auto space-y-3">
+                                ${state.vspCargando ? `
+                                    <div class="text-center py-8 text-slate-400 font-bold"><i class="fas fa-spinner fa-spin text-2xl text-amber-500 mb-2"></i><p>Consultando estado en tiempo real...</p></div>
+                                ` : getVSPFiltrados().length === 0 ? `
+                                    <div class="text-center py-8 text-slate-400 font-bold">
+                                        <i class="fas fa-check-circle text-emerald-500 text-3xl mb-2"></i>
+                                        <p>No hay votantes pendientes con el filtro actual o datos no cargados.</p>
+                                    </div>
+                                ` : getVSPFiltrados().map(g => `
+                                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl hover:border-amber-500/40 transition-all">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <strong class="text-sm font-black text-slate-900">${g.nombre}</strong>
+                                                <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-700">
+                                                    ${g.tipo}
+                                                </span>
+                                            </div>
+                                            <span class="gold-chip">
+                                                ${g.total} pendientes
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${g.pendientes.slice(0, 20).map(p => `
+                                                <span class="bg-white px-2 py-1 rounded-md border border-slate-200 text-[11px] font-bold text-slate-700 shadow-2xs" title="Mesa ${p.votante_mesa || '?'}">
+                                                    ${p.votante_nombre || 'S/N'}
+                                                    <span class="text-slate-400 text-[10px] font-normal">(${p.votante_cedula})</span>
+                                                </span>
+                                            `).join('')}
+                                            ${g.pendientes.length > 20 ? `<span class="text-slate-400 text-xs font-bold self-center px-1">+${g.pendientes.length - 20} más</span>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+
+                        <!-- GRID: MESAS VS DETALLE -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <!-- LISTADO DE MESAS -->
+                            <div class="lg:col-span-7 card-custom p-5">
+                                <div class="flex justify-between items-center gap-3 mb-4">
+                                    <div>
+                                        <h2 class="text-base font-black uppercase tracking-tight text-slate-900 flex items-center gap-2">
+                                            <i class="fas fa-table text-amber-500"></i> Resumen por Mesa
+                                        </h2>
+                                        <p class="text-xs text-slate-400">${filtered.length} mesa(s) con actividad sobre ${state.mesas.length} registradas</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-4">
+                                    <div class="sm:col-span-6">
+                                        <input class="input-box" placeholder="Buscar por mesa, cédula, orden..."
+                                            value="${state.busqueda.replace(/"/g, '&quot;')}"
+                                            oninput="updateSearch(this.value)">
+                                    </div>
+                                    <div class="sm:col-span-4">
+                                        <select class="input-box" onchange="updateMesa(this.value)">
+                                            ${state.mesas.map(mesa => `
+                                                <option value="${mesa.key}" ${mesa.key === state.mesaActiva ? 'selected' : ''}>Mesa ${mesa.mesa}</option>
+                                            `).join('')}
+                                        </select>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <button class="btn-slate w-full !py-2.5 !px-2 !text-xs" onclick="updateSearch('')">Limpiar</button>
+                                    </div>
+                                </div>
+
+                                ${renderMesasTable(filtered)}
+                            </div>
+
+                            <!-- DETALLE DE LA MESA SELECCIONADA -->
+                            <aside class="lg:col-span-5">
+                                ${renderActiveDetail(active)}
+                            </aside>
+                        </div>
+                    `}
+                </main>
+            `;
+        }
+
+        if (state.autenticado) {
+            loadAll();
+        } else {
+            render();
+        }
+    </script>
+</body>
+</html>

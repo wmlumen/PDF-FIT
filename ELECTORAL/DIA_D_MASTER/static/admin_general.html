@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DIA D MASTER - Admin General</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .card { @apply bg-white rounded-2xl p-4 shadow-md border border-slate-100 transition-all; }
+    .card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    .stat-value { @apply text-2xl md:text-3xl font-black; }
+    .stat-label { @apply text-[10px] font-black uppercase tracking-wider; }
+    .btn-primary { @apply px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-xs transition-all; }
+    .btn-danger { @apply px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-xs transition-all; }
+    .btn-secondary { @apply px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition-all; }
+    .input { @apply w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500; }
+    .badge { @apply px-2 py-0.5 rounded-full text-[10px] font-bold; }
+    .badge-green { @apply bg-green-100 text-green-700; }
+    .badge-red { @apply bg-red-100 text-red-700; }
+    .badge-amber { @apply bg-amber-100 text-amber-700; }
+    .badge-slate { @apply bg-slate-100 text-slate-600; }
+    .tab-btn { @apply px-3 py-1.5 rounded-xl text-[10px] font-black transition-all whitespace-nowrap cursor-pointer; }
+    .admin-nav .tab-btn { flex: 0 0 auto; text-align: left; }
+    @media (min-width: 1024px) { .admin-nav .tab-btn { width: 100%; white-space: normal; padding: .65rem .75rem; } }
+    @media (min-width: 1024px) {
+      .admin-nav .tab-active { background: #0f172a; color: #fcd34d; }
+      .admin-nav .tab-inactive { background: transparent; color: #475569; }
+      .admin-nav .tab-inactive:hover { background: #f1f5f9; color: #0f172a; }
+    }
+    .admin-nav { border: 0 !important; box-shadow: none !important; }
+    .admin-nav-group { border: 1px solid #e2e8f0; border-radius: .9rem; background: #fff; overflow: hidden; }
+    .admin-nav-group summary { list-style: none; cursor: pointer; }
+    .admin-nav-group summary::-webkit-details-marker { display: none; }
+    .admin-nav-group[open] summary { border-bottom: 1px solid #f1f5f9; }
+    .admin-nav-group .tab-btn { width: 100%; text-align: left; border-radius: .65rem; padding: .6rem .7rem; color: #475569; font-size: 11px; }
+    .admin-nav-group .tab-btn:hover { background: #f1f5f9; color: #0f172a; }
+    .admin-nav-group .tab-btn.tab-active { background: #0f172a; color: #fcd34d; }
+    .tab-active { @apply bg-white text-slate-900; }
+    .tab-inactive { @apply bg-slate-800/50 text-slate-300 hover:bg-slate-700; }
+    table.admin-table { @apply w-full text-xs; }
+    table.admin-table th { @apply text-left py-2 px-3 bg-slate-50 border-b border-slate-200 font-black uppercase tracking-wider text-[10px] text-slate-500; }
+    table.admin-table td { @apply py-2 px-3 border-b border-slate-100; }
+    table.admin-table tr:hover td { @apply bg-slate-50; }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="config.js"></script>
+    <script src="auth.js"></script>
+  <script>
+    const API_URL = '/api';
+
+    let state = {
+      autenticado: isLoggedIn(),
+      usuario: getSessionUser(),
+      cargando: false,
+      mensaje: '',
+      msgTipo: 'info',
+      loginCargando: false,
+      loginError: '',
+      tab: 'dashboard',
+      // Datos
+      stats: null,
+      jerarquia: null,
+      estadisticasGenerales: null,
+      estadoSistema: null,
+      // Usuarios
+      usuarios: [],
+      usuarioEditando: null,
+      rolesDisponibles: [],
+      permisos: [],
+      sesiones: [],
+      sesionesCargando: false,
+      seguridadEstado: null,
+      // Candidatos
+      candidatosAgrupados: [],
+      candidatoBusqueda: { departamento: '', distrito: '', partido: '', cargo: '' },
+      departamentos: [],
+      distritos: [],
+      // Partidos
+      partidos: [],
+      partidoSeleccionado: null,
+      // Geografia
+      unidades: [],
+      circunscripciones: [],
+      // CRM
+      clientes: [],
+      clienteDetalle: null,
+      clienteBusqueda: '',
+      clienteEstado: 'todos',
+      // Elecciones
+      elecciones: [],
+      tiposEleccion: [],
+      eleccionProcesando: false,
+      eleccionesVista: sessionStorage.getItem('admin_elecciones_vista') || 'tarjetas',
+      // Transporte
+      transportes: [],
+      rutas: [],
+      solicitudesRecogida: [],
+      // Veedores
+      veedores: [],
+      mesas: [],
+      // Gamificacion
+      puestosComando: [],
+      ranking: [],
+      // Padron
+      padronResultados: [],
+      // Auditoria
+      auditoria: [],
+      // UI helpers
+      modal: null,
+      modalData: null,
+    };
+
+    // ============ LOGIN ============
+    async function login() {
+      const ced = limpiarCedula(document.getElementById('cedulaLogin')?.value || '');
+      const pw = document.getElementById('passwordLogin')?.value || '';
+      if (!ced || !pw) { state.loginError = !ced ? 'Ingresá tu cédula para continuar.' : 'Ingresá tu contraseña para continuar.'; render(); document.getElementById(!ced ? 'cedulaLogin' : 'passwordLogin')?.focus(); return; }
+      if (state.loginCargando) return;
+      state.loginCargando = true; state.loginError = ''; render();
+      try {
+        const d = await apiPost('login', { cedula: ced, password: pw });
+        if (d.success && d.usuario) {
+          sessionStorage.setItem('user_pw', pw);
+          if (d.usuario.session_id) sessionStorage.setItem('dia_d_session_id', d.usuario.session_id);
+          state.usuario = d.usuario;
+          state.autenticado = true;
+          sessionStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(state.usuario));
+          await cargaInicial();
+        } else {
+          state.loginError = d.error || 'No se pudo validar el acceso. Revisá las credenciales.';
+        }
+      } catch(e) { state.loginError = e.message || 'No se pudo conectar con el sistema.'; }
+      finally { state.loginCargando = false; if (!state.autenticado) render(); }
+    }
+
+    function alternarVisibilidadClave() {
+      const input = document.getElementById('passwordLogin');
+      const boton = document.getElementById('mostrarClaveLogin');
+      if (!input || !boton) return;
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      boton.innerHTML = `<i class="fas fa-eye${visible ? '-slash' : ''}"></i>`;
+      input.focus();
+    }
+
+    // ============ CARGA INICIAL ============
+    async function cargaInicial() {
+      state.cargando = true; state.mensaje = ''; state.msgTipo = 'info'; render();
+      try {
+        const statsData = await apiGet('dashboard');
+        state.stats = statsData;
+      } catch(e) {
+        if (e.status === 401) {
+          state.autenticado = false; state.usuario = null;
+          state.loginError = 'Tu sesión venció. Iniciá sesión nuevamente.';
+          sessionStorage.removeItem(AUTH_SHARED_KEY); sessionStorage.removeItem('dia_d_session_id'); sessionStorage.removeItem('user_pw');
+        } else { state.mensaje = 'No se pudo cargar el resumen: ' + e.message; state.msgTipo = 'error'; }
+      }
+      state.cargando = false; render();
+      if (state.autenticado) {
+        cargarEstadoSistema().then(() => render());
+        cargarEstadisticasGenerales().then(() => render()).catch(e => {
+          if (e.status === 401) {
+            state.autenticado = false; state.usuario = null;
+            state.loginError = 'Tu sesión venció. Iniciá sesión nuevamente.';
+            sessionStorage.removeItem(AUTH_SHARED_KEY); sessionStorage.removeItem('dia_d_session_id'); sessionStorage.removeItem('user_pw');
+          } else { state.mensaje = 'El resumen general no se pudo cargar: ' + e.message; state.msgTipo = 'error'; }
+          render();
+        });
+      }
+    }
+
+    function sessionHeaders() {
+      const u = getSessionUser() || state.usuario;
+      const sid = u?.session_id || sessionStorage.getItem('dia_d_session_id') || '';
+      return sid ? { 'x-session-id': sid } : {};
+    }
+
+    function authPayload(body = {}) {
+      const u = getSessionUser() || state.usuario;
+      if (!u) return body;
+      return { ...body, cedula_auth: u.cedula, password_auth: sessionStorage.getItem('user_pw') || '', session_id: u.session_id || sessionStorage.getItem('dia_d_session_id') || '' };
+    }
+
+    async function respuestaApi(r) {
+      const txt = await r.text();
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('text/html') || txt.trim().startsWith('<!doctype')) throw new Error('El servidor devolvió una página en vez de datos. Recargá e intentá otra vez.');
+      let data;
+      try { data = JSON.parse(txt); } catch { throw new Error('Respuesta inválida del servidor.'); }
+      if (!r.ok) { const error = new Error(data.detail || data.error || `Error HTTP ${r.status}`); error.status = r.status; throw error; }
+      return data;
+    }
+
+    // ============ API HELPERS ============
+    async function apiGet(action) {
+      const [actionName, ...queryParts] = String(action).split('&');
+      const params = new URLSearchParams({ action: actionName });
+      queryParts.forEach(part => { const [key, ...valueParts] = part.split('='); if (key) params.set(key, valueParts.join('=')); });
+      params.set('v', String(Date.now()));
+      const r = await fetch(API_URL + '?' + params.toString(), { headers: sessionHeaders() });
+      return respuestaApi(r);
+    }
+
+    async function apiPost(action, body) {
+      const u = getSessionUser();
+      const auth = u ? { cedula_auth: u.cedula, password_auth: sessionStorage.getItem('user_pw') || '', session_id: u.session_id || sessionStorage.getItem('dia_d_session_id') || '' } : {};
+      const r = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...sessionHeaders() },
+        body: JSON.stringify({ action, ...auth, ...body })
+      });
+      return respuestaApi(r);
+    }
+
+    async function apiGetRuta(ruta) {
+      const r = await fetch(ruta + (ruta.includes('?') ? '&' : '?') + 'v=' + Date.now(), { headers: sessionHeaders() });
+      return respuestaApi(r);
+    }
+
+    async function apiPostRuta(ruta, body) {
+      const r = await fetch(ruta, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...sessionHeaders() },
+        body: JSON.stringify(authPayload(body))
+      });
+      return respuestaApi(r);
+    }
+
+    // ============ HELPERS ============
+    function limpiarCedula(c) { return (c || '').replace(/[.\s,-]/g, '').trim(); }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+    function n(v) { return v || 0; }
+    function fmt(v) { return n(v).toLocaleString('es-PY'); }
+
+    // ============ ESTADISTICAS ============
+    async function cargarEstadisticasGenerales() {
+      try {
+        const d = await apiGetRuta('/api/admin/estadisticas_generales');
+        state.estadisticasGenerales = d;
+      } catch(e) {
+        state.estadisticasGenerales = null;
+        if (e.status === 401) throw e;
+        state.mensaje = 'El resumen general no se pudo cargar: ' + e.message;
+        state.msgTipo = 'error';
+      }
+    }
+
+    async function cargarEstadoSistema() {
+      try {
+        state.estadoSistema = await apiGetRuta('/api/health');
+      } catch (e) {
+        state.estadoSistema = { status: 'error', detail: e.message };
+      }
+    }
+
+    // ============ RENDER PRINCIPAL ============
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+      app.innerHTML = renderDashboard();
+      if (state.tab === 'mapa') requestAnimationFrame(() => initMapa());
+    }
+
+    function renderLogin() {
+      return `
+        <main class="min-h-screen bg-slate-950 text-white lg:grid lg:grid-cols-[1.05fr_.95fr]">
+          <section class="relative hidden min-h-screen overflow-hidden border-r border-white/10 bg-[radial-gradient(ellipse_at_25%_20%,rgba(245,158,11,.16),transparent_45%),linear-gradient(145deg,#020617,#111827_65%,#0f172a)] p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
+            <div><div class="flex items-center gap-3"><span class="flex h-11 w-11 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10"><i class="fas fa-shield-alt text-amber-300"></i></span><span class="text-sm font-black tracking-[.18em]">DIA D MASTER</span></div>
+              <div class="mt-28 max-w-lg"><p class="text-xs font-bold uppercase tracking-[.22em] text-amber-300">Centro de control electoral</p><h1 class="mt-4 text-4xl font-black leading-tight xl:text-5xl">Coordinación clara para cada jornada.</h1><p class="mt-5 max-w-md text-sm leading-6 text-slate-300">Administrá equipos, territorio y operación desde un único espacio de trabajo.</p>
+                <div class="mt-10 grid max-w-md grid-cols-2 gap-3"><div class="rounded-2xl border border-white/10 bg-white/[.04] p-4"><i class="fas fa-users text-amber-300"></i><p class="mt-3 text-xs font-bold">Equipos y clientes</p><p class="mt-1 text-[11px] text-slate-400">Accesos organizados por función</p></div><div class="rounded-2xl border border-white/10 bg-white/[.04] p-4"><i class="fas fa-map-marked-alt text-amber-300"></i><p class="mt-3 text-xs font-bold">Operación territorial</p><p class="mt-1 text-[11px] text-slate-400">Información en un mismo panel</p></div></div>
+              </div>
+            </div><p class="text-[10px] text-slate-500">Acceso institucional · Sesión protegida</p>
+          </section>
+          <section class="flex min-h-screen items-center justify-center bg-slate-50 px-5 py-10 text-slate-900 sm:px-8">
+            <div class="w-full max-w-md">
+              <div class="mb-8 lg:hidden"><span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-amber-300"><i class="fas fa-shield-alt"></i></span><p class="mt-4 text-xs font-black tracking-[.18em] text-slate-500">DIA D MASTER</p></div>
+              <div class="mb-7"><p class="text-xs font-bold uppercase tracking-widest text-amber-700">Administración General</p><h2 class="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Ingresar al panel</h2><p class="mt-2 text-sm text-slate-500">Usá tus credenciales institucionales para continuar.</p></div>
+              <form class="rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5 sm:p-7" onsubmit="event.preventDefault();login()">
+                <div class="space-y-5">
+                  <div><label for="cedulaLogin" class="mb-1.5 block text-xs font-bold text-slate-700">Cédula</label><div class="relative"><i class="fas fa-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i><input id="cedulaLogin" name="username" type="text" inputmode="numeric" autocomplete="username" autocapitalize="off" spellcheck="false" class="input !py-3 !pl-10" placeholder="Número de cédula" autofocus required ${state.loginCargando ? 'disabled' : ''}></div></div>
+                  <div><label for="passwordLogin" class="mb-1.5 block text-xs font-bold text-slate-700">Contraseña</label><div class="relative"><i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i><input id="passwordLogin" name="password" type="password" autocomplete="current-password" class="input !py-3 !pl-10 !pr-12" placeholder="Tu contraseña" required ${state.loginCargando ? 'disabled' : ''}><button id="mostrarClaveLogin" type="button" onclick="alternarVisibilidadClave()" aria-label="Mostrar contraseña" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900" ${state.loginCargando ? 'disabled' : ''}><i class="fas fa-eye"></i></button></div></div>
+                  <p class="min-h-5 rounded-lg text-xs ${state.loginError ? 'bg-rose-50 p-2 text-rose-700' : 'text-slate-500'}" role="alert" aria-live="polite">${escapeHtml(state.loginError || (state.loginCargando ? 'Verificando credenciales…' : 'Acceso reservado a personal autorizado.'))}</p>
+                  <button type="submit" ${state.loginCargando ? 'disabled' : ''} class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3.5 text-sm font-black text-amber-300 shadow-lg shadow-slate-900/10 transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-amber-400/30 disabled:cursor-wait disabled:opacity-60"><i class="fas ${state.loginCargando ? 'fa-circle-notch fa-spin' : 'fa-arrow-right-to-bracket'}"></i>${state.loginCargando ? 'Verificando…' : 'Ingresar al panel'}</button>
+                  <div class="flex items-center justify-center gap-2 text-[10px] text-slate-400"><i class="fas fa-shield-alt"></i>Conexión protegida · No compartas tu contraseña</div>
+                </div>
+              </form>
+              <p class="mt-5 text-center text-xs text-slate-500">¿Problemas para ingresar? Contactá al administrador del sistema.</p>
+            </div>
+          </section>
+        </div>`;
+    }
+
+    // ============ DASHBOARD LAYOUT ============
+    function renderDashboard() {
+      const u = state.usuario;
+      return `
+        <header class="bg-slate-950 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-xl flex-shrink-0">
+                <i class="fas fa-shield-alt text-amber-400 text-xl"></i>
+              </div>
+              <div class="min-w-0">
+                <h1 class="text-lg font-black uppercase tracking-tight truncate">${u?.nombre || 'Admin General'}</h1>
+                <p class="text-[10px] text-slate-400 font-bold">
+                  <i class="fas fa-id-card mr-1"></i>${u?.cedula || ''} ·
+                  <span class="text-amber-400 font-black">${(u?.nivel || '').toUpperCase()}</span>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="window.open('/roles.html','_blank')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-[10px] font-bold transition-all" title="Roles">
+                <i class="fas fa-sitemap"></i>
+              </button>
+              <button onclick="salirAdmin()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                <i class="fas fa-sign-out-alt mr-1"></i> Salir
+              </button>
+            </div>
+          </div>
+        </header>
+        <div class="max-w-7xl mx-auto px-4 py-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-5">
+          <nav aria-label="Secciones de administración" class="admin-nav mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:sticky lg:top-4 lg:mb-0 lg:max-h-[calc(100vh-2rem)] lg:grid-cols-1 lg:content-start lg:overflow-y-auto lg:gap-2">
+            ${renderTabs()}
+          </nav>
+          <main class="min-w-0">
+            ${state.mensaje ? `<div role="alert" class="mb-4 flex items-start justify-between gap-3 rounded-xl border ${state.msgTipo==='error'?'border-rose-200 bg-rose-50 text-rose-800':'border-sky-200 bg-sky-50 text-sky-800'} p-3 text-sm"><span><i class="fas fa-circle-exclamation mr-2"></i>${escapeHtml(state.mensaje)}</span><button onclick="cargaInicial()" class="shrink-0 rounded-lg border border-current/20 px-3 py-1 text-xs font-bold">Reintentar</button></div>` : ''}
+            ${state.cargando ? `<div class="mb-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><i class="fas fa-circle-notch fa-spin"></i><span>Cargando resumen de la plataforma…</span></div>` : ''}
+            ${renderTabContent()}
+          </main>
+        </div>
+        ${renderModal()}
+      `;
+    }
+
+    function renderTabs() {
+      const grupos = [
+        { label: 'Resumen', icon: 'fa-chart-pie', ids: ['dashboard'] },
+        { label: 'Organización', icon: 'fa-sitemap', ids: ['usuarios', 'clientes', 'partidos', 'candidatos'] },
+        { label: 'Territorio y padrón', icon: 'fa-map-marked-alt', ids: ['geografia', 'padron', 'mapa'] },
+        { label: 'Operación electoral', icon: 'fa-vote-yea', ids: ['elecciones', 'transporte', 'veedores'] },
+        { label: 'Sistema', icon: 'fa-sliders-h', ids: ['aplicaciones', 'gamificacion', 'sesiones', 'auditoria'] },
+      ];
+      const tabs = [
+        { id: 'dashboard', icon: 'fa-chart-pie', label: 'Dashboard' },
+        { id: 'usuarios', icon: 'fa-users', label: 'Usuarios' },
+        { id: 'clientes', icon: 'fa-handshake', label: 'Clientes CRM' },
+        { id: 'partidos', icon: 'fa-flag', label: 'Partidos' },
+        { id: 'candidatos', icon: 'fa-user-tie', label: 'Candidatos' },
+        { id: 'geografia', icon: 'fa-map-marked-alt', label: 'Geografía' },
+        { id: 'padron', icon: 'fa-users', label: 'Padrón' },
+        { id: 'mapa', icon: 'fa-map-marker-alt', label: 'Mapa en Vivo' },
+        { id: 'elecciones', icon: 'fa-vote-yea', label: 'Elecciones' },
+        { id: 'transporte', icon: 'fa-truck', label: 'Transporte' },
+        { id: 'veedores', icon: 'fa-eye', label: 'Veedores' },
+        { id: 'aplicaciones', icon: 'fa-th-large', label: 'Aplicaciones' },
+        { id: 'gamificacion', icon: 'fa-trophy', label: 'Gamificación' },
+        { id: 'sesiones', icon: 'fa-shield-alt', label: 'Seguridad y sesiones' },
+        { id: 'auditoria', icon: 'fa-clipboard-list', label: 'Auditoría' },
+      ];
+      const renderTab = t =>
+        `<button onclick="switchTab('${t.id}')" aria-current="${state.tab === t.id ? 'page' : 'false'}" class="tab-btn ${state.tab === t.id ? 'tab-active' : 'tab-inactive'} lg:!w-full lg:!text-left lg:!px-3 lg:!py-2.5 lg:!rounded-xl">
+          <i class="fas ${t.icon} mr-1"></i>${t.label}
+        </button>`;
+      return grupos.map((grupo, indice) => {
+        const grupoActivo = grupo.ids.includes(state.tab);
+        const abiertos = grupoActivo || state.navAbierto === grupo.label;
+        return `<details class="admin-nav-group" ${abiertos ? 'open' : ''}>
+          <summary onclick="state.navAbierto='${grupo.label}'" class="flex items-center justify-between gap-2 px-3 py-3 text-xs font-black text-slate-700 hover:bg-slate-50">
+            <span><i class="fas ${grupo.icon} mr-2 text-amber-600"></i>${grupo.label}</span>
+            <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
+          </summary>
+          <div class="grid gap-1 p-2">${grupo.ids.map(id => renderTab(tabs.find(t => t.id === id))).join('')}</div>
+        </details>`;
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      state.tab = tab;
+      if (tab === 'usuarios' && !state.usuarios.length) cargarUsuarios();
+      if (tab === 'candidatos' && !state.candidatosAgrupados.length) cargarCandidatos();
+      if (tab === 'partidos' && !state.partidos.length) cargarPartidos();
+      if (tab === 'geografia' && !state.unidades.length) cargarGeografia();
+      if (tab === 'clientes' && !state.clientes.length) cargarClientes();
+      if (tab === 'clientes' && state.clientes.length) { state.clienteDetalle = null; }
+      if (tab === 'elecciones' && !state.elecciones.length) cargarElecciones();
+      if (tab === 'transporte' && !state.transportes.length) cargarTransporte();
+      if (tab === 'veedores' && !state.veedores.length) cargarVeedores();
+      if (tab === 'gamificacion' && !state.puestosComando.length) cargarGamificacion();
+      if (tab === 'auditoria' && !state.auditoria.length) cargarAuditoria();
+      if (tab === 'sesiones') cargarSesiones();
+      render();
+    }
+
+    function salirAdmin() {
+      sessionStorage.removeItem('user_pw');
+      sessionStorage.removeItem('dia_d_session_id');
+      logoutGlobal();
+    }
+
+    function renderTabContent() {
+      switch (state.tab) {
+        case 'usuarios': return renderTabUsuarios();
+        case 'candidatos': return renderTabCandidatos();
+        case 'geografia': return renderTabGeografia();
+        case 'partidos': return renderTabPartidos();
+        case 'clientes': return renderTabClientes();
+        case 'aplicaciones': return renderTabAplicaciones();
+        case 'elecciones': return renderTabElecciones();
+        case 'transporte': return renderTabTransporte();
+        case 'veedores': return renderTabVeedores();
+        case 'gamificacion': return renderTabGamificacion();
+        case 'padron': return renderTabPadron();
+        case 'auditoria': return renderTabAuditoria();
+        case 'sesiones': return renderTabSesiones();
+        case 'mapa': return renderTabMapa();
+        default: return renderTabDashboard();
+      }
+    }
+
+    // ============ TAB: DASHBOARD ============
+    function renderTabDashboard() {
+      const s = state.stats || {};
+      const eg = state.estadisticasGenerales || {};
+      const totales = eg.totales || {};
+      const health = state.estadoSistema?.stats || {};
+      const sistemaOk = state.estadoSistema?.status === 'ok' && state.estadoSistema?.database === 'connected';
+      const metric = (...values) => {
+        const value = values.find(v => v !== undefined && v !== null && v !== '');
+        return value === undefined ? (state.cargando ? '…' : '—') : fmt(value);
+      };
+      return `
+        <div class="fade-in">
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p class="text-[10px] font-black uppercase tracking-[.18em] text-amber-700">Administración General</p><h2 class="mt-1 text-xl font-black text-slate-900">Control de la plataforma</h2><p class="mt-1 text-xs text-slate-500">Resumen operativo y accesos a los módulos del sistema.</p></div><div class="flex flex-wrap gap-2"><span class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700"><i class="fas fa-shield-check mr-1"></i>Sesión administrativa</span><span class="rounded-full border ${sistemaOk ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : state.estadoSistema ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-100 text-slate-600'} px-3 py-1 text-[10px] font-bold"><i class="fas ${sistemaOk ? 'fa-circle-check' : state.estadoSistema ? 'fa-triangle-exclamation' : 'fa-circle-notch fa-spin'} mr-1"></i>${sistemaOk ? 'Servidor y base de datos operativos' : state.estadoSistema ? 'Servidor con incidencias' : 'Comprobando servidor'}</span></div></div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="card">
+              <div class="stat-label text-amber-600">Electores</div>
+              <div class="stat-value">${metric(s.total_electores, eg.total_electores)}</div>
+              <div class="text-[10px] text-slate-400">Padrón 2026</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-green-600">Candidatos electos</div>
+              <div class="stat-value">${metric(health.candidatos_electos)}</div>
+              <div class="text-[10px] text-slate-400">Registros en el catálogo</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-blue-600">Vehículos</div>
+              <div class="stat-value">${metric(totales.vehiculos_flota)}</div>
+              <div class="text-[10px] text-slate-400">Flota activa</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-purple-600">Mesas</div>
+              <div class="stat-value">${metric(s.total_mesas, eg.total_mesas)}</div>
+              <div class="text-[10px] text-slate-400">Asignadas</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="card">
+              <div class="stat-label text-amber-600">Veedores</div>
+              <div class="stat-value">${metric(state.veedores.length || undefined)}</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-green-600">Dirigentes</div>
+              <div class="stat-value">${metric(s.total_dirigentes, totales.dirigentes)}</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-blue-600">Clientes</div>
+              <div class="stat-value">${metric(totales.clientes_activos)}</div>
+            </div>
+            <div class="card">
+              <div class="stat-label text-purple-600">Partidos</div>
+              <div class="stat-value">${metric(health.partidos)}</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="text-sm font-black mb-3"><i class="fas fa-chart-line mr-1 text-amber-500"></i>Acciones</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button onclick="switchTab('usuarios')" class="btn-secondary"><i class="fas fa-users mr-1"></i>Usuarios</button>
+              <button onclick="switchTab('clientes')" class="btn-secondary"><i class="fas fa-handshake mr-1"></i>Clientes CRM</button>
+              <button onclick="switchTab('candidatos')" class="btn-secondary"><i class="fas fa-user-tie mr-1"></i>Candidatos</button>
+              <button onclick="switchTab('partidos')" class="btn-secondary"><i class="fas fa-flag mr-1"></i>Partidos</button>
+              <button onclick="switchTab('auditoria')" class="btn-secondary"><i class="fas fa-clipboard-list mr-1"></i>Auditoría</button>
+              <button onclick="switchTab('aplicaciones')" class="btn-secondary"><i class="fas fa-th-large mr-1"></i>Aplicaciones</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ============ TAB: USUARIOS ============
+    function renderTabUsuarios() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-users mr-1 text-amber-500"></i> Gestión de Usuarios</h2>
+            <button onclick="nuevoUsuario()" class="btn-primary"><i class="fas fa-user-plus mr-1"></i>Nuevo Usuario</button>
+          </div>
+          ${state.usuarios.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Cédula</th><th>Nombre</th><th>Rol</th><th>Nivel</th><th>Estado</th><th>Último Acceso</th><th>Acciones</th></tr></thead>
+              <tbody>
+                ${state.usuarios.map(u => `
+                  <tr>
+                    <td class="font-bold">${u.cedula || ''}</td>
+                    <td>${u.nombre || ''}</td>
+                    <td><span class="badge badge-amber">${u.rol || 'N/A'}</span></td>
+                    <td><span class="badge badge-slate">${u.nivel_sistema || u.nivel || ''}</span></td>
+                    <td>${u.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+                    <td class="text-slate-400 text-[10px]">${u.ultimo_acceso || 'Nunca'}</td>
+                    <td>
+                      <button onclick="editarUsuario('${u.cedula}')" class="btn-secondary !px-2 !py-1 mr-1" title="Editar"><i class="fas fa-edit"></i></button>
+                      <button onclick="toggleUsuario('${u.cedula}', ${!u.activo})" class="btn-secondary !px-2 !py-1 mr-1" title="${u.activo ? 'Desactivar' : 'Activar'}"><i class="fas fa-power-off"></i></button>
+                      <button onclick="resetearPassword('${u.cedula}')" class="btn-secondary !px-2 !py-1" title="Resetear contraseña"><i class="fas fa-key"></i></button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando usuarios...</div>'}
+        </div>`;
+    }
+
+    async function cargarUsuarios() {
+      try {
+        const d = await apiGetRuta('/api/usuarios/lista');
+        state.usuarios = d.usuarios || d || [];
+        const r = await apiGetRuta('/api/usuarios/roles_disponibles').catch(() => ({ roles: [] }));
+        state.rolesDisponibles = r;
+        const p = await apiGetRuta('/api/permisos/lista').catch(() => ({ permisos: [] }));
+        state.permisos = p.permisos || [];
+        const s = await apiGetRuta('/api/sesiones').catch(() => ({ sesiones: [] }));
+        state.sesiones = s.sesiones || [];
+      } catch(e) { state.mensaje = 'Error: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    function nuevoUsuario() {
+      state.modal = 'nuevoUsuario';
+      render();
+    }
+
+    async function guardarUsuario() {
+      const ced = limpiarCedula(document.getElementById('f_cedula')?.value || '');
+      const nombre = document.getElementById('f_nombre')?.value || '';
+      const email = document.getElementById('f_email')?.value || '';
+      const password = document.getElementById('f_password')?.value || '';
+      const rol = document.getElementById('f_rol')?.value || '';
+      if (!ced || !nombre || !password) { alert('Complete cédula, nombre y contraseña.'); return; }
+      try {
+        const d = await apiPostRuta('/api/usuarios/crear', { cedula: ced, nombre, email, contrasena: password, roles: rol ? [{ rol }] : [] });
+        if (d.success) { alert('Usuario creado.'); state.modal = null; cargarUsuarios(); }
+        else alert('Error: ' + (d.error || 'No se pudo crear'));
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    function editarUsuario(ced) {
+      const u = state.usuarios.find(x => x.cedula === ced);
+      if (!u) return;
+      state.usuarioEditando = u;
+      state.modal = 'editarUsuario';
+      render();
+    }
+
+    async function toggleUsuario(ced, activo) {
+      try {
+        await apiPostRuta('/api/usuarios/toggle', { cedula: ced, activo: activo ? 1 : 0 });
+        await cargarUsuarios();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function resetearPassword(ced) {
+      const np = prompt('Nueva contraseña para ' + ced + ':');
+      if (!np) return;
+      try {
+        await apiPostRuta('/api/usuarios/resetear_password', { cedula: ced, contrasena: np });
+        alert('Contraseña actualizada.');
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============ TAB: CANDIDATOS ============
+    function renderTabCandidatos() {
+      const cb = state.candidatoBusqueda;
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-user-tie mr-1 text-amber-500"></i> Gestión de Candidatos</h2>
+            <button onclick="nuevoCandidato()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Nuevo Candidato</button>
+          </div>
+          <div class="card mb-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <select class="input" onchange="state.candidatoBusqueda.departamento=this.value">
+                <option value="">Departamento</option>
+                ${(state.departamentos || []).map(d => `<option value="${d.id}" ${cb.departamento == d.id ? 'selected' : ''}>${d.nombre}</option>`).join('')}
+              </select>
+              <select class="input" onchange="state.candidatoBusqueda.distrito=this.value">
+                <option value="">Distrito</option>
+                ${(state.distritos || []).map(d => `<option value="${d.id}" ${cb.distrito == d.id ? 'selected' : ''}>${d.nombre}</option>`).join('')}
+              </select>
+              <select class="input" onchange="state.candidatoBusqueda.partido=this.value">
+                <option value="">Partido</option>
+                ${(state.partidos || []).map(p => `<option value="${p.id}" ${cb.partido == p.id ? 'selected' : ''}>${p.sigla || p.nombre_oficial}</option>`).join('')}
+              </select>
+              <select class="input" onchange="state.candidatoBusqueda.cargo=this.value">
+                <option value="">Cargo</option>
+                <option value="intendente" ${cb.cargo === 'intendente' ? 'selected' : ''}>Intendente</option>
+                <option value="concejal" ${cb.cargo === 'concejal' ? 'selected' : ''}>Concejal</option>
+              </select>
+            </div>
+          </div>
+          ${state.candidatosAgrupados.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Candidato</th><th>Cargo</th><th>Lista</th><th>Partido</th><th>Depto</th><th>Distrito</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                ${state.candidatosAgrupados.map(c => `
+                  <tr>
+                    <td class="font-bold">${c.candidato_nombre || c.nombre || ''}</td>
+                    <td><span class="badge badge-amber">${c.tipo_cargo || c.cargo || 'N/A'}</span></td>
+                    <td>${c.lista_nombre || c.lista_nro || ''}</td>
+                    <td>${c.sigla || ''}</td>
+                    <td>${c.departamento_nombre || c.departamento_id || ''}</td>
+                    <td>${c.distrito_nombre || c.distrito_id || ''}</td>
+                    <td>${c.estado === 'electo' ? '<span class="badge badge-green">Electo</span>' : '<span class="badge badge-slate">' + (c.estado || '') + '</span>'}</td>
+                    <td>
+                      <button onclick="toggleCandidato(${c.id}, '${c.estado !== 'electo'}')" class="btn-secondary !px-2 !py-1" title="Toggle"><i class="fas fa-power-off"></i></button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando candidatos...</div>'}
+        </div>`;
+    }
+
+    async function cargarCandidatos() {
+      try {
+        const params = new URLSearchParams();
+        if (state.candidatoBusqueda.departamento) params.set('departamento', state.candidatoBusqueda.departamento);
+        if (state.candidatoBusqueda.distrito) params.set('distrito', state.candidatoBusqueda.distrito);
+        if (state.candidatoBusqueda.partido) params.set('partido', state.candidatoBusqueda.partido);
+        if (state.candidatoBusqueda.cargo) params.set('cargo', state.candidatoBusqueda.cargo);
+        const d = await apiGetRuta('/api/candidatos_electos/agrupados' + (params.toString() ? '?' + params.toString() : ''));
+        state.candidatosAgrupados = d.candidatos || d || [];
+        const dep = await apiGet('departamentos').catch(() => ({ departamentos: [] }));
+        state.departamentos = dep.departamentos || dep || [];
+      } catch(e) { state.candidatosAgrupados = []; state.mensaje = 'No se pudieron cargar los candidatos: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    async function toggleCandidato(id, activar) {
+      try {
+        const d=await apiPostRuta('/api/candidatos_electos/toggle', { candidato_id: id, activo: activar ? 1 : 0, cedula_auth:state.usuario?.cedula, password_auth:sessionStorage.getItem('user_pw')||'' });
+        if(!d.success){alert(d.detail||d.error||'No se pudo actualizar');return;}
+        await cargarCandidatos();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    async function nuevoCandidato() {
+      if(!state.partidos.length)await cargarPartidos();
+      if(!state.departamentos.length){const d=await apiGetRuta('/api/departamentos').catch(()=>({departamentos:[]}));state.departamentos=d.departamentos||[];}
+      if(!state.distritos.length){const d=await apiGetRuta('/api/distritos').catch(()=>({distritos:[]}));state.distritos=d.distritos||[];}
+      state.modal='nuevoCandidato';render();
+    }
+    async function guardarCandidato() {
+      const val=id=>document.getElementById(id)?.value?.trim()||'';
+      const body={nombre:val('f_cand_nombre'),cargo:val('f_cand_cargo'),partido_id:val('f_cand_partido'),departamento_id:val('f_cand_depto')||null,distrito_id:val('f_cand_distrito')||null,lista_nro:val('f_cand_lista')||0,lista_nombre:val('f_cand_lista_nombre'),orden:val('f_cand_orden')||0,orden_electo:val('f_cand_orden')||0,periodo_electoral:val('f_cand_periodo')||'2026-2030',cliente_cedula:val('f_cand_cliente')||null,cedula_auth:state.usuario?.cedula,password_auth:sessionStorage.getItem('user_pw')||''};
+      if(!body.nombre||!body.partido_id){alert('Nombre y partido son obligatorios.');return;}
+      try{const d=await apiPostRuta('/api/candidatos_electos/crear',body);if(!d.success){alert(d.detail||d.error||'No se pudo crear el candidato');return;}state.modal=null;await cargarCandidatos();alert('Candidato creado y registrado como electo.');}
+      catch(e){alert('Error creando candidato: '+e.message);}
+    }
+
+    // ============ TAB: GEOGRAFIA ============
+    function renderTabGeografia() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-map-marked-alt mr-1 text-amber-500"></i> Geografía Territorial</h2>
+          </div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="card">
+              <h3 class="text-sm font-black mb-2"><i class="fas fa-building mr-1"></i> Unidades Organizacionales</h3>
+              ${state.unidades.length ? `<div class="max-h-96 overflow-y-auto">
+                <table class="admin-table">
+                  <thead><tr><th>Número</th><th>Nombre</th><th>Partido</th></tr></thead>
+                  <tbody>${state.unidades.map(u => `
+                    <tr>
+                      <td class="font-bold">${u.numero || ''}</td>
+                      <td>${u.nombre || ''}</td>
+                      <td><span class="badge badge-slate">${u.partido_id || ''}</span></td>
+                    </tr>
+                  `).join('')}</tbody>
+                </table>
+              </div>` : '<div class="text-slate-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</div>'}
+            </div>
+            <div class="card">
+              <h3 class="text-sm font-black mb-2"><i class="fas fa-flag mr-1"></i> Circunscripciones</h3>
+              ${state.circunscripciones.length ? `<div class="max-h-96 overflow-y-auto">
+                <table class="admin-table">
+                  <thead><tr><th>Nombre</th><th>Tipo</th><th>Bancas</th><th>Suplentes</th></tr></thead>
+                  <tbody>${state.circunscripciones.map(c => `
+                    <tr>
+                      <td class="font-bold">${c.nombre || ''}</td>
+                      <td><span class="badge badge-slate">${c.tipo || ''}</span></td>
+                      <td>${c.cantidad_bancas || 0}</td>
+                      <td>${c.cantidad_suplentes || 0}</td>
+                    </tr>
+                  `).join('')}</tbody>
+                </table>
+              </div>` : '<div class="text-slate-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</div>'}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function cargarGeografia() {
+      try {
+        const u = await apiGetRuta('/api/partido/unidades');
+        state.unidades = u.unidades || [];
+        const c = await apiGet('circunscripciones_api');
+        state.circunscripciones = c.circunscripciones || [];
+      } catch(e) { state.unidades = []; state.circunscripciones = []; state.mensaje = 'No se pudo cargar la geografía: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    // ============ TAB: PARTIDOS ============
+    function renderTabPartidos() {
+      if (state.partidoSeleccionado) return renderDetallePartido(state.partidoSeleccionado);
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-flag mr-1 text-amber-500"></i> Gestión de Partidos</h2>
+            <div class="flex gap-2"><button onclick="editarPlantillaWhatsappVotacion('general',0)" class="btn-secondary"><i class="fab fa-whatsapp mr-1"></i>Mensaje institucional</button><button onclick="nuevoPartido()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Nuevo Partido</button></div>
+          </div>
+          ${state.partidos.length ? `
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            ${state.partidos.map(p => `
+              <div class="card">
+                <div class="flex items-center gap-3 mb-2">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm" style="background:${p.color_principal_hex || p.color_partido || '#334155'}">
+                    ${p.sigla ? p.sigla.substring(0,2).toUpperCase() : '??'}
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm">${p.nombre_oficial || ''}</div>
+                    <div class="text-[10px] text-slate-400">${p.sigla || ''} · Lista ${p.numero_lista || 'N/A'}</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="verPartido(${p.id})" class="btn-secondary !px-2 !py-1 flex-1"><i class="fas fa-eye mr-1"></i>Ver</button>
+                  <button onclick="editarPartido(${p.id})" class="btn-secondary !px-2 !py-1 flex-1"><i class="fas fa-edit mr-1"></i>Editar</button>
+                </div>
+                <button onclick="editarPlantillaWhatsappVotacion('partido',${p.id})" class="btn-secondary w-full mt-2 !px-2 !py-1"><i class="fab fa-whatsapp mr-1"></i>Mensaje de campaña</button>
+              </div>
+            `).join('')}
+          </div>
+          ` : '<div class="card text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando partidos...</div>'}
+        </div>`;
+    }
+
+    async function cargarPartidos() {
+      try {
+        const d = await apiGetRuta('/api/partidos');
+        state.partidos = d.partidos || d || [];
+      } catch(e) { state.partidos = []; state.mensaje = 'No se pudieron cargar los partidos: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    function renderDetallePartido(p) {
+      const listas = p.listas || [];
+      return `<div class="fade-in space-y-3"><button onclick="state.partidoSeleccionado=null;render()" class="btn-secondary"><i class="fas fa-arrow-left mr-1"></i>Volver a partidos</button>
+        <section class="card"><div class="flex items-center gap-3"><span class="w-12 h-12 rounded-xl text-white flex items-center justify-center font-black" style="background:${escapeHtml(p.color_principal_hex||'#334155')}">${escapeHtml((p.sigla||'??').slice(0,2))}</span><div><h2 class="text-lg font-black">${escapeHtml(p.nombre_oficial)}</h2><p class="text-xs text-slate-500">${escapeHtml(p.codigo_partido||'')} · ${escapeHtml(p.sigla||'')} · Lista ${escapeHtml(p.numero_lista||'—')}</p></div><button onclick="editarPartido(${p.id})" class="btn-secondary ml-auto"><i class="fas fa-edit mr-1"></i>Editar</button><button onclick="eliminarPartido(${p.id})" class="btn-danger"><i class="fas fa-trash mr-1"></i>Eliminar</button></div><p class="text-xs text-slate-600 mt-3">${escapeHtml(p.descripcion_corta||'Sin descripción cargada')}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-xs"><span>Estado: ${escapeHtml(p.estado_juridico||'—')}</span><span>Ámbito: ${escapeHtml(p.ambito||'—')}</span><span>Distrito: ${escapeHtml(p.distrito_id||'—')}</span><span>Visible en boleta: ${p.visible_en_boleta?'Sí':'No'}</span></div></section>
+        <section class="card"><h3 class="font-black mb-2">Listas y candidatos</h3>${listas.length?listas.map(l=>`<div class="border rounded-xl p-3 mb-2"><strong class="text-xs">Lista ${escapeHtml(l.numero_lista||'')} · ${escapeHtml(l.nombre_lista||'')}</strong><div class="mt-2 space-y-1">${(l.candidatos||[]).map(c=>`<div class="text-xs text-slate-600">${escapeHtml(c.candidato_origen||c.nombre||'Candidato')} · ${escapeHtml(c.cargo_origen||c.cargo||'')}</div>`).join('')||'<span class="text-xs text-slate-400">Sin candidatos cargados</span>'}</div></div>`).join(''):'<p class="text-xs text-slate-400">No hay listas activas asociadas a este partido.</p>'}</section>
+      </div>`;
+    }
+
+    async function verPartido(id) {
+      try { const d=await apiGetRuta(`/api/partidos/${id}`); if(!d.success){alert(d.error||'No se encontró el partido');return;} state.partidoSeleccionado=d.partido; render(); }
+      catch(e){alert('Error cargando el partido: '+e.message);}
+    }
+    function nuevoPartido() { state.modal='nuevoPartido'; state.modalData=null; render(); }
+    function editarPartido(id) {
+      const p=state.partidoSeleccionado?.id===id?state.partidoSeleccionado:state.partidos.find(x=>x.id===id);
+      if(!p)return; state.modal='editarPartido'; state.modalData=p; render();
+    }
+    async function guardarPartido() {
+      const val=id=>document.getElementById(id)?.value?.trim()||'';
+      const edit=state.modal==='editarPartido';
+      const body={codigo_partido:val('f_partido_codigo').toUpperCase(),nombre_oficial:val('f_partido_nombre'),sigla:val('f_partido_sigla'),color_principal_hex:val('f_partido_color')||'#333333',numero_lista:val('f_partido_lista')||null,ambito:val('f_partido_ambito')||'Nacional',descripcion_corta:val('f_partido_descripcion')};
+      if(!body.nombre_oficial||(!edit&&!body.codigo_partido)){alert('Código y nombre oficial son obligatorios.');return;}
+      if(edit)body.id=state.modalData.id;
+      try{const d=await apiPost(edit?'editar_partido':'crear_partido',body);if(!d.success){alert(d.detail||d.error||'No se pudo guardar el partido');return;}state.modal=null;state.modalData=null;state.partidoSeleccionado=null;await cargarPartidos();alert(edit?'Partido actualizado.':'Partido creado.');}
+      catch(e){alert('Error guardando partido: '+e.message);}
+    }
+    async function eliminarPartido(id) {
+      if(!confirm('¿Eliminar este partido? Si tiene listas, candidatos o resultados asociados, el borrado será bloqueado.'))return;
+      try{const d=await apiPostRuta(`/api/partidos/${id}/eliminar`,{cedula_auth:state.usuario?.cedula,password_auth:sessionStorage.getItem('user_pw')||''});if(!d.success){alert(d.error||'No se pudo eliminar.');return;}state.partidoSeleccionado=null;await cargarPartidos();alert('Partido eliminado.');}
+      catch(e){alert('Error eliminando partido: '+e.message);}
+    }
+
+    // ============ TAB: CLIENTES CRM ============
+    function renderTabClientes() {
+      if (state.clienteDetalle) return renderDetalleCliente(state.clienteDetalle);
+      const term = (state.clienteBusqueda || '').trim().toLocaleLowerCase('es');
+      const filtered = state.clientes.filter(c => {
+        const matchesText = !term || [c.cedula, c.nombre, c.candidato_nombre, c.partido_sigla, c.email, c.telefono].some(v => String(v || '').toLocaleLowerCase('es').includes(term));
+        const matchesState = state.clienteEstado === 'todos' || (state.clienteEstado === 'activos' ? !!c.activo : !c.activo);
+        return matchesText && matchesState;
+      });
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-handshake mr-1 text-amber-500"></i> Clientes CRM</h2>
+            <button onclick="nuevoCliente()" class="btn-primary"><i class="fas fa-plus mr-1"></i>Dar de alta</button>
+          </div>
+          <div class="card mb-3 grid grid-cols-1 md:grid-cols-[1fr_180px_auto] gap-2 items-center">
+            <input class="input" value="${escapeHtml(state.clienteBusqueda)}" placeholder="Buscar por nombre, cédula, partido, email o teléfono" oninput="state.clienteBusqueda=this.value;render()">
+            <select class="input" onchange="state.clienteEstado=this.value;render()">
+              <option value="todos" ${state.clienteEstado==='todos'?'selected':''}>Todos los estados</option>
+              <option value="activos" ${state.clienteEstado==='activos'?'selected':''}>Activos</option>
+              <option value="inactivos" ${state.clienteEstado==='inactivos'?'selected':''}>Bloqueados</option>
+            </select>
+            <span class="text-xs text-slate-500">${fmt(filtered.length)} de ${fmt(state.clientes.length)} clientes</span>
+          </div>
+          ${filtered.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Cédula</th><th>Cliente</th><th>Tipo / categoría</th><th>Partido</th><th>Equipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                ${filtered.map(c => `
+                  <tr>
+                    <td class="font-bold">${escapeHtml(c.cedula || '')}</td>
+                    <td><div class="font-bold">${escapeHtml(c.nombre || '')}</div><div class="text-[10px] text-slate-400">${escapeHtml(c.candidato_cargo || c.candidato_nombre || '')}</div></td>
+                    <td><span class="badge badge-amber">${escapeHtml(c.tipo || 'N/A')}</span> <span class="text-slate-500">${escapeHtml(c.categoria || '')}</span></td>
+                    <td>${escapeHtml(c.partido_sigla || 'Sin partido')}</td>
+                    <td class="text-[10px]">${fmt(c.total_candidatos||0)} cand. · ${fmt(c.total_dirigentes||0)} dirig. · ${fmt(c.total_votos||0)} votos</td>
+                    <td>${c.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+                    <td>
+                      <button onclick="verCliente('${c.cedula}')" class="btn-secondary !px-2 !py-1 mr-1" title="Ver ficha"><i class="fas fa-eye"></i></button>
+                      <button onclick="editarCliente('${c.cedula}')" class="btn-secondary !px-2 !py-1 mr-1" title="Editar"><i class="fas fa-edit"></i></button>
+                      <button onclick="toggleCliente('${c.cedula}')" class="btn-secondary !px-2 !py-1" title="${c.activo?'Bloquear':'Desbloquear'}"><i class="fas fa-${c.activo?'lock':'unlock'}"></i></button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : state.clientes.length ? '<div class="card text-center text-slate-500 py-8">No hay clientes que coincidan con el filtro.</div>' : '<div class="card text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando clientes...</div>'}
+        </div>`;
+    }
+
+    function renderDetalleCliente(c) {
+      return `<div class="fade-in space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2"><div><button onclick="state.clienteDetalle=null;render()" class="btn-secondary mb-2"><i class="fas fa-arrow-left mr-1"></i>Volver a clientes</button><h2 class="text-xl font-black">${escapeHtml(c.nombre||'Cliente')} ${escapeHtml(c.apellido||'')}</h2><p class="text-xs text-slate-500">Cédula ${escapeHtml(c.cedula)} · ${escapeHtml(c.tipo||'')} · ${escapeHtml(c.partido_sigla||'Sin partido')}</p></div><div class="flex gap-2"><button onclick="editarCliente('${c.cedula}')" class="btn-secondary"><i class="fas fa-edit mr-1"></i>Editar</button><button onclick="toggleCliente('${c.cedula}')" class="btn-secondary"><i class="fas fa-${c.activo?'lock':'unlock'} mr-1"></i>${c.activo?'Bloquear':'Desbloquear'}</button><button onclick="eliminarCliente('${c.cedula}')" class="btn-danger"><i class="fas fa-trash mr-1"></i>Eliminar</button></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2"><div class="card"><div class="stat-label">Votos registrados</div><div class="stat-value">${fmt(c.total_posibles)}</div></div><div class="card"><div class="stat-label">Dirigentes</div><div class="stat-value">${fmt(c.dirigentes?.length)}</div></div><div class="card"><div class="stat-label">Candidatos</div><div class="stat-value">${fmt(c.candidatos?.length)}</div></div><div class="card"><div class="stat-label">Movilidad</div><div class="stat-value">${fmt(c.total_transportes)} <span class="text-xs">veh. · ${fmt(c.total_solicitudes)} sol.</span></div></div></div>
+        <div class="grid md:grid-cols-2 gap-3"><section class="card"><h3 class="font-black mb-2">Datos y cobertura</h3><dl class="grid grid-cols-2 gap-2 text-xs"><dt class="text-slate-500">Email</dt><dd>${escapeHtml(c.email||'—')}</dd><dt class="text-slate-500">Teléfono</dt><dd>${escapeHtml(c.telefono||'—')}</dd><dt class="text-slate-500">Categoría</dt><dd>${escapeHtml(c.categoria||'—')}</dd><dt class="text-slate-500">Ubicación</dt><dd>${escapeHtml([c.distrito_nombre,c.departamento_nombre].filter(Boolean).join(', ')||'—')}</dd><dt class="text-slate-500">Candidato / cargo</dt><dd>${escapeHtml([c.candidato_nombre,c.candidato_cargo].filter(Boolean).join(' · ')||'—')}</dd><dt class="text-slate-500">Local</dt><dd>${escapeHtml(c.locales||'—')}</dd><dt class="text-slate-500">Servicio</dt><dd>${escapeHtml([c.tipo_servicio,c.fecha_inicio_servicio,c.fecha_fin_servicio].filter(Boolean).join(' · ')||'—')}</dd></dl></section>
+        <section class="card"><h3 class="font-black mb-2">Candidatos asociados</h3>${c.candidatos?.length?`<ul class="space-y-2 text-xs">${c.candidatos.map(x=>`<li class="flex justify-between border-b pb-1"><span>${escapeHtml(x.nombre)} · ${escapeHtml(x.cargo||'')}</span><span>Lista ${escapeHtml(x.lista_nro||'—')} · ${x.activo?'Activo':'Inactivo'}</span></li>`).join('')}</ul>`:'<p class="text-xs text-slate-400">Sin candidatos asociados.</p>'}</section></div>
+        <section class="card"><h3 class="font-black mb-2">Equipo de dirigentes</h3>${c.dirigentes?.length?`<div class="overflow-x-auto"><table class="admin-table"><thead><tr><th>Nombre</th><th>Cédula</th><th>Función</th><th>Contacto</th><th>Estado</th></tr></thead><tbody>${c.dirigentes.map(x=>`<tr><td>${escapeHtml(x.nombre)}</td><td>${escapeHtml(x.cedula)}</td><td>${escapeHtml(x.tipo||'')}</td><td>${escapeHtml(x.telefono||x.email||'—')}</td><td>${x.activo?'Activo':'Inactivo'}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-xs text-slate-400">Sin dirigentes vinculados.</p>'}</section>
+        <div class="text-right"><button onclick="eliminarCliente('${c.cedula}')" class="btn-danger"><i class="fas fa-trash mr-1"></i>Eliminar definitivamente</button></div>
+      </div>`;
+    }
+
+    async function cargarClientes() {
+      try {
+        const d = await apiPost('admin_clientes_lista', {});
+        state.clientes = d.clientes || d || [];
+      } catch(e) { state.mensaje = 'No se pudo cargar Clientes CRM: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    async function verCliente(ced) {
+      try {
+        const d = await apiPost('admin_cliente_detalle', {cedula: ced});
+        if (!d.success) { alert(d.detail || d.error || 'No se pudo cargar el detalle.'); return; }
+        state.clienteDetalle = d.cliente;
+        render();
+      } catch(e) { alert('Error cargando cliente: ' + e.message); }
+    }
+
+    async function nuevoCliente() {
+      if (!state.partidos.length) await cargarPartidos();
+      if (!state.departamentos.length) {
+        const d = await apiGetRuta('/api/departamentos').catch(() => ({departamentos:[]}));
+        state.departamentos = d.departamentos || [];
+      }
+      if (!state.distritos.length) {
+        const d = await apiGetRuta('/api/distritos').catch(() => ({distritos:[]}));
+        state.distritos = d.distritos || [];
+      }
+      state.modal = 'nuevoCliente'; state.modalData = null; render();
+    }
+    function editarCliente(ced) {
+      const c = state.clienteDetalle?.cedula === ced ? state.clienteDetalle : state.clientes.find(x => x.cedula === ced);
+      if (!c) return;
+      if (!state.partidos.length) cargarPartidos();
+      if (!state.departamentos.length) apiGetRuta('/api/departamentos').then(d=>{state.departamentos=d.departamentos||[];render();}).catch(()=>{});
+      if (!state.distritos.length) apiGetRuta('/api/distritos').then(d=>{state.distritos=d.distritos||[];render();}).catch(()=>{});
+      state.modalData = c; state.modal = 'editarCliente'; render();
+    }
+    async function guardarCliente() {
+      const value = id => document.getElementById(id)?.value?.trim() || '';
+      const isEdit = state.modal === 'editarCliente';
+      const body = {cedula: isEdit ? state.modalData.cedula : value('f_cliente_cedula'), nombre:value('f_cliente_nombre'),
+        apellido:value('f_cliente_apellido'), email:value('f_cliente_email'), telefono:value('f_cliente_telefono'),
+        tipo:value('f_cliente_tipo'), categoria:value('f_cliente_categoria'), partido_id:value('f_cliente_partido')||null,
+        departamento_id:value('f_cliente_departamento')||null, distrito_id:value('f_cliente_distrito')||null,
+        unidad_organizacion_id:value('f_cliente_unidad')||null,
+        candidato_nombre:value('f_cliente_candidato'), candidato_cargo:value('f_cliente_cargo'), locales:value('f_cliente_locales')};
+      if (!body.nombre || !body.tipo || !body.categoria || (!isEdit && (!body.cedula || !value('f_cliente_password')))) {
+        alert('Complete cédula, nombre, tipo, categoría y contraseña para el alta.'); return;
+      }
+      const action = isEdit ? 'admin_cliente_editar' : 'crear_cliente';
+      if (!isEdit) body.contrasena = value('f_cliente_password');
+      try {
+        const d = await apiPost(action, body);
+        if (!d.success) { alert(d.detail || d.error || 'No se pudo guardar el cliente.'); return; }
+        state.modal = null; state.modalData = null;
+        await cargarClientes();
+        if (isEdit) await verCliente(body.cedula);
+        alert(isEdit ? 'Cliente actualizado.' : 'Cliente dado de alta.');
+      } catch(e) { alert('Error guardando cliente: ' + e.message); }
+    }
+    async function toggleCliente(ced) {
+      const cliente = state.clientes.find(x => x.cedula === ced) || state.clienteDetalle;
+      const verb = cliente?.activo ? 'bloquear' : 'desbloquear';
+      if (!confirm(`¿Confirmas ${verb} al cliente ${ced}?`)) return;
+      try {
+        const d = await apiPost('toggle_cliente', {cedula:ced});
+        if (!d.success) { alert(d.detail || d.error || 'No se pudo cambiar el estado.'); return; }
+        if (state.clienteDetalle?.cedula === ced) state.clienteDetalle.activo = d.activo;
+        await cargarClientes();
+        if (state.clienteDetalle?.cedula === ced) await verCliente(ced);
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+    async function eliminarCliente(ced) {
+      if (!confirm(`¿Eliminar definitivamente al cliente ${ced}? Si tiene vínculos o actividad, el sistema bloqueará el borrado.`)) return;
+      try {
+        const d = await apiPostRuta(`/api/clientes/${encodeURIComponent(ced)}/eliminar`, {cedula_auth:state.usuario?.cedula,password_auth:sessionStorage.getItem('user_pw')||''});
+        if (!d.success) { alert(d.error || 'No se pudo eliminar.'); return; }
+        state.clienteDetalle = null; await cargarClientes(); alert('Cliente eliminado.');
+      } catch(e) { alert('Error eliminando cliente: ' + e.message); }
+    }
+
+    const APLICACIONES_DIA_D = [
+      {grupo:'Operación electoral',items:[['Padrón y consulta de mesa','padron_unificado.html','Consulta y gestión del padrón'],['Consulta pública de mesa','consulta_mesa.html','Búsqueda pública del lugar de votación'],['Votación y control','votacion.html','Registro y seguimiento de jornada'],['Escrutinio general','escrutinio.html','Resultados y carga de actas'],['Escrutinio de intendentes','escrutinio_intendentes.html','Resultados municipales por cargo'],['Anomalías','anomalias.html','Registro y revisión de incidencias'],['Asistencia','asistencia.html','Control de asistencia operativa'],['Calculadora D’Hondt','dhondt.html','Proyección de bancas por sistema D’Hondt']]},
+      {grupo:'Campaña y territorio',items:[['Panel del cliente','panel_cliente.html','Resumen, mapa, dirigentes, solicitudes y transporte'],['Panel del dirigente','dirigente.html','CRM, electores y coordinación territorial'],['Panel del candidato','candidato.html','Perfil público y herramientas de campaña'],['Candidatos','candidatos.html','Directorio de candidaturas'],['Gestión territorial','gestion_territorial.html','Organización política y cobertura territorial'],['Panel distrital','panel_distrital.html','Seguimiento de operaciones por distrito'],['Encuesta de intención','encuesta_voto.html','Captura de intención de voto'],['Ubicación compartida','ubicacion_votante_compartida.html','Vista compartida de ubicación y destino'],['Ranking','ranking.html','Clasificación y gamificación']]},
+      {grupo:'Movilidad, acceso y soporte',items:[['Gestión de transporte','transporte.html','Flota, asignaciones, viajes y gastos'],['App del conductor','conductor.html','Tramos, navegación y estado del traslado'],['Solicitud de recogida','mi_recogida.html','Seguimiento del traslado solicitado'],['Veedores','veedores.html','Operación de veeduría y mesas'],['Registro QR','registro_qr.html','Registro y validación por código'],['PWA móvil','App.html','Acceso móvil al sistema electoral'],['Administración de usuarios','admin_usuarios.html','Cuentas, roles y acceso'],['Roles y permisos','roles.html','Consulta del modelo de perfiles'],['Descargas','descargas.html','Recursos y aplicaciones móviles']]}
+    ];
+    const APPS_INTEGRADAS_ADMIN = new Set(['admin_general.html','admin_usuarios.html','candidatos.html','transporte.html','veedores.html','padron_unificado.html','escrutinio.html','escrutinio_intendentes.html']);
+    function renderTabAplicaciones() {
+      return `<div class="fade-in"><div class="mb-4"><h2 class="text-lg font-black"><i class="fas fa-th-large mr-1 text-amber-500"></i> Aplicaciones DIA D MASTER</h2><p class="text-xs text-slate-500 mt-1">Índice de herramientas disponibles en este proyecto. “Módulo independiente” abre su aplicación; “Integrado” indica que también tiene acceso desde este panel.</p></div>
+        ${APLICACIONES_DIA_D.map(([grupo,items])=>`<section class="card mb-3"><h3 class="font-black mb-3">${grupo}</h3><div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-2">${items.map(([nombre,url,desc])=>`<a href="${url}" class="rounded-xl border border-slate-200 p-3 hover:border-amber-400 hover:bg-amber-50/40"><div class="flex justify-between items-start gap-2"><strong class="text-xs">${nombre}</strong><span class="badge ${APPS_INTEGRADAS_ADMIN.has(url)?'badge-green':'badge-slate'}">${APPS_INTEGRADAS_ADMIN.has(url)?'Integrado':'Módulo independiente'}</span></div><p class="text-[10px] text-slate-500 mt-1">${desc}</p><span class="text-[10px] text-amber-700 font-bold mt-2 inline-block">Abrir aplicación <i class="fas fa-arrow-up-right-from-square ml-1"></i></span></a>`).join('')}</div></section>`).join('')}
+        <div class="card border-amber-200 bg-amber-50/50 mb-3"><h3 class="text-sm font-black">Pendiente de integración unificada</h3><p class="text-xs text-slate-600 mt-1">Las aplicaciones independientes ya existen y se abren desde aquí; mantienen su propio panel. Unificarlas requiere flujos específicos y validación de permisos por módulo.</p></div>
+        <div class="card"><h3 class="text-sm font-black">Funciones de la App Conductor aún pendientes</h3><ul class="mt-2 space-y-1 text-xs text-slate-600"><li>• Geocerca para completar tramos automáticamente.</li><li>• Push con alerta audible y servicio Android en segundo plano.</li><li>• Unificar el mapa de tramos y dibujar rutas calculadas.</li><li>• Modo sin conexión, cola de sincronización y pantalla activa.</li><li>• Geocodificación de respaldo para votantes sin GPS.</li><li>• Empaquetado y publicación del APK Android.</li></ul><p class="text-[10px] text-slate-400 mt-2">La incidencia de elector ausente/rechazo, el panel de proximidad GPS y compartir ubicación más destino sin mostrar trayecto ya están documentados como implementados en la hoja de ruta.</p></div>
+      </div>`;
+    }
+
+    // ============ TAB: ELECCIONES ============
+    function renderTabElecciones() {
+      const estados = { previa: ['badge-amber', 'Planificada'], planificada: ['badge-amber', 'Planificada'], activa: ['badge-green', 'Activa'], finalizada: ['badge-slate', 'Finalizada'], bloqueada: ['badge-red', 'Bloqueada'] };
+      return `
+        <div class="fade-in">
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div><p class="text-[10px] font-black uppercase tracking-widest text-amber-700">Calendario y estructura</p><h2 class="text-xl font-black"><i class="fas fa-vote-yea mr-1 text-amber-500"></i> Elecciones</h2><p class="mt-1 max-w-2xl text-xs text-slate-500">Cada elección general o municipal puede tener procesos internos propios por partido. Crea el calendario principal y agrega las internas que correspondan.</p></div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="inline-flex rounded-xl border border-slate-200 bg-white p-1" role="group" aria-label="Formato de elecciones">
+                <button onclick="cambiarVistaElecciones('tarjetas')" aria-pressed="${state.eleccionesVista === 'tarjetas'}" class="rounded-lg px-3 py-2 text-xs font-bold ${state.eleccionesVista === 'tarjetas' ? 'bg-slate-900 text-amber-300' : 'text-slate-600 hover:bg-slate-100'}"><i class="fas fa-th-large mr-1"></i>Tarjetas</button>
+                <button onclick="cambiarVistaElecciones('lista')" aria-pressed="${state.eleccionesVista === 'lista'}" class="rounded-lg px-3 py-2 text-xs font-bold ${state.eleccionesVista === 'lista' ? 'bg-slate-900 text-amber-300' : 'text-slate-600 hover:bg-slate-100'}"><i class="fas fa-list mr-1"></i>Lista</button>
+              </div>
+              <button onclick="nuevaEleccion()" class="btn-primary" ${state.eleccionProcesando ? 'disabled' : ''}><i class="fas fa-plus mr-1"></i>Nueva elección</button>
+            </div>
+          </div>
+          ${state.elecciones.length ? `
+          ${state.eleccionesVista === 'lista' ? `<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm"><table class="admin-table"><thead><tr><th>Elección</th><th>Tipo</th><th>Período</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${state.elecciones.map(e => { const estado = estados[e.estado] || ['badge-slate', e.estado || 'Sin estado']; return `<tr><td class="font-bold">${escapeHtml(e.nombre || '')}</td><td>${escapeHtml(e.tipo_nombre || '—')}</td><td>${escapeHtml(e.periodo || '—')}</td><td>${escapeHtml(e.fecha_eleccion || 'Sin definir')}</td><td><span class="badge ${estado[0]}">${escapeHtml(estado[1])}</span> <span class="text-[10px] text-slate-500">${Number(e.activo) ? 'Habilitada' : 'Bloqueada'}</span></td><td><div class="flex flex-wrap gap-1"><button onclick="duplicarEleccion(${Number(e.id)})" class="btn-secondary !px-2 !py-1" title="Duplicar"><i class="fas fa-copy"></i></button><button onclick="toggleEleccion(${Number(e.id)})" class="btn-secondary !px-2 !py-1" title="${Number(e.activo) ? 'Bloquear' : 'Habilitar'}"><i class="fas fa-${Number(e.activo) ? 'lock' : 'unlock'}"></i></button><button onclick="eliminarEleccion(${Number(e.id)})" class="btn-danger !px-2 !py-1" title="Eliminar"><i class="fas fa-trash"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>` : `
+          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+            ${state.elecciones.map(e => `
+              <div class="card flex flex-col">
+                <div class="mb-3 flex items-start justify-between gap-2"><div><div class="font-bold text-sm">${escapeHtml(e.nombre || '')}</div><div class="text-[10px] text-slate-400 mt-1">${escapeHtml(e.tipo_nombre || 'Tipo no definido')}</div></div><span class="badge ${(estados[e.estado] || ['badge-slate'])[0]}">${escapeHtml((estados[e.estado] || [null, e.estado || 'Sin estado'])[1])}</span></div>
+                <div class="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-xs"><div><span class="block text-[9px] uppercase text-slate-400">Período</span><strong>${escapeHtml(e.periodo || '—')}</strong></div><div><span class="block text-[9px] uppercase text-slate-400">Fecha</span><strong>${escapeHtml(e.fecha_eleccion || 'Sin definir')}</strong></div><div><span class="block text-[9px] uppercase text-slate-400">Estado operativo</span><strong>${Number(e.activo) ? 'Habilitada' : 'Bloqueada'}</strong></div><div><span class="block text-[9px] uppercase text-slate-400">Proceso</span><strong>${/interna/i.test(e.tipo_nombre || e.nombre || '') ? 'Interna partidaria' : 'Elección general'}</strong></div></div>
+                <div class="mt-auto flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+                  <button onclick="duplicarEleccion(${Number(e.id)})" class="btn-secondary !px-2.5 !py-1.5" title="Crear copia como borrador"><i class="fas fa-copy mr-1"></i>Duplicar</button>
+                  <button onclick="toggleEleccion(${Number(e.id)})" class="btn-secondary !px-2.5 !py-1.5"><i class="fas fa-${Number(e.activo) ? 'lock' : 'unlock'} mr-1"></i>${Number(e.activo) ? 'Bloquear' : 'Habilitar'}</button>
+                  <button onclick="eliminarEleccion(${Number(e.id)})" class="btn-danger !px-2.5 !py-1.5" title="Eliminar si no tiene datos vinculados"><i class="fas fa-trash mr-1"></i>Eliminar</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          `} ` : '<div class="card text-center text-slate-500 py-8"><i class="fas fa-calendar-plus mb-2 text-2xl text-amber-500"></i><p class="font-bold">Todavía no hay elecciones cargadas.</p><p class="mt-1 text-xs">Crea una elección general, municipal o interna partidaria.</p></div>'}
+        </div>`;
+    }
+
+    function cambiarVistaElecciones(vista) {
+      if (!['tarjetas', 'lista'].includes(vista)) return;
+      state.eleccionesVista = vista;
+      sessionStorage.setItem('admin_elecciones_vista', vista);
+      render();
+    }
+
+    function nuevaEleccion(datos = {}) {
+      const tipos = state.tiposEleccion || [];
+      const opciones = tipos.map(t => `<option value="${Number(t.id)}" ${Number(datos.tipo_eleccion_id) === Number(t.id) ? 'selected' : ''}>${escapeHtml(t.nombre)}</option>`).join('');
+      const sugerido = datos.nombre || '';
+      const contenido = `<form id="formEleccion" class="space-y-3" onsubmit="event.preventDefault();guardarEleccion()"><label class="block text-xs font-bold">Nombre<input id="eleccionNombre" class="input mt-1" required maxlength="120" value="${escapeHtml(sugerido)}" placeholder="Ej.: Elecciones Municipales 2026"></label><label class="block text-xs font-bold">Tipo<select id="eleccionTipo" class="input mt-1" required>${opciones}</select></label><label class="block text-xs font-bold">Período<input id="eleccionPeriodo" class="input mt-1" maxlength="30" value="${escapeHtml(datos.periodo || '')}" placeholder="2026-2031"></label><label class="block text-xs font-bold">Fecha<input id="eleccionFecha" type="date" class="input mt-1" value="${escapeHtml(datos.fecha_eleccion || '')}"></label><p class="text-[11px] text-slate-500">Las internas son eventos separados. Puedes crear una interna por partido luego de crear la elección principal.</p><div class="flex justify-end gap-2 pt-2"><button type="button" onclick="state.modal=null;render()" class="btn-secondary">Cancelar</button><button class="btn-primary" ${state.eleccionProcesando ? 'disabled' : ''}>${state.eleccionProcesando ? 'Guardando…' : 'Guardar elección'}</button></div></form>`;
+      abrirModal('Nueva elección', contenido);
+    }
+
+    async function guardarEleccion() {
+      if (state.eleccionProcesando) return;
+      const payload = { nombre: document.getElementById('eleccionNombre')?.value.trim(), tipo_eleccion_id: Number(document.getElementById('eleccionTipo')?.value), periodo: document.getElementById('eleccionPeriodo')?.value.trim(), fecha_eleccion: document.getElementById('eleccionFecha')?.value, estado: 'previa', activo: true };
+      state.eleccionProcesando = true;
+      try {
+        const d = await apiPostRuta('/api/elecciones/crear', payload);
+        if (!d.success) throw new Error(d.error || 'No se pudo crear la elección');
+        state.modal = null; state.mensaje = 'Elección creada.'; state.msgTipo = 'info'; await cargarElecciones();
+      } catch (e) { alert('No se pudo crear la elección: ' + e.message); }
+      finally { state.eleccionProcesando = false; render(); }
+    }
+
+    async function duplicarEleccion(id) {
+      const original = state.elecciones.find(e => Number(e.id) === Number(id));
+      if (!original) return;
+      nuevaEleccion({ ...original, nombre: `${original.nombre} (copia)` , fecha_eleccion: '' });
+    }
+
+    async function toggleEleccion(id) {
+      const e = state.elecciones.find(x => Number(x.id) === Number(id));
+      if (!e) return;
+      const accion = Number(e.activo) ? 'bloquear' : 'habilitar';
+      if (!confirm(`¿${accion[0].toUpperCase() + accion.slice(1)} “${e.nombre}”?`)) return;
+      try {
+        const d = await apiPostRuta(`/api/elecciones/${id}/estado`, { activo: !Number(e.activo) });
+        if (!d.success) throw new Error(d.error || 'No se pudo cambiar el estado');
+        await cargarElecciones();
+      } catch (err) { alert('No se pudo actualizar: ' + err.message); }
+    }
+
+    async function eliminarEleccion(id) {
+      const e = state.elecciones.find(x => Number(x.id) === Number(id));
+      if (!e || !confirm(`¿Eliminar “${e.nombre}”? Si tiene resultados u otros datos vinculados, el servidor rechazará el borrado.`)) return;
+      try {
+        const d = await apiPostRuta(`/api/elecciones/${id}/eliminar`, {});
+        if (!d.success) throw new Error(d.error || 'No se pudo eliminar');
+        await cargarElecciones();
+      } catch (err) { alert('No se pudo eliminar: ' + err.message); }
+    }
+
+    async function cargarElecciones() {
+      try {
+        const d = await apiGet('elecciones');
+        state.elecciones = d.elecciones || d || [];
+        const t = await apiGet('tipos_eleccion').catch(() => ({ tipos_eleccion: [] }));
+        state.tiposEleccion = t.tipos || t.tipos_eleccion || [];
+      } catch(e) { state.elecciones = []; state.mensaje = 'No se pudieron cargar las elecciones: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    // ============ TAB: TRANSPORTE ============
+    function renderTabTransporte() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-truck mr-1 text-amber-500"></i> Transporte y Logística</h2>
+          </div>
+          ${state.transportes.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Conductor</th><th>Vehículo</th><th>Placa</th><th>Capacidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                ${state.transportes.slice(0, 50).map(t => `
+                  <tr>
+                    <td class="font-bold">${t.nombre || ''}</td>
+                    <td>${t.tipo || ''}</td>
+                    <td><span class="badge badge-slate">${t.placa || 'N/A'}</span></td>
+                    <td>${t.capacidad || 0}</td>
+                    <td><span class="badge ${t.estado === 'activo' ? 'badge-green' : 'badge-slate'}">${t.estado || ''}</span></td>
+                    <td>
+                      <button onclick="eliminarTransporte(${t.id})" class="btn-danger !px-2 !py-1" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-500 py-8">No hay vehículos registrados para mostrar.</div>'}
+        </div>`;
+    }
+
+    async function cargarTransporte() {
+      try {
+        const d = await apiGet('transportes');
+        state.transportes = d.transportes || d || [];
+      } catch(e) { state.transportes = []; state.mensaje = 'No se pudieron cargar los transportes: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    async function eliminarTransporte(id) {
+      if (!confirm('¿Eliminar este transporte?')) return;
+      try {
+        const d = await apiPostRuta(`/api/transportes/${id}/eliminar`, {});
+        if (!d.success) throw new Error(d.error || 'No se pudo eliminar el transporte');
+        await cargarTransporte();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============ TAB: VEEDORES ============
+    function renderTabVeedores() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-eye mr-1 text-amber-500"></i> Veedores y Mesas</h2>
+          </div>
+          ${state.veedores.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Veedor</th><th>Mesa</th><th>Estado</th><th>Teléfono</th></tr></thead>
+              <tbody>
+                ${state.veedores.map(v => `
+                  <tr>
+                    <td class="font-bold">${v.nombre_veedor || v.nombre || ''}</td>
+                    <td><span class="badge badge-slate">${v.mesa_id || 'N/A'}</span></td>
+                    <td><span class="badge ${v.estado === 'activo' ? 'badge-green' : 'badge-red'}">${v.estado || ''}</span></td>
+                    <td>${v.telefono || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-500 py-8">No hay veedores registrados para mostrar.</div>'}
+        </div>`;
+    }
+
+    async function cargarVeedores() {
+      try {
+        const d = await apiGet('veedores');
+        state.veedores = d.veedores || d || [];
+      } catch(e) { state.veedores = []; state.mensaje = 'No se pudieron cargar los veedores: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    // ============ TAB: GAMIFICACION ============
+    function renderTabGamificacion() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-trophy mr-1 text-amber-500"></i> Gamificación</h2>
+          </div>
+          ${state.puestosComando.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Puesto</th><th>Rol</th><th>Candidato</th><th>Unidad</th></tr></thead>
+              <tbody>
+                ${state.puestosComando.slice(0, 50).map(p => `
+                  <tr>
+                    <td class="font-bold">${p.numero || ''}</td>
+                    <td><span class="badge badge-amber">${p.rol || ''}</span></td>
+                    <td>${p.candidato_cedula || ''}</td>
+                    <td>${p.unidad_id || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-400 py-8"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</div>'}
+        </div>`;
+    }
+
+    async function cargarGamificacion() {
+      try {
+        const d = await apiGetRuta('/api/gamificacion/ranking');
+        state.puestosComando = d.puestos_comando || [];
+        state.ranking = d.ranking || [];
+      } catch(e) { state.puestosComando = []; state.ranking = []; state.mensaje = 'No se pudo cargar el ranking: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    // ============ TAB: PADRON ============
+    function renderTabPadron() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-users mr-1 text-amber-500"></i> Padrón Electoral</h2>
+          </div>
+          <div class="card mb-3">
+            <div class="flex gap-2">
+              <input id="padron_busqueda" class="input flex-1" placeholder="Buscar por cédula, apellido o nombre..." onkeydown="if(event.key==='Enter')buscarPadron()">
+              <button onclick="buscarPadron()" class="btn-primary"><i class="fas fa-search mr-1"></i>Buscar</button>
+            </div>
+          </div>
+          ${state.padronResultados.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Cédula</th><th>Apellido</th><th>Nombre</th><th>Mesa</th><th>Departamento</th><th>Distrito</th></tr></thead>
+              <tbody>
+                ${state.padronResultados.slice(0, 100).map(p => `
+                  <tr>
+                    <td class="font-bold">${p.cedula || ''}</td>
+                    <td>${p.apellido || ''}</td>
+                    <td>${p.nombre || ''}</td>
+                    <td>${p.mesa || ''}</td>
+                    <td>${p.departamento_nombre || p.depart || ''}</td>
+                    <td>${p.distrito_nombre || p.distrito || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-400 py-8">Ingrese un criterio de búsqueda para consultar el padrón (2.27M registros).</div>'}
+        </div>`;
+    }
+
+    async function buscarPadron() {
+      const q = document.getElementById('padron_busqueda')?.value || '';
+      if (!q) return;
+      try {
+        const d = await apiGet('buscar_padron&cedula=' + q);
+        state.padronResultados = d.resultados || d.votantes || d || [];
+        render();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============ TAB: AUDITORIA ============
+    function renderTabSesiones() {
+      const sidActual = state.usuario?.session_id || sessionStorage.getItem('dia_d_session_id') || '';
+      return `<div class="fade-in"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p class="text-[10px] font-black uppercase tracking-widest text-amber-700">Seguridad</p><h2 class="text-xl font-black"><i class="fas fa-shield-alt mr-1 text-amber-500"></i> Sesiones activas</h2><p class="mt-1 text-xs text-slate-500">Revisa los accesos abiertos y cierra sesiones que no reconozcas. Tu sesión actual queda protegida.</p></div><button onclick="cargarSesiones()" class="btn-secondary"><i class="fas fa-sync-alt mr-1"></i>Actualizar</button></div>
+        ${state.seguridadEstado ? `<div class="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3"><div class="card p-3"><div class="text-[10px] uppercase text-slate-400">Intentos últimos 24 h</div><strong class="text-xl">${fmt(state.seguridadEstado.global?.intentos_24h)}</strong></div><div class="card p-3"><div class="text-[10px] uppercase text-slate-400">Exitosos</div><strong class="text-xl text-emerald-700">${fmt(state.seguridadEstado.global?.exitosos_24h)}</strong></div><div class="card col-span-2 p-3 sm:col-span-1"><div class="text-[10px] uppercase text-slate-400">Fallidos</div><strong class="text-xl text-rose-700">${fmt(state.seguridadEstado.global?.fallidos_24h)}</strong></div></div>` : ''}
+        ${state.sesionesCargando ? '<div class="card text-center text-slate-500"><i class="fas fa-circle-notch fa-spin mr-2"></i>Cargando sesiones…</div>' : state.sesiones.length ? `<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm"><table class="admin-table"><thead><tr><th>Cuenta</th><th>Rol</th><th>Dirección IP</th><th>Inicio</th><th>Último acceso</th><th>Dispositivo</th><th>Acción</th></tr></thead><tbody>${state.sesiones.map(s => { const actual = s.id === sidActual; return `<tr><td><strong>${escapeHtml(s.nombre || 'Usuario')}</strong><div class="text-[10px] text-slate-500">${escapeHtml(s.cedula || '')}</div></td><td>${escapeHtml(s.rol_activo || '—')}</td><td>${escapeHtml(s.ip || '—')}</td><td>${escapeHtml(s.iniciada || '—')}</td><td>${escapeHtml(s.ultimo_acceso || '—')}</td><td class="max-w-48 truncate" title="${escapeHtml(s.user_agent || '')}">${escapeHtml(s.user_agent || '—')}</td><td>${actual ? '<span class="badge badge-green">Esta sesión</span>' : `<button onclick="cerrarSesionMaster('${escapeHtml(s.id)}')" class="btn-danger !px-2 !py-1" title="Cerrar sesión"><i class="fas fa-right-from-bracket mr-1"></i>Cerrar</button>`}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="card py-8 text-center text-slate-500"><i class="fas fa-shield-alt mb-2 text-2xl text-emerald-600"></i><p class="font-bold">No hay otras sesiones activas.</p></div>'}</div>`;
+    }
+
+    async function cargarSesiones() {
+      state.sesionesCargando = true; render();
+      try {
+        const [sesiones, seguridad] = await Promise.all([apiGetRuta('/api/sesiones'), apiGetRuta('/api/seguridad/estado')]);
+        state.sesiones = sesiones.sesiones || [];
+        state.seguridadEstado = seguridad;
+      } catch (e) {
+        state.sesiones = [];
+        state.mensaje = 'No se pudieron cargar las sesiones: ' + e.message;
+        state.msgTipo = 'error';
+      } finally { state.sesionesCargando = false; render(); }
+    }
+
+    async function cerrarSesionMaster(sessionId) {
+      if (!confirm('¿Cerrar esta sesión? El usuario tendrá que volver a ingresar.')) return;
+      try {
+        const response = await fetch('/api/sesiones/cerrar', { method: 'POST', headers: { 'Content-Type': 'application/json', ...sessionHeaders() }, body: JSON.stringify({ session_id: sessionId }) });
+        const d = await respuestaApi(response);
+        if (!d.success) throw new Error(d.error || 'No se pudo cerrar la sesión');
+        await cargarSesiones();
+      } catch (e) { alert('No se pudo cerrar la sesión: ' + e.message); }
+    }
+
+    function renderTabAuditoria() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-clipboard-list mr-1 text-amber-500"></i> Auditoría y Seguridad</h2>
+            <button onclick="exportarAuditoria()" class="btn-secondary"><i class="fas fa-download mr-1"></i>Exportar</button>
+          </div>
+          ${state.auditoria.length ? `
+          <div class="overflow-x-auto">
+            <table class="admin-table">
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th></tr></thead>
+              <tbody>
+                ${state.auditoria.slice(0, 100).map(a => `
+                  <tr>
+                    <td class="text-[10px] text-slate-400">${escapeHtml(a.timestamp || '')}</td>
+                    <td class="font-bold">${escapeHtml(a.nombre || a.cedula || '')}</td>
+                    <td><span class="badge badge-amber">${escapeHtml(a.accion || '')}</span></td>
+                    <td>${escapeHtml(a.entidad || '')}</td>
+                    <td class="text-slate-400 text-[10px]">${escapeHtml(a.detalle || '')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : '<div class="card text-center text-slate-500 py-8">No hay eventos de auditoría para mostrar.</div>'}
+        </div>`;
+    }
+
+    async function cargarAuditoria() {
+      try {
+        const d = await apiGetRuta('/api/auditoria');
+        state.auditoria = d.items || d.auditoria || [];
+      } catch(e) { state.auditoria = []; state.mensaje = 'No se pudo consultar la auditoría: ' + e.message; state.msgTipo = 'error'; }
+      render();
+    }
+
+    async function exportarAuditoria() {
+      try {
+        const response = await fetch('/api/auditoria/exportar', { headers: sessionHeaders() });
+        if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = 'auditoria.csv'; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============ TAB: MAPA EN VIVO ============
+    let mapaLeaflet = null;
+    let marcadores = {};
+    let mapaContenedor = null;
+    let mapaRefreshTimer = null;
+    let capasMapa = { locales: null, conductores: null, votantes: null };
+    const mapaCapasVisibles = { locales: true, conductores: true, votantes: true };
+
+    function renderTabMapa() {
+      return `
+        <div class="fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-black"><i class="fas fa-map-marker-alt mr-1 text-amber-500"></i> Mapa Geográfico Completo</h2>
+            <div class="flex gap-2">
+              <span class="badge badge-green" id="mapa-status">Conectando...</span>
+              <button onclick="actualizarMapa()" class="btn-secondary"><i class="fas fa-sync-alt mr-1"></i>Actualizar</button>
+            </div>
+          </div>
+          <!-- Controles de capa -->
+          <div class="flex flex-wrap gap-2 mb-2">
+            <label class="flex items-center gap-1 text-xs font-bold cursor-pointer">
+              <input type="checkbox" id="capa-locales" ${mapaCapasVisibles.locales ? 'checked' : ''} onchange="toggleCapa('locales')" class="accent-green-600">
+              <span class="w-3 h-3 bg-green-500 rounded-sm inline-block"></span> Locales de votación
+            </label>
+            <label class="flex items-center gap-1 text-xs font-bold cursor-pointer">
+              <input type="checkbox" id="capa-conductores" ${mapaCapasVisibles.conductores ? 'checked' : ''} onchange="toggleCapa('conductores')" class="accent-blue-500">
+              <span class="w-3 h-3 bg-blue-500 rounded-full inline-block"></span> Conductores
+            </label>
+            <label class="flex items-center gap-1 text-xs font-bold cursor-pointer">
+              <input type="checkbox" id="capa-votantes" ${mapaCapasVisibles.votantes ? 'checked' : ''} onchange="toggleCapa('votantes')" class="accent-amber-500">
+              <span class="w-3 h-3 bg-amber-500 rounded-full inline-block"></span> Votantes con ubicación
+            </label>
+          </div>
+          <div class="card p-0 overflow-hidden">
+            <div id="mapa-leaflet" style="width:100%;height:600px;"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-2">
+            <div class="card p-2 text-center"><div class="stat-value text-green-600" id="mapa-total-locales">0</div><div class="text-[10px] text-slate-400">Locales</div></div>
+            <div class="card p-2 text-center"><div class="stat-value text-blue-600" id="mapa-total-conductores">0</div><div class="text-[10px] text-slate-400">Conductores</div></div>
+            <div class="card p-2 text-center"><div class="stat-value text-amber-600" id="mapa-total-votantes">0</div><div class="text-[10px] text-slate-400">Votantes</div></div>
+          </div>
+          <div class="card mt-3">
+            <h3 class="text-sm font-black mb-2"><i class="fas fa-list mr-1"></i>Vehículos activos</h3>
+            <div class="overflow-x-auto">
+              <table class="admin-table">
+                <thead><tr><th>Conductor</th><th>Placa</th><th>Estado</th><th>Lat</th><th>Lng</th><th>Velocidad</th><th>Hora</th></tr></thead>
+                <tbody id="mapa-tabla">
+                  <tr><td colspan="7" class="text-center text-slate-400 py-4"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggleCapa(tipo) {
+      const capa = capasMapa[tipo];
+      const control = document.getElementById(`capa-${tipo}`);
+      if (!capa || !mapaLeaflet || !control) return;
+      mapaCapasVisibles[tipo] = control.checked;
+      if (control.checked) mapaLeaflet.addLayer(capa); else mapaLeaflet.removeLayer(capa);
+    }
+
+    function initMapa() {
+      const contenedor = document.getElementById('mapa-leaflet');
+      if (!contenedor || !window.L) return;
+      if (mapaLeaflet && mapaContenedor !== contenedor) {
+        mapaLeaflet.remove(); mapaLeaflet = null;
+        capasMapa = { locales: null, conductores: null, votantes: null };
+      }
+      if (!mapaLeaflet) {
+        mapaLeaflet = L.map(contenedor).setView([-25.2637, -57.5759], 6); // Paraguay
+        mapaContenedor = contenedor;
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapaLeaflet);
+      }
+      setTimeout(() => mapaLeaflet?.invalidateSize(), 50);
+      actualizarMapa();
+      if (!mapaRefreshTimer) mapaRefreshTimer = setInterval(() => {
+        if (document.getElementById('mapa-leaflet')) actualizarMapa();
+      }, 10000);
+    }
+
+    async function actualizarMapa() {
+      try {
+        const d = await apiGetRuta('/api/mapa/datos_geograficos');
+        if (!d.success) throw new Error(d.error || 'Error al cargar datos');
+        
+        // Actualizar contadores
+        document.getElementById('mapa-total-locales').textContent = d.total_locales || 0;
+        document.getElementById('mapa-total-conductores').textContent = d.total_conductores || 0;
+        document.getElementById('mapa-total-votantes').textContent = d.total_votantes || 0;
+        document.getElementById('mapa-status').textContent = 'Actualizado';
+        
+        // Limpiar capas anteriores
+        if (capasMapa.locales) { mapaLeaflet.removeLayer(capasMapa.locales); }
+        if (capasMapa.conductores) { mapaLeaflet.removeLayer(capasMapa.conductores); }
+        if (capasMapa.votantes) { mapaLeaflet.removeLayer(capasMapa.votantes); }
+        
+        // Capa 1: Locales de votación (verde)
+        const puntosLocales = (d.locales || []).map(l => [l.lat, l.lng]);
+        capasMapa.locales = L.layerGroup((d.locales || []).map(l => 
+          L.marker([l.lat, l.lng], { icon: L.divIcon({ className: '', html: '<div style="background:#22c55e;width:12px;height:12px;border-radius:3px;border:2px solid #09090b;"></div>', iconSize: [12, 12] }) })
+            .bindPopup(`<b>🏫 ${l.nombre}</b><br>${l.direccion || ''}`)
+        ));
+        
+        // Capa 2: Conductores (azul)
+        const puntosConductores = (d.conductores || []).map(c => [c.lat, c.lng]);
+        capasMapa.conductores = L.layerGroup((d.conductores || []).map(c => 
+          L.circleMarker([c.lat, c.lng], { radius: 8, fillColor: '#3b82f6', color: '#1e40af', weight: 2, fillOpacity: 0.8 })
+            .bindPopup(`<b>🚗 ${c.nombre}</b><br>Placa: ${c.placa || '—'}<br>Vel: ${c.velocidad || 0} km/h`)
+        ));
+        
+        // Capa 3: Votantes con ubicación (ámbar)
+        const puntosVotantes = (d.votantes || []).map(v => [v.lat, v.lng]);
+        capasMapa.votantes = L.layerGroup((d.votantes || []).map(v => 
+          L.circleMarker([v.lat, v.lng], { radius: 6, fillColor: '#f59e0b', color: '#92400e', weight: 1, fillOpacity: 0.7 })
+            .bindPopup(`<b>👤 ${v.nombre}</b><br>CC: ${v.cedula}`)
+        ));
+        Object.keys(capasMapa).forEach(toggleCapa);
+        
+        // Ajustar vista a todos los puntos
+        const todosLosPuntos = [...puntosLocales, ...puntosConductores, ...puntosVotantes];
+        if (todosLosPuntos.length > 0) {
+          mapaLeaflet.fitBounds(todosLosPuntos, { padding: [30, 30] });
+        }
+        
+        // Actualizar tabla de vehículos
+        const tbody = document.getElementById('mapa-tabla');
+        if (tbody && d.conductores) {
+          tbody.innerHTML = d.conductores.map(c => `
+            <tr>
+              <td>${c.nombre || '—'}</td>
+              <td>${c.placa || '—'}</td>
+              <td>${c.estado || '—'}</td>
+              <td>${c.lat?.toFixed(6) || '—'}</td>
+              <td>${c.lng?.toFixed(6) || '—'}</td>
+              <td>${c.velocidad || 0} km/h</td>
+              <td>${c.timestamp || '—'}</td>
+            </tr>
+          `).join('') || '<tr><td colspan="7" class="text-center text-slate-400 py-4">Sin vehículos activos</td></tr>';
+        }
+      } catch(e) {
+        const status = document.getElementById('mapa-status');
+        if (status) { status.textContent = 'Error: ' + e.message; status.className = 'badge badge-red'; }
+      }
+    }
+    // ============ MODAL ============
+    function renderModal() {
+      if (!state.modal) return '';
+      if (state.modal === 'nuevoUsuario') {
+        const roles = state.rolesDisponibles.roles || state.rolesDisponibles || [];
+        return `
+          <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if(event.target===this){state.modal=null;render();}">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md fade-in">
+              <h3 class="font-black text-lg mb-4"><i class="fas fa-user-plus mr-1 text-amber-500"></i>Nuevo Usuario</h3>
+              <div class="space-y-3">
+                <div><label class="text-xs font-bold">Cédula</label><input id="f_cedula" class="input" placeholder="Cédula"></div>
+                <div><label class="text-xs font-bold">Nombre</label><input id="f_nombre" class="input" placeholder="Nombre completo"></div>
+                <div><label class="text-xs font-bold">Email</label><input id="f_email" class="input" placeholder="email@ejemplo.com"></div>
+                <div><label class="text-xs font-bold">Contraseña</label><input id="f_password" type="password" class="input" placeholder="Contraseña"></div>
+                <div><label class="text-xs font-bold">Rol</label>
+                  <select id="f_rol" class="input">
+                    <option value="">Seleccionar rol</option>
+                    ${roles.map(r => `<option value="${r.rol || r.codigo || r}">${r.nombre || r}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button onclick="guardarUsuario()" class="btn-primary flex-1"><i class="fas fa-save mr-1"></i>Guardar</button>
+                <button onclick="state.modal=null;render()" class="btn-secondary flex-1">Cancelar</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (state.modal === 'editarUsuario') {
+        const u = state.usuarioEditando || {};
+        const roles = state.rolesDisponibles.roles || state.rolesDisponibles || [];
+        return `
+          <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="if(event.target===this){state.modal=null;render();}">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md fade-in">
+              <h3 class="font-black text-lg mb-4"><i class="fas fa-edit mr-1 text-amber-500"></i>Editar Usuario</h3>
+              <div class="space-y-3">
+                <div><label class="text-xs font-bold">Cédula</label><input class="input" value="${u.cedula || ''}" disabled></div>
+                <div><label class="text-xs font-bold">Nombre</label><input id="f_nombre" class="input" value="${u.nombre || ''}"></div>
+                <div><label class="text-xs font-bold">Rol</label>
+                  <select id="f_rol" class="input">
+                    ${roles.map(r => `<option value="${r.rol || r.codigo || r}" ${u.rol === (r.rol || r.codigo || r) ? 'selected' : ''}>${r.nombre || r}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button onclick="guardarEditarUsuario('${u.cedula}')" class="btn-primary flex-1"><i class="fas fa-save mr-1"></i>Guardar</button>
+                <button onclick="state.modal=null;render()" class="btn-secondary flex-1">Cancelar</button>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (state.modal === 'nuevoCliente' || state.modal === 'editarCliente') {
+        const edit = state.modal === 'editarCliente';
+        const c = state.modalData || {};
+        const input = (id,label,value='',type='text',required=false) => `<label class="block text-[11px] font-bold text-slate-600">${label}${required?' *':''}<input id="${id}" class="input mt-1" type="${type}" value="${escapeHtml(value)}" ${required?'required':''}></label>`;
+        return `<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3" onclick="if(event.target===this){state.modal=null;render();}"><div class="bg-white rounded-2xl p-5 w-full max-w-2xl max-h-[92vh] overflow-y-auto fade-in">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-black text-lg"><i class="fas fa-${edit?'edit':'user-plus'} mr-1 text-amber-500"></i>${edit?'Editar cliente':'Alta de cliente'}</h3><button onclick="state.modal=null;render()" class="btn-secondary">Cerrar</button></div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            ${!edit?input('f_cliente_cedula','Cédula','', 'text', true):`<div><label class="block text-[11px] font-bold text-slate-600">Cédula</label><div class="input mt-1 bg-slate-50">${escapeHtml(c.cedula)}</div></div>`}
+            ${input('f_cliente_nombre','Nombre',c.nombre||'', 'text', true)}${input('f_cliente_apellido','Apellido',c.apellido||'')}
+            ${input('f_cliente_email','Email',c.email||'','email')}${input('f_cliente_telefono','Teléfono',c.telefono||'','tel')}
+            <label class="block text-[11px] font-bold text-slate-600">Tipo *<select id="f_cliente_tipo" class="input mt-1">${['general','departamental','municipal','seccional','pc','admin'].map(v=>`<option value="${v}" ${(c.tipo||'municipal')===v?'selected':''}>${v}</option>`).join('')}</select></label>
+            <label class="block text-[11px] font-bold text-slate-600">Categoría *<select id="f_cliente_categoria" class="input mt-1">${['partido','movimiento','candidato'].map(v=>`<option value="${v}" ${(c.categoria||'partido')===v?'selected':''}>${v}</option>`).join('')}</select></label>
+            <label class="block text-[11px] font-bold text-slate-600">Partido<select id="f_cliente_partido" class="input mt-1"><option value="">Sin asignar</option>${state.partidos.map(p=>`<option value="${p.id}" ${String(c.partido_id||'')===String(p.id)?'selected':''}>${escapeHtml(p.sigla||p.nombre_oficial)}</option>`).join('')}</select></label>
+            <label class="block text-[11px] font-bold text-slate-600">Departamento<select id="f_cliente_departamento" class="input mt-1"><option value="">Sin asignar</option>${state.departamentos.map(d=>`<option value="${d.id}" ${String(c.departamento_id||'')===String(d.id)?'selected':''}>${escapeHtml(d.nombre)}</option>`).join('')}</select></label>
+            <label class="block text-[11px] font-bold text-slate-600">Distrito<select id="f_cliente_distrito" class="input mt-1"><option value="">Sin asignar</option>${state.distritos.filter(d=>!c.departamento_id||String(d.departamento_id)===String(c.departamento_id)).map(d=>`<option value="${d.id}" ${String(c.distrito_id||'')===String(d.id)?'selected':''}>${escapeHtml(d.nombre)}</option>`).join('')}</select></label>
+            ${input('f_cliente_unidad','ID de unidad operativa',c.unidad_organizacion_id||'','number')}
+            ${input('f_cliente_candidato','Candidato/a',c.candidato_nombre||'')}${input('f_cliente_cargo','Cargo',c.candidato_cargo||'')}
+            ${input('f_cliente_locales','Local/es de votación',c.locales||'')}
+            ${!edit?input('f_cliente_password','Contraseña inicial','','password',true):''}
+          </div><p class="text-[10px] text-slate-400 mt-2">Los campos con * son obligatorios. El alta respeta las validaciones del servidor.</p>
+          <div class="flex gap-2 mt-4"><button onclick="guardarCliente()" class="btn-primary flex-1"><i class="fas fa-save mr-1"></i>${edit?'Guardar cambios':'Crear cliente'}</button><button onclick="state.modal=null;render()" class="btn-secondary">Cancelar</button></div>
+        </div></div>`;
+      }
+      if (state.modal === 'nuevoPartido' || state.modal === 'editarPartido') {
+        const edit=state.modal==='editarPartido', p=state.modalData||{};
+        const field=(id,label,value='',type='text')=>`<label class="block text-[11px] font-bold text-slate-600">${label}<input id="${id}" class="input mt-1" type="${type}" value="${escapeHtml(value)}"></label>`;
+        return `<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3" onclick="if(event.target===this){state.modal=null;render();}"><div class="bg-white rounded-2xl p-5 w-full max-w-xl"><h3 class="font-black text-lg mb-4">${edit?'Editar partido':'Alta de partido'}</h3><div class="grid sm:grid-cols-2 gap-3">${field('f_partido_codigo','Código *',p.codigo_partido||'')}${field('f_partido_nombre','Nombre oficial *',p.nombre_oficial||'')}${field('f_partido_sigla','Sigla',p.sigla||'')}${field('f_partido_color','Color',p.color_principal_hex||'#333333')}${field('f_partido_lista','Número de lista',p.numero_lista||'','number')}<label class="block text-[11px] font-bold text-slate-600">Ámbito<select id="f_partido_ambito" class="input mt-1">${['Nacional','Departamental','Municipal','Distrital'].map(x=>`<option ${p.ambito===x?'selected':''}>${x}</option>`).join('')}</select></label><label class="block text-[11px] font-bold text-slate-600 sm:col-span-2">Descripción<textarea id="f_partido_descripcion" class="input mt-1" rows="2">${escapeHtml(p.descripcion_corta||'')}</textarea></label></div><div class="flex gap-2 mt-4"><button onclick="guardarPartido()" class="btn-primary flex-1">Guardar</button><button onclick="state.modal=null;render()" class="btn-secondary">Cancelar</button></div></div></div>`;
+      }
+      if (state.modal === 'nuevoCandidato') {
+        const field=(id,label,value='',type='text')=>`<label class="block text-[11px] font-bold text-slate-600">${label}<input id="${id}" class="input mt-1" type="${type}" value="${escapeHtml(value)}"></label>`;
+        return `<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3" onclick="if(event.target===this){state.modal=null;render();}"><div class="bg-white rounded-2xl p-5 w-full max-w-xl max-h-[90vh] overflow-y-auto"><h3 class="font-black text-lg mb-4">Alta de candidato electo</h3><div class="grid sm:grid-cols-2 gap-3">${field('f_cand_nombre','Nombre completo *')}<label class="block text-[11px] font-bold text-slate-600">Cargo<select id="f_cand_cargo" class="input mt-1"><option value="concejal">Concejal</option><option value="intendente">Intendente</option></select></label><label class="block text-[11px] font-bold text-slate-600">Partido *<select id="f_cand_partido" class="input mt-1"><option value="">Seleccionar</option>${state.partidos.map(p=>`<option value="${p.id}">${escapeHtml(p.sigla||p.nombre_oficial)}</option>`).join('')}</select></label><label class="block text-[11px] font-bold text-slate-600">Departamento<select id="f_cand_depto" class="input mt-1"><option value="">Sin asignar</option>${state.departamentos.map(d=>`<option value="${d.id}">${escapeHtml(d.nombre)}</option>`).join('')}</select></label><label class="block text-[11px] font-bold text-slate-600">Distrito<select id="f_cand_distrito" class="input mt-1"><option value="">Sin asignar</option>${state.distritos.map(d=>`<option value="${d.id}">${escapeHtml(d.nombre)}${d.departamento_id?' · Depto '+d.departamento_id:''}</option>`).join('')}</select></label>${field('f_cand_lista','Número de lista','0','number')}${field('f_cand_lista_nombre','Nombre de lista')}${field('f_cand_orden','Orden','0','number')}${field('f_cand_periodo','Periodo','2026-2030')}${field('f_cand_cliente','Cédula del cliente asociado')}</div><p class="text-[10px] text-amber-700 mt-2">Este endpoint crea el registro con estado “electo”. Confirma que corresponde antes de guardar.</p><div class="flex gap-2 mt-4"><button onclick="guardarCandidato()" class="btn-primary flex-1">Crear candidato</button><button onclick="state.modal=null;render()" class="btn-secondary">Cancelar</button></div></div></div>`;
+      }
+      return '';
+    }
+
+    async function guardarEditarUsuario(ced) {
+      const nombre = document.getElementById('f_nombre')?.value || '';
+      const rol = document.getElementById('f_rol')?.value || '';
+      try {
+        await apiPostRuta('/api/usuarios/editar', { cedula: ced, nombre, rol });
+        alert('Usuario actualizado.');
+        state.modal = null;
+        cargarUsuarios();
+      } catch(e) { alert('Error: ' + e.message); }
+    }
+
+    // ============ INIT ============
+    if (state.autenticado) cargaInicial();
+    else render();
+  </script>
+</body>
+</html>

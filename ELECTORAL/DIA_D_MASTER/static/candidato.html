@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Página de Candidato</title>
+<script src="config.js"></script>
+    <script src="auth.js"></script>
+<script src="vendor/tailwind.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/chart.umd.js"></script>
+<script src="party_theme.js"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: { brand: '#1e40af', accent: '#3b82f6' } } } }
+</script>
+<style>
+* { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+/* Hero banner */
+.hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Portada (foto de portada ancha) con la foto de perfil superpuesta, estilo red social.
+   Franja compacta (máx. 190px) — no un bloque de color vacío que empuje todo hacia abajo. */
+.cover-section {
+  position: relative;
+  height: 160px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+@media (min-width: 768px) { .cover-section { height: 190px; } }
+.cover-edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0,0,0,0.45);
+  color: white;
+  backdrop-filter: blur(4px);
+}
+.cover-edit-btn:hover { background: rgba(0,0,0,0.6); }
+.cover-credito {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  background: rgba(0,0,0,0.35);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.cover-credito:hover { color: #fff; }
+.profile-header-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.profile-header-info { flex: 1; min-width: 240px; padding-bottom: 6px; }
+@media (max-width: 640px) {
+  .profile-header-row { flex-direction: column; align-items: center; text-align: center; }
+  .profile-header-info { text-align: center; }
+}
+
+/* Foto candidato, con anillo en el color del partido — se superpone a la portada subiendo
+   solo esta caja (no toda la fila: el nombre y el resto del texto quedan en blanco, abajo). */
+.foto-wrapper {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -48px;
+}
+@media (min-width: 768px) { .foto-wrapper { margin-top: -56px; } }
+.foto-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 3px solid var(--partido-color, #93c5fd);
+}
+.foto-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.foto-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: white;
+  cursor: pointer;
+  transition: all .25s;
+}
+.foto-placeholder:hover { background: rgba(255,255,255,0.25); border-color: white; }
+.foto-placeholder-icon { font-size: 24px; line-height: 1; opacity: .9; }
+.foto-placeholder-label { font-size: 9.5px; font-weight: 600; letter-spacing: .02em; opacity: .85; text-align: center; padding: 0 10px; line-height: 1.25; }
+
+/* Logo partido flotante */
+.logo-partido {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: white;
+  padding: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  object-fit: contain;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
+  transition: all .3s;
+}
+.card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+/* Botones */
+.btn {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all .25s;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: #1e40af; color: white; }
+.btn-primary:hover { background: #1e3a8a; box-shadow: 0 4px 15px rgba(30,64,175,0.4); }
+.btn-success { background: #16a34a; color: white; }
+.btn-success:hover { background: #15803d; box-shadow: 0 4px 15px rgba(22,163,74,0.4); }
+.btn-upload {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+}
+.btn-upload:hover { box-shadow: 0 4px 20px rgba(59,130,246,0.4); }
+
+/* Input */
+.input {
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border .2s;
+  outline: none;
+  width: 100%;
+}
+.input:focus { border-color: #3b82f6; }
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 99px;
+  transition: width .6s ease;
+}
+
+/* Mapa */
+.map-container {
+  height: 350px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-purple { background: #f3e8ff; color: #7c3aed; }
+
+/* Pregunta encuesta */
+.pregunta-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: border .2s;
+}
+.pregunta-card:hover { border-color: #bfdbfe; }
+.opcion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 8px;
+}
+.opcion-item:hover { border-color: #3b82f6; background: #eff6ff; }
+.opcion-item.selected { border-color: #3b82f6; background: #dbeafe; }
+.opcion-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+}
+.opcion-item.selected .opcion-radio { border-color: #3b82f6; background: #3b82f6; }
+.opcion-radio::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  opacity: 0;
+}
+.opcion-item.selected .opcion-radio::after { opacity: 1; }
+
+/* Animaciones */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeIn .4s ease forwards; }
+
+/* Upload modal */
+.upload-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  padding: 24px 12px;
+  overflow-y: auto;
+}
+.upload-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 500px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  width: 90%;
+  text-align: center;
+}
+.drop-zone {
+  border: 3px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 40px;
+  cursor: pointer;
+  transition: all .3s;
+}
+.drop-zone:hover { border-color: #3b82f6; background: #eff6ff; }
+.drop-zone.dragover { border-color: #3b82f6; background: #dbeafe; }
+
+/* Ejes de gobierno (propuestas) como tarjetas visuales, no lista con borde */
+.propuesta-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  transition: all .2s;
+}
+.propuesta-card:hover { border-color: #93c5fd; box-shadow: 0 8px 20px rgba(59,130,246,0.1); transform: translateY(-2px); }
+.propuesta-card-icon { font-size: 28px; margin-bottom: 10px; }
+.propuesta-card-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; }
+
+/* Fila de propuesta en el editor: miniatura (clic para elegir imagen) + texto + quitar */
+.propuesta-edit-thumb {
+  width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0; cursor: pointer;
+  background: #f1f5f9; border: 1px solid #e2e8f0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; transition: border-color .2s;
+}
+.propuesta-edit-thumb:hover { border-color: #3b82f6; }
+.propuesta-edit-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Galería de Acción: carrusel horizontal de fotos de seguidores (arranca en una al azar) */
+.fotos-carousel-wrapper { position: relative; }
+.fotos-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 2px 2px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.fotos-carousel-item {
+  flex: 0 0 auto;
+  width: 220px;
+  scroll-snap-align: start;
+}
+.fotos-carousel-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.fotos-carousel-arrow {
+  position: absolute; top: 40%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 50%;
+  background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 2; font-size: 18px; color: #475569; line-height: 1;
+}
+.fotos-carousel-arrow:hover { background: #f1f5f9; color: #1e40af; }
+.fotos-carousel-arrow.prev { left: 2px; }
+.fotos-carousel-arrow.next { right: 2px; }
+@media (max-width: 640px) {
+  .fotos-carousel-item { width: 150px; }
+  .fotos-carousel-arrow { display: none; }
+}
+
+/* Ficha técnica al pie (Lugar de votación, datos oficiales, transparencia) */
+.ficha-tecnica summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+  padding: 12px 0;
+  list-style: none;
+}
+.ficha-tecnica summary::-webkit-details-marker { display: none; }
+.ficha-tecnica summary::before { content: '▸ '; }
+.ficha-tecnica[open] summary::before { content: '▾ '; }
+
+/* Simpatía compacta en la cabecera */
+.simpatia-header-btn { white-space: nowrap; }
+</style>
+</head>
+<body class="bg-slate-50">
+
+<!-- ═══ PORTADA ═══ -->
+<section class="cover-section" id="cover-display">
+  <button id="btn-cambiar-portada" class="hidden btn cover-edit-btn text-xs" onclick="abrirSubirFoto('portada')">
+    📷 Cambiar portada
+  </button>
+  <a id="cover-credito" href="#" target="_blank" rel="noopener" class="hidden cover-credito"></a>
+</section>
+
+<!-- ═══ CABECERA DE PERFIL (foto de perfil superpuesta a la portada) ═══ -->
+<section class="bg-white border-b">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="profile-header-row">
+      <div class="foto-wrapper">
+        <div class="foto-ring"></div>
+        <div class="foto-placeholder" id="foto-display">
+          <span class="foto-placeholder-icon">📷</span>
+          <span class="foto-placeholder-label">Agregar foto oficial</span>
+        </div>
+      </div>
+      <div class="profile-header-info">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <h1 id="nombre-candidato" class="text-2xl md:text-3xl font-black text-gray-900 mb-1">Cargando...</h1>
+          <button id="btn-editar-perfil" class="hidden btn btn-primary text-xs flex-shrink-0" onclick="abrirEditarPerfil()">
+            ✎ Editar perfil
+          </button>
+          <button id="btn-editar-whatsapp" class="hidden btn btn-primary text-xs flex-shrink-0" onclick="editarPlantillaWhatsappVotacion('candidato', CANDIDATO_ID)">
+            ✎ Mensaje de WhatsApp
+          </button>
+        </div>
+        <div class="flex items-center gap-2 justify-center md:justify-start flex-wrap mb-2">
+          <img id="logo-partido" src="" alt="Logo" class="logo-partido hidden" style="width:22px;height:22px;">
+          <span id="cargo-partido-badge" class="badge badge-blue"></span>
+        </div>
+        <p id="eslogan-candidato" class="text-gray-500 italic mb-2 hidden"></p>
+        <div id="distrito-badge"></div>
+        <div id="redes-sociales" class="flex items-center gap-2 justify-center md:justify-start flex-wrap mt-2"></div>
+      </div>
+      <!-- Simpatía, pegada a la cabecera: un clic, sin ir a buscarla en otra pestaña -->
+      <div class="flex flex-col items-center gap-1 flex-shrink-0 pb-1">
+        <button id="btn-simpatia" class="btn btn-success simpatia-header-btn" onclick="registrarSimpatia()">
+          ❤️ Apoyar candidatura
+        </button>
+        <span id="simpatia-contador" class="text-xs text-gray-500"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTENIDO: una sola página de bajada continua, sin pestañas ═══ -->
+<main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+  <!-- BLOQUE 1: QUIÉN SOY -->
+  <section id="bloque-biografia" class="card animate-in">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Quién soy</h2>
+      <button id="btn-cargar-foto" class="btn btn-upload text-sm hidden" onclick="abrirSubirFoto('perfil')">
+        📷 Cargar Foto
+      </button>
+    </div>
+    <p id="bio-texto" class="text-gray-600 leading-relaxed"></p>
+  </section>
+
+  <!-- BLOQUE 2: EJES DE GOBIERNO (propuestas como tarjetas) -->
+  <section id="bloque-propuestas">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Ejes de Gobierno</h2>
+    <div id="propuestas-list" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+  </section>
+
+  <!-- BLOQUE 3: GALERÍA DE ACCIÓN (fotos con el candidato) -->
+  <section id="bloque-fotos">
+    <div id="fotos-pendientes-card" class="card mb-6 hidden">
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Fotos pendientes de aprobación</h2>
+      <p class="text-sm text-gray-500 mb-4">Solo vos las ves. Aprobá las que quieras mostrar en el collage público.</p>
+      <div id="fotos-pendientes-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    </div>
+    <div class="card">
+      <div class="flex items-center justify-between mb-2 flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Galería de Acción</h2>
+          <p class="text-sm text-gray-500">¿Te sacaste una foto con el candidato? Subila y compartila acá.</p>
+        </div>
+        <button class="btn btn-upload text-sm" onclick="document.getElementById('file-input-fan').click()">
+          📷 Subí tu foto
+        </button>
+      </div>
+      <div class="fotos-carousel-wrapper mt-4">
+        <button class="fotos-carousel-arrow prev" onclick="scrollFotosCarousel(-1)" aria-label="Anterior">‹</button>
+        <div id="fotos-fans-grid" class="fotos-carousel"></div>
+        <button class="fotos-carousel-arrow next" onclick="scrollFotosCarousel(1)" aria-label="Siguiente">›</button>
+      </div>
+      <p id="fotos-fans-vacio" class="text-gray-400 text-center py-8 hidden">Todavía no hay fotos. ¡Sé el primero en subir la tuya!</p>
+    </div>
+  </section>
+
+  <!-- BLOQUE 4: TU OPINIÓN CUENTA (encuesta) -->
+  <section id="bloque-encuesta" class="card">
+    <h2 class="text-xl font-bold text-gray-800 mb-2">Tu Opinión Cuenta</h2>
+    <p class="text-sm text-gray-500 mb-4">Seleccione su opción. Su respuesta se registra automáticamente.</p>
+    <div id="encuesta-cedula-info" class="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm"></div>
+    <div id="preguntas-container" class="space-y-4"></div>
+  </section>
+
+  <!-- FICHA TÉCNICA Y TRANSPARENCIA AL PIE -->
+  <section id="bloque-ficha-tecnica" class="grid md:grid-cols-2 gap-6">
+    <div class="card max-w-2xl">
+      <h2 class="text-lg font-bold text-gray-800 mb-2">Consulta tu Lugar de Votación</h2>
+      <p class="text-sm text-gray-500 mb-4">Ingrese su número de cédula para conocer su local y mesa de votación.</p>
+      <div class="flex gap-3 mb-6">
+        <input type="text" id="cedula-consulta" class="input" placeholder="Ej: 1234567" maxlength="10">
+        <button class="btn btn-primary" onclick="consultarLugar()">Consultar</button>
+      </div>
+      <div id="lugar-resultado" class="hidden">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+          <h3 class="font-bold text-green-800 mb-3">Lugar de Votación</h3>
+          <p id="lugar-nombre" class="font-semibold text-lg"></p>
+          <p id="lugar-direccion" class="text-sm text-gray-600 mt-1"></p>
+          <p id="lugar-mesa" class="text-sm text-gray-600 mt-1"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Datos del Candidato</h3>
+      <dl class="space-y-3">
+        <div><dt class="text-xs text-gray-400 uppercase font-semibold">Nombre</dt><dd id="d-nombre" class="font-medium text-gray-700"></dd></div>
+        <div><dt class="text-xs text-gray-400 uppercase font-semibold">Cargo</dt><dd id="d-cargo" class="font-medium text-gray-700"></dd></div>
+        <div><dt class="text-xs text-gray-400 uppercase font-semibold">Lista</dt><dd id="d-lista" class="font-medium text-gray-700"></dd></div>
+        <div><dt class="text-xs text-gray-400 uppercase font-semibold">Partido</dt><dd id="d-partido" class="font-medium text-gray-700"></dd></div>
+        <div><dt class="text-xs text-gray-400 uppercase font-semibold">Sigla</dt><dd id="d-sigla" class="font-medium text-gray-700"></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <details id="bloque-transparencia" class="ficha-tecnica card hidden" ontoggle="if(this.open) cargarHistorial()">
+    <summary>Ver datos oficiales y auditoría</summary>
+    <div class="mt-4">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <p class="text-sm text-gray-500">Historial de cambios — solo para el equipo de campaña, no es público.</p>
+        <div class="flex gap-2">
+          <button class="btn btn-primary text-sm" onclick="exportarPDF()">📄 PDF</button>
+          <button class="btn btn-success text-sm" onclick="exportarExcel()">📊 Excel</button>
+        </div>
+      </div>
+      <div id="historial-container">
+        <p class="text-gray-400 text-center py-8">Cargando historial...</p>
+      </div>
+    </div>
+  </details>
+
+  <!-- PANEL INTERNO DEL EQUIPO (Estrategia) — solo visible logueado, no es contenido público -->
+  <section id="seccion-estrategia" class="hidden pt-8 mt-4 border-t-4 border-blue-600">
+    <p class="text-xs uppercase tracking-wide text-blue-600 font-black mb-4">Panel interno del equipo de campaña — solo vos lo ves</p>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Dashboard</h2>
+        <div id="dashboard-metrics" class="grid grid-cols-2 gap-4"></div>
+      </div>
+      <div class="card">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">Eventos en Vivo</h2>
+        <div id="eventos-list"></div>
+      </div>
+    </div>
+    <div class="card mb-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-6">Métricas de Apoyo (detalle)</h2>
+      <div id="metricas-container">
+        <p class="text-gray-400 text-center py-8">Cargando métricas...</p>
+      </div>
+    </div>
+    <div class="card mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-800">Mapa de Simpatizantes</h2>
+        <button class="btn btn-primary text-sm" onclick="notificarSimpatizantes()">📢 Notificar</button>
+      </div>
+      <div id="mapa-simpatizantes" class="map-container"></div>
+    </div>
+    <div class="card">
+      <h2 class="text-xl font-bold text-gray-800 mb-6">Comparativo entre Candidatos</h2>
+      <div class="mb-4">
+        <canvas id="chart-comparativo" height="200"></canvas>
+      </div>
+      <div id="comparativo-container"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="bg-gray-900 text-white py-5 mt-8">
+  <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+    <p>Página de Candidato — Sistema Electoral DIA D MASTER · Auditable · Transparente · Seguro</p>
+    <a href="index.html" class="hover:text-white transition-colors">← Volver al inicio</a>
+  </div>
+</footer>
+
+<!-- ═══ INPUT FILE OCULTO ═══ -->
+<input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+
+<!-- ═══ UPLOAD MODAL ═══ -->
+<div id="upload-modal" class="upload-overlay hidden">
+  <div class="upload-modal">
+    <h3 id="upload-modal-title" class="text-xl font-bold text-gray-800 mb-4">Cargar Foto del Candidato</h3>
+    <div id="drop-zone" class="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="text-5xl mb-3">📷</div>
+      <p class="text-gray-600 font-semibold">Haga clic o arrastre una imagen aquí</p>
+      <p id="upload-modal-hint" class="text-gray-400 text-sm mt-2">PNG, JPG, WEBP (máx 5MB) — cuadrada</p>
+    </div>
+    <div id="upload-preview" class="hidden mt-4">
+      <img id="preview-img" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-200">
+      <p id="file-name" class="text-sm text-gray-500 mt-2"></p>
+    </div>
+    <div class="flex gap-3 justify-center mt-6">
+      <button class="btn btn-gray" onclick="closeUploadModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="uploadFoto()">Subir Foto</button>
+    </div>
+    <div id="upload-progress" class="hidden mt-4">
+      <div class="progress-bar"><div class="progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
+      <p class="text-xs text-gray-500 mt-1" id="upload-status">Subiendo...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ INPUT FILE OCULTO (foto de seguidor) ═══ -->
+<input type="file" id="file-input-fan" accept="image/*" style="display:none" onchange="handleFanFileSelect(event)">
+
+<!-- ═══ INPUT FILE OCULTO (imagen de una propuesta) ═══ -->
+<input type="file" id="file-input-propuesta" accept="image/*" style="display:none" onchange="handlePropuestaImgSelect(event)">
+
+<!-- ═══ MODAL: SUBIR FOTO DE SEGUIDOR ═══ -->
+<div id="fan-upload-modal" class="upload-overlay hidden">
+  <div class="upload-modal">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Subí tu foto con el candidato</h3>
+    <div id="fan-upload-preview" class="hidden mt-2 mb-4">
+      <img id="fan-preview-img" class="w-32 h-32 rounded-xl mx-auto object-cover border-4 border-blue-200">
+    </div>
+    <input type="text" id="fan-nombre" class="input mb-4" placeholder="Tu nombre (opcional)" maxlength="120">
+    <p class="text-xs text-gray-400 -mt-2 mb-4">Tu foto se publica recién cuando el equipo del candidato la aprueba.</p>
+    <div class="flex gap-3 justify-center">
+      <button class="btn btn-gray" onclick="closeFanUploadModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="subirFotoFan()">Enviar foto</button>
+    </div>
+    <div id="fan-upload-progress" class="hidden mt-4">
+      <div class="progress-bar"><div class="progress-fill" id="fan-upload-progress-fill" style="width:0%"></div></div>
+      <p class="text-xs text-gray-500 mt-1" id="fan-upload-status">Enviando...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: EDITAR PERFIL (solo dueño/dirigentes) ═══ -->
+<div id="editar-perfil-modal" class="upload-overlay hidden">
+  <div class="upload-modal" style="max-width:560px; text-align:left;">
+    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Editar perfil público</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Eslogan</label>
+        <input type="text" id="edit-eslogan" class="input" placeholder="Ej: Gestión cercana, resultados concretos" maxlength="140">
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase">Biografía breve</label>
+        <textarea id="edit-bio" class="input" rows="4" placeholder="Contá tu trayectoria y por qué te postulás..."></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Propuestas clave</label>
+        <div id="edit-propuestas-list" class="space-y-2"></div>
+        <button type="button" class="btn btn-gray text-xs mt-2" onclick="agregarPropuestaEdit()">+ Agregar propuesta</button>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Redes sociales</label>
+        <div class="space-y-2">
+          <input type="text" id="edit-red-facebook" class="input" placeholder="Facebook (URL completa)">
+          <input type="text" id="edit-red-instagram" class="input" placeholder="Instagram (URL completa)">
+          <input type="text" id="edit-red-twitter" class="input" placeholder="Twitter / X (URL completa)">
+          <input type="text" id="edit-red-tiktok" class="input" placeholder="TikTok (URL completa)">
+          <input type="text" id="edit-red-whatsapp" class="input" placeholder="WhatsApp (link wa.me)">
+          <input type="text" id="edit-red-sitio" class="input" placeholder="Sitio web (URL completa)">
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 justify-center mt-6">
+      <button class="btn btn-gray" onclick="closeEditarPerfil()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPerfil()">Guardar cambios</button>
+    </div>
+    <p id="editar-perfil-status" class="text-sm text-center font-semibold mt-3"></p>
+  </div>
+</div>
+
+<script>
+// ═══ CONFIGURACIÓN ═══
+const API = '/api';
+const API_URL = API;
+const CANDIDATO_ID = parseInt(new URLSearchParams(location.search).get('id') || '1');
+const ENCUESTA_CEDULA_KEY = 'encuesta_cedula_' + CANDIDATO_ID;
+let encuestaCedula = '';
+let fotoFile = null;
+let fotoBase64 = '';
+
+// ═══ HELPERS ═══
+function $(id) { return document.getElementById(id); }
+
+async function apiPost(data) {
+  if (S.usuario) {
+    data.cedula_auth = S.usuario.cedula;
+    data.password_auth = sessionStorage.getItem('pw') || '';
+  }
+  const r = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return r.json();
+}
+
+// POST a un endpoint REST (no al dispatcher de /api por 'action'), adjuntando
+// cedula_auth/password_auth cuando hay sesión. Usado por las rutas del MÓDULO
+// CANDIDATO (perfil, foto oficial, fotos de seguidores) que son rutas propias.
+async function restPost(path, data) {
+  if (S.usuario) {
+    data.cedula_auth = S.usuario.cedula;
+    data.password_auth = sessionStorage.getItem('pw') || '';
+  }
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  let body = {};
+  try { body = await r.json(); } catch(e) {}
+  if (!r.ok) {
+    return { success: false, error: body.detail || body.error || `Error ${r.status}`, status: r.status };
+  }
+  return body;
+}
+
+// Sesión (compatible con auth.js)
+const S = { usuario: null };
+try {
+  const u = JSON.parse(sessionStorage.getItem('user') || 'null');
+  if (u) S.usuario = u;
+} catch(e) {}
+
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  const colors = { error: 'bg-red-600', success: 'bg-green-600', info: 'bg-blue-600' };
+  el.className = `fixed top-4 right-4 px-5 py-3 rounded-xl text-white text-sm font-semibold z-[2000] shadow-lg ${colors[type] || colors.info}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ═══ CARGA DE TODOS LOS BLOQUES (página única, sin pestañas) ═══
+// El historial (Transparencia) no se carga acá: queda en el <details ontoggle=...> de ese
+// bloque, para no pedirle al servidor datos de auditoría que la mayoría de los visitantes
+// nunca va a abrir.
+async function cargarPagina() {
+  // Esperamos el perfil primero: ahí se resuelve esPropietario (dueño/dirigentes), del que
+  // dependen el panel de Estrategia y el de fotos pendientes de moderación más abajo. Si
+  // dispararan todo en paralelo, esPropietario podría llegar tarde y esos paneles no
+  // aparecerían en la primera carga.
+  await cargarPerfil();
+  cargarEncuesta();
+  mostrarEstadoCedula();
+  cargarFotosFans();
+  cargarMetricasSimpatia();
+  actualizarEstadoSimpatia(false);
+}
+
+// ═══ 1. PERFIL ═══
+let perfilActual = null;
+let esPropietario = false;
+
+// candidato.html no carga FontAwesome (a diferencia de otras páginas del sitio) — usa emoji,
+// igual que el resto de los íconos de esta misma página (📷, 📍, etc.), sin sumar una dependencia nueva.
+const REDES_CONFIG = [
+  { key: 'facebook', emoji: '📘', label: 'Facebook' },
+  { key: 'instagram', emoji: '📷', label: 'Instagram' },
+  { key: 'twitter', emoji: '✖️', label: 'X' },
+  { key: 'tiktok', emoji: '🎵', label: 'TikTok' },
+  { key: 'whatsapp', emoji: '💬', label: 'WhatsApp' },
+  { key: 'sitio', emoji: '🔗', label: 'Sitio web' }
+];
+
+async function cargarPerfil() {
+  const cedulaViewer = S.usuario ? encodeURIComponent(S.usuario.cedula) : '';
+  const r = await fetch(`/api/candidato/perfil/${CANDIDATO_ID}${cedulaViewer ? `?cedula_viewer=${cedulaViewer}` : ''}`);
+  const d = await r.json();
+  if (!d.success) { showToast(d.error || 'Error', 'error'); return; }
+  const p = d.perfil;
+  perfilActual = p;
+  esPropietario = !!p.es_propietario;
+  window.CANDIDATO_PARTIDO_ID = p.partido_id || 0;
+  // Panel de Estrategia y Transparencia/auditoría: solo el dueño/dirigentes de ESTE candidato,
+  // no público — no cualquier logueado, y no cualquier visitante.
+  if (esPropietario) {
+    $('seccion-estrategia').classList.remove('hidden');
+    cargarDashboard();
+    cargarEventos();
+    cargarMapa();
+    cargarComparativo();
+    $('bloque-transparencia').classList.remove('hidden');
+  }
+  $('nombre-candidato').textContent = p.nombre;
+  const cargoTxt = p.cargo_postula || p.cargo || '';
+  const partidoTxt = [p.partido_nombre, p.partido_sigla ? `(${p.partido_sigla})` : ''].filter(Boolean).join(' ');
+  const cargoPrefijo = /candidat/i.test(cargoTxt) ? cargoTxt : (cargoTxt ? `Candidato a ${cargoTxt}` : '');
+  $('cargo-partido-badge').textContent = [cargoPrefijo, partidoTxt].filter(Boolean).join(' · ');
+  const bioTexto = $('bio-texto');
+  if (p.bio_breve) {
+    bioTexto.textContent = p.bio_breve;
+    bioTexto.classList.remove('text-gray-400', 'italic');
+  } else {
+    bioTexto.textContent = 'El candidato todavía no cargó su biografía.';
+    bioTexto.classList.add('text-gray-400', 'italic');
+  }
+  if (p.eslogan) {
+    $('eslogan-candidato').textContent = `"${p.eslogan}"`;
+    $('eslogan-candidato').classList.remove('hidden');
+  } else {
+    $('eslogan-candidato').classList.add('hidden');
+  }
+  $('d-nombre').textContent = p.nombre;
+  $('d-cargo').textContent = p.cargo;
+  $('d-lista').textContent = p.lista || '';
+  $('d-partido').textContent = p.partido_nombre || '';
+  $('d-sigla').textContent = p.partido_sigla || '';
+
+  if (p.partido_color) {
+    document.querySelector('.foto-wrapper').style.setProperty('--partido-color', p.partido_color);
+  }
+
+  if (p.partido_logo_url) {
+    $('logo-partido').src = p.partido_logo_url;
+    $('logo-partido').classList.remove('hidden');
+  }
+
+  // Foto de perfil (circular) — solo el dueño/dirigentes pueden tocarla para subir una nueva
+  if (p.foto_url) {
+    $('foto-display').innerHTML = `<img src="${p.foto_url}" class="foto-img" alt="Foto">`;
+  }
+  const fotoDisplay = $('foto-display');
+  if (esPropietario) {
+    fotoDisplay.style.cursor = 'pointer';
+    fotoDisplay.setAttribute('onclick', "abrirSubirFoto('perfil')");
+    fotoDisplay.title = 'Cambiar foto de perfil';
+  } else {
+    fotoDisplay.style.cursor = 'default';
+    fotoDisplay.removeAttribute('onclick');
+    fotoDisplay.title = '';
+  }
+
+  // Foto de portada (banner ancho)
+  const coverDisplay = $('cover-display');
+  coverDisplay.style.backgroundImage = p.portada_url ? `url('${p.portada_url}')` : '';
+
+  // Crédito de la foto de portada (atribución de licencia, ej. CC BY-SA) — solo si vino cargado
+  const coverCredito = $('cover-credito');
+  if (p.portada_url && p.portada_credito_texto) {
+    coverCredito.textContent = p.portada_credito_texto;
+    coverCredito.href = p.portada_credito_url || '#';
+    coverCredito.classList.remove('hidden');
+  } else {
+    coverCredito.classList.add('hidden');
+  }
+
+  // Editar perfil / cargar foto / cambiar portada — solo visibles para el dueño/dirigentes
+  $('btn-editar-perfil').classList.toggle('hidden', !esPropietario);
+  $('btn-editar-whatsapp').classList.toggle('hidden', !esPropietario);
+  $('btn-cargar-foto').classList.toggle('hidden', !esPropietario);
+  $('btn-cambiar-portada').classList.toggle('hidden', !esPropietario);
+
+  // Redes sociales
+  const redes = p.redes_sociales || {};
+  const redesDiv = $('redes-sociales');
+  redesDiv.innerHTML = REDES_CONFIG
+    .filter(r => redes[r.key])
+    .map(r => `<a href="${redes[r.key]}" target="_blank" rel="noopener" class="badge bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">${r.emoji} ${r.label}</a>`)
+    .join('');
+
+  // Distrito badge
+  const ubicacion = [p.distrito_nombre, p.departamento_nombre].filter(Boolean).join(', ');
+  $('distrito-badge').innerHTML = ubicacion
+    ? `<span class="badge bg-blue-50 text-blue-700 px-3 py-1">📍 ${ubicacion}</span>`
+    : '';
+
+  // Propuestas — tarjetas visuales. Cada propuesta puede ser un string simple (formato viejo)
+  // o un objeto {texto, imagen_url} (formato nuevo, con imagen real cargada desde "Editar
+  // perfil"). Si no tiene imagen propia, cae al ícono emoji decorativo de siempre.
+  const ICONOS_PROPUESTA = ['🚧', '🏥', '💼', '🎓', '🌳', '🔒'];
+  const propDiv = $('propuestas-list');
+  if (p.propuestas_clave && Array.isArray(p.propuestas_clave) && p.propuestas_clave.length > 0) {
+    propDiv.innerHTML = p.propuestas_clave.map((pr, i) => {
+      const esObjeto = pr && typeof pr === 'object';
+      const texto = esObjeto ? (pr.texto || '') : pr;
+      const imagen = esObjeto ? (pr.imagen_url || '') : '';
+      const visual = imagen
+        ? `<img src="${imagen}" class="propuesta-card-img" alt="Propuesta">`
+        : `<div class="propuesta-card-icon">${ICONOS_PROPUESTA[i % ICONOS_PROPUESTA.length]}</div>`;
+      return `
+        <div class="propuesta-card">
+          ${visual}
+          <p class="text-gray-700 font-medium leading-snug">${texto}</p>
+        </div>
+      `;
+    }).join('');
+  } else {
+    propDiv.innerHTML = '<p class="text-gray-400 col-span-full">Sin propuestas registradas</p>';
+  }
+}
+
+// ═══ UPLOAD FOTO (de perfil o de portada) ═══
+let fotoTipo = 'perfil';
+
+function abrirSubirFoto(tipo) {
+  fotoTipo = tipo;
+  document.getElementById('file-input').click();
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Solo imágenes', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('Máximo 5MB', 'error'); return; }
+
+  fotoFile = file;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    fotoBase64 = e.target.result;
+    $('preview-img').src = fotoBase64;
+    $('file-name').textContent = file.name;
+    $('upload-preview').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+
+  openUploadModal();
+}
+
+function openUploadModal() {
+  const esPortada = fotoTipo === 'portada';
+  $('upload-modal-title').textContent = esPortada ? 'Cambiar Foto de Portada' : 'Cargar Foto del Candidato';
+  $('upload-modal-hint').textContent = esPortada ? 'PNG, JPG, WEBP (máx 5MB) — rectangular, ancha' : 'PNG, JPG, WEBP (máx 5MB) — cuadrada';
+  $('preview-img').className = esPortada
+    ? 'w-full max-h-40 rounded-lg mx-auto object-cover border-4 border-blue-200'
+    : 'w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-200';
+  $('upload-modal').classList.remove('hidden');
+}
+
+function closeUploadModal() {
+  $('upload-modal').classList.add('hidden');
+  $('upload-preview').classList.add('hidden');
+  $('upload-progress').classList.add('hidden');
+  fotoTipo = 'perfil';
+}
+
+async function uploadFoto() {
+  if (!fotoFile || !fotoBase64) return;
+
+  $('upload-progress').classList.remove('hidden');
+  $('upload-progress-fill').style.width = '30%';
+  $('upload-status').textContent = 'Procesando imagen...';
+
+  try {
+    $('upload-progress-fill').style.width = '70%';
+    $('upload-status').textContent = 'Subiendo...';
+
+    const d = await restPost('/api/candidato/foto/actualizar', {
+      candidato_id: CANDIDATO_ID,
+      foto_base64: fotoBase64,
+      tipo: fotoTipo
+    });
+
+    if (!d.success) {
+      $('upload-status').textContent = d.status === 401 ? 'Iniciá sesión como el candidato para cambiar la foto' : (d.error || 'Error al subir');
+      return;
+    }
+
+    $('upload-progress-fill').style.width = '100%';
+    $('upload-status').textContent = '✓ Completado';
+
+    const tipoSubido = fotoTipo;
+    setTimeout(() => {
+      closeUploadModal();
+      cargarPerfil();
+      showToast(tipoSubido === 'portada' ? 'Portada actualizada' : 'Foto actualizada', 'success');
+    }, 500);
+  } catch(e) {
+    $('upload-status').textContent = 'Error: ' + e.message;
+  }
+}
+
+// ═══ FOTOS DE SEGUIDORES (collage público) ═══
+let fanFotoBase64 = '';
+
+function handleFanFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Solo imágenes', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('Máximo 5MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    fanFotoBase64 = ev.target.result;
+    $('fan-preview-img').src = fanFotoBase64;
+    $('fan-upload-preview').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+  $('fan-upload-modal').classList.remove('hidden');
+}
+
+function closeFanUploadModal() {
+  $('fan-upload-modal').classList.add('hidden');
+  $('fan-upload-preview').classList.add('hidden');
+  $('fan-upload-progress').classList.add('hidden');
+  $('fan-nombre').value = '';
+  fanFotoBase64 = '';
+}
+
+async function subirFotoFan() {
+  if (!fanFotoBase64) { showToast('Elegí una foto primero', 'error'); return; }
+  $('fan-upload-progress').classList.remove('hidden');
+  $('fan-upload-progress-fill').style.width = '50%';
+  $('fan-upload-status').textContent = 'Enviando...';
+
+  const d = await restPost('/api/candidato/fotos_fans/subir', {
+    candidato_id: CANDIDATO_ID,
+    foto_base64: fanFotoBase64,
+    nombre_seguidor: $('fan-nombre').value.trim()
+  });
+
+  if (!d.success) {
+    $('fan-upload-status').textContent = d.error || 'Error al enviar';
+    return;
+  }
+  $('fan-upload-progress-fill').style.width = '100%';
+  $('fan-upload-status').textContent = '✓ Enviada';
+  setTimeout(() => {
+    closeFanUploadModal();
+    showToast('¡Gracias! Tu foto se publica apenas sea aprobada.', 'success');
+  }, 600);
+}
+
+async function cargarFotosFans() {
+  const r = await fetch(`/api/candidato/fotos_fans/${CANDIDATO_ID}`);
+  const d = await r.json();
+  const grid = $('fotos-fans-grid');
+  const vacio = $('fotos-fans-vacio');
+  if (d.success && d.fotos.length > 0) {
+    vacio.classList.add('hidden');
+    // d.fotos ya viene ordenado por más reciente primero (ver /api/candidato/fotos_fans/{id}).
+    grid.innerHTML = d.fotos.map(f => `
+      <div class="fotos-carousel-item rounded-xl overflow-hidden border border-gray-200">
+        <img src="${f.foto_url}" alt="Foto con el candidato">
+        ${f.nombre_seguidor ? `<p class="text-xs text-gray-500 text-center py-1.5 truncate px-1">${f.nombre_seguidor}</p>` : ''}
+      </div>
+    `).join('');
+    // Arranca en una foto al azar, no siempre en la más reciente — cada carga del carrusel
+    // muestra un punto de partida distinto.
+    const items = grid.querySelectorAll('.fotos-carousel-item');
+    if (items.length > 1) {
+      items[Math.floor(Math.random() * items.length)].scrollIntoView({ inline: 'start', block: 'nearest' });
+    }
+  } else {
+    grid.innerHTML = '';
+    vacio.classList.remove('hidden');
+  }
+  if (esPropietario) cargarFotosPendientes();
+}
+
+function scrollFotosCarousel(dir) {
+  const grid = $('fotos-fans-grid');
+  const item = grid.querySelector('.fotos-carousel-item');
+  const step = item ? item.getBoundingClientRect().width + 16 : 236;
+  grid.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
+async function cargarFotosPendientes() {
+  const d = await restPost('/api/candidato/fotos_fans/pendientes', { candidato_id: CANDIDATO_ID });
+  const card = $('fotos-pendientes-card');
+  if (!d.success || !d.fotos || d.fotos.length === 0) {
+    card.classList.add('hidden');
+    return;
+  }
+  card.classList.remove('hidden');
+  $('fotos-pendientes-list').innerHTML = d.fotos.map(f => `
+    <div class="rounded-xl overflow-hidden border border-gray-200">
+      <img src="${f.foto_url}" class="w-full aspect-square object-cover" alt="Pendiente">
+      <div class="flex gap-1 p-1.5">
+        <button class="btn btn-success text-xs flex-1 justify-center" onclick="moderarFoto(${f.id}, 'aprobar')">✓ Aprobar</button>
+        <button class="btn text-xs flex-1 justify-center" style="background:#fee2e2;color:#991b1b;" onclick="moderarFoto(${f.id}, 'rechazar')">✕ Rechazar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function moderarFoto(fotoId, accion) {
+  const d = await restPost('/api/candidato/fotos_fans/moderar', { foto_id: fotoId, accion, candidato_id: CANDIDATO_ID });
+  if (!d.success) { showToast(d.error || 'Error', 'error'); return; }
+  showToast(accion === 'aprobar' ? 'Foto aprobada' : 'Foto rechazada', 'success');
+  cargarFotosFans();
+}
+
+// ═══ EDITAR PERFIL (solo dueño/dirigentes) ═══
+// Cada propuesta es {texto, imagen_url}; la imagen se lee en el navegador a base64, igual que
+// la foto de perfil/portada, y viaja adentro del mismo guardado — no hace falta un endpoint aparte.
+let propuestasEdit = [];
+let propuestaImgIdx = -1;
+
+function renderPropuestasEdit() {
+  $('edit-propuestas-list').innerHTML = propuestasEdit.map((p, i) => `
+    <div class="flex items-center gap-2">
+      <div class="propuesta-edit-thumb" onclick="elegirImagenPropuesta(${i})" title="Elegir imagen">
+        ${p.imagen_url ? `<img src="${p.imagen_url}" alt="">` : '<span class="text-gray-300 text-xl">📷</span>'}
+      </div>
+      <input type="text" class="input" value="${(p.texto || '').replace(/"/g, '&quot;')}" placeholder="Texto de la propuesta" oninput="propuestasEdit[${i}].texto = this.value">
+      <button type="button" class="text-red-400 hover:text-red-600 text-lg px-1 flex-shrink-0" onclick="quitarPropuestaEdit(${i})" title="Quitar">✕</button>
+    </div>
+  `).join('') || '<p class="text-gray-400 text-sm">Todavía no cargaste propuestas.</p>';
+}
+
+function agregarPropuestaEdit() {
+  propuestasEdit.push({ texto: '', imagen_url: '' });
+  renderPropuestasEdit();
+}
+
+function quitarPropuestaEdit(i) {
+  propuestasEdit.splice(i, 1);
+  renderPropuestasEdit();
+}
+
+function elegirImagenPropuesta(i) {
+  propuestaImgIdx = i;
+  $('file-input-propuesta').click();
+}
+
+function handlePropuestaImgSelect(e) {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || propuestaImgIdx < 0) return;
+  if (!file.type.startsWith('image/')) { showToast('Solo imágenes', 'error'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('Máximo 3MB', 'error'); return; }
+  const idx = propuestaImgIdx;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    propuestasEdit[idx].imagen_url = ev.target.result;
+    renderPropuestasEdit();
+  };
+  reader.readAsDataURL(file);
+}
+
+function abrirEditarPerfil() {
+  if (!perfilActual) return;
+  $('edit-eslogan').value = perfilActual.eslogan || '';
+  $('edit-bio').value = perfilActual.bio_breve || '';
+  propuestasEdit = (perfilActual.propuestas_clave || []).map(p =>
+    (p && typeof p === 'object') ? { texto: p.texto || '', imagen_url: p.imagen_url || '' } : { texto: p || '', imagen_url: '' }
+  );
+  renderPropuestasEdit();
+  const redes = perfilActual.redes_sociales || {};
+  $('edit-red-facebook').value = redes.facebook || '';
+  $('edit-red-instagram').value = redes.instagram || '';
+  $('edit-red-twitter').value = redes.twitter || '';
+  $('edit-red-tiktok').value = redes.tiktok || '';
+  $('edit-red-whatsapp').value = redes.whatsapp || '';
+  $('edit-red-sitio').value = redes.sitio || '';
+  $('editar-perfil-status').textContent = '';
+  $('editar-perfil-modal').classList.remove('hidden');
+}
+
+function closeEditarPerfil() {
+  $('editar-perfil-modal').classList.add('hidden');
+}
+
+async function guardarPerfil() {
+  const propuestas = propuestasEdit
+    .map(p => ({ texto: (p.texto || '').trim(), imagen_url: p.imagen_url || '' }))
+    .filter(p => p.texto);
+  const redes_sociales = {
+    facebook: $('edit-red-facebook').value.trim(),
+    instagram: $('edit-red-instagram').value.trim(),
+    twitter: $('edit-red-twitter').value.trim(),
+    tiktok: $('edit-red-tiktok').value.trim(),
+    whatsapp: $('edit-red-whatsapp').value.trim(),
+    sitio: $('edit-red-sitio').value.trim()
+  };
+  $('editar-perfil-status').textContent = 'Guardando...';
+  $('editar-perfil-status').style.color = '#64748b';
+
+  const d = await restPost('/api/candidato/perfil/actualizar', {
+    candidato_id: CANDIDATO_ID,
+    foto_url: perfilActual ? perfilActual.foto_url : '',
+    bio_breve: $('edit-bio').value.trim(),
+    eslogan: $('edit-eslogan').value.trim(),
+    propuestas_clave: propuestas,
+    redes_sociales
+  });
+
+  if (!d.success) {
+    $('editar-perfil-status').textContent = d.status === 401 ? 'Iniciá sesión como el candidato para editar' : (d.error || 'Error al guardar');
+    $('editar-perfil-status').style.color = '#dc2626';
+    return;
+  }
+  $('editar-perfil-status').textContent = '✓ Guardado';
+  $('editar-perfil-status').style.color = '#16a34a';
+  setTimeout(() => {
+    closeEditarPerfil();
+    cargarPerfil();
+    showToast('Perfil actualizado', 'success');
+  }, 500);
+}
+
+// Drag and drop
+const dropZone = $('drop-zone');
+if (dropZone) {
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      fotoFile = file;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        fotoBase64 = ev.target.result;
+        $('preview-img').src = fotoBase64;
+        $('file-name').textContent = file.name;
+        $('upload-preview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+// ═══ 2. ENCUESTA ═══
+async function cargarEncuesta() {
+  const cedulaGuardada = sessionStorage.getItem(ENCUESTA_CEDULA_KEY);
+  if (cedulaGuardada) encuestaCedula = cedulaGuardada;
+  
+  const r = await fetch(`/api/candidato/encuesta/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success || !d.preguntas.length) {
+    $('preguntas-container').innerHTML = '<p class="text-gray-400 text-center py-8">No hay encuestas activas</p>';
+    return;
+  }
+  $('preguntas-container').innerHTML = d.preguntas.map((p, i) => `
+    <div class="pregunta-card">
+      <p class="font-semibold text-gray-800 mb-4">${i + 1}. ${p.pregunta}</p>
+      <div class="grid gap-2">
+        ${p.opciones.map(op => `
+          <div class="opcion-item" onclick="seleccionarOpcion(${p.id}, '${op}', this)">
+            <div class="opcion-radio"></div>
+            <span class="text-gray-700">${op}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function seleccionarOpcion(preguntaId, opcion, el) {
+  // Deseleccionar otras opciones de la misma pregunta
+  el.parentElement.querySelectorAll('.opcion-item').forEach(item => item.classList.remove('selected'));
+  el.classList.add('selected');
+  
+  // Pedir cédula solo la primera vez
+  if (!encuestaCedula) {
+    encuestaCedula = prompt('Ingrese su cédula para registrar sus respuestas:');
+    if (!encuestaCedula) return;
+    sessionStorage.setItem(ENCUESTA_CEDULA_KEY, encuestaCedula);
+    mostrarEstadoCedula();
+    showToast('Cédula registrada', 'success');
+  }
+  
+  // Enviar respuesta (ruta REST dedicada; antes iba al dispatcher con action
+  // 'encuesta_responder' que no existe -> caía al Default de voto/no_voto)
+  restPost('/api/candidato/encuesta/responder', {
+    pregunta_id: preguntaId,
+    votante_cedula: encuestaCedula,
+    respuesta: opcion
+  }).then(d => {
+    if (d.success) showToast('✓ Respuesta registrada', 'success');
+    else showToast(d.error || 'Error', 'error');
+  });
+}
+
+function mostrarEstadoCedula() {
+  const info = $('encuesta-cedula-info');
+  if (!info) return;
+  if (encuestaCedula) {
+    info.innerHTML = `<span class="text-green-700 font-semibold">✓ Cédula registrada: ${encuestaCedula}</span>`;
+  } else {
+    info.innerHTML = '<span class="text-gray-500">Ingrese su cédula la primera vez que responda.</span>';
+  }
+}
+
+// ═══ 3. LUGAR DE VOTACIÓN ═══
+async function consultarLugar() {
+  const cedula = $('cedula-consulta').value.trim();
+  if (!cedula) return showToast('Ingrese su cédula', 'error');
+  const r = await fetch(`/api/candidato/lugar-votacion?cedula=${cedula}`);
+  const d = await r.json();
+  if (!d.success) {
+    $('lugar-resultado').classList.add('hidden');
+    return showToast(d.error || 'No encontrado', 'error');
+  }
+  $('lugar-resultado').classList.remove('hidden');
+  $('lugar-nombre').textContent = d.lugar.local || 'Local no especificado';
+  $('lugar-direccion').textContent = d.lugar.direccion || '';
+  $('lugar-mesa').textContent = `Mesa ${d.lugar.mesa} — Orden ${d.lugar.orden}`;
+}
+
+// ═══ 4. SIMPATÍA ═══
+async function registrarSimpatia() {
+  const cedula = prompt('Ingrese su cédula para registrar su apoyo:');
+  if (!cedula) return;
+  let lat = null, lng = null;
+  if (navigator.geolocation) {
+    try {
+      const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 }));
+      lat = pos.coords.latitude; lng = pos.coords.longitude;
+    } catch(e) {}
+  }
+  const d = await restPost('/api/candidato/simpatia/registrar', { candidato_id: CANDIDATO_ID, votante_cedula: cedula, lat, lng, nivel_interes: 2, origen: 'web' });
+  if (d.success) {
+    showToast('❤️ Apoyo registrado', 'success');
+    cargarMetricasSimpatia();
+    actualizarEstadoSimpatia(true);
+  } else showToast(d.error || 'Error', 'error');
+}
+
+function actualizarEstadoSimpatia(esSimpatizante) {
+  const btn = $('btn-simpatia');
+  if (esSimpatizante) {
+    btn.innerHTML = '✓ Ya sos simpatizante';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'default';
+  } else {
+    btn.innerHTML = '❤️ Apoyar candidatura';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+  }
+}
+
+// Métricas detalladas (por zona) quedan en el panel del equipo (Estrategia);
+// en la cabecera pública solo se muestra el total, sin fricción.
+async function cargarMetricasSimpatia() {
+  const r = await fetch(`/api/candidato/simpatia/metricas/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success) return;
+  $('simpatia-contador').textContent = `${d.metricas.total} simpatizantes`;
+  const metricasDashboard = $('metricas-container');
+  if (metricasDashboard) {
+    const m = d.metricas;
+    const maxDepto = m.por_departamento[0]?.total || 1;
+    metricasDashboard.innerHTML = `
+      <div class="text-center mb-6">
+        <p class="text-4xl font-black text-blue-600">${m.total}</p>
+        <p class="text-sm text-gray-500">Simpatizantes</p>
+      </div>
+      <div class="space-y-3">
+        <p class="font-semibold text-sm text-gray-600">Top zonas:</p>
+        ${m.por_departamento.slice(0, 5).map(de => `
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>${de.nombre || 'N/A'}</span>
+              <span class="font-semibold">${de.total}</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${(de.total / maxDepto * 100).toFixed(0)}%"></div></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+}
+
+// ═══ 5. TRANSPARENCIA ═══
+async function cargarHistorial() {
+  const r = await fetch(`/api/candidato/historial/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success || !d.historial.length) {
+    $('historial-container').innerHTML = '<p class="text-gray-400 text-center py-8">Sin cambios registrados</p>';
+    return;
+  }
+  $('historial-container').innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="text-left p-3 rounded-tl-lg">Fecha</th>
+            <th class="text-left p-3">Campo</th>
+            <th class="text-left p-3 rounded-tr-lg">Por</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${d.historial.map(h => `<tr class="border-b hover:bg-gray-50"><td class="p-3">${h.fecha}</td><td class="p-3 font-mono text-xs">${h.campo}</td><td class="p-3">${h.por || 'Sistema'}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ═══ EXPORTAR ═══
+async function exportarPDF() {
+  const r = await fetch(`/api/candidato/exportar/pdf/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (d.success) { window.open(`/static/exports/${d.filename}`, '_blank'); showToast('PDF generado', 'success'); }
+  else showToast(d.error || 'Error', 'error');
+}
+async function exportarExcel() {
+  const r = await fetch(`/api/candidato/exportar/excel/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (d.success) { window.open(`/static/exports/${d.filename}`, '_blank'); showToast('Excel generado', 'success'); }
+  else showToast(d.error || 'Error', 'error');
+}
+
+// ═══ 6. ESTRATEGIA ═══
+async function cargarDashboard() {
+  const r = await fetch(`/api/candidato/dashboard/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success) return;
+  const m = d.dashboard;
+  const metricas = [
+    { label: 'Simpatizantes', value: m.simpatizantes, color: 'bg-blue-100 text-blue-700' },
+    { label: 'Encuestas', value: m.preguntas_activas, color: 'bg-green-100 text-green-700' },
+    { label: 'Respuestas', value: m.respuestas_totales, color: 'bg-purple-100 text-purple-700' },
+    { label: 'Consultas', value: m.consultas_publicas, color: 'bg-orange-100 text-orange-700' },
+    { label: 'Eventos', value: m.eventos_programados, color: 'bg-red-100 text-red-700' },
+  ];
+  $('dashboard-metrics').innerHTML = metricas.map(m => `
+    <div class="bg-gray-50 rounded-xl p-4 text-center ${m.color.split(' ')[0]}">
+      <p class="text-2xl font-black ${m.color.split(' ')[1]}">${m.value}</p>
+      <p class="text-xs text-gray-500 mt-1">${m.label}</p>
+    </div>
+  `).join('');
+}
+
+async function cargarEventos() {
+  const r = await fetch(`/api/candidato/eventos/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success || !d.eventos.length) {
+    $('eventos-list').innerHTML = '<p class="text-gray-400 text-center py-4">No hay eventos programados</p>';
+    return;
+  }
+  $('eventos-list').innerHTML = d.eventos.map(e => `
+    <div class="flex items-start gap-3 p-3 border rounded-xl hover:bg-gray-50 transition">
+      <span class="badge ${e.estado === 'en_vivo' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${e.estado}</span>
+      <div>
+        <p class="font-semibold text-gray-800">${e.titulo}</p>
+        <p class="text-xs text-gray-500">${e.fecha_hora}</p>
+        ${e.url_stream ? `<a href="${e.url_stream}" target="_blank" class="text-xs text-blue-600 mt-1 inline-block font-semibold">Ver transmisión →</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+let mapaSimpatizantes = null;
+async function cargarMapa() {
+  if (!mapaSimpatizantes) {
+    mapaSimpatizantes = L.map('mapa-simpatizantes').setView([-25.3, -57.6], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(mapaSimpatizantes);
+  }
+  const map = mapaSimpatizantes;
+  const r = await fetch(`/api/candidato/simpatia/mapa/${CANDIDATO_ID}`);
+  const d = await r.json();
+  if (!d.success) return;
+  (d.puntos || []).forEach(p => {
+    L.circleMarker([p.lat, p.lng], {
+      radius: 6 + (p.nivel || 1) * 2,
+      fillColor: p.nivel >= 3 ? '#dc2626' : p.nivel >= 2 ? '#f59e0b' : '#3b82f6',
+      color: '#fff', weight: 1, fillOpacity: 0.8
+    }).addTo(map).bindPopup(`${p.departamento || ''} — Nivel ${p.nivel}`);
+  });
+}
+
+async function cargarComparativo() {
+  const r = await fetch('/api/candidato/simpatia/comparativo');
+  const d = await r.json();
+  if (!d.success || !d.comparativo.length) {
+    $('comparativo-container').innerHTML = '<p class="text-gray-400">Sin datos</p>';
+    return;
+  }
+  const max = d.comparativo[0]?.simpatizantes || 1;
+  $('comparativo-container').innerHTML = d.comparativo.map(c => `
+    <div class="mb-2">
+      <div class="flex justify-between text-sm mb-1">
+        <span class="font-semibold">${c.nombre} (${c.cargo})</span>
+        <span>${c.simpatizantes}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${(c.simpatizantes / max * 100).toFixed(0)}%"></div></div>
+    </div>
+  `).join('');
+  
+  const ctx = document.getElementById('chart-comparativo');
+  if (ctx && typeof Chart !== 'undefined') {
+    if (window._chartComparativo) window._chartComparativo.destroy();
+    window._chartComparativo = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: d.comparativo.map(c => c.nombre),
+        datasets: [{ label: 'Simpatizantes', data: d.comparativo.map(c => c.simpatizantes), backgroundColor: d.comparativo.map((_, i) => ['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6'][i % 5]), borderRadius: 6 }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+async function notificarSimpatizantes() {
+  const mensaje = prompt('Mensaje a enviar a simpatizantes:');
+  if (!mensaje) return;
+  if (!confirm('¿Enviar mensaje a todos los simpatizantes?')) return;
+  const d = await restPost('/api/candidato/notificar', { candidato_id: CANDIDATO_ID, mensaje, canal: 'whatsapp' });
+  if (d.success) showToast(`📢 Notificados: ${d.enviados}`, 'success');
+  else showToast(d.error || 'Error', 'error');
+}
+
+// ═══ INICIO ═══
+document.addEventListener('DOMContentLoaded', cargarPagina);
+</script>
+</body>
+</html>

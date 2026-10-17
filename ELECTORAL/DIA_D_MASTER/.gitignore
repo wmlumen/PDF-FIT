@@ -1,0 +1,32 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+database/*.db
+database/*.db-wal
+database/*.db-shm
+.vscode/
+.idea/
+
+# Copias de seguridad manuales sueltas (app.py.bak.plan, dirigente.html.bak.20261013_115626,
+# etc.): son clutter redundante con el historial de git, no se commitean nunca, y si no se
+# ignoran, herramientas basadas en ripgrep (como el Grep de los agentes de IA) las recorren
+# igual que el código real, multiplicando resultados y gastando tokens de contexto de más.
+*.bak
+*.bak.*
+
+# Credenciales de Twilio en texto plano (Account SID + Auth Token) - NUNCA versionar
+twilio.txt
+
+# Notas internas de credenciales dev con nombres/cédulas reales - el propio doc dice "No debe
+# commitearse ni compartirse fuera del equipo"
+docs/CREDENCIALES_DEV.md
+
+# Datos crudos de fuente (padrón TSJE, >1.5GB de .dbf/.cdx) y builds de la APK: no son
+# código, nunca deben versionarse ni recorrerse en una búsqueda de texto.
+fuentes_padron/
+mobile-apk/
+
+node_modules/
+.firebase/
+env.yaml.generated

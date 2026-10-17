@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Veedores</title>
+  <script src="vendor/tailwind.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    .card { transition: all 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = '/api';
+    const USER_KEY = 'seccional40_user';
+
+    function getUser() { try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; } }
+
+    let state = {
+      autenticado: !!getUser(),
+      usuario: getUser(),
+      veedores: [],
+      participacion: [],
+      cargando: false,
+      mensaje: '',
+      pestaña: 'veedores', // veedores | participacion | registrar
+      filtroMesa: '',
+      formVeedor: { id_veedor: '', nombre_veedor: '', cedula_veedor: '', seccional_id: 0, escuela_id: 0, mesa_id: 0, telefono: '' },
+      formConfirmar: { veedor_id: '', votante_cedula: '', votante_nombre: '', mesa_id: 0 }
+    };
+
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+      app.innerHTML = renderDashboard();
+      if (state.cargando) return;
+      afterRender();
+    }
+
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl shadow-xl border border-party-100 p-8 w-full max-w-md text-center fade-in">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-party-600 to-party-800 flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-eye text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-black uppercase tracking-tight text-gray-900">Veedores</h1>
+            <p class="text-sm text-amber-400 mt-1 mb-6">DIA D MASTER · Control de Mesas</p>
+            <div class="space-y-3 text-left">
+              <input id="loginCedula" type="text" placeholder="Cédula" class="w-full border-2 border-party-200 rounded-2xl p-3 text-sm focus:border-[#c5a059] outline-none">
+              <input id="loginPassword" type="password" placeholder="Contraseña" class="w-full border-2 border-party-200 rounded-2xl p-3 text-sm focus:border-[#c5a059] outline-none">
+              <button onclick="login()" class="w-full bg-gradient-to-r from-party-600 to-party-800 text-white font-bold py-3 rounded-2xl hover:scale-[1.02] transition">Ingresar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function login() {
+      const ced = document.getElementById('loginCedula').value.replace(/[.\s,-]/g, '').trim();
+      const pw = document.getElementById('loginPassword').value.trim();
+      if (!ced || !pw) { alert('Ingrese cédula y contraseña.'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', cedula: ced, password: pw }) });
+        const d = await r.json();
+        if (!d.success) { alert(d.error || 'Credenciales inválidas'); return; }
+        sessionStorage.setItem(USER_KEY, JSON.stringify(d.usuario));
+        state.autenticado = true;
+        state.usuario = d.usuario;
+        await loadAll();
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    function logout() { sessionStorage.removeItem(USER_KEY); window.location.href = 'acceso.html'; }
+
+    async function loadAll() {
+      state.cargando = true;
+      state.mensaje = 'Cargando...';
+      render();
+      try {
+        const filtro = state.filtroMesa ? '&mesa=' + state.filtroMesa : '';
+        const [v, p] = await Promise.all([
+          fetch(API_URL + '?action=veedores' + filtro + '&v=' + Date.now()).then(r => r.json()),
+          fetch(API_URL + '?action=participacion' + filtro + '&v=' + Date.now()).then(r => r.json())
+        ]);
+        state.veedores = v.veedores || [];
+        state.participacion = p.participacion || [];
+      } catch (e) { state.mensaje = 'Error al cargar: ' + e.message; }
+      state.cargando = false;
+      render();
+    }
+
+    function renderDashboard() {
+      const u = state.usuario || {};
+      const nom = u.nombre || 'Usuario';
+      const nivel = u.nivel || '';
+      const vs = state.veedores;
+      const ps = state.participacion;
+      const confirmados = ps.filter(p => p.double_check === 1).length;
+      const porMesa = {};
+      vs.forEach(v => { const m = v.mesa_id || 0; porMesa[m] = (porMesa[m] || 0) + 1; });
+      const mesasCubiertas = Object.keys(porMesa).length;
+
+      const btn = (pest, icon, txt) =>
+        `<button onclick="state.pestaña='${pest}';render()" class="px-4 py-2 rounded-xl text-sm font-semibold transition ${state.pestaña === pest ? 'bg-party-600 text-white shadow-md' : 'bg-white text-gray-700 border border-party-200 hover:bg-party-50'}"><i class="fas ${icon} mr-1"></i>${txt}</button>`;
+
+      return `
+        <div class="max-w-7xl mx-auto p-4 space-y-4 fade-in">
+          <!-- Header -->
+          <div class="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-party-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-party-600 to-party-800 flex items-center justify-center"><i class="fas fa-eye text-white"></i></div>
+              <div><h1 class="text-xl font-bold text-gray-900">Veedores</h1><p class="text-xs text-gray-500">${nom} · ${nivel}</p></div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="loadAll()" class="px-3 py-2 bg-gray-100 rounded-xl text-sm hover:bg-gray-200"><i class="fas fa-sync-alt mr-1"></i>Actualizar</button>
+              <button onclick="logout()" class="px-3 py-2 bg-party-100 text-amber-400 rounded-xl text-sm hover:bg-party-200"><i class="fas fa-sign-out-alt mr-1"></i>Salir</button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white rounded-2xl p-4 border border-party-100 card"><p class="text-2xl font-black text-party-600">${vs.length}</p><p class="text-xs text-gray-500">Veedores</p></div>
+            <div class="bg-white rounded-2xl p-4 border border-green-100 card"><p class="text-2xl font-black text-green-600">${mesasCubiertas}</p><p class="text-xs text-gray-500">Mesas cubiertas</p></div>
+            <div class="bg-white rounded-2xl p-4 border border-blue-100 card"><p class="text-2xl font-black text-blue-600">${ps.length}</p><p class="text-xs text-gray-500">Registros</p></div>
+            <div class="bg-white rounded-2xl p-4 border border-yellow-100 card"><p class="text-2xl font-black text-yellow-600">${confirmados}</p><p class="text-xs text-gray-500">Double-check</p></div>
+          </div>
+
+          <!-- Filtro por mesa -->
+          <div class="flex gap-2 items-center bg-white rounded-2xl p-3 border border-party-100">
+            <i class="fas fa-filter text-gray-400"></i>
+            <input id="filtroMesa" type="number" placeholder="Filtrar por mesa..." value="${state.filtroMesa}" class="flex-1 border border-gray-300 rounded-xl px-3 py-1.5 text-sm outline-none focus:border-party-400">
+            <button onclick="state.filtroMesa=document.getElementById('filtroMesa').value;loadAll()" class="bg-party-600 text-white px-4 py-1.5 rounded-xl text-sm hover:bg-party-700">Filtrar</button>
+            ${state.filtroMesa ? `<button onclick="state.filtroMesa='';loadAll()" class="text-xs text-gray-500 hover:text-party-600">Limpiar</button>` : ''}
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex flex-wrap gap-2">${btn('veedores','fa-user-check','Veedores')}${btn('participacion','fa-clipboard-list','Participación')}${btn('registrar','fa-plus-circle','Registrar')}</div>
+
+          ${state.pestaña === 'veedores' ? renderVeedores() : ''}
+          ${state.pestaña === 'participacion' ? renderParticipacion() : ''}
+          ${state.pestaña === 'registrar' ? renderRegistrar() : ''}
+
+          ${state.mensaje ? `<div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 text-sm text-yellow-800">${state.mensaje}</div>` : ''}
+        </div>`;
+    }
+
+    function renderVeedores() {
+      if (state.veedores.length === 0) {
+        return `<div class="bg-white rounded-2xl p-8 text-center border border-party-100"><i class="fas fa-user-check text-4xl text-gray-300 mb-3"></i><p class="text-gray-400">No hay veedores registrados</p><button onclick="state.pestaña='registrar';render()" class="mt-3 text-sm bg-party-600 text-white px-4 py-2 rounded-xl">Registrar primero</button></div>`;
+      }
+      let html = `<div class="bg-white rounded-2xl p-4 border border-party-100"><h2 class="font-bold text-lg mb-3"><i class="fas fa-user-check text-party-600 mr-2"></i>Veedores</h2><div class="overflow-x-auto"><table class="w-full text-sm">`;
+      html += `<thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">ID</th><th class="pb-2">Nombre</th><th class="pb-2">Cédula</th><th class="pb-2">Mesa</th><th class="pb-2">Seccional</th><th class="pb-2">Teléfono</th><th class="pb-2">Estado</th></tr></thead><tbody>`;
+      state.veedores.forEach(v => {
+        html += `<tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-2 font-mono text-xs">${v.id_veedor}</td>
+          <td class="py-2 font-medium">${v.nombre_veedor}</td>
+          <td class="py-2">${v.cedula_veedor}</td>
+          <td class="py-2">${v.mesa_id || '—'}</td>
+          <td class="py-2">${v.seccional_id || '—'}</td>
+          <td class="py-2">${v.telefono || '—'}</td>
+          <td class="py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${v.estado === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${v.estado}</span></td>
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+      return html;
+    }
+
+    function renderParticipacion() {
+      if (state.participacion.length === 0) {
+        return `<div class="bg-white rounded-2xl p-8 text-center border border-party-100"><i class="fas fa-clipboard-list text-4xl text-gray-300 mb-3"></i><p class="text-gray-400">Sin registros de participación</p></div>`;
+      }
+      let html = `<div class="bg-white rounded-2xl p-4 border border-party-100"><h2 class="font-bold text-lg mb-3"><i class="fas fa-clipboard-list text-party-600 mr-2"></i>Participación registrada</h2><div class="overflow-x-auto"><table class="w-full text-sm">`;
+      html += `<thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">Veedor</th><th class="pb-2">Votante</th><th class="pb-2">Mesa</th><th class="pb-2">Double check</th><th class="pb-2">Fecha</th></tr></thead><tbody>`;
+      state.participacion.forEach(p => {
+        const v = state.veedores.find(vv => vv.id_veedor === p.veedor_id);
+        html += `<tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-2">${v ? v.nombre_veedor : p.veedor_id || '—'}</td>
+          <td class="py-2">${p.votante_nombre || p.votante_cedula}</td>
+          <td class="py-2">${p.mesa_id || '—'}</td>
+          <td class="py-2">${p.double_check ? '<span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Sí</span>' : '<span class="text-gray-400">No</span>'}</td>
+          <td class="py-2 text-xs text-gray-400">${p.timestamp_confirmacion || ''}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+      return html;
+    }
+
+    function renderRegistrar() {
+      return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Nuevo veedor -->
+          <div class="bg-white rounded-2xl p-4 border border-party-100">
+            <h3 class="font-bold mb-3"><i class="fas fa-user-plus text-party-600 mr-2"></i>Registrar veedor</h3>
+            <div class="space-y-2">
+              <input id="fvId" type="text" placeholder="ID veedor (ej: VDR001)" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvNombre" type="text" placeholder="Nombre completo" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvCedula" type="text" placeholder="Cédula" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvMesa" type="number" placeholder="Mesa asignada" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvSeccional" type="number" placeholder="Seccional ID" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fvTelefono" type="text" placeholder="Teléfono" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <button onclick="registrarVeedor()" class="w-full bg-gradient-to-r from-party-600 to-party-800 text-white font-bold py-2 rounded-xl hover:scale-[1.01] transition">Guardar veedor</button>
+            </div>
+          </div>
+
+          <!-- Confirmar participación -->
+          <div class="bg-white rounded-2xl p-4 border border-green-100">
+            <h3 class="font-bold mb-3"><i class="fas fa-check-double text-green-600 mr-2"></i>Confirmar participación</h3>
+            <div class="space-y-2">
+              <select id="fcVeedor" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+                <option value="">Seleccionar veedor...</option>
+                ${state.veedores.map(v => `<option value="${v.id_veedor}">${v.id_veedor} - ${v.nombre_veedor}</option>`).join('')}
+              </select>
+              <input id="fcCedula" type="text" placeholder="Cédula del votante" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fcNombre" type="text" placeholder="Nombre del votante" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <input id="fcMesa" type="number" placeholder="Mesa" class="w-full border border-gray-300 rounded-xl p-2 text-sm">
+              <button onclick="confirmarParticipacion()" class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-2 rounded-xl hover:scale-[1.01] transition">Confirmar participación</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function registrarVeedor() {
+      const d = {
+        action: 'registrar_veedor',
+        id_veedor: document.getElementById('fvId').value.trim(),
+        nombre_veedor: document.getElementById('fvNombre').value.trim(),
+        cedula_veedor: document.getElementById('fvCedula').value.replace(/[.\s,-]/g, '').trim(),
+        mesa_id: parseInt(document.getElementById('fvMesa').value) || 0,
+        seccional_id: parseInt(document.getElementById('fvSeccional').value) || 0,
+        telefono: document.getElementById('fvTelefono').value.trim()
+      };
+      if (!d.id_veedor || !d.nombre_veedor || !d.cedula_veedor) { alert('ID, nombre y cédula del veedor requeridos'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) });
+        const data = await r.json();
+        if (data.success) { alert('Veedor registrado'); await loadAll(); }
+        else { alert('Error: ' + (data.error || 'desconocido')); }
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    async function confirmarParticipacion() {
+      const d = {
+        action: 'confirmar_participacion',
+        veedor_id: document.getElementById('fcVeedor').value,
+        votante_cedula: document.getElementById('fcCedula').value.replace(/[.\s,-]/g, '').trim(),
+        votante_nombre: document.getElementById('fcNombre').value.trim(),
+        mesa_id: parseInt(document.getElementById('fcMesa').value) || 0
+      };
+      if (!d.veedor_id || !d.votante_cedula) { alert('Veedor y votante requeridos'); return; }
+      try {
+        const r = await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(d) });
+        const data = await r.json();
+        if (data.success) { alert('Participación confirmada'); await loadAll(); }
+        else { alert('Error: ' + (data.error || 'desconocido')); }
+      } catch (e) { alert('Error de conexión: ' + e.message); }
+    }
+
+    function afterRender() {}
+
+    // Init
+    if (state.autenticado) { loadAll(); } else { render(); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora D'Hondt - DIA D MASTER</title>
+  <script src="vendor/tailwind.js"></script>
+  <script src="vendor/chart.umd.js"></script>
+  <script src="vendor/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <!-- LOGIN -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-200 max-w-md w-full text-center">
+      <div class="w-16 h-16 bg-gradient-to-br from-slate-900 to-black border border-amber-500/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fa fa-calculator text-amber-400 text-2xl"></i>
+      </div>
+      <h1 class="text-xl font-black text-slate-900 mb-1">Calculadora D'Hondt</h1>
+      <p class="text-slate-500 text-sm mb-6">Ingresá con tu cuenta para calcular adjudicación de bancas.</p>
+      <div class="space-y-3 text-left">
+        <input type="text" id="dhondtCedula" placeholder="Cédula" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold" onkeypress="if(event.key==='Enter') document.getElementById('dhondtPassword').focus()">
+        <input type="password" id="dhondtPassword" placeholder="Contraseña" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl font-bold" onkeypress="if(event.key==='Enter') loginDhondt()">
+        <button onclick="loginDhondt()" class="w-full py-3 bg-slate-900 text-white rounded-xl font-black">Ingresar</button>
+      </div>
+      <p id="dhondtLoginError" class="text-red-600 text-xs font-bold mt-3"></p>
+    </div>
+  </div>
+
+  <!-- BLOQUEADO POR PAQUETE -->
+  <div id="bloqueadoScreen" class="min-h-screen items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-200 max-w-md w-full text-center mx-auto mt-24">
+      <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-lock text-amber-600 text-2xl"></i>
+      </div>
+      <h1 class="text-xl font-black text-slate-900 mb-2">D'Hondt no disponible</h1>
+      <p class="text-slate-500 text-sm mb-6">Tu paquete contratado no incluye datos generales (nacional/departamental). Hablá con tu administrador para ampliar tu paquete.</p>
+      <button onclick="logoutDhondt()" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold">Salir</button>
+    </div>
+  </div>
+
+  <div id="dhondtApp" style="display:none;">
+  <!-- Navbar -->
+  <header class="bg-gradient-to-r from-slate-950 via-zinc-900 to-black text-white shadow-xl border-b border-amber-500/30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="acceso.html" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition" title="Volver al Panel Principal">
+          <i class="fa fa-arrow-left"></i>
+        </a>
+        <i class="fa fa-calculator text-2xl text-amber-400"></i>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Simulador Electoral Sistema D'Hondt</h1>
+          <p class="text-xs text-amber-200/80">Adjudicación Proporcional de Bancas Legislativas y Municipales</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="cargarPreset(12)" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-amber-500/30 transition text-amber-300 font-bold">Junta (12 Bancas)</button>
+        <button onclick="cargarPreset(24)" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-amber-500/30 transition text-amber-300 font-bold">Asunción (24 Bancas)</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Panel de Configuración y Carga -->
+      <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <i class="fa fa-sliders text-amber-500"></i> Parámetros de Elección
+        </h2>
+
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Bancas a Disputar (Escaños)</label>
+          <input type="number" id="inputBancas" min="1" max="100" value="12" oninput="calcularDebounced()" class="w-full px-3 py-2 border rounded-xl focus:ring-2 focus:ring-amber-500 font-bold text-lg text-slate-800">
+          <p class="text-xs text-slate-500 mt-1">Ej: Concejales (12 o 24), Diputados departamentales.</p>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-semibold text-slate-700">Listas y Votos</label>
+            <button onclick="agregarFilaLista()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition">
+              <i class="fa fa-plus"></i> Añadir Lista
+            </button>
+          </div>
+          <div id="listaContainer" class="space-y-2 max-h-96 overflow-y-auto pr-1">
+            <!-- Listas dinámicas -->
+          </div>
+        </div>
+
+        <button onclick="calcular()" class="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2">
+          <i class="fa fa-play"></i> Calcular Adjudicación D'Hondt
+        </button>
+      </div>
+
+      <!-- Resultados y Gráficos -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Tarjetas de Resumen -->
+        <div id="resumenBancas" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total de Votos</p>
+            <p id="totalVotos" class="text-2xl font-black text-slate-800 mt-1">0</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bancas Adjudicadas</p>
+            <p id="totalBancasAsignadas" class="text-2xl font-black text-red-600 mt-1">0 / 12</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Lista Mayoritaria</p>
+            <p id="listaGanadora" class="text-lg font-bold text-slate-800 mt-1 truncate">—</p>
+          </div>
+        </div>
+
+        <!-- Gráfico de Bancas -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <i class="fa fa-chart-pie text-amber-500"></i> Distribución Gráfica de Bancas
+          </h3>
+          <div class="relative" style="height: 260px;">
+            <canvas id="chartBancas"></canvas>
+          </div>
+        </div>
+
+        <!-- Tabla de Escaños Obtenidos -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <i class="fa fa-award text-amber-500"></i> Distribución Oficial de Bancas
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-600 border-b">
+                <tr>
+                  <th class="py-2.5 px-3 font-semibold">Lista / Partido</th>
+                  <th class="py-2.5 px-3 font-semibold text-right">Votos Válidos</th>
+                  <th class="py-2.5 px-3 font-semibold text-right">% Votos</th>
+                  <th class="py-2.5 px-3 font-semibold text-center font-bold text-red-700">Bancas Obtenidas</th>
+                  <th class="py-2.5 px-3 font-semibold">Representación</th>
+                </tr>
+              </thead>
+              <tbody id="tablaBancas" class="divide-y divide-slate-100">
+                <tr><td colspan="5" class="py-4 text-center text-slate-400">Presiona Calcular para ver resultados.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabla Detallada de Cocientes (Paso a Paso D'Hondt) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-md font-bold text-slate-800 mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i class="fa fa-table-list text-blue-600"></i> Tabla de Cocientes y Orden de Asignación
+            </span>
+            <span class="text-xs text-slate-500 font-normal">Los valores en verde indican bancas ganadas</span>
+          </h3>
+          <div class="overflow-x-auto max-h-80">
+            <table class="w-full text-left text-xs" id="tablaCocientes">
+              <thead class="bg-slate-50 text-slate-600 sticky top-0 border-b">
+                <tr>
+                  <th class="py-2 px-3 font-semibold">N° Orden</th>
+                  <th class="py-2 px-3 font-semibold">Lista Adjudicataria</th>
+                  <th class="py-2 px-3 font-semibold text-right">Cociente (/ Divisor)</th>
+                  <th class="py-2 px-3 font-semibold text-right">Banca Atribuida</th>
+                </tr>
+              </thead>
+              <tbody id="tablaCocientesBody" class="divide-y divide-slate-100">
+                <tr><td colspan="4" class="py-4 text-center text-slate-400">Sin datos aún.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  </div>
+
+  <script>
+    const DHONDT_SESSION_KEY = 'seccional40_user';
+    function getSessionUser() {
+      try { return JSON.parse(sessionStorage.getItem(DHONDT_SESSION_KEY)); } catch { return null; }
+    }
+
+    async function loginDhondt() {
+      const cedula = (document.getElementById('dhondtCedula').value || '').replace(/[.\s,-]/g, '').trim();
+      const password = document.getElementById('dhondtPassword').value || '';
+      const err = document.getElementById('dhondtLoginError');
+      err.textContent = '';
+      if (!cedula || !password) { err.textContent = 'Ingresá cédula y contraseña.'; return; }
+      try {
+        const r = await fetch('/api', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', cedula, password }) });
+        const d = await r.json();
+        if (!d.success) { err.textContent = d.error || 'Credenciales inválidas.'; return; }
+        sessionStorage.setItem(DHONDT_SESSION_KEY, JSON.stringify(d.usuario));
+        await iniciarDhondt();
+      } catch (e) { err.textContent = 'Error de conexión: ' + e.message; }
+    }
+
+    function logoutDhondt() {
+      sessionStorage.removeItem(DHONDT_SESSION_KEY);
+      window.location.href = 'acceso.html';
+    }
+
+    async function iniciarDhondt() {
+      const u = getSessionUser();
+      if (!u) { document.getElementById('loginScreen').style.display = 'flex'; return; }
+      let acceso = true;
+      try {
+        const headers = u.session_id ? { 'x-session-id': u.session_id } : {};
+        const r = await fetch('/api?action=verificar_acceso_general', { headers });
+        const d = await r.json();
+        acceso = d.success ? !!d.acceso : true;
+      } catch (e) { acceso = true; }
+      document.getElementById('loginScreen').style.display = 'none';
+      if (!acceso) {
+        document.getElementById('bloqueadoScreen').style.display = 'flex';
+        return;
+      }
+      document.getElementById('dhondtApp').style.display = 'block';
+      renderListas();
+      calcular();
+    }
+
+    let listasDefault = [
+      { nombre: "Lista 1 - ANR Partido Colorado", votos: 18450 },
+      { nombre: "Lista 2 - PLRA Partido Liberal", votos: 11200 },
+      { nombre: "Lista 3 - Cruzada Nacional", votos: 5400 },
+      { nombre: "Lista 9 - Patria Querida", votos: 2800 },
+      { nombre: "Lista 40 - Movimiento Independiente", votos: 1950 }
+    ];
+
+    function renderListas() {
+      const c = document.getElementById("listaContainer");
+      c.innerHTML = listasDefault.map((l, idx) => `
+        <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <input type="text" value="${l.nombre}" oninput="listasDefault[${idx}].nombre=this.value; calcularDebounced()"
+            class="flex-1 text-xs px-2.5 py-1.5 border rounded-lg bg-white focus:ring-1 focus:ring-amber-500">
+          <input type="number" value="${l.votos}" oninput="listasDefault[${idx}].votos=parseInt(this.value)||0; calcularDebounced()"
+            class="w-24 text-xs font-bold px-2 py-1.5 border rounded-lg bg-white text-right focus:ring-1 focus:ring-amber-500">
+          <button onclick="eliminarLista(${idx})" class="text-slate-400 hover:text-red-600 p-1">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      `).join("");
+    }
+
+    function agregarFilaLista() {
+      listasDefault.push({ nombre: "Nueva Lista", votos: 1000 });
+      renderListas();
+      calcular();
+    }
+
+    function eliminarLista(idx) {
+      if (listasDefault.length <= 1) return alert("Debe haber al menos una lista.");
+      listasDefault.splice(idx, 1);
+      renderListas();
+      calcular();
+    }
+
+    let calcularTimer = null;
+    function calcularDebounced() {
+      clearTimeout(calcularTimer);
+      calcularTimer = setTimeout(calcular, 400);
+    }
+
+    function cargarPreset(bancas) {
+      document.getElementById("inputBancas").value = bancas;
+      calcular();
+    }
+
+    async function calcular() {
+      const bancas = parseInt(document.getElementById("inputBancas").value) || 12;
+      const payload = { bancas: bancas, listas: listasDefault };
+
+      try {
+        const u = getSessionUser();
+        const sesHeaders = (u && u.session_id) ? { 'x-session-id': u.session_id } : {};
+        const res = await fetch("/api/dhondt/calcular", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...sesHeaders },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+
+        renderResultados(data);
+      } catch (e) {
+        alert("Error al calcular: " + e.message);
+      }
+    }
+
+    let chartBancas = null;
+    const PALETA_LISTAS = ['#dc2626', '#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
+
+    function renderChartBancas(data) {
+      const ctx = document.getElementById('chartBancas');
+      const labels = data.resultados.map(r => r.lista);
+      const bancas = data.resultados.map(r => r.bancas);
+      const colores = labels.map((_, i) => PALETA_LISTAS[i % PALETA_LISTAS.length]);
+
+      if (chartBancas) {
+        chartBancas.data.labels = labels;
+        chartBancas.data.datasets[0].data = bancas;
+        chartBancas.data.datasets[0].backgroundColor = colores;
+        chartBancas.update();
+        return;
+      }
+
+      chartBancas = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{ data: bancas, backgroundColor: colores, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } },
+            datalabels: {
+              color: '#fff',
+              font: { weight: 'bold', size: 13 },
+              formatter: (v) => v > 0 ? v : ''
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    function renderResultados(data) {
+      renderChartBancas(data);
+      const totalV = data.resultados.reduce((acc, r) => acc + r.votos, 0);
+      document.getElementById("totalVotos").innerText = totalV.toLocaleString();
+      document.getElementById("totalBancasAsignadas").innerText = `${data.bancas_totales} / ${data.bancas_totales}`;
+      
+      const ganadora = data.resultados.reduce((prev, cur) => cur.bancas > prev.bancas ? cur : prev, data.resultados[0]);
+      document.getElementById("listaGanadora").innerText = `${ganadora.lista} (${ganadora.bancas} bancas)`;
+
+      // Tabla Bancas
+      const tbody = document.getElementById("tablaBancas");
+      tbody.innerHTML = data.resultados.map(r => {
+        const pct = totalV > 0 ? ((r.votos / totalV) * 100).toFixed(1) : 0;
+        const pctBancas = data.bancas_totales > 0 ? ((r.bancas / data.bancas_totales) * 100).toFixed(0) : 0;
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-3 font-bold text-slate-800">${r.lista}</td>
+            <td class="py-3 px-3 text-right font-mono">${r.votos.toLocaleString()}</td>
+            <td class="py-3 px-3 text-right font-mono text-slate-500">${pct}%</td>
+            <td class="py-3 px-3 text-center">
+              <span class="inline-block px-3 py-1 font-black rounded-lg ${r.bancas > 0 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-400'}">
+                ${r.bancas}
+              </span>
+            </td>
+            <td class="py-3 px-3">
+              <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-red-600 h-full rounded-full" style="width: ${pctBancas}%"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      // Tabla Cocientes
+      const cocTbody = document.getElementById("tablaCocientesBody");
+      cocTbody.innerHTML = data.detalle_adjudicaciones.map(d => `
+        <tr class="bg-green-50/50 hover:bg-green-100/50 transition">
+          <td class="py-2 px-3 font-black text-green-700">#${d.banca_nro}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800">${d.lista}</td>
+          <td class="py-2 px-3 text-right font-mono text-slate-600">${d.cociente.toLocaleString()} (/ ${d.divisor_utilizado})</td>
+          <td class="py-2 px-3 text-right font-bold text-green-700">Banca ${d.banca_nro} Asignada ✅</td>
+        </tr>
+      `).join("");
+    }
+
+    // Inicio
+    if (getSessionUser()) {
+      iniciarDhondt();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

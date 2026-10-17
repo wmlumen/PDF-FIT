@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Escrutinio</title>
+  <script src="vendor/tailwind.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="vendor/chart.umd.js"></script>
+  <script src="vendor/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    @media print {
+      body { background: white !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .print-break { page-break-before: always; }
+      .print-table { font-size: 10px; }
+      .print-table th, .print-table td { padding: 4px 6px; }
+    }
+    .print-only { display: none; }
+    video.qr-video { width: 100%; min-height: 14rem; object-fit: cover; border-radius: 1rem; background: #0f172a; }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = '/api';
+    const USER_SESSION_KEY = 'seccional40_user';
+
+    function getSessionUser() {
+        try { return JSON.parse(sessionStorage.getItem(USER_SESSION_KEY)); } catch { return null; }
+    }
+    function getNivel() {
+        const u = getSessionUser();
+        return u ? (u.nivel || '') : '';
+    }
+    function estaAutenticado() { return getSessionUser() !== null; }
+
+    let state = {
+      autenticado: estaAutenticado(),
+      accesoGeneral: true,
+      verificandoAcceso: true,
+      cargando: false,
+      mensaje: '',
+      mesas: [],
+      totalElectores: 0,
+      totalVotos: 0,
+      totalAusentes: 0,
+      totalControversias: 0,
+      totalRegistros: 0,
+      ultimaActualizacion: null,
+      escuela: sessionStorage.getItem('seccional40_escuela') || '',
+      qrScan: {
+        texto: '',
+        parseado: null,
+        error: '',
+        estado: '',
+        camaraActiva: false,
+        camaraModo: 'environment'
+      }
+    };
+    let qrStream = null;
+    let qrDetector = null;
+    let qrScanLoopId = null;
+    let qrCanvas = null;
+    let qrCanvasCtx = null;
+    let chartAvance = null;
+    let chartMesas = null;
+
+    function renderChartMesas(mesas) {
+      const ctx = document.getElementById('chartMesas');
+      if (!ctx || typeof Chart === 'undefined') return;
+      const ordenadas = [...mesas].sort((a, b) => a.mesa - b.mesa);
+      const labels = ordenadas.map(m => 'Mesa ' + m.mesa);
+      const valores = ordenadas.map(m => typeof m.participacion === 'number' ? m.participacion : parseFloat(m.participacion) || 0);
+      const colores = valores.map(p => p >= 80 ? '#16a34a' : p >= 50 ? '#eab308' : p >= 30 ? '#f97316' : '#c5a059');
+
+      if (chartMesas) { chartMesas.destroy(); chartMesas = null; }
+      chartMesas = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: valores, backgroundColor: colores, borderRadius: 4 }] },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { x: { min: 0, max: 100, ticks: { callback: (v) => v + '%' } } },
+          plugins: {
+            legend: { display: false },
+            datalabels: {
+              anchor: 'end', align: 'end',
+              color: '#475569', font: { weight: 'bold', size: 10 },
+              formatter: (v) => v.toFixed(0) + '%'
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    function renderChartAvance(pct) {
+      const ctx = document.getElementById('chartAvance');
+      if (!ctx || typeof Chart === 'undefined') return;
+      const p = Math.min(Math.max(pct, 0), 100);
+      const color = p >= 80 ? '#16a34a' : p >= 50 ? '#eab308' : p >= 30 ? '#f97316' : '#c5a059';
+
+      if (chartAvance) { chartAvance.destroy(); chartAvance = null; }
+      chartAvance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Votaron', 'Pendiente'],
+          datasets: [{ data: [p, 100 - p], backgroundColor: [color, '#e2e8f0'], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          circumference: 180,
+          rotation: 270,
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+            datalabels: {
+              display: (ctx) => ctx.dataIndex === 0 && p > 8,
+              formatter: () => p.toFixed(1) + '%',
+              color: '#fff',
+              font: { weight: 'bold', size: 14 }
+            }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    async function login() {
+      const cedulaInput = document.getElementById('cedulaLogin');
+      const passwordInput = document.getElementById('passwordLogin');
+      const cedula = cedulaInput ? cedulaInput.value.replace(/[.\s,-]/g, '').trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+      if (!cedula || !password) { alert('Ingrese cédula y contraseña.'); return; }
+      try {
+        const resp = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', cedula: cedula, password: password }) });
+        const data = await resp.json();
+        if (!data.success) { alert(data.error || 'Credenciales inválidas'); return; }
+        sessionStorage.setItem(USER_SESSION_KEY, JSON.stringify(data.usuario));
+        state.autenticado = true;
+        state.usuario = data.usuario;
+        await verificarAccesoGeneral();
+        cargarDatos();
+      } catch (e) {
+        alert('Error de conexión: ' + e.message);
+      }
+    }
+
+    async function verificarAccesoGeneral() {
+      state.verificandoAcceso = true;
+      try {
+        const u = getSessionUser();
+        const headers = (u && u.session_id) ? { 'x-session-id': u.session_id } : {};
+        const resp = await fetch(API_URL + '?action=verificar_acceso_general', { headers });
+        const d = await resp.json();
+        state.accesoGeneral = d.success ? !!d.acceso : true;
+      } catch (e) { state.accesoGeneral = true; }
+      state.verificandoAcceso = false;
+      render();
+    }
+
+    function logout() {
+      detenerCamaraQr();
+      sessionStorage.removeItem(USER_SESSION_KEY);
+      window.location.href = 'acceso.html';
+    }
+
+    async function fetchJsonOrThrow(url, options) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      const contentType = (response.headers.get('content-type') || '').toLowerCase();
+      const trimmed = text.trim().toLowerCase();
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      if (contentType.includes('text/html') || trimmed.startsWith('<!doctype html') || trimmed.startsWith('<html'))
+        throw new Error('Backend no disponible.');
+      try { return JSON.parse(text); } catch (e) { throw new Error('Respuesta invalida del backend.'); }
+    }
+
+    function getQrCapabilities() {
+      return {
+        barcodeDetector: typeof window !== 'undefined' && 'BarcodeDetector' in window,
+        mediaDevices: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+        jsqr: typeof window !== 'undefined' && typeof window.jsQR === 'function'
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getMesaResumen(mesaId) {
+      const mesa = parseInt(mesaId) || 0;
+      return state.mesas.find(m => parseInt(m.mesa) === mesa) || null;
+    }
+
+    function getQrCameraLabel() {
+      return state.qrScan.camaraModo === 'user' ? 'Frontal' : 'Posterior';
+    }
+
+    function parseQrPipe(rawText) {
+      const parts = String(rawText || '').split('|').map(x => x.trim()).filter(Boolean);
+      const listas = [];
+      let blancos = 0;
+      let nulos = 0;
+      let hash = '';
+      parts.forEach((item, index) => {
+        if (!item.includes(':')) {
+          if (index === parts.length - 1) hash = item;
+          return;
+        }
+        const [keyRaw, valueRaw] = item.split(':');
+        const key = String(keyRaw || '').trim();
+        const votos = parseInt(valueRaw, 10) || 0;
+        if (key === 'B') blancos = votos;
+        else if (key === 'N') nulos = votos;
+        else listas.push({ codigo: key, votos: votos });
+      });
+      const totalListas = listas.reduce((sum, item) => sum + item.votos, 0);
+      return {
+        formato: 'pipe',
+        mesaId: null,
+        localId: null,
+        seccionalId: null,
+        hash: hash,
+        blancos: blancos,
+        nulos: nulos,
+        listas: listas,
+        totalListas: totalListas,
+        totalActa: totalListas + blancos + nulos
+      };
+    }
+
+    function parseQrJson(payload) {
+      const listas = [];
+      Object.entries(payload || {}).forEach(([key, value]) => {
+        if (/^votos_lista_/i.test(key)) {
+          listas.push({
+            codigo: key.replace(/^votos_/i, '').toUpperCase(),
+            votos: parseInt(value, 10) || 0
+          });
+        }
+      });
+      const totalListas = listas.reduce((sum, item) => sum + item.votos, 0);
+      let nested = null;
+      if (payload && payload.qr_raw_data) {
+        nested = parseQrPipe(payload.qr_raw_data);
+      }
+      return {
+        formato: nested ? 'json+pipe' : 'json',
+        mesaId: parseInt(payload.mesa_id || payload.mesa || payload.mesaId, 10) || (nested ? nested.mesaId : null),
+        localId: payload.local_id || payload.local || null,
+        seccionalId: payload.seccional_id || null,
+        hash: payload.hash_maquina || (nested ? nested.hash : ''),
+        blancos: parseInt(payload.votos_blancos, 10) || (nested ? nested.blancos : 0),
+        nulos: parseInt(payload.votos_nulos, 10) || (nested ? nested.nulos : 0),
+        listas: listas.length ? listas : (nested ? nested.listas : []),
+        totalListas: listas.length ? totalListas : (nested ? nested.totalListas : 0),
+        totalActa: (listas.length ? totalListas : (nested ? nested.totalListas : 0))
+          + (parseInt(payload.votos_blancos, 10) || (nested ? nested.blancos : 0))
+          + (parseInt(payload.votos_nulos, 10) || (nested ? nested.nulos : 0))
+      };
+    }
+
+    function construirComparacionQr(parseado) {
+      const mesaId = parseInt(parseado?.mesaId, 10) || 0;
+      const mesaResumen = mesaId ? getMesaResumen(mesaId) : null;
+      const diferencia = mesaResumen ? (parseado.totalActa - mesaResumen.votos) : null;
+      return {
+        ...parseado,
+        mesaResumen: mesaResumen,
+        diferenciaVotos: diferencia
+      };
+    }
+
+    function procesarQrTexto(rawText) {
+      const texto = String(rawText || '').trim();
+      if (!texto) {
+        state.qrScan.error = 'No hay datos para procesar.';
+        state.qrScan.estado = '';
+        state.qrScan.parseado = null;
+        render();
+        return;
+      }
+
+      try {
+        let parseado;
+        if (texto.startsWith('{') || texto.startsWith('[')) {
+          parseado = parseQrJson(JSON.parse(texto));
+        } else {
+          parseado = parseQrPipe(texto);
+        }
+        state.qrScan.texto = texto;
+        state.qrScan.parseado = construirComparacionQr(parseado);
+        state.qrScan.error = '';
+        state.qrScan.estado = 'QR procesado correctamente.';
+      } catch (error) {
+        state.qrScan.parseado = null;
+        state.qrScan.error = 'No se pudo interpretar el QR. Use JSON o formato CTX separado por "|".';
+        state.qrScan.estado = '';
+      }
+      render();
+    }
+
+    async function onQrFileChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      procesarQrTexto(text);
+      event.target.value = '';
+    }
+
+    function procesarQrManual() {
+      const input = document.getElementById('qrManualInput');
+      procesarQrTexto(input ? input.value : '');
+    }
+
+    function limpiarQr() {
+      state.qrScan.texto = '';
+      state.qrScan.parseado = null;
+      state.qrScan.error = '';
+      state.qrScan.estado = '';
+      render();
+    }
+
+    async function cambiarCamaraQr(modo) {
+      const nuevoModo = modo === 'user' ? 'user' : 'environment';
+      if (state.qrScan.camaraModo === nuevoModo && !state.qrScan.camaraActiva) {
+        render();
+        return;
+      }
+      state.qrScan.camaraModo = nuevoModo;
+      state.qrScan.estado = `Cámara ${getQrCameraLabel().toLowerCase()} seleccionada.`;
+      state.qrScan.error = '';
+      if (state.qrScan.camaraActiva) {
+        detenerCamaraQr(false);
+        await iniciarCamaraQr();
+        return;
+      }
+      render();
+    }
+
+    async function iniciarCamaraQr() {
+      const caps = getQrCapabilities();
+      if (!caps.mediaDevices || (!caps.barcodeDetector && !caps.jsqr)) {
+        state.qrScan.error = 'Este navegador no soporta escaneo QR por cámara. Use archivo o pegado manual.';
+        render();
+        return;
+      }
+      try {
+        qrDetector = caps.barcodeDetector ? new BarcodeDetector({ formats: ['qr_code'] }) : null;
+        qrCanvas = document.createElement('canvas');
+        qrCanvasCtx = qrCanvas.getContext('2d', { willReadFrequently: true });
+        qrStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: state.qrScan.camaraModo } },
+          audio: false
+        });
+        state.qrScan.error = '';
+        state.qrScan.estado = `Cámara ${getQrCameraLabel().toLowerCase()} activa. Apunte al QR del acta.`;
+        state.qrScan.camaraActiva = true;
+        render();
+        conectarVideoQr();
+        loopEscaneoQr();
+      } catch (error) {
+        state.qrScan.camaraActiva = false;
+        state.qrScan.error = 'No se pudo abrir la cámara: ' + error.message;
+        render();
+      }
+    }
+
+    function detenerCamaraQr(renderizar = true) {
+      if (qrScanLoopId) {
+        cancelAnimationFrame(qrScanLoopId);
+        qrScanLoopId = null;
+      }
+      if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+      }
+      qrDetector = null;
+      qrCanvas = null;
+      qrCanvasCtx = null;
+      state.qrScan.camaraActiva = false;
+      if (!state.qrScan.error) state.qrScan.estado = 'Cámara detenida.';
+      if (renderizar) render();
+    }
+
+    function conectarVideoQr() {
+      const video = document.getElementById('qrVideo');
+      if (video && qrStream) {
+        video.srcObject = qrStream;
+        video.play().catch(() => {});
+      }
+    }
+
+    async function loopEscaneoQr() {
+      const video = document.getElementById('qrVideo');
+      if (!state.qrScan.camaraActiva || !video) return;
+      try {
+        let rawValue = '';
+        if (qrDetector) {
+          const codes = await qrDetector.detect(video);
+          if (codes && codes.length > 0 && codes[0].rawValue) {
+            rawValue = codes[0].rawValue;
+          }
+        } else if (qrCanvas && qrCanvasCtx && typeof window.jsQR === 'function' && video.readyState >= 2) {
+          qrCanvas.width = video.videoWidth || 640;
+          qrCanvas.height = video.videoHeight || 480;
+          qrCanvasCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+          const imageData = qrCanvasCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+          const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert'
+          });
+          if (code && code.data) {
+            rawValue = code.data;
+          }
+        }
+        if (rawValue) {
+          detenerCamaraQr();
+          procesarQrTexto(rawValue);
+          state.qrScan.estado = 'QR detectado desde cámara.';
+          render();
+          return;
+        }
+      } catch (error) {
+        state.qrScan.error = 'Error al escanear QR: ' + error.message;
+        detenerCamaraQr();
+        return;
+      }
+      qrScanLoopId = requestAnimationFrame(loopEscaneoQr);
+    }
+
+    function renderQrResultado() {
+      const qr = state.qrScan.parseado;
+      if (!qr) return '';
+      const mesaBadge = qr.mesaId ? `Mesa ${qr.mesaId}` : 'Mesa no detectada';
+      const diff = qr.diferenciaVotos;
+      const diffColor = diff === null ? 'text-slate-500' : diff === 0 ? 'text-green-600' : diff > 0 ? 'text-orange-600' : 'text-party-600';
+      return `
+        <div class="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-4 mt-4">
+          <div class="bg-slate-50 rounded-[1.5rem] p-4 border border-slate-200">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider">${mesaBadge}</span>
+              <span class="px-3 py-1 rounded-full bg-party-100 text-party-700 text-[10px] font-black uppercase tracking-wider">${qr.formato}</span>
+              ${qr.hash ? `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-wider">Hash ${escapeHtml(qr.hash)}</span>` : ''}
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div class="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Listas</p>
+                <p class="text-xl font-black text-slate-900">${qr.totalListas}</p>
+              </div>
+              <div class="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Blancos</p>
+                <p class="text-xl font-black text-slate-900">${qr.blancos}</p>
+              </div>
+              <div class="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Nulos</p>
+                <p class="text-xl font-black text-slate-900">${qr.nulos}</p>
+              </div>
+              <div class="bg-white rounded-xl p-3 border border-slate-200 text-center">
+                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Acta</p>
+                <p class="text-xl font-black text-party-600">${qr.totalActa}</p>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <p class="text-xs font-black uppercase tracking-wider text-slate-500">Detalle por lista</p>
+              ${qr.listas && qr.listas.length ? `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  ${qr.listas.map(item => `
+                    <div class="flex items-center justify-between rounded-xl bg-white px-3 py-2 border border-slate-200">
+                      <span class="text-xs font-bold text-slate-600">${escapeHtml(item.codigo)}</span>
+                      <span class="text-sm font-black text-slate-900">${item.votos}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : '<p class="text-sm text-slate-400">Sin listas detectadas en el QR.</p>'}
+            </div>
+          </div>
+          <div class="bg-white rounded-[1.5rem] p-4 border border-slate-200">
+            <p class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Cruce con escrutinio visible</p>
+            ${qr.mesaResumen ? `
+              <div class="space-y-3">
+                <div class="rounded-xl bg-slate-50 p-3 border border-slate-200">
+                  <p class="text-[10px] uppercase font-black tracking-wider text-slate-400">Mesa ${qr.mesaResumen.mesa}</p>
+                  <p class="text-sm font-bold text-slate-700">Electores: ${qr.mesaResumen.totalElectores} · Votos cargados: ${qr.mesaResumen.votos}</p>
+                  <p class="text-sm font-bold text-slate-700">Ausentes: ${qr.mesaResumen.ausentes} · Controversias: ${qr.mesaResumen.controversias}</p>
+                </div>
+                <div class="rounded-xl border p-3 ${diff === 0 ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}">
+                  <p class="text-[10px] uppercase font-black tracking-wider ${diffColor}">Diferencia QR vs votos</p>
+                  <p class="text-2xl font-black ${diffColor}">${diff > 0 ? '+' : ''}${diff}</p>
+                  <p class="text-xs ${diffColor}">${diff === 0 ? 'El total del acta coincide con los votos visibles.' : 'Conviene revisar la mesa antes del cierre.'}</p>
+                </div>
+              </div>
+            ` : `
+              <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
+                <p class="text-sm font-bold text-slate-700">No se pudo cruzar con una mesa del resumen actual.</p>
+                <p class="text-xs text-slate-500 mt-1">Si el QR no trae mesa o la mesa aún no aparece en el resumen, igual queda procesado para revisión visual.</p>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    async function cargarDatos() {
+      state.cargando = true;
+      state.mensaje = 'Cargando resultados...';
+      render();
+
+      try {
+        // 1) Cargar resumen desde API
+        const resumenData = await fetchJsonOrThrow(API_URL + '?action=resumen&v=' + Date.now());
+
+        // 2) Cargar padrón desde API para total de electores por mesa
+        const padronApiData = await fetchJsonOrThrow(API_URL + '?action=padron&v=' + Date.now());
+        const electoresData = padronApiData.electores || [];
+
+        const electoresPorMesa = {};
+        let totalElectoresPadron = 0;
+        for (const elector of electoresData) {
+          const mesa = parseInt(elector.mesa) || 0;
+          if (!electoresPorMesa[mesa]) electoresPorMesa[mesa] = 0;
+          electoresPorMesa[mesa]++;
+          totalElectoresPadron++;
+        }
+
+        // 3) Fusionar datos de resumen con total de electores del padrón
+        const mesasMap = {};
+        if (resumenData && resumenData.mesas) {
+          resumenData.mesas.forEach(m => {
+            const mesaNum = parseInt(m.mesa) || 0;
+            mesasMap[mesaNum] = {
+              mesa: mesaNum,
+              votos: parseInt(m.votos) || 0,
+              ausentes: parseInt(m.ausentes) || 0,
+              controversias: parseInt(m.controversias) || 0,
+              totalRegistros: parseInt(m.total) || 0,
+              totalElectores: electoresPorMesa[mesaNum] || 0,
+              participacion: parseFloat(m.participacion) || 0
+            };
+          });
+        }
+
+        // También incluir mesas que tienen electores pero no registros
+        Object.keys(electoresPorMesa).forEach(mesaNum => {
+          if (!mesasMap[mesaNum]) {
+            mesasMap[mesaNum] = {
+              mesa: parseInt(mesaNum),
+              votos: 0,
+              ausentes: 0,
+              controversias: 0,
+              totalRegistros: 0,
+              totalElectores: electoresPorMesa[mesaNum],
+              participacion: 0
+            };
+          }
+        });
+
+        state.mesas = Object.values(mesasMap).sort((a, b) => a.mesa - b.mesa);
+        state.totalElectores = totalElectoresPadron;
+        state.totalVotos = state.mesas.reduce((s, m) => s + m.votos, 0);
+        state.totalAusentes = state.mesas.reduce((s, m) => s + m.ausentes, 0);
+        state.totalControversias = state.mesas.reduce((s, m) => s + m.controversias, 0);
+        state.totalRegistros = state.mesas.reduce((s, m) => s + m.totalRegistros, 0);
+        state.ultimaActualizacion = new Date();
+        state.mensaje = `✅ ${state.mesas.length} mesas · ${state.totalElectores} electores · ${state.totalVotos} votos`;
+      } catch (err) {
+        console.error('Error:', err);
+        state.mensaje = '⚠️ Error: ' + (err.message || 'no se pudieron cargar los datos');
+      }
+
+      state.cargando = false;
+      render();
+    }
+
+    function exportCSV() {
+      if (!state.mesas.length) return;
+
+      const rows = [
+        ['Mesa', 'Electores', 'Votos', 'Ausentes', 'Controversias', 'Total Registros', 'Participacion %']
+      ];
+      state.mesas.forEach(m => {
+        rows.push([
+          m.mesa, m.totalElectores, m.votos, m.ausentes, m.controversias, m.totalRegistros,
+          (typeof m.participacion === 'number' ? m.participacion.toFixed(1) : m.participacion) + '%'
+        ]);
+      });
+
+      // Fila total
+      const totalPart = state.totalElectores > 0 ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1) + '%' : '0%';
+      rows.push([
+        'TOTAL', state.totalElectores, state.totalVotos, state.totalAusentes, state.totalControversias,
+        state.totalRegistros, totalPart
+      ]);
+
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'escrutinio_seccional40_' + new Date().toISOString().slice(0, 10) + '.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function exportJSON() {
+      if (!state.mesas.length) return;
+      const data = {
+        generado: new Date().toISOString(),
+        escuela: state.escuela,
+        totalElectores: state.totalElectores,
+        totalVotos: state.totalVotos,
+        totalAusentes: state.totalAusentes,
+        totalControversias: state.totalControversias,
+        participacionGeneral: state.totalElectores > 0
+          ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1) + '%'
+          : '0%',
+        mesas: state.mesas
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'escrutinio_seccional40_' + new Date().toISOString().slice(0, 10) + '.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function renderLogin() {
+      return `
+        <div class="min-h-screen flex items-center justify-center p-4">
+          <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl border border-slate-100 max-w-md w-full text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-slate-900 to-black border border-amber-500/40 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/10 text-amber-400">
+              <i class="fas fa-chart-pie text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">ESCRUTINIO</h1>
+            <p class="text-slate-500 text-sm mb-8">Resultados oficiales · DIA D MASTER</p>
+            <div class="space-y-4">
+              <div class="relative">
+                <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="cedulaLogin" placeholder="Cédula"
+                    class="w-full pl-12 pr-4 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-[#c5a059] focus:outline-none transition-all text-center"
+                    onkeypress="if(event.key === 'Enter') document.getElementById('passwordLogin').focus()">
+              </div>
+              <div class="relative">
+                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="password" id="passwordLogin" placeholder="Contraseña"
+                    class="w-full pl-12 pr-4 py-4 text-lg font-bold border-2 border-slate-200 rounded-2xl focus:border-[#c5a059] focus:outline-none transition-all text-center"
+                    onkeypress="if(event.key === 'Enter') login()">
+              </div>
+              <button onclick="login()" class="w-full py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black rounded-2xl shadow-lg shadow-amber-500/20 transition-all shadow-lg">
+                ACCEDER
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-6">Acceso exclusivo PC</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) { app.innerHTML = renderLogin(); return; }
+      if (!state.verificandoAcceso && !state.accesoGeneral) {
+        app.innerHTML = `
+          <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-[2rem] p-8 shadow-2xl border border-slate-200 max-w-md w-full text-center">
+              <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-lock text-amber-600 text-2xl"></i>
+              </div>
+              <h1 class="text-xl font-black text-slate-900 mb-2">Escrutinio no disponible</h1>
+              <p class="text-slate-500 text-sm mb-6">Tu paquete contratado no incluye datos generales (nacional/departamental). Hablá con tu administrador para ampliar tu paquete.</p>
+              <button onclick="logout()" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold">Salir</button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const totalPart = state.totalElectores > 0
+        ? ((state.totalVotos / state.totalElectores) * 100).toFixed(1)
+        : '0.0';
+      const partColor = parseFloat(totalPart) >= 80 ? 'text-green-600'
+        : parseFloat(totalPart) >= 50 ? 'text-yellow-600'
+        : parseFloat(totalPart) >= 30 ? 'text-orange-600' : 'text-party-600';
+
+      app.innerHTML = `
+        <header class="bg-slate-950 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20 no-print">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-xl text-amber-400">
+                <i class="fas fa-chart-pie text-white text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-xl font-black uppercase tracking-tighter italic leading-none">ESCRUTINIO</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-80">Resultados Oficiales · SECC. 40</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-amber-500/30">
+              <span class="text-[10px] text-amber-400 font-bold uppercase mr-2">📍 ${state.escuela || 'Esc. ...'}</span>
+              <span class="text-[10px] text-amber-400 font-bold uppercase mr-2">Colegio:</span>
+              <a href="acceso.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Votación</a>
+              <a href="mesas.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Mesas</a>
+              <a href="No_voto.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">No Voto</a>
+              <span class="text-[10px] text-slate-600 mx-1">|</span>
+              <span class="text-[10px] text-slate-400 font-bold uppercase">PC:</span>
+              <a href="padron_unificado.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Padrón</a>
+              <a href="escrutinio.html" class="px-2 py-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg text-[10px] font-black text-slate-950 shadow-sm">Escrutinio</a>
+              <a href="anomalias.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Anomalías</a>
+              <a href="asistencia.html" class="px-2 py-1 hover:bg-slate-800 hover:text-amber-400 rounded-lg text-[10px] font-bold text-slate-300 transition-all">Seguimiento</a>
+            </div>
+
+            <div class="flex items-center gap-2 no-print">
+              <button onclick="cargarDatos()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Recargar">
+                <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+              </button>
+              <button onclick="window.print()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Imprimir">
+                <i class="fas fa-print"></i>
+              </button>
+              <button onclick="exportCSV()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Exportar CSV">
+                <i class="fas fa-file-csv"></i>
+              </button>
+              <button onclick="exportJSON()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Exportar JSON">
+                <i class="fas fa-file-code"></i>
+              </button>
+              <button onclick="logout()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all" title="Salir">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- BLOQUE PARA IMPRESIÓN -->
+        <div class="print-only text-center mb-6">
+          <h1 style="font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:-0.05em;">Seccional 40</h1>
+          <h2 style="font-size:18px;font-weight:700;margin-top:4px;">Escrutinio Definitivo</h2>
+          <p style="font-size:12px;color:#666;margin-top:4px;">${state.escuela || ''} · ${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleString('es-PY') : ''}</p>
+          <hr style="margin:12px 0;border:1px solid #ccc;">
+        </div>
+
+        <main class="max-w-7xl mx-auto p-3 md:p-6">
+          ${state.cargando ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-party-200 border-t-party-600 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">${state.mensaje}</p>
+            </div>
+          ` : `
+            <!-- TARJETAS DE RESUMEN -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Mesas</p>
+                <p class="text-2xl font-black text-slate-900">${state.mesas.length}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Electores</p>
+                <p class="text-2xl font-black text-slate-900">${state.totalElectores}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-green-200 text-center">
+                <p class="text-[10px] uppercase font-black text-green-600 tracking-widest">Votos</p>
+                <p class="text-2xl font-black text-green-600">${state.totalVotos}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-orange-200 text-center">
+                <p class="text-[10px] uppercase font-black text-orange-600 tracking-widest">Ausentes</p>
+                <p class="text-2xl font-black text-orange-600">${state.totalAusentes}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-party-200 text-center">
+                <p class="text-[10px] uppercase font-black text-party-600 tracking-widest">Controversias</p>
+                <p class="text-2xl font-black text-party-600">${state.totalControversias}</p>
+              </div>
+              <div class="bg-white rounded-[1.5rem] p-4 shadow-lg border border-slate-100 text-center">
+                <p class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Participación</p>
+                <p class="text-2xl font-black ${partColor}">${totalPart}%</p>
+              </div>
+            </div>
+
+            <!-- BARRA DE PROGRESO GENERAL + GAUGE -->
+            <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Progreso general</span>
+                <span class="text-[10px] text-slate-400 font-semibold no-print" title="Se actualiza solo cada 30s">
+                  <i class="fas fa-sync-alt ${state.cargando ? 'fa-spin' : ''}"></i>
+                  Última actualización: ${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleTimeString('es-PY') : '—'}
+                </span>
+              </div>
+              <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden mb-4">
+                <div class="h-full rounded-full transition-all duration-500 ${parseFloat(totalPart) >= 80 ? 'bg-green-500' : parseFloat(totalPart) >= 50 ? 'bg-yellow-500' : parseFloat(totalPart) >= 30 ? 'bg-orange-500' : 'bg-party-500'}"
+                     style="width: ${Math.min(parseFloat(totalPart), 100)}%"></div>
+              </div>
+              <div class="relative mx-auto no-print" style="height: 160px; max-width: 320px;">
+                <canvas id="chartAvance"></canvas>
+              </div>
+            </div>
+
+            <!-- MENSAJE -->
+            ${state.mensaje ? `
+              <div class="bg-party-50 border-2 border-party-100 rounded-xl p-3 mb-4 no-print">
+                <p class="text-xs font-bold text-party-800 text-center">${state.mensaje}</p>
+              </div>
+            ` : ''}
+
+            <!-- ESCANEO QR -->
+            <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 mb-4 no-print">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+                <div>
+                  <h2 class="text-lg font-black text-slate-900 tracking-tighter">
+                    <i class="fas fa-qrcode mr-2 text-party-500"></i>Escaneo de Acta QR
+                  </h2>
+                  <p class="text-xs text-slate-500 mt-1">Lee un QR desde cámara, archivo o pegado manual y compáralo al instante con la mesa del escrutinio.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button onclick="iniciarCamaraQr()" class="px-3 py-2 bg-party-600 hover:bg-party-700 text-white rounded-xl text-xs font-black transition-all">
+                    <i class="fas fa-camera mr-1"></i> Cámara
+                  </button>
+                  <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all cursor-pointer">
+                    <i class="fas fa-file-import mr-1"></i> Archivo
+                    <input type="file" accept=".json,.txt" onchange="onQrFileChange(event)" class="hidden">
+                  </label>
+                  <button onclick="limpiarQr()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black transition-all">
+                    <i class="fas fa-broom mr-1"></i> Limpiar
+                  </button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-4">
+                <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-black uppercase tracking-wider text-slate-500">Captura</p>
+                    <span class="text-[10px] font-black uppercase tracking-wider ${getQrCapabilities().barcodeDetector ? 'text-green-600' : 'text-amber-600'}">
+                      ${getQrCapabilities().barcodeDetector ? 'BarcodeDetector listo' : getQrCapabilities().jsqr ? 'Fallback JS listo' : 'Solo archivo/manual'}
+                    </span>
+                  </div>
+                  <div class="flex flex-wrap gap-2 mb-3">
+                    <button onclick="cambiarCamaraQr('environment')" class="px-3 py-2 rounded-xl text-xs font-black transition-all ${state.qrScan.camaraModo === 'environment' ? 'bg-slate-900 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                      <i class="fas fa-camera-retro mr-1"></i> Posterior
+                    </button>
+                    <button onclick="cambiarCamaraQr('user')" class="px-3 py-2 rounded-xl text-xs font-black transition-all ${state.qrScan.camaraModo === 'user' ? 'bg-slate-900 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+                      <i class="fas fa-camera mr-1"></i> Frontal
+                    </button>
+                  </div>
+                  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900">
+                    ${state.qrScan.camaraActiva
+                      ? '<video id="qrVideo" class="qr-video" autoplay playsinline muted></video>'
+                      : '<div class="min-h-56 flex items-center justify-center text-center p-6"><div><i class="fas fa-camera text-3xl text-slate-500 mb-3"></i><p class="text-sm font-bold text-slate-200">La cámara se abrirá aquí cuando inicie el escaneo.</p></div></div>'}
+                  </div>
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <button onclick="iniciarCamaraQr()" class="px-3 py-2 bg-party-600 hover:bg-party-700 text-white rounded-xl text-xs font-black transition-all ${state.qrScan.camaraActiva ? 'hidden' : ''}">
+                      Iniciar cámara
+                    </button>
+                    <button onclick="detenerCamaraQr()" class="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-black transition-all ${state.qrScan.camaraActiva ? '' : 'hidden'}">
+                      Detener cámara
+                    </button>
+                  </div>
+                  ${state.qrScan.estado ? `<p class="mt-3 text-xs font-bold text-green-700">${state.qrScan.estado}</p>` : ''}
+                  ${state.qrScan.error ? `<p class="mt-3 text-xs font-bold text-party-700">${state.qrScan.error}</p>` : ''}
+                </div>
+
+                <div class="rounded-[1.5rem] border border-slate-200 bg-white p-4">
+                  <p class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3">Pegado manual / contenido del QR</p>
+                  <textarea id="qrManualInput" class="w-full min-h-56 rounded-2xl border-2 border-slate-200 p-4 text-xs font-mono text-slate-700 focus:border-[#c5a059] focus:outline-none" placeholder='Ejemplo JSON: {"mesa_id":12,"votos_lista_1":100,"votos_lista_2":80,"votos_blancos":2,"votos_nulos":1}
+
+Ejemplo CTX: CAND1:100|CAND2:80|B:2|N:1|HASH123'>${escapeHtml(state.qrScan.texto || '')}</textarea>
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <button onclick="procesarQrManual()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black transition-all">
+                      <i class="fas fa-play mr-1"></i> Procesar QR
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              ${renderQrResultado()}
+            </div>
+
+            <!-- GRÁFICO DE PARTICIPACIÓN POR MESA -->
+            <div class="bg-white rounded-[2rem] p-4 shadow-lg border border-slate-100 mb-4 no-print">
+              <h2 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-3">
+                <i class="fas fa-chart-bar mr-2 text-party-500"></i>Participación por Mesa
+              </h2>
+              <div class="overflow-y-auto" style="max-height: 420px;">
+                <div class="relative" style="height: ${Math.min(Math.max(state.mesas.length * 28, 120), 3000)}px;">
+                  <canvas id="chartMesas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABLA DE RESULTADOS -->
+            <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden">
+              <!-- Vista móvil: tarjetas -->
+              <div class="md:hidden divide-y divide-slate-100">
+                ${state.mesas.map(m => {
+                  const pct = typeof m.participacion === 'number' ? m.participacion : parseFloat(m.participacion) || 0;
+                  const color = pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-yellow-600' : pct >= 30 ? 'text-orange-600' : 'text-party-600';
+                  const bgColor = pct >= 80 ? 'bg-green-50 border-green-200' : pct >= 50 ? 'bg-yellow-50 border-yellow-200' : pct >= 30 ? 'bg-orange-50 border-orange-200' : 'bg-party-50 border-party-200';
+                  return `
+                    <div class="p-4">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                          <span class="w-9 h-9 rounded-full bg-party-600 text-white flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                          <span class="font-bold text-slate-900">Mesa ${m.mesa}</span>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black border-2 ${bgColor} ${color}">${pct.toFixed(1)}%</span>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div><p class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Electores</p><p class="font-black text-slate-900">${m.totalElectores}</p></div>
+                        <div><p class="text-green-600 font-bold uppercase tracking-wider text-[9px]">Votos</p><p class="font-black text-green-600">${m.votos}</p></div>
+                        <div><p class="text-orange-600 font-bold uppercase tracking-wider text-[9px]">Ausentes</p><p class="font-black text-orange-600">${m.ausentes}</p></div>
+                        <div><p class="text-party-600 font-bold uppercase tracking-wider text-[9px]">Controv.</p><p class="font-black text-party-600">${m.controversias}</p></div>
+                        <div><p class="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Registros</p><p class="font-black text-slate-900">${m.totalRegistros}</p></div>
+                      </div>
+                      <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
+                        <div class="h-full rounded-full ${pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : pct >= 30 ? 'bg-orange-500' : 'bg-party-500'}" style="width: ${Math.min(pct, 100)}%"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Vista escritorio: tabla -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="w-full print-table">
+                  <thead>
+                    <tr class="bg-slate-950 text-amber-400 font-bold border-t-2 border-amber-500/40">
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Mesa</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Electores</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Votos</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Ausentes</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Controversias</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Total Reg.</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Participación</th>
+                      <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider">Progreso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${state.mesas.map(m => {
+                      const pct = typeof m.participacion === 'number' ? m.participacion : parseFloat(m.participacion) || 0;
+                      const color = pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-yellow-600' : pct >= 30 ? 'text-orange-600' : 'text-party-600';
+                      const bgBar = pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : pct >= 30 ? 'bg-orange-500' : 'bg-party-500';
+                      return `
+                        <tr class="border-b border-slate-100 hover:bg-party-50 transition-all">
+                          <td class="px-4 py-3 text-center">
+                            <span class="w-8 h-8 rounded-full bg-party-600 text-white inline-flex items-center justify-center font-black text-sm">${m.mesa}</span>
+                          </td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-slate-900">${m.totalElectores}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-green-600">${m.votos}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-orange-600">${m.ausentes}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-party-600">${m.controversias}</td>
+                          <td class="px-4 py-3 text-center font-mono font-bold text-slate-900">${m.totalRegistros}</td>
+                          <td class="px-4 py-3 text-center font-black ${color}">${pct.toFixed(1)}%</td>
+                          <td class="px-4 py-3">
+                            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                              <div class="h-full rounded-full ${bgBar}" style="width: ${Math.min(pct, 100)}%"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                  <!-- FILA TOTAL -->
+                  <tfoot>
+                    <tr class="bg-party-50 border-t-2 border-party-200 font-bold">
+                      <td class="px-4 py-3 text-center font-black text-slate-900">TOTAL</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-slate-900">${state.totalElectores}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-green-700">${state.totalVotos}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-orange-700">${state.totalAusentes}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-party-700">${state.totalControversias}</td>
+                      <td class="px-4 py-3 text-center font-mono font-black text-slate-900">${state.totalRegistros}</td>
+                      <td class="px-4 py-3 text-center font-black ${partColor}">${totalPart}%</td>
+                      <td class="px-4 py-3">
+                        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full ${parseFloat(totalPart) >= 80 ? 'bg-green-500' : parseFloat(totalPart) >= 50 ? 'bg-yellow-500' : parseFloat(totalPart) >= 30 ? 'bg-orange-500' : 'bg-party-500'}" style="width: ${Math.min(parseFloat(totalPart), 100)}%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- PIE DE PÁGINA (solo impresión) -->
+            <div class="print-only text-center mt-8">
+              <hr style="margin:12px 0;border:1px solid #ddd;">
+              <p style="font-size:10px;color:#999;">Documento generado el ${state.ultimaActualizacion ? state.ultimaActualizacion.toLocaleString('es-PY') : ''} · Sistema de Control Electoral Seccional 40</p>
+              <p style="font-size:10px;color:#999;">Los datos presentados son preliminares hasta la certificación oficial.</p>
+            </div>
+          `}
+        </main>
+      `;
+      if (state.qrScan.camaraActiva) {
+        setTimeout(conectarVideoQr, 0);
+      }
+      if (!state.cargando && state.accesoGeneral) {
+        setTimeout(() => renderChartAvance(parseFloat(totalPart)), 0);
+        setTimeout(() => renderChartMesas(state.mesas), 0);
+      }
+    }
+
+    // Actualizar cada 30 segundos
+    setInterval(() => {
+      if (state.autenticado && !state.cargando) {
+        cargarDatos();
+      }
+    }, 30000);
+
+    const user = getSessionUser();
+    if (user) {
+      state.autenticado = true;
+      state.usuario = user;
+    }
+    if (state.autenticado) {
+      verificarAccesoGeneral().then(cargarDatos);
+    } else {
+      state.verificandoAcceso = false;
+      render();
+    }
+  </script>
+</body>
+</html>
+

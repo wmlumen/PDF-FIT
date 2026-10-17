@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA_D_MASTER — Flujos de Sistema por Rol</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:#f1f5f9; color:#1e293b; }
+    .header { background:linear-gradient(135deg,#0f172a,#1e293b); color:#fff; padding:20px 30px; }
+    .header h1 { font-size:1.35rem; font-weight:800; }
+    .header p { font-size:.78rem; color:#94a3b8; margin-top:4px; }
+    .container { max-width:1500px; margin:0 auto; padding:20px; }
+
+    .section-title { font-size:.95rem; font-weight:800; color:#0f172a; margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+    .section-title span { font-size:.68rem; font-weight:700; color:#64748b; background:#e2e8f0; padding:3px 9px; border-radius:20px; }
+
+    /* Nodos de herramientas */
+    .tools-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+    .tool-node { border-radius:12px; padding:14px; border:2px solid; background:#fff; cursor:pointer; transition:all .2s; position:relative; }
+    .tool-node:hover { transform:translateY(-3px); box-shadow:0 8px 22px rgba(0,0,0,.12); }
+    .tool-node.critica { border-color:#dc2626; background:#fef2f2; }
+    .tool-node.media { border-color:#d97706; background:#fffbeb; }
+    .tool-node.baja { border-color:#059669; background:#f0fdf4; }
+    .tool-head { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+    .tool-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0; }
+    .tool-name { font-size:.85rem; font-weight:800; color:#0f172a; }
+    .tool-desc { font-size:.72rem; color:#475569; line-height:1.45; margin-bottom:9px; }
+    .tool-roles { display:flex; flex-wrap:wrap; gap:4px; }
+    .tool-role-tag { font-size:.62rem; font-weight:700; padding:2px 7px; border-radius:5px; background:#e2e8f0; color:#475569; }
+    .sev-badge { position:absolute; top:10px; right:10px; font-size:.58rem; font-weight:800; padding:2px 6px; border-radius:4px; color:#fff; }
+    .sev-critica { background:#dc2626; } .sev-media { background:#d97706; } .sev-baja { background:#059669; }
+
+    /* Conexiones rol -> herramienta */
+    .conexiones-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px; }
+    .conex-row { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:11px 14px; display:flex; align-items:center; gap:10px; font-size:.78rem; }
+    .conex-rol { font-weight:800; padding:3px 9px; border-radius:6px; color:#fff; font-size:.72rem; white-space:nowrap; }
+    .conex-arrow { color:#94a3b8; font-weight:800; }
+    .conex-tools { display:flex; flex-wrap:wrap; gap:5px; }
+    .conex-tool { font-size:.68rem; font-weight:700; padding:3px 8px; border-radius:6px; background:#fff; border:1px solid #cbd5e1; color:#334155; }
+
+    .card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 4px 18px rgba(0,0,0,.06); margin-bottom:22px; }
+
+    /* Leyenda */
+    .leyenda { display:flex; gap:22px; flex-wrap:wrap; align-items:center; padding:14px 18px; background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:22px; }
+    .leyenda-item { display:flex; align-items:center; gap:7px; font-size:.74rem; font-weight:600; color:#475569; }
+
+    /* Tabs */
+    .tabs { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:18px; }
+    .tab { padding:8px 14px; border-radius:9px; font-size:.77rem; font-weight:700; cursor:pointer; border:2px solid transparent; background:#fff; color:#64748b; transition:all .2s; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+    .tab:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.1); }
+    .tab.active { color:#fff; }
+
+    .diagrama-card { display:none; }
+    .diagrama-card.visible { display:block; animation:fadeIn .35s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    .diagrama-header { display:flex; align-items:center; gap:13px; margin-bottom:6px; }
+    .diagrama-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+    .diagrama-title { font-size:1.2rem; font-weight:800; }
+    .diagrama-sub { font-size:.8rem; color:#64748b; }
+    .diagrama-meta { display:flex; gap:12px; margin:12px 0 16px; flex-wrap:wrap; }
+    .meta-chip { background:#f1f5f9; border-radius:8px; padding:5px 11px; font-size:.72rem; font-weight:600; color:#475569; }
+    .meta-chip strong { color:#0f172a; }
+
+    .svg-wrap { overflow-x:auto; background:#fafbfc; border-radius:12px; border:1px solid #e2e8f0; padding:8px; }
+    svg { display:block; margin:0 auto; }
+
+    .rol-mejoras { margin-top:18px; }
+    .rol-mejoras h3 { font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:10px; }
+    .mejora-row { background:#fffbeb; border-left:4px solid #f59e0b; border-radius:8px; padding:11px 15px; margin-bottom:7px; font-size:.8rem; display:flex; align-items:flex-start; gap:9px; }
+    .mejora-row.critica { background:#fef2f2; border-left-color:#dc2626; }
+    .mejora-row.media { background:#eff6ff; border-left-color:#3b82f6; }
+
+    .footer-note { text-align:center; font-size:.7rem; color:#94a3b8; margin-top:20px; padding:14px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏛️ DIA_D_MASTER — Flujos de Sistema por Rol</h1>
+  <p>Vista circular de roles + flujogramas compactos por capas · Símbolos estándar: terminador, proceso, E/S, decisión, almacenamiento</p>
+</div>
+
+<div class="container">
+
+  <!-- Leyenda -->
+  <div class="leyenda">
+    <span style="font-size:.7rem;font-weight:800;color:#0f172a;text-transform:uppercase;">Símbolos:</span>
+    <div class="leyenda-item"><svg width="44" height="22"><rect x="1" y="1" width="42" height="20" rx="10" fill="#fff" stroke="#0f172a" stroke-width="2"/></svg>Terminador</div>
+    <div class="leyenda-item"><svg width="44" height="22"><rect x="1" y="1" width="42" height="20" fill="#fff" stroke="#0f172a" stroke-width="2"/></svg>Proceso</div>
+    <div class="leyenda-item"><svg width="48" height="22"><polygon points="8,1 47,1 40,21 1,21" fill="#fff" stroke="#0f172a" stroke-width="2"/></svg>Entrada / Salida</div>
+    <div class="leyenda-item"><svg width="32" height="24"><polygon points="16,1 31,12 16,23 1,12" fill="#fffbeb" stroke="#0f172a" stroke-width="2"/></svg>Decisión</div>
+    <div class="leyenda-item"><svg width="32" height="24"><path d="M4,1 h24 v6 a6,4 0 0 1 -24,0 v-6 z" fill="#f0f9ff" stroke="#0f172a" stroke-width="2"/><path d="M4,7 a6,4 0 0 0 24,0 v14 a6,4 0 0 1 -24,0 z" fill="#f0f9ff" stroke="#0f172a" stroke-width="2"/></svg>Almacenamiento</div>
+  </div>
+
+  <!-- Vista circular -->
+  <div class="card">
+    <div class="section-title">🧭 Panorama de roles <span>orden lógico por jerarquía</span></div>
+    <div class="svg-wrap" id="overview"></div>
+  </div>
+
+  <!-- Tabs + flujos -->
+  <div class="section-title">📊 Flujograma detallado por rol <span>click en cada rol</span></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="card">
+    <div id="diagramas"></div>
+  </div>
+
+  <!-- NUEVAS HERRAMIENTAS -->
+  <div class="section-title">🧩 Nuevas herramientas (nudos creados) <span id="tools-count"></span></div>
+  <div class="card">
+    <div class="tools-grid" id="tools-grid">
+      <div class="tool-node baja" data-tool="electoral-organization">
+        <div class="tool-head">
+          <div class="tool-icon" style="background:#059669;color:#fff;">🏛️</div>
+          <div class="tool-name">Organización Electoral Paraguaya</div>
+        </div>
+        <div class="tool-desc">Modelo de organigrama para partidos políticos, ONG y asociaciones civiles — Leyes N.º 834/1996 (Código Electoral), N.º 3966/2010 (Orgánico Municipal), N.º 6318/2019 (Listas Cerradas) y N.º 7363/2024 (Transparencia OSFL). Estructura deproceso-proceso: autoridades nacionales-departamentales-distritales y ciclos de gestión, fiscalización electoral y organización electoral de ONG.</div>
+        <div class="tool-roles">
+          <span class="tool-role-tag">nacional</span>
+          <span class="tool-role-tag">departamental</span>
+          <span class="tool-role-tag">distrital</span>
+          <span class="tool-role-tag">seccional</span>
+          <span class="tool-role-tag">pc</span>
+          <span class="tool-role-tag">admin</span>
+          <span class="tool-role-tag">conductor</span>
+          <span class="tool-role-tag">dirigente</span>
+          <span class="tool-role-tag">seccional</span>
+          <span class="tool-role-tag">distrital</span>
+          <span class="tool-role-tag">departamental</span>
+          <span class="tool-role-tag">nacional</span>
+          <span class="tool-role-tag">admin</span>
+          <span class="tool-role-tag">cliente</span>
+        </div>
+        <div class="sev-badge sev-baja">BAJA</div>
+      </div>
+    </div>
+    </div>
+  <div class="section-title">🗳️ Contexto de elección (simultáneas) <span>cómo se sabe en qué elección se trabaja</span></div>
+  <div class="card">
+    <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:12px;padding:14px">
+        <p style="font-weight:800;font-size:.82rem;color:#991b1b;margin-bottom:6px">⚠️ Bug corregido</p>
+        <p style="font-size:.74rem;color:#7f1d1e;line-height:1.5">La query original usaba <code>ORDER BY fecha ASC LIMIT 1</code> sin desempate: devolvía la elección <b>finalizada</b> más antigua y no distinguía las simultáneas.</p>
+      </div>
+      <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:14px">
+        <p style="font-weight:800;font-size:.82rem;color:#166534;margin-bottom:6px">✓ Resolución determinista</p>
+        <p style="font-size:.74rem;color:#14532d;line-height:1.5">Prioridad: <b>eleccion_id explícito → tipo → por defecto</b> (activa más próxima). Nunca devuelve una finalizada habiendo una futura.</p>
+      </div>
+      <div style="background:#eff6ff;border:2px solid #2563eb;border-radius:12px;padding:14px">
+        <p style="font-weight:800;font-size:.82rem;color:#1e40af;margin-bottom:6px">🔀 Elecciones simultáneas</p>
+        <p style="font-size:.74rem;color:#1e3a8a;line-height:1.5">Si hay 2+ trabajables, <code>requiere_seleccion=true</code> y el voto exige <code>eleccion_id</code>. Cada voto se guarda con su elección.</p>
+      </div>
+      <div style="background:#fffbeb;border:2px solid #d97706;border-radius:12px;padding:14px">
+        <p style="font-weight:800;font-size:.82rem;color:#92400e;margin-bottom:6px">📦 Votos históricos</p>
+        <p style="font-size:.74rem;color:#78350f;line-height:1.5">Los votos anteriores quedan con <code>eleccion_id = NULL</code> (sin clasificar). No se inventa asignación.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORGANIZACIÓN DEL PARTIDO -->
+  <div class="section-title">🏛️ Organización del Partido <span>jerarquía completa</span></div>
+  <div class="card">
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="background:#0f766e;color:#fff;font-weight:800;padding:6px 14px;border-radius:8px">CLIENTE (Partido)</span>
+        <span style="color:#94a3b8;font-weight:800">→</span>
+        <span style="background:#16a34a;color:#fff;font-weight:800;padding:6px 14px;border-radius:8px">DIRIGENTES (N)</span>
+        <span style="color:#94a3b8;font-weight:800">→</span>
+        <span style="background:#ca8a04;color:#fff;font-weight:800;padding:6px 14px;border-radius:8px">PC (N)</span>
+        <span style="color:#94a3b8;font-weight:800">→</span>
+        <span style="background:#2563eb;color:#fff;font-weight:800;padding:6px 14px;border-radius:8px">CANDIDATOS (N)</span>
+        <span style="color:#94a3b8">+</span>
+        <span style="background:#9333ea;color:#fff;font-weight:800;padding:6px 14px;border-radius:8px">CONDUCTORES (N)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;padding-top:10px;border-top:1px solid #e2e8f0">
+        <span style="font-size:.7rem;font-weight:800;color:#64748b">NIVELES TERRITORIALES:</span>
+        <span style="background:#2563eb;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;font-size:.72rem">Departamental</span>
+        <span style="color:#94a3b8">→</span>
+        <span style="background:#0891b2;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;font-size:.72rem">Distrital</span>
+        <span style="color:#94a3b8">→</span>
+        <span style="background:#9333ea;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;font-size:.72rem">Seccional</span>
+        <span style="color:#94a3b8">→</span>
+        <span style="background:#ca8a04;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;font-size:.72rem">PC</span>
+        <span style="color:#94a3b8">|</span>
+        <span style="background:#dc2626;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;font-size:.72rem">🎓 Escuela Electoral</span>
+      </div>
+      <div style="font-size:.7rem;color:#64748b;margin-top:4px">
+        Tablas nuevas: <code>escuelas_electorales</code>, <code>partido_dirigentes</code>, <code>pc_candidatos</code> · Columnas: <code>transportes.pc_id</code>, <code>dirigentes.partido_id</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONEXIONES rol -> herramientas -->
+  <div class="section-title">🔗 Conexiones: rol → herramientas <span>qué herramienta usa cada rol</span></div>
+  <div class="card">
+    <div class="conexiones-grid" id="conexiones-grid"></div>
+  </div>
+
+  <!-- ESTRUCTURA ELECTORAL MUNICIPAL -->
+  <div class="section-title">🏘️ Estructura Electoral Municipal <span>Proceso completo</span></div>
+  <div class="card">
+    <div style="display:flex;flex-direction:column;gap:16px;font-size:.8rem">
+
+      <!-- Flujograma del proceso -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">📋 Flujograma del proceso electoral municipal</p>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">1</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">ELECCIONES INTERNAS SIMULTÁNEAS</span>
+            <span style="color:#64748b;font-size:.72rem">Selección de precandidatos a intendente y Junta Municipal</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">2</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">INSCRIPCIÓN Y OFICIALIZACIÓN</span>
+            <span style="color:#64748b;font-size:.72rem">Presentación de candidaturas, revisión de requisitos y resolución de impugnaciones</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">3</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">CAMPAÑA ELECTORAL</span>
+            <span style="color:#64748b;font-size:.72rem">Propaganda, actividades y fiscalización según el calendario oficial</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">4</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">ELECCIONES MUNICIPALES</span>
+            <span style="color:#64748b;font-size:.72rem">Voto ciudadano para intendente y Junta Municipal</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">5</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">CÓMPUTO Y PROCLAMACIÓN</span>
+            <span style="color:#64748b;font-size:.72rem">Determinación de resultados y autoridades electas</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#0f172a;color:#fff;font-weight:800;padding:4px 10px;border-radius:6px;font-size:.72rem;min-width:28px;text-align:center">6</span>
+            <span style="background:#e2e8f0;padding:6px 12px;border-radius:8px;font-weight:700">TOMA DE POSESIÓN</span>
+            <span style="color:#64748b;font-size:.72rem">Asunción de las autoridades municipales electas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cargos que se eligen -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">🗳️ Cargos que se eligen en cada municipio</p>
+        <div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+          <div style="background:#eff6ff;border:2px solid #2563eb;border-radius:12px;padding:14px">
+            <p style="font-weight:800;font-size:.82rem;color:#1e40af;margin-bottom:6px">INTENDENTE MUNICIPAL</p>
+            <p style="font-size:.74rem;color:#1e3a8a;line-height:1.5">Poder ejecutivo municipal. Administra la municipalidad, ejecuta el presupuesto y las ordenanzas, dirige los servicios municipales y representa institucionalmente al municipio.</p>
+            <p style="font-size:.7rem;color:#1e40af;margin-top:8px;font-weight:700">Elección: mayoría simple en el distrito</p>
+          </div>
+          <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:14px">
+            <p style="font-weight:800;font-size:.82rem;color:#166534;margin-bottom:6px">JUNTA MUNICIPAL</p>
+            <p style="font-size:.74rem;color:#14532d;line-height:1.5">Órgano deliberativo, normativo y de control. Estudia y aprueba ordenanzas, controla la gestión municipal y ejerce las demás atribuciones establecidas por la legislación.</p>
+            <p style="font-size:.7rem;color:#166534;margin-top:8px;font-weight:700">Elección: listas y representación proporcional</p>
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:#64748b;margin-top:8px">Ambos cargos tienen períodos de cinco años.</p>
+      </div>
+
+      <!-- Tabla de concejales -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">📊 ¿Cuántos concejales tiene cada municipio?</p>
+        <p style="font-size:.72rem;color:#64748b;margin-bottom:8px">La cantidad depende de la categoría del municipio establecida en la Ley Orgánica Municipal.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:8px 12px;text-align:left;border:1px solid #e2e8f0;font-weight:800">Categoría municipal</th>
+              <th style="padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-weight:800">Concejales titulares</th>
+              <th style="padding:8px 12px;text-align:center;border:1px solid #e2e8f0;font-weight:800">Suplentes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Asunción</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">24</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">24</td>
+            </tr>
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Capitales departamentales y municipios de los grupos primero y segundo</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">12</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">12</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Municipios de los grupos tercero y cuarto</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">9</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;text-align:center;font-weight:800">9</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:.68rem;color:#94a3b8;margin-top:6px">Fuente: TSJE, Elecciones Municipales 2026, y Ley N.º 3966/2010, artículo 24.</p>
+      </div>
+
+      <!-- Organigrama político-territorial -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">🏛️ Organigrama político-territorial para una elección municipal</p>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:.78rem">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="background:#ca8a04;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">DIRECCIÓN NACIONAL</span>
+            <span style="color:#94a3b8">→</span>
+            <span style="background:#2563eb;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">DIRECCIÓN DEPARTAMENTAL</span>
+            <span style="color:#94a3b8">→</span>
+            <span style="background:#0891b2;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">DIRECCIÓN DISTRITAL</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-left:20px">
+            <span style="background:#16a34a;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">CANDIDATURA A INTENDENTE</span>
+            <span style="color:#64748b;font-size:.72rem">Una candidatura unipersonal</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-left:20px">
+            <span style="background:#9333ea;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">LISTA PARA JUNTA MUNICIPAL</span>
+            <span style="color:#64748b;font-size:.72rem">Titulares y suplentes según la cantidad de cargos</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-left:20px">
+            <span style="background:#dc2626;color:#fff;font-weight:800;padding:5px 12px;border-radius:7px;font-size:.72rem">EQUIPOS TERRITORIALES Y FISCALIZACIÓN</span>
+            <span style="color:#64748b;font-size:.72rem">Coordinación de locales, apoderados, veedores y representantes acreditados</span>
+          </div>
+        </div>
+        <p style="font-size:.68rem;color:#94a3b8;margin-top:8px">Este organigrama es una propuesta de organización política, no una jerarquía impuesta íntegramente por la ley. El tribunal electoral partidario debe conservar sus competencias propias, separadas de la dirección de campaña.</p>
+      </div>
+
+      <!-- Estructura técnica -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">⚙️ Estructura técnica para administrar candidaturas municipales</p>
+        <p style="font-size:.72rem;color:#64748b;margin-bottom:8px">Para una plataforma electoral digital, cada registro debería vincularse a los siguientes datos:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:8px 12px;text-align:left;border:1px solid #e2e8f0;font-weight:800">Entidad</th>
+              <th style="padding:8px 12px;text-align:left;border:1px solid #e2e8f0;font-weight:800">Campos principales</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Elección</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Tipo, año, convocatoria, calendario y estado</td>
+            </tr>
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Municipio</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Departamento, distrito y código territorial oficial</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Organización política</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Partido, movimiento, alianza o concertación</td>
+            </tr>
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Interna</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Movimiento interno, padrón habilitado y resultados</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Candidatura</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Cargo, titular o suplente, orden de lista y estado de oficialización</td>
+            </tr>
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Local electoral</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Código, dirección, mesas y electores habilitados según registros oficiales</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Fiscalización</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Apoderados, veedores, actas y acreditaciones</td>
+            </tr>
+            <tr style="background:#f8fafc">
+              <td style="padding:8px 12px;border:1px solid #e2e8f0;font-weight:700">Resultados</td>
+              <td style="padding:8px 12px;border:1px solid #e2e8f0">Votos, cómputo oficial, impugnaciones y proclamación</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:.68rem;color:#94a3b8;margin-top:6px">La plataforma debe mantener separados los resultados de las internas de los resultados de las elecciones municipales generales.</p>
+      </div>
+
+      <!-- Marco legal -->
+      <div>
+        <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin-bottom:10px">📜 Normativa y consulta oficial</p>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:.78rem">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:#0f172a;color:#fff;font-weight:700;padding:3px 8px;border-radius:5px;font-size:.68rem">Ley 834/1996</span>
+            <span style="color:#475569">Código Electoral Paraguayo — Organización de partidos, estatutos, candidaturas y elecciones</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:#0f172a;color:#fff;font-weight:700;padding:3px 8px;border-radius:5px;font-size:.68rem">Ley 3966/2010</span>
+            <span style="color:#475569">Ley Orgánica Municipal — Régimen municipal, categorías y concejales</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="background:#0f172a;color:#fff;font-weight:700;padding:3px 8px;border-radius:5px;font-size:.68rem">Ley 6318/2019</span>
+            <span style="color:#475569">Listas cerradas y desbloqueadas — Voto preferencial y distribución proporcional de escaños</span>
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:#64748b;margin-top:10px;padding:10px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px">
+          <b>Punto central:</b> en cada municipio, el proceso electoral produce dos resultados distintos: la elección del intendente y la integración de la Junta Municipal. Las internas seleccionan a quienes competirán por esos cargos; las elecciones municipales generales determinan quiénes resultan electos.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-note">
+    DIA_D_MASTER · Generado desde el código real (app.py + herramientas.py) · Layout compacto por capas
+  </div>
+</div>
+
+<script>
+const ROLES = [
+  { id:'conductor', nombre:'Conductor', icono:'🚗', color:'#2563eb', nivel:1, acceso:'conductor',
+    desc:'Reporta ubicación GPS en tiempo real, transporta votantes a la mesa asignada. Se conecta con: Dirigente (ordenes de recogida), PC (ruta asignada), Votante (ubicación compartida).',
+    conexiones:['dirigente','pc','votante','seccional'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login conductor'},
+      {id:'b',tipo:'io',label:'Ingresa cédula + contraseña'},
+      {id:'c',tipo:'dec',label:'¿Credenciales válidas?'},
+      {id:'d',tipo:'proc',label:'PC asigna vehículo y ruta'},
+      {id:'d2',tipo:'dec',label:'¿Dirigente u PC disponible?'},
+      {id:'d3',tipo:'proc',label:'Dirigente asigna votantes a conductor'},
+      {id:'d4',tipo:'proc',label:'Calcular tiempo estimado ocupado'},
+      {id:'d5',tipo:'store',label:'Registrar disponibilidad y ETA'},
+      {id:'d6',tipo:'io',label:'Recibir horarios programados de PC y Dirigente'},
+      {id:'d7',tipo:'proc',label:'Calcular tiempo de llegada al local de votación'},
+      {id:'d8',tipo:'proc',label:'Calcular tiempo de salida del local de votación'},
+      {id:'d9',tipo:'store',label:'Registrar tiempo de espera promedio'},
+      {id:'d10',tipo:'store',label:'Crear agenda de conductor (calendario de votantes)'},
+      {id:'d11',tipo:'proc',label:'Calcular tiempo muerto o bloqueado'},
+      {id:'d12',tipo:'store',label:'Registrar tiempo muerto en DB'},
+      {id:'e',tipo:'proc',label:'Reportar GPS cada 8s'},
+      {id:'f',tipo:'dec',label:'¿En zona de ruta?'},
+      {id:'g',tipo:'store',label:'guardar conductor_ubicacion'},
+      {id:'h',tipo:'proc',label:'Dirigente notifica votante listo'},
+      {id:'i',tipo:'io',label:'Votante comparte ubicación'},
+      {id:'j',tipo:'dec',label:'¿Ubicación votante cercana?'},
+      {id:'k',tipo:'proc',label:'Recoger votante en punto'},
+      {id:'l',tipo:'io',label:'Confirmar recepción votante'},
+      {id:'m',tipo:'proc',label:'Transportar votante a mesa'},
+      {id:'n',tipo:'io',label:'Entregar votante en mesa'},
+      {id:'o',tipo:'proc',label:'Notificar a dirigente entrega'},
+      {id:'p',tipo:'dec',label:'¿Más votantes en ruta?'},
+      {id:'q',tipo:'term',label:'FIN — Ruta completada'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'},
+      {from:'c',to:'d',label:'Sí'}, {from:'c',to:'b',label:'No'},
+      {from:'d',to:'d2'},
+      {from:'d2',to:'d3',label:'Sí'}, {from:'d2',to:'d4',label:'No'},
+      {from:'d3',to:'d4'}, {from:'d4',to:'d5'}, {from:'d5',to:'d6'}, {from:'d6',to:'d7'}, {from:'d7',to:'d8'}, {from:'d8',to:'d9'}, {from:'d9',to:'d10'}, {from:'d10',to:'d11'}, {from:'d11',to:'d12'}, {from:'d12',to:'e'}, {from:'e',to:'f'},
+      {from:'f',to:'g',label:'Sí'}, {from:'f',to:'e',label:'No'},
+      {from:'g',to:'h'}, {from:'h',to:'i'}, {from:'i',to:'j'},
+      {from:'j',to:'k',label:'Sí'}, {from:'j',to:'e',label:'No'},
+      {from:'k',to:'l'}, {from:'l',to:'m'},
+      {from:'m',to:'n'}, {from:'n',to:'o'},
+      {from:'o',to:'p',label:'Sí'}, {from:'p',to:'h',label:'Sí'},
+      {from:'p',to:'q',label:'No'}
+    ],
+    mejoras:[
+      {nivel:'critica',txt:'Sin geocerca automática: no se valida que el conductor esté en la ruta asignada.'},
+      {nivel:'critica',txt:'Sin confirmación de recepción del votante (solo se reporta ubicación).'},
+      {nivel:'critica',txt:'Sin conexión directa con PC para recibir órdenes de cambio de ruta.'},
+      {nivel:'critica',txt:'Sin alerta de batería baja/evacuación de emergencia del vehículo.'},
+      {nivel:'media',txt:'Sin cola offline persistente para ubicaciones cuando no hay señal.'},
+      {nivel:'media',txt:'Sin dashboard de progreso en tiempo real para votantes asignados.'}
+    ]
+  },
+  { id:'dirigente', nombre:'Dirigente', icono:'👥', color:'#16a34a', nivel:2, acceso:'dirigente',
+    desc:'Gestiona votantes, verifica identidad con 3 preguntas, registra voto/ausente, coordina con conductor para transporte. Optimiza tiempo y combustible con rutas planificadas. Se conecta con: Conductor (recogida), Seccional (alertas), PC (asignación de votantes), Votante (verificación).',
+    conexiones:['conductor','seccional','pc','votante'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login dirigente'},
+      {id:'b',tipo:'io',label:'Carga lista posible_votos de PC'},
+      {id:'c',tipo:'proc',label:'Optimizar ruta por proximidad GPS'},
+      {id:'d',tipo:'dec',label:'¿Ruta optimizada?'},
+      {id:'e',tipo:'proc',label:'Contactar votante (llamada/visita)'},
+      {id:'f',tipo:'io',label:'Solicitar 3 datos de verificación'},
+      {id:'g',tipo:'proc',label:'Evaluar respuesta del votante'},
+      {id:'h',tipo:'dec',label:'¿Coincide con padrón?'},
+      {id:'i',tipo:'dec',label:'¿Votó o ausente?'},
+      {id:'j',tipo:'store',label:'INSERT registros (voto verificado)'},
+      {id:'k',tipo:'store',label:'INSERT no_voto (ausente)'},
+      {id:'l',tipo:'proc',label:'¿Votante necesita transporte?'},
+      {id:'m',tipo:'io',label:'Notificar a conductor ubicación votante'},
+      {id:'n',tipo:'proc',label:'Notificar a seccional resultado'},
+      {id:'o',tipo:'dec',label:'¿Más votantes en ruta?'},
+      {id:'p',tipo:'proc',label:'Registrar km recorridos y combustible'},
+      {id:'q',tipo:'proc',label:'Reportar incidencia de seguridad de conductor'},
+      {id:'r',tipo:'proc',label:'Alertar a PC de mesas sin apertura'},
+      {id:'s',tipo:'term',label:'FIN — Registro completo'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e',label:'Sí'}, {from:'d',to:'e',label:'No'},
+      {from:'e',to:'f'}, {from:'f',to:'g'},
+      {from:'g',to:'h',label:'Verificación exitosa'}, {from:'g',to:'f',label:'Error de verificación'},
+      {from:'h',to:'i',label:'Sí'}, {from:'h',to:'f',label:'No'},
+      {from:'i',to:'j',label:'Votó'}, {from:'i',to:'k',label:'Ausente'},
+      {from:'j',to:'l'}, {from:'k',to:'l'},
+      {from:'l',to:'m',label:'Sí'}, {from:'l',to:'n',label:'No'},
+      {from:'m',to:'n'}, {from:'n',to:'o',label:'Sí'},
+      {from:'o',to:'p'}, {from:'p',to:'q'}, {from:'q',to:'s'},
+      {from:'n',to:'r',label:'Sí'}, {from:'r',to:'s'}
+    ],
+    mejoras:[
+      {nivel:'critica',txt:'Sin tabla de auditoría: no se registra IP, sesión ni hash por voto emitido.'},
+      {nivel:'media',txt:'Sin evidencia (foto o firma digital) del votante al confirmar.'},
+      {nivel:'media',txt:'Sin GPS del votante: no se optimiza ruta de transporte.'},
+      {nivel:'media',txt:'Sin registro de km y combustible: no se mide eficiencia de campo.'},
+      {nivel:'media',txt:'Sin alerta automática de mesas sin apertura.'},
+      {nivel:'media',txt:'Sin monitoreo de seguridad del conductor.'}
+    ]
+  },
+  },
+  { id:'votante', nombre:'Votante', icono:'🗳️', color:'#0891b2', nivel:3, acceso:'votante',
+    desc:'Elector habilitado. Comparte ubicación GPS para transporte, se identifica en mesa con cédula, vota en secreto. Se conecta con: Conductor (recogida), Dirigente (verificación), Mesa (voto).',
+    conexiones:['conductor','dirigente'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Votante habilitado'},
+      {id:'b',tipo:'io',label:'Recibe notificación de dirigente'},
+      {id:'c',tipo:'dec',label:'¿Puede votar hoy?'},
+      {id:'d',tipo:'io',label:'Comparte ubicación GPS'},
+      {id:'e',tipo:'proc',label:'Conductor recoge votante'},
+      {id:'f',tipo:'io',label:'Llega a mesa de votación'},
+      {id:'g',tipo:'io',label:'Muestra cédula de identidad'},
+      {id:'h',tipo:'dec',label:'¿Está en padrón?'},
+      {id:'i',tipo:'io',label:'Recibe boleta'},
+      {id:'j',tipo:'proc',label:'Vota en secreto'},
+      {id:'k',tipo:'io',label:'Deposita voto en urna'},
+      {id:'l',tipo:'term',label:'FIN — Voto emitido'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'},
+      {from:'c',to:'d',label:'Sí'}, {from:'c',to:'l',label:'No'},
+      {from:'d',to:'e'}, {from:'e',to:'f'},
+      {from:'f',to:'g'}, {from:'g',to:'h'},
+      {from:'h',to:'i',label:'Sí'}, {from:'h',to:'f',label:'No'},
+      {from:'i',to:'j'}, {from:'j',to:'k'}, {from:'k',to:'l'}
+    ],
+    mejoras:[
+      {nivel:'media',txt:'Sin confirmación de que el voto fue registrado correctamente.'},
+      {nivel:'baja',txt:'Sin notificación de resultados de la elección.'}
+    ]
+  },
+  { id:'seccional', nombre:'Seccional', icono:'📍', color:'#9333ea', nivel:4, acceso:'seccional',
+    desc:'Supervisa dirigentes y votos de su seccional. Gestiona mesas, miembros, alertas de participación baja. Se conecta con: Dirigente (alertas), Distrital (reportes), PC (datos operativos).',
+    conexiones:['dirigente','distrital','pc','conductor'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login seccional'},
+      {id:'b',tipo:'io',label:'Consulta votos de seccional'},
+      {id:'c',tipo:'dec',label:'¿Participación < umbral?'},
+      {id:'d',tipo:'proc',label:'Alertar a dirigentes'},
+      {id:'e',tipo:'proc',label:'Validar miembros de mesa'},
+      {id:'f',tipo:'dec',label:'¿Miembro válido?'},
+      {id:'g',tipo:'store',label:'UPDATE miembros_mesa'},
+      {id:'h',tipo:'io',label:'Reportar a distrital'},
+      {id:'i',tipo:'proc',label:'Coordinar conductores de zona'},
+      {id:'j',tipo:'term',label:'FIN — Supervisión completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'},
+      {from:'c',to:'d',label:'Sí'}, {from:'c',to:'e',label:'No'},
+      {from:'d',to:'e'}, {from:'e',to:'f'},
+      {from:'f',to:'g',label:'Sí'}, {from:'f',to:'e',label:'No'},
+      {from:'g',to:'h'}, {from:'h',to:'i'}, {from:'i',to:'j'}
+    ],
+    mejoras:[
+      {nivel:'media',txt:'Sin alerta automática de mesas sin apertura.'},
+      {nivel:'baja',txt:'Sin dashboard de participación en tiempo real.'}
+    ]
+  },
+  { id:'pc', nombre:'Punto de Comando', icono:'🏢', color:'#ca8a04', nivel:5, acceso:'pc',
+    desc:'PC (Punto de Comando): corazón operativo. Asigna rutas a conductores, lista votantes a dirigentes, monitorea mesas, coordina transporte. Se conecta con: Conductor (rutas), Dirigente (asignaciones), Seccional (datos), Votante (ubicaciones).',
+    conexiones:['conductor','dirigente','seccional','votante'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login PC'},
+      {id:'b',tipo:'proc',label:'Cargar mapa de seccional'},
+      {id:'c',tipo:'io',label:'Ver ubicaciones de conductores'},
+      {id:'d',tipo:'dec',label:'¿Conductores disponibles?'},
+      {id:'e',tipo:'proc',label:'Asignar ruta a conductor'},
+      {id:'f',tipo:'proc',label:'Asignar votantes a dirigente'},
+      {id:'g',tipo:'dec',label:'¿Dirigente tiene capacidad?'},
+      {id:'h',tipo:'proc',label:'Reasignar a otro dirigente'},
+      {id:'i',tipo:'io',label:'Monitorear mesas en tiempo real'},
+      {id:'j',tipo:'dec',label:'¿Mesa sin apertura?'},
+      {id:'k',tipo:'proc',label:'Alertar a seccional'},
+      {id:'l',tipo:'proc',label:'Reportar novedades a distrital'},
+      {id:'m',tipo:'term',label:'FIN — Coordinación completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e',label:'Sí'}, {from:'d',to:'e',label:'No'},
+      {from:'e',to:'f'}, {from:'f',to:'g'},
+      {from:'g',to:'e',label:'Sí'}, {from:'g',to:'h',label:'No'},
+      {from:'h',to:'i'}, {from:'i',to:'j'},
+      {from:'j',to:'k',label:'Sí'}, {from:'j',to:'l',label:'No'},
+      {from:'k',to:'l'}, {from:'l',to:'m'}
+    ],
+    mejoras:[
+      {nivel:'critica',txt:'Sin mapa de calor de votantes por zona.'},
+      {nivel:'media',txt:'Sin alerta automática de ruta desviada.'},
+      {nivel:'media',txt:'Sin conexión con mesa para verificar apertura.'}
+    ]
+  },
+  { id:'distrital', nombre:'Distrital', icono:'🏘️', color:'#dc2626', nivel:6, acceso:'distrital',
+    desc:'Responsable del distrito/municipio. Coordina PCs, gestiona afiliados, preside reuniones partidarias. Se conecta con: Seccional (reportes), Departacional (resultados), PC (supervisión).',
+    conexiones:['seccional','departamental','pc'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login distrital'},
+      {id:'b',tipo:'proc',label:'Generar reportes de distrito'},
+      {id:'c',tipo:'io',label:'Administrar afiliados del distrito'},
+      {id:'d',tipo:'store',label:'CREAR puestos_comando (PC)'},
+      {id:'e',tipo:'proc',label:'Notificar a dirigentes'},
+      {id:'f',tipo:'proc',label:'Supervisar PCs del distrito'},
+      {id:'g',tipo:'io',label:'Reportar a departamental'},
+      {id:'h',tipo:'term',label:'FIN — Gestión distrital completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e'}, {from:'e',to:'f'},
+      {from:'f',to:'g'}, {from:'g',to:'h'}
+    ],
+    mejoras:[
+      {nivel:'media',txt:'Sin dashboard de avance de votos por PC.'},
+      {nivel:'baja',txt:'Sin comparación de participación vs histórico.'}
+    ]
+  },
+  { id:'departamental', nombre:'Departamental', icono:'🏛️', color:'#7c3aed', nivel:7, acceso:'departamental',
+    desc:'Coordina direcciones distritales del departamento. Gestiona candidatos a gobernador e intendente, planifica movilización. Se conecta con: Distrital (coordinación), Nacional (estrategia), Candidatos (campaña).',
+    conexiones:['distrital','nacional','pc'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login departamental'},
+      {id:'b',tipo:'proc',label:'Generar reportes departamentales'},
+      {id:'c',tipo:'io',label:'Administrar afiliados departamentales'},
+      {id:'d',tipo:'store',label:'CREAR pc_dirigentes'},
+      {id:'e',tipo:'proc',label:'Supervisar distritales'},
+      {id:'f',tipo:'io',label:'Gestionar candidatos a intendente'},
+      {id:'g',tipo:'proc',label:'Coordinar transporte inter-distrital'},
+      {id:'h',tipo:'term',label:'FIN — Gestión departamental completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e'}, {from:'e',to:'f'},
+      {from:'f',to:'g'}, {from:'g',to:'h'}
+    ],
+    mejoras:[
+      {nivel:'media',txt:'Sin mapa de movilización de votantes entre distritos.'},
+      {nivel:'baja',txt:'Sin reporte de costos de transporte por distrito.'}
+    ]
+  },
+  { id:'nacional', nombre:'Nacional', icono:'🌎', color:'#b45309', nivel:8, acceso:'nacional',
+    desc:'Conducción política nacional del partido. Define estrategia, aprueba resoluciones, coordina departamentos. Se conecta con: Departamental (resultados), Candidatos (campaña nacional), PC (datos agregados).',
+    conexiones:['departamental','distrital','pc'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login nacional'},
+      {id:'b',tipo:'proc',label:'Definir estrategia política'},
+      {id:'c',tipo:'io',label:'Administrar dirigentes nacionales'},
+      {id:'d',tipo:'store',label:'CREAR puestos_comando (PC Nacional)'},
+      {id:'e',tipo:'proc',label:'Coordinar direcciones departamentales'},
+      {id:'f',tipo:'io',label:'Ver resultados en tiempo real'},
+      {id:'g',tipo:'term',label:'FIN — Gestión nacional completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e'}, {from:'e',to:'f'}, {from:'f',to:'g'}
+    ],
+    mejoras:[
+      {nivel:'media',txt:'Sin dashboard nacional de participación por departamento.'},
+      {nivel:'baja',txt:'Sin alerta automática de mesas problemáticas.'}
+    ]
+  },
+  { id:'admin', nombre:'Admin', icono:'🔑', color:'#64748b', nivel:9, acceso:'admin',
+    desc:'Administrador del sistema. Gestiona usuarios, permisos, parámetros, auditoría. Se conecta con: Todos los roles (gestión), Sistema (configuración).',
+    conexiones:['nacional','departamental','distrital','seccional','pc','conductor','dirigente'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login admin'},
+      {id:'b',tipo:'proc',label:'Gestionar cuentas de usuario'},
+      {id:'c',tipo:'store',label:'CREAR/EDITAR cuentas_usuario'},
+      {id:'d',tipo:'proc',label:'Asignar roles y permisos'},
+      {id:'e',tipo:'io',label:'Ver auditoría de votos'},
+      {id:'f',tipo:'proc',label:'Configurar parámetros del sistema'},
+      {id:'g',tipo:'term',label:'FIN — Gestión admin completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'},
+      {from:'d',to:'e'}, {from:'e',to:'f'}, {from:'f',to:'g'}
+    ],
+    mejoras:[
+      {nivel:'baja',txt:'Sin logs de acceso detallados por rol.'}
+    ]
+  },
+  { id:'cliente', nombre:'Cliente', icono:'🏢', color:'#94a3b8', nivel:10, acceso:'general',
+    desc:'Cliente externo (candidato, fiscal, observador). Visualiza información disponible según permisos. Se conecta con: Sistema (consulta), Nacional (reportes públicos).',
+    conexiones:['nacional'],
+    flujo:[
+      {id:'a',tipo:'term',label:'INICIO — Login cliente'},
+      {id:'b',tipo:'proc',label:'Visualizar información asignada'},
+      {id:'c',tipo:'io',label:'Ver resultados parciales'},
+      {id:'d',tipo:'term',label:'FIN — Visualización completa'}
+    ],
+    aristas:[
+      {from:'a',to:'b'}, {from:'b',to:'c'}, {from:'c',to:'d'}
+    ],
+    mejoras:[
+      {nivel:'baja',txt:'Sin exportación de reportes en PDF.'}
+    ]
+  }
+];
+
+// Funciones globales para el manejo de pestañas
+document.addEventListener('DOMContentLoaded', () => {
+  // Renderizar pestañas
+  const tabsContainer = document.getElementById('tabs');
+  ROLES.forEach(rol => {
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.textContent = rol.nombre;
+    tab.onclick = () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderDiagram(rol);
+    };
+    tabsContainer.appendChild(tab);
+  });
+
+  // Activar primer rol
+  if (ROLES.length > 0) {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    renderDiagram(ROLES[0]);
+  }
+
+  // Renderizar herramientas (nuevas del grafo)
+  renderTools();
+
+  // Renderizar conexiones rol -> herramienta
+  renderConnections();
+});
+
+function getSeverity(toolId) {
+  if (['rate_limit', 'auditoria', '2fa', 'alertas', 'voto_auditar'].includes(toolId)) return 'critica';
+  if (['geocerca', 'sesion', 'candidatos', 'usuarios', 'asignaciones', 'transportes'].includes(toolId)) return 'media';
+  return 'baja';
+}
+
+function getToolDisplayName(id) {
+  const map = {
+    'rate_limit': 'Limitador de tasa',
+    'geocerca': 'Geocerca dinámica',
+    'auditoria': 'Auditoría de votos',
+    'sesion': 'Cierre seguro de sesión',
+    '2fa': '2FA TOTP',
+    'alertas': 'Alertas automáticas',
+    'candidatos': 'Validación de candidatos',
+    'cuentas': 'Cuentas unificadas',
+    'asignaciones': 'Gestión de asignaciones',
+    'usuarios': 'Roles unificados',
+    'campos': 'Formación unificada de campos',
+    'transportes': 'Gestión de transportes',
+  };
+  return map[id] || id.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+function getToolIcon(sev) {
+  const map = { 'critica': '🚨', 'media': '⚠️', 'baja': 'ℹ️' };
+  return map[sev] || '🛠️';
+}
+
+function renderTools() {
+  const grid = document.getElementById('tools-grid');
+  if (!grid) return;
+  // Extraer herramientas del grafo (grafo_dominio.json) — cargarlo
+  fetch('graphify-out/grafo_dominio.json')
+    .then(r => r.json())
+    .then(g => {
+      const nodos = g.nodos || [];
+      const tools = nodos.filter(n => n.tipo === 'herramienta' || (n.id && n.id.includes('api:')));
+      grid.innerHTML = '';
+      tools.forEach(n => {
+        const id = n.id || n.nombre || 'tool-' + Math.random().toString(36).slice(2,8);
+        const sev = getSeverity(id);
+        const displayName = getToolDisplayName(id);
+        const colorMap = { 'critica': '#dc2626', 'media': '#d97706', 'baja': '#059669' };
+        const icon = getToolIcon(sev);
+
+        const div = document.createElement('div');
+        div.className = `tool-node ${sev}`;
+        div.dataset.tool = id;
+        div.innerHTML = `
+          <div class="tool-head">
+            <div class="tool-icon" style="background:${colorMap[sev]};color:#fff;">${icon}</div>
+            <div class="tool-name">${displayName}</div>
+          </div>
+          <div class="tool-desc">Herramienta registrada: <b>${id}</b> (desde <code>app.py</code>)</div>
+          <div class="tool-roles"></div>
+          <div class="sev-badge sev-${sev}">${sev.toUpperCase()}</div>
+        `;
+        grid.appendChild(div);
+      });
+      document.getElementById('tools-count').textContent = `(${tools.length} herramientas)`;
+    })
+    .catch(() => {
+      // Si falla la carga del grafo, usar lista de herramientas desde app.py como fallback
+      const appTools = ['rate_limit','geocerca','auditoria','sesion','2fa','alertas','candidatos','cuentas','asignaciones','usuarios','campos','transportes'];
+      grid.innerHTML = '';
+      appTools.forEach(id => {
+        const sev = getSeverity(id);
+        const displayName = getToolDisplayName(id);
+        const colorMap = { 'critica': '#dc2626', 'media': '#d97706', 'baja': '#059669' };
+        const icon = getToolIcon(sev);
+        const div = document.createElement('div');
+        div.className = `tool-node ${sev}`;
+        div.dataset.tool = id;
+        div.innerHTML = `
+          <div class="tool-head">
+            <div class="tool-icon" style="background:${colorMap[sev]};color:#fff;">${icon}</div>
+            <div class="tool-name">${displayName}</div>
+          </div>
+          <div class="tool-desc">Herramienta registrada: <b>${id}</b> (desde <code>app.py</code>)</div>
+          <div class="tool-roles"></div>
+          <div class="sev-badge sev-${sev}">${sev.toUpperCase()}</div>
+        `;
+        grid.appendChild(div);
+      });
+      document.getElementById('tools-count').textContent = `(${appTools.length} herramientas)`;
+    });
+}
+
+function renderConnections() {
+  const container = document.getElementById('conexiones-grid');
+  if (!container) return;
+  // Usar roles fijos de ROLES array (apuntan a IDs de herramientas)
+  ROLES.forEach(rol => {
+    const row = document.createElement('div');
+    row.className = 'conex-row';
+    // Encontrar herramientas conectadas a este rol
+    const herramientas = rol.conexiones || [];
+    row.innerHTML = `
+      <div class="conex-rol" style="background:${rol.color}">${rol.nombre}</div>
+      <div class="conex-arrow">→</div>
+      <div class="conex-tools">
+        ${herramientas.map(t => `<span class="conex-tool">${t}</span>`).join('')}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function renderDiagram(rol) {
+  const container = document.getElementById('diagramas');
+  container.innerHTML = '';
+
+  const W = 700;
+  const nodeH = 70;
+  const nodeGap = 50;
+  const H = Math.max(500, rol.flujo.length * (nodeH + nodeGap) + 100);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.background = '#fafbfc';
+
+  // Layout vertical: todos los nodos en una columna centrada
+  const cx = W / 2;
+  const startY = 60;
+  const nodos = {};
+
+  rol.flujo.forEach((node, idx) => {
+    const cy = startY + idx * (nodeH + nodeGap) + nodeH / 2;
+    nodos[node.id] = {
+      x: cx,
+      y: cy,
+      w: 200,
+      h: nodeH,
+      node: node
+    };
+  });
+
+  // Definir flecha
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'arrowhead');
+  marker.setAttribute('markerWidth', '10');
+  marker.setAttribute('markerHeight', '7');
+  marker.setAttribute('refX', '9');
+  marker.setAttribute('refY', '3.5');
+  marker.setAttribute('orient', 'auto');
+  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+  polygon.setAttribute('fill', '#64748b');
+  marker.appendChild(polygon);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+
+  // Dibujar aristas
+  rol.aristas.forEach(edge => {
+    const from = nodos[edge.from];
+    const to = nodos[edge.to];
+    if (!from || !to) return;
+
+    const x1 = from.x;
+    const y1 = from.y + from.h / 2;
+    const x2 = to.x;
+    const y2 = to.y - to.h / 2;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', '#64748b');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('marker-end', 'url(#arrowhead)');
+    svg.appendChild(line);
+
+    if (edge.label) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', x1 + 10);
+      label.setAttribute('y', (y1 + y2) / 2);
+      label.setAttribute('font-size', '12');
+      label.setAttribute('fill', '#475569');
+      label.setAttribute('font-weight', '700');
+      label.textContent = edge.label;
+      svg.appendChild(label);
+    }
+  });
+
+  // Dibujar nodos
+  rol.flujo.forEach(node => {
+    const pos = nodos[node.id];
+    const x = pos.x, y = pos.y;
+    const w = pos.w, h = pos.h;
+
+    let fill = '#fff';
+    if (node.tipo === 'term') fill = '#e2e8f0';
+    else if (node.tipo === 'dec') fill = '#fef3c7';
+    else if (node.tipo === 'proc') fill = '#dbeafe';
+    else if (node.tipo === 'store') fill = '#dcfce7';
+    else if (node.tipo === 'io') fill = '#e9d5ff';
+
+    const stroke = '#1e293b';
+    const sw = '2';
+
+    if (node.tipo === 'term') {
+      const ellipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      ellipse.setAttribute('cx', x);
+      ellipse.setAttribute('cy', y);
+      ellipse.setAttribute('rx', w / 2);
+      ellipse.setAttribute('ry', h / 2);
+      ellipse.setAttribute('fill', fill);
+      ellipse.setAttribute('stroke', stroke);
+      ellipse.setAttribute('stroke-width', sw);
+      svg.appendChild(ellipse);
+    } else if (node.tipo === 'io') {
+      const offset = 20;
+      const points = [
+        `${x - w / 2 + offset},${y - h / 2}`,
+        `${x + w / 2},${y - h / 2}`,
+        `${x + w / 2 - offset},${y + h / 2}`,
+        `${x - w / 2},${y + h / 2}`
+      ].join(' ');
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', points);
+      poly.setAttribute('fill', fill);
+      poly.setAttribute('stroke', stroke);
+      poly.setAttribute('stroke-width', sw);
+      svg.appendChild(poly);
+    } else if (node.tipo === 'dec') {
+      const points = [
+        `${x},${y - h / 2}`,
+        `${x + w / 2},${y}`,
+        `${x},${y + h / 2}`,
+        `${x - w / 2},${y}`
+      ].join(' ');
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', points);
+      poly.setAttribute('fill', fill);
+      poly.setAttribute('stroke', stroke);
+      poly.setAttribute('stroke-width', sw);
+      svg.appendChild(poly);
+    } else if (node.tipo === 'store') {
+      const cylW = w * 0.7;
+      const ellipseH = 14;
+      const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const d = `M ${x - cylW / 2} ${y - h / 2 + ellipseH}
+                L ${x - cylW / 2} ${y + h / 2 - ellipseH}
+                A ${cylW / 2} ${ellipseH} 0 0 0 ${x + cylW / 2} ${y + h / 2 - ellipseH}
+                L ${x + cylW / 2} ${y - h / 2 + ellipseH}
+                A ${cylW / 2} ${ellipseH} 0 0 1 ${x - cylW / 2} ${y - h / 2 + ellipseH} Z`;
+      body.setAttribute('d', d);
+      body.setAttribute('fill', fill);
+      body.setAttribute('stroke', stroke);
+      body.setAttribute('stroke-width', sw);
+      svg.appendChild(body);
+    } else {
+      // proc y default: rectángulo
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x - w / 2);
+      rect.setAttribute('y', y - h / 2);
+      rect.setAttribute('width', w);
+      rect.setAttribute('height', h);
+      rect.setAttribute('rx', '6');
+      rect.setAttribute('fill', fill);
+      rect.setAttribute('stroke', stroke);
+      rect.setAttribute('stroke-width', sw);
+      svg.appendChild(rect);
+    }
+
+    // Texto del nodo
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', x);
+    text.setAttribute('y', y);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.style.fontFamily = 'Arial, sans-serif';
+    text.style.fontSize = '13px';
+    text.style.fontWeight = '600';
+    text.style.fill = '#1e293b';
+    let label = node.label;
+    if (label.length > 22) {
+      label = label.substring(0, 20) + '…';
+    }
+    text.textContent = label;
+    svg.appendChild(text);
+  });
+
+  container.appendChild(svg);
+
+  // Mostrar mejoras
+  if (rol.mejoras && rol.mejoras.length > 0) {
+    const mejorasDiv = document.createElement('div');
+    mejorasDiv.className = 'rol-mejoras';
+    mejorasDiv.innerHTML = '<h3>Mejoras (niveles de madurez)</h3>';
+    rol.mejoras.forEach(m => {
+      const div = document.createElement('div');
+      div.className = `mejora-row ${m.nivel}`;
+      div.innerHTML = `<strong>${m.nivel.toUpperCase()}:</strong> ${m.txt}`;
+      mejorasDiv.appendChild(div);
+    });
+    container.appendChild(mejorasDiv);
+  }
+}
+</script>
+</body>
+</html>

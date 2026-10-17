@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Gestión Territorial Local</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    .stat-card { transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(197, 160, 89, 0.4); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .bar { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }
+    .bar > span { display: block; height: 100%; background: linear-gradient(90deg, #c5a059, #dfc07b); }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-100/70 text-slate-800">
+  <div id="app"></div>
+
+  <script>
+    const API_URL = '/api';
+    const USER_KEY = 'seccional40_user';
+    function getUser() { try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; } }
+
+    let state = { usuario: getUser(), cargando: true, error: '', resumen: null, detalle: null, encuesta: null,
+                  resumenCandidatos: null,
+                  mesaAbierta: null, mesaDetalle: null, mesaCargando: false,
+                  dirigenteAbierto: null, dirigenteDetalle: null, dirigenteCargando: false };
+
+    async function abrirDirigente(cedDirigente) {
+      if (state.dirigenteAbierto === cedDirigente) { state.dirigenteAbierto = null; state.dirigenteDetalle = null; render(); return; }
+      state.dirigenteAbierto = cedDirigente; state.dirigenteDetalle = null; state.dirigenteCargando = true; render();
+      try {
+        const ced = state.usuario?.cedula || '';
+        const r = await fetch(`${API_URL}/mi_dashboard/dirigente_detalle?cedula=${encodeURIComponent(ced)}&dirigente_cedula=${encodeURIComponent(cedDirigente)}&v=${Date.now()}`).then(x => x.json());
+        state.dirigenteDetalle = r;
+      } catch (e) {
+        state.dirigenteDetalle = { success: false, error: e.message };
+      }
+      state.dirigenteCargando = false;
+      render();
+    }
+
+    function renderDirigenteDetalle() {
+      if (state.dirigenteAbierto == null) return '';
+      if (state.dirigenteCargando) return `<tr><td colspan="6" class="p-3 text-center text-xs text-slate-400"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando...</td></tr>`;
+      const d = state.dirigenteDetalle;
+      if (!d || !d.success) return `<tr><td colspan="6" class="p-3 text-center text-xs text-red-500">${esc(d?.error || 'Error')}</td></tr>`;
+      if (!d.votantes.length) return `<tr><td colspan="6" class="p-3 text-center text-xs text-slate-400">Todavía no cargó compromisos.</td></tr>`;
+      return `<tr><td colspan="6" class="p-0">
+        <div class="p-3 bg-slate-50 border-y border-slate-200">
+          <p class="text-xs font-black text-slate-700 mb-2">${esc(d.dirigente_nombre)} · <span class="text-emerald-600">${d.votaron_real ?? 0} ya votaron (según el sistema)</span> · ${d.confirmados} marcados voto seguro</p>
+          <div class="space-y-1 max-h-56 overflow-y-auto">
+            ${d.votantes.map(v => `
+              <div class="flex items-center justify-between text-[11px] p-1.5 bg-white rounded-lg border border-slate-100">
+                <span class="flex items-center gap-1.5">
+                  <i class="fas ${v.voto_real ? 'fa-check-double text-emerald-600' : v.confirmado ? 'fa-check-circle text-amber-500' : 'fa-clock text-slate-400'}"></i>
+                  <span class="font-bold">${esc(v.nombre)}</span>
+                  <span class="text-slate-300">${esc(v.cedula)}</span>
+                  ${v.voto_real ? '<span class="text-[9px] text-emerald-600 font-black">YA VOTÓ</span>' : ''}
+                </span>
+                <span class="text-slate-400">Mesa ${esc(v.mesa)}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      </td></tr>`;
+    }
+
+    async function abrirMesa(mesa) {
+      if (state.mesaAbierta === mesa) { state.mesaAbierta = null; state.mesaDetalle = null; render(); return; }
+      state.mesaAbierta = mesa; state.mesaDetalle = null; state.mesaCargando = true; render();
+      try {
+        const ced = state.usuario?.cedula || '';
+        const r = await fetch(`${API_URL}/mi_dashboard/mesa_detalle?cedula=${encodeURIComponent(ced)}&mesa=${mesa}&v=${Date.now()}`).then(x => x.json());
+        state.mesaDetalle = r.success ? r : { success: false, error: r.error };
+      } catch (e) {
+        state.mesaDetalle = { success: false, error: e.message };
+      }
+      state.mesaCargando = false;
+      render();
+    }
+
+    function renderMesaDetalle() {
+      if (state.mesaAbierta == null) return '';
+      if (state.mesaCargando) return `<div class="mt-2 p-3 bg-slate-50 rounded-xl text-xs text-slate-400"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando mesa ${state.mesaAbierta}...</div>`;
+      const d = state.mesaDetalle;
+      if (!d || !d.success) return `<div class="mt-2 p-3 bg-red-50 text-red-500 rounded-xl text-xs">${esc(d?.error || 'Error')}</div>`;
+      if (!d.votantes.length) return `<div class="mt-2 p-3 bg-slate-50 rounded-xl text-xs text-slate-400">Mesa ${d.mesa}: nadie comprometido todavía por un dirigente.</div>`;
+      return `
+        <div class="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+          <p class="text-xs font-black text-slate-700 mb-2">Mesa ${d.mesa} · <span class="text-emerald-600">${d.votaron_real ?? 0}/${d.total} ya votaron (según el sistema)</span></p>
+          <div class="space-y-1 max-h-56 overflow-y-auto">
+            ${d.votantes.map(v => `
+              <div class="flex items-center justify-between text-[11px] p-1.5 bg-white rounded-lg border border-slate-100">
+                <span class="flex items-center gap-1.5">
+                  <i class="fas ${v.voto_real ? 'fa-check-double text-emerald-600' : v.confirmado ? 'fa-check-circle text-amber-500' : 'fa-clock text-slate-400'}"></i>
+                  <span class="font-bold">${esc(v.nombre)}</span>
+                  <span class="text-slate-300">${esc(v.cedula)}</span>
+                  ${v.voto_real ? '<span class="text-[9px] text-emerald-600 font-black">YA VOTÓ</span>' : ''}
+                </span>
+                <span class="text-slate-400">Dirigente: <span class="font-bold text-slate-600">${esc(v.dirigente_nombre)}</span></span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    async function cargarTodo() {
+      state.cargando = true; state.error = ''; render();
+      const ced = state.usuario?.cedula || '';
+      if (!ced) { state.error = 'Debe iniciar sesión.'; state.cargando = false; render(); return; }
+      try {
+        const [resumen, detalle, encuesta, resumenCandidatos] = await Promise.all([
+          fetch(`${API_URL}/mi_dashboard?cedula=${encodeURIComponent(ced)}&v=${Date.now()}`).then(r => r.json()),
+          fetch(`${API_URL}/mi_dashboard/detalle?cedula=${encodeURIComponent(ced)}&v=${Date.now()}`).then(r => r.json()),
+          fetch(`${API_URL}/mi_dashboard/encuesta?cedula=${encodeURIComponent(ced)}&v=${Date.now()}`).then(r => r.json()),
+          fetch(`${API_URL}/mi_dashboard/resumen_candidatos?cedula=${encodeURIComponent(ced)}&v=${Date.now()}`).then(r => r.json()),
+        ]);
+        state.resumen = resumen; state.detalle = detalle; state.encuesta = encuesta;
+        state.resumenCandidatos = resumenCandidatos;
+      } catch (e) {
+        state.error = 'No se pudo cargar: ' + e.message;
+      }
+      state.cargando = false;
+      render();
+    }
+
+    function esc(v) { return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+    function linkEncuesta() {
+      const unidad = (state.resumen?.alcance?.seccionales || [])[0];
+      return `${location.origin}/encuesta_voto.html${unidad ? '?unidad=' + unidad.id : ''}`;
+    }
+
+    async function restablecerClave(cedula, telefono) {
+      if (!confirm(`¿Restablecer la contraseña de la cédula ${cedula}? Se generará una nueva para comunicarle por teléfono (${telefono}).`)) return;
+      try {
+        const r = await fetch('/api/recuperar_password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cedula, telefono })
+        }).then(x => x.json());
+        if (!r.success) throw new Error(r.error || 'Error');
+        alert(`Nueva contraseña: ${r.nueva_contrasena}\nComunicásela al ${r.telefono}.`);
+      } catch (e) { alert('No se pudo restablecer: ' + e.message); }
+    }
+
+    function copiarLinkEncuesta() {
+      navigator.clipboard?.writeText(linkEncuesta());
+      alert('Link copiado: ' + linkEncuesta());
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+      const u = state.usuario;
+      if (state.cargando) {
+        app.innerHTML = `<div class="p-10 text-center text-slate-400"><i class="fas fa-spinner fa-spin text-2xl"></i><p class="mt-2 text-sm font-bold">Cargando gestión territorial...</p></div>`;
+        return;
+      }
+      if (state.error) {
+        app.innerHTML = `<div class="p-10 text-center text-red-500 text-sm font-bold">${esc(state.error)}</div>`;
+        return;
+      }
+      const r = state.resumen?.totales || {};
+      const d = state.detalle || {};
+      const vs = d.votos_seguros || {};
+      const enc = state.encuesta || { total: 0, por_intencion: [] };
+
+      app.innerHTML = `
+        <header class="bg-slate-950 text-white px-5 py-4 flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black"><i class="fas fa-map-marked-alt"></i></div>
+            <div>
+              <h1 class="text-sm font-black uppercase tracking-wide">Gestión Territorial Local</h1>
+              <p class="text-[11px] text-slate-400">${esc(u?.nombre || '')} · Céd. ${esc(u?.cedula || '')} · ${esc(state.resumen?.alcance?.nivel || '')}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="acceso.html" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold"><i class="fas fa-arrow-left mr-1"></i>Volver</a>
+          </div>
+        </header>
+
+        <main class="p-4 max-w-6xl mx-auto space-y-5 fade-in">
+          <!-- RESUMEN -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="stat-card bg-white rounded-2xl border border-slate-200 p-3.5 text-center">
+              <i class="fas fa-building text-amber-500 mb-1"></i>
+              <p class="text-xl font-black">${d.pcs?.total ?? r.pcs_instalados ?? 0}</p>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">PCs instalados</p>
+            </div>
+            <div class="stat-card bg-white rounded-2xl border border-slate-200 p-3.5 text-center">
+              <i class="fas fa-users text-amber-500 mb-1"></i>
+              <p class="text-xl font-black">${(d.votantes?.total ?? r.afiliados ?? 0).toLocaleString('es-PY')}</p>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Votantes</p>
+            </div>
+            <div class="stat-card bg-white rounded-2xl border ${(d.mesas_sin_representacion || []).length ? 'border-red-300' : 'border-slate-200'} p-3.5 text-center">
+              <i class="fas fa-user-shield ${(d.mesas_sin_representacion || []).length ? 'text-red-500' : 'text-amber-500'} mb-1"></i>
+              <p class="text-xl font-black ${(d.mesas_sin_representacion || []).length ? 'text-red-600' : ''}">${(d.mesas_sin_representacion || []).length}</p>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Mesas sin cubrir</p>
+            </div>
+            <div class="stat-card bg-white rounded-2xl border border-slate-200 p-3.5 text-center">
+              <i class="fas fa-shuttle-van text-amber-500 mb-1"></i>
+              <p class="text-xl font-black">${d.transporte?.total_conductores ?? 0}</p>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Conductores</p>
+            </div>
+            <div class="stat-card bg-white rounded-2xl border border-slate-200 p-3.5 text-center">
+              <i class="fas fa-user-tie text-amber-500 mb-1"></i>
+              <p class="text-xl font-black">${(d.dirigentes || []).length}</p>
+              <p class="text-[10px] font-bold text-slate-500 uppercase">Dirigentes</p>
+            </div>
+          </div>
+
+          <!-- VOTOS SEGUROS -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-center justify-between mb-1">
+              <h2 class="text-sm font-black text-slate-800"><i class="fas fa-check-double text-emerald-600 mr-1.5"></i>Ya votaron (confirmado por el sistema)</h2>
+              <span class="text-xs font-black text-emerald-600">${vs.total_votaron_real || 0} / ${vs.total_comprometidos || 0} (${vs.pct_votaron_real ?? 0}%)</span>
+            </div>
+            <div class="bar mb-3"><span style="width:${vs.pct_votaron_real || 0}%;background:linear-gradient(90deg,#059669,#10b981)"></span></div>
+            <p class="text-[10px] text-slate-400 mb-2">Se verifica contra toda la base de carga del día D, no solo lo que marca el dirigente.</p>
+            <div class="flex items-center justify-between mb-2 pt-2 border-t border-slate-100">
+              <h2 class="text-sm font-black text-slate-800"><i class="fas fa-vote-yea text-amber-500 mr-1.5"></i>Voto Seguro (compromiso del dirigente)</h2>
+              <span class="text-xs font-black text-slate-500">${vs.total_confirmados || 0} / ${vs.total_comprometidos || 0} (${vs.pct_cumplimiento ?? 0}%)</span>
+            </div>
+            <div class="bar mb-4"><span style="width:${vs.pct_cumplimiento || 0}%"></span></div>
+            <table class="w-full text-xs">
+              <thead><tr class="text-left text-slate-400 uppercase text-[10px]">
+                <th class="py-1">Dirigente</th><th>Teléfono</th><th>Comprometidos</th><th>Ya votaron</th><th>Voto seguro</th><th></th>
+              </tr></thead>
+              <tbody>
+                ${(d.dirigentes || []).map(x => `
+                  <tr class="border-t border-slate-100 cursor-pointer hover:bg-slate-50 ${state.dirigenteAbierto === x.cedula ? 'bg-amber-50' : ''}" onclick="abrirDirigente('${esc(x.cedula)}')">
+                    <td class="py-1.5 font-bold"><i class="fas fa-chevron-${state.dirigenteAbierto === x.cedula ? 'down' : 'right'} text-[9px] text-slate-400 mr-1.5"></i>${esc(x.nombre)}</td>
+                    <td onclick="event.stopPropagation()">${x.telefono ? `<a href="tel:${esc(x.telefono)}" class="text-blue-600 hover:underline">${esc(x.telefono)}</a>` : '<span class="text-slate-300">—</span>'}</td>
+                    <td>${x.votos_posibles}</td>
+                    <td><span class="font-black text-emerald-600">${x.votaron_real ?? 0}</span> <span class="text-slate-400">(${x.pct_votaron_real ?? 0}%)</span></td>
+                    <td><span class="font-black ${x.pct_cumplimiento >= 70 ? 'text-emerald-600' : x.pct_cumplimiento >= 40 ? 'text-amber-600' : 'text-slate-400'}">${x.votos_seguros} (${x.pct_cumplimiento}%)</span></td>
+                    <td onclick="event.stopPropagation()">${x.telefono ? `<button onclick="restablecerClave('${esc(x.cedula)}','${esc(x.telefono)}')" class="text-[10px] px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold" title="Restablecer contraseña usando su teléfono"><i class="fas fa-key"></i></button>` : ''}</td>
+                  </tr>
+                  ${state.dirigenteAbierto === x.cedula ? renderDirigenteDetalle() : ''}
+                  `).join('') || '<tr><td colspan="6" class="py-3 text-center text-slate-400">Sin dirigentes todavía.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- RESUMEN POR CANDIDATO: cuantos votos para cada candidato, sumando a todo el equipo -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+            <h2 class="text-sm font-black text-slate-800 mb-3"><i class="fas fa-chart-bar text-amber-500 mr-1.5"></i>Resumen: Votos por Candidato</h2>
+            ${['intendente', 'concejal'].map(cargo => {
+              const items = (state.resumenCandidatos?.candidatos || []).filter(x => x.cargo === cargo);
+              if (!items.length) return '';
+              return `
+                <p class="text-[11px] font-black text-slate-400 uppercase mt-2 mb-1">${cargo === 'intendente' ? '⭐ Intendente' : '👥 Concejales'}</p>
+                <div class="space-y-2 mb-2">
+                  ${items.map(x => `
+                    <div>
+                      <div class="flex justify-between text-xs font-bold">
+                        <span>${esc(x.nombre)} ${x.lista_nro ? `<span class="text-slate-400 font-normal">· Lista ${esc(x.lista_nro)}</span>` : ''}</span>
+                        <span><span class="text-emerald-700 font-black">${x.votaron_real}</span> <span class="text-slate-400 font-normal">ya votaron</span> · ${x.confirmados} voto seguro / ${x.comprometidos} comprometidos <span class="text-slate-400">(${x.pct_votaron_real}%)</span></span>
+                      </div>
+                      <div class="bar"><span style="width:${x.pct_votaron_real}%;background:linear-gradient(90deg,#059669,#10b981)"></span></div>
+                    </div>`).join('')}
+                </div>`;
+            }).join('') || '<p class="text-xs text-slate-400">Todavía no hay votos destinados a candidatos.</p>'}
+          </div>
+
+          <!-- COLEGIOS Y MESAS: lo que importa es cuanto se va cargando (voto seguro), no el padron -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+            <h2 class="text-sm font-black text-slate-800 mb-2"><i class="fas fa-school text-amber-500 mr-1.5"></i>Votos cargados por Institución y Mesa</h2>
+            ${(d.votantes?.colegios || []).map(cg => `
+              <div class="mb-3">
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-black text-slate-700">${esc(cg.escuela)} <span class="text-slate-400 font-normal">· PC ${esc(cg.codigo_pc)}</span></p>
+                  <p class="text-xs font-black">
+                    <span class="text-emerald-600">${cg.total_confirmados ?? 0} confirmados</span>
+                    <span class="text-slate-400 mx-1">/</span>
+                    <span class="text-amber-600">${cg.total_comprometidos ?? 0} comprometidos</span>
+                  </p>
+                </div>
+                <p class="text-[10px] text-slate-400">Padrón de referencia: ${(cg.total_votantes ?? 0).toLocaleString('es-PY')} electores en esta institución.</p>
+                <div class="flex flex-wrap gap-1.5 mt-1.5">
+                  ${(cg.mesas || []).map(m => `
+                    <button onclick="abrirMesa(${m.mesa})"
+                      class="px-2 py-1 border rounded-lg text-[10px] font-bold transition-all ${state.mesaAbierta === m.mesa ? 'bg-amber-100 border-amber-400' : 'bg-slate-50 border-slate-200 hover:border-amber-300'}">
+                      Mesa ${m.mesa}: <span class="text-emerald-600">${m.confirmados}</span>/<span class="text-amber-600">${m.comprometidos}</span>
+                    </button>`).join('') || '<span class="text-[10px] text-slate-400">Sin mapeo de mesas por escuela todavía.</span>'}
+                </div>
+                ${(cg.mesas || []).some(m => m.mesa === state.mesaAbierta) ? renderMesaDetalle() : ''}
+              </div>`).join('') || '<p class="text-xs text-slate-400">Sin colegios electorales con PC instalado todavía.</p>'}
+          </div>
+
+          <!-- MIEMBROS Y VEEDORES -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4">
+              <h2 class="text-sm font-black text-slate-800 mb-2"><i class="fas fa-id-card text-amber-500 mr-1.5"></i>Miembros de Mesa</h2>
+              <div class="max-h-64 overflow-y-auto space-y-1">
+                ${(d.miembros_mesa || []).map(m => `
+                  <div class="flex justify-between text-xs p-1.5 bg-slate-50 rounded-lg">
+                    <span class="font-bold">${esc(m.nombre)}</span>
+                    <span class="text-slate-400">Mesa ${esc(m.mesa)} · ${m.telefono ? `<a href="tel:${esc(m.telefono)}" class="text-blue-600">${esc(m.telefono)}</a>` : '—'} · ${esc(m.estado)}</span>
+                  </div>`).join('') || '<p class="text-xs text-slate-400">Sin miembros de mesa cargados en el ámbito.</p>'}
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4">
+              <h2 class="text-sm font-black text-slate-800 mb-2"><i class="fas fa-user-shield text-amber-500 mr-1.5"></i>Veedores</h2>
+              <div class="max-h-64 overflow-y-auto space-y-1">
+                ${(d.veedores || []).map(v => `
+                  <div class="flex justify-between text-xs p-1.5 bg-slate-50 rounded-lg">
+                    <span class="font-bold">${esc(v.nombre)}</span>
+                    <span class="text-slate-400">Mesa ${esc(v.mesa)} · ${esc(v.telefono)}</span>
+                  </div>`).join('') || '<p class="text-xs text-slate-400">Sin veedores cargados en el ámbito.</p>'}
+              </div>
+            </div>
+          </div>
+
+          <!-- TRANSPORTE -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+            <h2 class="text-sm font-black text-slate-800 mb-2"><i class="fas fa-shuttle-van text-amber-500 mr-1.5"></i>Transporte</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              ${(d.transporte?.detalle || []).map(t => `
+                <div class="p-2.5 bg-slate-50 rounded-xl text-xs border border-slate-200">
+                  <p class="font-black">${esc(t.nombre)} <span class="text-slate-400 font-normal">(${esc(t.tipo)})</span></p>
+                  <p class="text-slate-500">Placa ${esc(t.placa)} · ${esc(t.capacidad)} asientos · ${esc(t.telefono)}</p>
+                </div>`).join('') || '<p class="text-xs text-slate-400 col-span-full">Sin conductores/vehículos asignados todavía.</p>'}
+            </div>
+          </div>
+
+          <!-- ENCUESTA -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4">
+            <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <h2 class="text-sm font-black text-slate-800"><i class="fas fa-poll text-amber-500 mr-1.5"></i>Encuesta de Intención de Voto</h2>
+              <button onclick="copiarLinkEncuesta()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-[11px] font-black">
+                <i class="fas fa-link mr-1"></i>Copiar link para compartir
+              </button>
+            </div>
+            <p class="text-xs text-slate-400 mb-2">${enc.total} respuesta(s) en tu ámbito.</p>
+            <div class="space-y-1.5">
+              ${(enc.por_intencion || []).map(i => `
+                <div>
+                  <div class="flex justify-between text-xs font-bold"><span>${esc(i.intencion)}</span><span>${i.total} (${i.pct}%)</span></div>
+                  <div class="bar"><span style="width:${i.pct}%"></span></div>
+                </div>`).join('') || '<p class="text-xs text-slate-400">Sin respuestas todavía. Compartí el link con tu equipo.</p>'}
+            </div>
+          </div>
+        </main>
+      `;
+    }
+
+    render();
+    cargarTodo();
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dia-mesas-db
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py --port $PORT --host 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: LOG_LEVEL
+        value: "info"
+    healthCheckPath: /api/health
+    autoDeploy: true

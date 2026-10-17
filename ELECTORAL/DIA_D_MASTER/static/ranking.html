@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking y Gamificación de Dirigentes - DIA D MASTER</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <!-- Navbar -->
+  <header class="bg-gradient-to-r from-slate-950 via-zinc-900 to-black text-white shadow-xl border-b border-amber-500/30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="acceso.html" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition" title="Volver al Panel Principal">
+          <i class="fa fa-arrow-left"></i>
+        </a>
+        <i class="fa fa-trophy text-2xl text-amber-400"></i>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Gamificación y Rendimiento de Dirigentes</h1>
+          <p class="text-xs text-amber-200/80">Control de Metas Comprometidas vs Votos Confirmados en Urna</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="cargarRanking()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg border border-amber-500/30 transition flex items-center gap-1.5 text-amber-300 font-bold">
+          <i class="fa fa-arrows-rotate"></i> Actualizar en Vivo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    
+    <!-- Podio Top 3 -->
+    <div id="podioContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end pt-4">
+      <!-- 2do Puesto -->
+      <div id="puesto2" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center order-2 md:order-1">
+        <div class="text-3xl mb-1">🥈</div>
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">2° Lugar</span>
+        <h3 class="font-bold text-lg text-slate-800 mt-1" id="nom2">—</h3>
+        <p class="text-xs text-slate-500" id="sec2">—</p>
+        <div class="mt-3 bg-slate-50 py-2 rounded-xl">
+          <span class="text-xl font-black text-slate-700" id="pts2">0 pts</span>
+          <p class="text-xs text-slate-500" id="ef2">0% efectividad</p>
+        </div>
+      </div>
+
+      <!-- 1er Puesto -->
+      <div id="puesto1" class="bg-gradient-to-b from-amber-50 to-white p-6 rounded-2xl shadow-md border-2 border-amber-300 text-center order-1 md:order-2 transform md:-translate-y-2">
+        <div class="text-4xl mb-1 animate-bounce">👑</div>
+        <span class="text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-100 px-3 py-0.5 rounded-full">Líder General</span>
+        <h3 class="font-black text-xl text-slate-900 mt-2" id="nom1">—</h3>
+        <p class="text-xs text-amber-700 font-semibold" id="sec1">—</p>
+        <div class="mt-4 bg-amber-100/50 py-3 rounded-xl border border-amber-200">
+          <span class="text-2xl font-black text-amber-800" id="pts1">0 pts</span>
+          <p class="text-xs text-amber-900 font-semibold" id="ef1">0% efectividad</p>
+        </div>
+      </div>
+
+      <!-- 3er Puesto -->
+      <div id="puesto3" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center order-3">
+        <div class="text-3xl mb-1">🥉</div>
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-700">3° Lugar</span>
+        <h3 class="font-bold text-lg text-slate-800 mt-1" id="nom3">—</h3>
+        <p class="text-xs text-slate-500" id="sec3">—</p>
+        <div class="mt-3 bg-slate-50 py-2 rounded-xl">
+          <span class="text-xl font-black text-slate-700" id="pts3">0 pts</span>
+          <p class="text-xs text-slate-500" id="ef3">0% efectividad</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+        <i class="fa fa-search text-slate-400"></i>
+        <input type="text" id="filtroTexto" onkeyup="filtrar()" placeholder="Buscar dirigente por nombre, cédula o seccional..." class="w-full text-sm px-3 py-1.5 border rounded-xl focus:ring-2 focus:ring-amber-500">
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 font-semibold">Total de Dirigentes:</span>
+        <span id="badgeTotalDirigentes" class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg">0</span>
+      </div>
+    </div>
+
+    <!-- Tabla Completa de Dirigentes -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-600 border-b text-xs uppercase tracking-wider">
+            <tr>
+              <th class="py-3 px-4 font-semibold text-center">Pos</th>
+              <th class="py-3 px-4 font-semibold">Dirigente</th>
+              <th class="py-3 px-4 font-semibold">Rango Honorífico</th>
+              <th class="py-3 px-4 font-semibold text-right">Metas</th>
+              <th class="py-3 px-4 font-semibold text-right text-green-700 font-bold">Votos Urna</th>
+              <th class="py-3 px-4 font-semibold text-right text-slate-400">Pendientes</th>
+              <th class="py-3 px-4 font-semibold text-right font-bold">Efectividad</th>
+              <th class="py-3 px-4 font-semibold text-right text-amber-700 font-black">Puntaje</th>
+            </tr>
+          </thead>
+          <tbody id="tablaRankingBody" class="divide-y divide-slate-100">
+            <tr><td colspan="8" class="py-6 text-center text-slate-400">Cargando métricas de dirigentes...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let rawRanking = [];
+
+    async function cargarRanking() {
+      try {
+        const res = await fetch('/api/gamificacion/ranking');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+
+        rawRanking = data.ranking || [];
+        document.getElementById('badgeTotalDirigentes').innerText = rawRanking.length;
+        renderPodio(rawRanking);
+        renderTabla(rawRanking);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('tablaRankingBody').innerHTML = `
+          <tr><td colspan="8" class="py-6 text-center text-red-500">Error al cargar ranking: ${e.message}</td></tr>
+        `;
+      }
+    }
+
+    function renderPodio(items) {
+      const top1 = items[0] || null;
+      const top2 = items[1] || null;
+      const top3 = items[2] || null;
+
+      if (top1) {
+        document.getElementById('nom1').innerText = top1.dirigente;
+        document.getElementById('sec1').innerText = `${top1.insignia} ${top1.rango} • ${top1.seccional}`;
+        document.getElementById('pts1').innerText = `${top1.puntos.toLocaleString()} pts`;
+        document.getElementById('ef1').innerText = `${top1.confirmados}/${top1.total_metas} (${top1.efectividad}%)`;
+      }
+      if (top2) {
+        document.getElementById('nom2').innerText = top2.dirigente;
+        document.getElementById('sec2').innerText = `${top2.insignia} ${top2.rango} • ${top2.seccional}`;
+        document.getElementById('pts2').innerText = `${top2.puntos.toLocaleString()} pts`;
+        document.getElementById('ef2').innerText = `${top2.confirmados}/${top2.total_metas} (${top2.efectividad}%)`;
+      }
+      if (top3) {
+        document.getElementById('nom3').innerText = top3.dirigente;
+        document.getElementById('sec3').innerText = `${top3.insignia} ${top3.rango} • ${top3.seccional}`;
+        document.getElementById('pts3').innerText = `${top3.puntos.toLocaleString()} pts`;
+        document.getElementById('ef3').innerText = `${top3.confirmados}/${top3.total_metas} (${top3.efectividad}%)`;
+      }
+    }
+
+    function renderTabla(items) {
+      const tbody = document.getElementById('tablaRankingBody');
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">No hay dirigentes registrados aún.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(d => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-3 px-4 text-center font-bold">
+            ${d.posicion === 1 ? '🥇 1' : d.posicion === 2 ? '🥈 2' : d.posicion === 3 ? '🥉 3' : `#${d.posicion}`}
+          </td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-slate-800">${d.dirigente}</div>
+            <div class="text-xs text-slate-500">C.I. ${d.cedula} • ${d.seccional}</div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold 
+              ${d.rango === 'Gran Caudillo' ? 'bg-amber-100 text-amber-800' :
+                d.rango === 'Líder de Zona' ? 'bg-blue-100 text-blue-800' :
+                d.rango === 'Dirigente Activo' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'}">
+              <span>${d.insignia}</span> ${d.rango}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right font-mono">${d.total_metas}</td>
+          <td class="py-3 px-4 text-right font-mono font-bold text-green-600">${d.confirmados}</td>
+          <td class="py-3 px-4 text-right font-mono text-slate-400">${d.pendientes}</td>
+          <td class="py-3 px-4 text-right font-mono font-bold text-slate-700">${d.efectividad}%</td>
+          <td class="py-3 px-4 text-right font-mono font-black text-amber-700">${d.puntos}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filtrar() {
+      const q = (document.getElementById('filtroTexto').value || '').toLowerCase();
+      const filtrados = rawRanking.filter(r => 
+        r.dirigente.toLowerCase().includes(q) ||
+        r.cedula.toLowerCase().includes(q) ||
+        r.seccional.toLowerCase().includes(q)
+      );
+      renderTabla(filtrados);
+    }
+
+    cargarRanking();
+  </script>
+</body>
+</html>

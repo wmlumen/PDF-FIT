@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Descargas APK Móvil - DIA D MASTER</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <!-- Navbar -->
+  <header class="bg-gradient-to-r from-slate-950 via-zinc-900 to-black text-white shadow-xl border-b border-amber-500/30">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="acceso.html" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition" title="Volver al Panel Principal">
+          <i class="fa fa-arrow-left"></i>
+        </a>
+        <i class="fa-brands fa-android text-2xl text-amber-400"></i>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Aplicaciones Móviles Android (APK)</h1>
+          <p class="text-xs text-amber-200/80">Instaladores directos para teléfonos de veedores y dirigentes</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-8">
+    
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="text-2xl font-black text-slate-900">Descarga la App en tu Celular</h2>
+      <p class="text-sm text-slate-500 mt-2">
+        Diseñadas especialmente para la jornada electoral del Día D. No requieren cuenta de Google Play Store ni configuración previa.
+      </p>
+    </div>
+
+    <!-- Opciones de Descarga -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Opción 1: App Online + Sync -->
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Recomendada</span>
+            <span class="text-xs text-slate-400 font-mono">29.7 MB</span>
+          </div>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl">
+              <i class="fa fa-wifi"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-800">DDIA v2 Final (Online + Sync)</h3>
+              <p class="text-xs text-slate-500">Con sincronización en tiempo real y respaldo local</p>
+            </div>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2 mt-4">
+            <li class="flex items-center gap-2"><i class="fa fa-check text-emerald-600"></i> Sincroniza votos con el servidor central cuando hay señal.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-emerald-600"></i> Guarda datos en el teléfono si se corta internet.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-emerald-600"></i> Indicador visual de estado ONLINE/OFFLINE.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-emerald-600"></i> Consulta al padrón TSJE en vivo.</li>
+          </ul>
+        </div>
+        <div class="mt-6">
+          <a href="/api/descargar/apk/final" download="ddia-v2-final.apk" 
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+            <i class="fa fa-download"></i> Descargar APK Final (.apk)
+          </a>
+        </div>
+      </div>
+
+      <!-- Opción 2: App 100% Offline -->
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="bg-blue-100 text-blue-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">Modo Avión</span>
+            <span class="text-xs text-slate-400 font-mono">29.7 MB</span>
+          </div>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl">
+              <i class="fa fa-plane"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-800">DDIA Exacto (100% Offline)</h3>
+              <p class="text-xs text-slate-500">Opera totalmente sin internet ni servidores</p>
+            </div>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-2 mt-4">
+            <li class="flex items-center gap-2"><i class="fa fa-check text-blue-600"></i> Ideal para escuelas y zonas sin señal de telefonía.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-blue-600"></i> Fuentes e iconos integrados dentro de la app.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-blue-600"></i> Matriz visual táctil idéntica a las planillas impresas.</li>
+            <li class="flex items-center gap-2"><i class="fa fa-check text-blue-600"></i> Exportación de datos al finalizar el escrutinio.</li>
+          </ul>
+        </div>
+        <div class="mt-6">
+          <a href="/api/descargar/apk/offline" download="ddia-exacto-offline.apk" 
+            class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-slate-900/20 transition flex items-center justify-center gap-2">
+            <i class="fa fa-download"></i> Descargar APK Offline (.apk)
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Instrucciones de Instalación en Android -->
+    <div class="bg-amber-50 rounded-3xl p-6 border border-amber-200">
+      <h3 class="font-bold text-amber-900 flex items-center gap-2 mb-3">
+        <i class="fa fa-info-circle text-amber-600"></i> Instrucciones de Instalación en Celulares Android
+      </h3>
+      <ol class="text-xs text-amber-900 space-y-2 list-decimal list-inside leading-relaxed">
+        <li>Pulsa el botón de descarga del instalador deseado desde el navegador Chrome del celular.</li>
+        <li>Si aparece la advertencia <em>"Es posible que el archivo sea dañino"</em>, pulsa <strong>"Descargar de todos modos"</strong>.</li>
+        <li>Al finalizar la descarga, abre el archivo y selecciona <strong>"Instalar"</strong>.</li>
+        <li>Si tu teléfono te solicita habilitar <em>"Instalar aplicaciones desconocidas"</em>, activa el permiso para Chrome.</li>
+        <li>¡Listo! El icono de <strong>DDIA Electoral</strong> aparecerá en el menú de aplicaciones de tu teléfono.</li>
+      </ol>
+    </div>
+
+  </main>
+</body>
+</html>

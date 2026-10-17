@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DIA D MASTER - Roles y Perfiles</title>
+  <script src="vendor/tailwind.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background-color: #f8fafc; color: #0f172a; }
+    .card { transition: all 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .badge-role { @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black tracking-wide; }
+    .dimension-icon { @apply w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0; }
+    .table-comp th { @apply text-[10px] font-black uppercase tracking-widest; }
+    .table-comp td { @apply text-sm; }
+    .perfil-card { @apply bg-white rounded-2xl p-5 border shadow-sm card; }
+    /* Fix Tailwind prose */
+    .prose-custom h3 { @apply text-lg font-black text-slate-800 mb-2; }
+    .prose-custom p { @apply text-sm text-slate-600 leading-relaxed; }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body>
+
+  <!-- ===== ENCABEZADO ===== -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-xl text-amber-400">
+          <i class="fas fa-users-cog text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-black uppercase tracking-tight">Roles y Perfiles</h1>
+          <p class="text-[10px] text-slate-400 font-bold">Sistema de Control Electoral · DIA D MASTER</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] text-slate-500 hidden md:inline font-mono">v2.0</span>
+        <button onclick="window.history.back()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold transition-all">
+          <i class="fas fa-arrow-left mr-1"></i> Volver
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 md:py-10 space-y-10">
+
+    <!-- ===== 1. INTRODUCCIÓN ===== -->
+    <section class="fade-in">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 p-6 md:p-10 text-center">
+        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-slate-900 to-black border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto mb-5 text-3xl shadow-lg shadow-amber-500/10">
+          <i class="fas fa-sitemap"></i>
+        </div>
+        <h2 class="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tight mb-2">Estructura de Perfiles</h2>
+        <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          Cada perfil tiene un alcance, herramientas y visión distintos. 
+          La plataforma se adapta al rol para que cada usuario vea <strong class="text-slate-700">solo lo que necesita</strong>.
+        </p>
+        <p class="text-slate-500 mt-4 max-w-2xl mx-auto leading-relaxed">
+          <strong class="text-indigo-600">Acceso:</strong> La plataforma está disponible mediante:
+        </p>
+        <div class="flex flex-wrap justify-center gap-4 mt-3">
+          <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-center min-w-[180px]">
+            <div class="text-3xl font-bold text-indigo-600">📱</div>
+            <h4 class="text-sm font-black text-indigo-700 uppercase tracking-wider">Aplicación Móvil (PWA)</h4>
+            <p class="text-[10px] text-indigo-400 mt-1">Instalable en cualquier dispositivo. Funciona offline. Sincroniza automáticamente al recuperarse la conexión.</p>
+          </div>
+          <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center min-w-[180px]">
+            <div class="text-3xl font-bold text-emerald-500">💻</div>
+            <h4 class="text-sm font-black text-emerald-700 uppercase tracking-wider">Interfaz Web</h4>
+            <p class="text-[10px] text-emerald-400 mt-1">Acceso directo desde navegador. Sin instalación requerida. Ideal para computadoras y tablets.</p>
+          </div>
+        </div>
+        <!-- Mini leyenda de colores -->
+        <div class="flex flex-wrap justify-center gap-3 mt-6">
+          <span class="badge-role bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fas fa-crown text-[8px]"></i> Master</span>
+          <span class="badge-role bg-purple-100 text-purple-700 border border-purple-200"><i class="fas fa-globe text-[8px]"></i> Nacional</span>
+          <span class="badge-role bg-blue-100 text-blue-700 border border-blue-200"><i class="fas fa-map text-[8px]"></i> Departamental</span>
+          <span class="badge-role bg-cyan-100 text-cyan-700 border border-cyan-200"><i class="fas fa-city text-[8px]"></i> Distrital</span>
+          <span class="badge-role bg-orange-100 text-orange-700 border border-orange-200"><i class="fas fa-store text-[8px]"></i> Seccional / Comité</span>
+          <span class="badge-role bg-slate-100 text-slate-700 border border-slate-200"><i class="fas fa-shield-alt text-[8px]"></i> Admin General</span>
+          <span class="badge-role bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fas fa-chart-pie text-[8px]"></i> PC (Puesto Comando)</span>
+          <span class="badge-role bg-teal-100 text-teal-700 border border-teal-200"><i class="fas fa-flag text-[8px]"></i> Panel Partido</span>
+          <span class="badge-role bg-amber-100 text-amber-700 border border-amber-200"><i class="fas fa-user-tie text-[8px]"></i> Dirigente</span>
+          <span class="badge-role bg-indigo-100 text-indigo-700 border border-indigo-200"><i class="fas fa-user-shield text-[8px]"></i> Veedor de Escuela</span>
+          <span class="badge-role bg-rose-100 text-rose-700 border border-rose-200"><i class="fas fa-person-booth text-[8px]"></i> Miembro de Mesa</span>
+          <span class="badge-role bg-sky-100 text-sky-700 border border-sky-200"><i class="fas fa-truck-moving text-[8px]"></i> Conductor / Móvil</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. COMPARATIVA: Centro Electoral Local vs PANEL PARTIDO ===== -->
+    <section class="fade-in">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 p-6 md:p-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dimension-icon bg-emerald-100 text-emerald-600 border border-emerald-200 shadow-sm"><i class="fas fa-balance-scale"></i></div>
+          <div>
+            <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">Diferencia clave</h2>
+            <p class="text-xs text-slate-400 font-bold">Centro Electoral Local vs Panel Político</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full table-comp">
+            <thead>
+              <tr class="border-b-2 border-slate-200">
+                <th class="text-left py-4 px-3 text-slate-400">Dimensión</th>
+                <th class="text-left py-4 px-3 text-emerald-700 bg-emerald-50/50 rounded-tl-2xl">
+                  <i class="fas fa-tools mr-1.5"></i> Centro Electoral Local
+                </th>
+                <th class="text-left py-4 px-3 text-teal-700 bg-teal-50/50 rounded-tr-2xl">
+                  <i class="fas fa-chart-bar mr-1.5"></i> Panel Partido Políticos
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <!-- Enfoque -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Enfoque</td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-emerald-700">Operativo</span><br><span class="text-xs text-slate-400">"hoy, esta mesa"</span></td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-teal-700">Estratégico</span><br><span class="text-xs text-slate-400">"el partido en todo el distrito"</span></td>
+              </tr>
+              <!-- Dirigentes -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Dirigentes</td>
+                <td class="py-4 px-3 text-slate-600">"¿Está trabajando?"<br><span class="text-xs text-slate-400">Asistencia, actividad en campo</span></td>
+                <td class="py-4 px-3 text-slate-600">"¿Está rindiendo?"<br><span class="text-xs text-slate-400">% cumplimiento vs. compromiso</span></td>
+              </tr>
+              <!-- Móviles -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Móviles</td>
+                <td class="py-4 px-3 text-slate-600">Ubicación en <span class="font-bold text-emerald-600">tiempo real</span><br><span class="text-xs text-slate-400">Mapa GPS, ruta actual</span></td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-teal-600">Cantidad y cobertura</span><br><span class="text-xs text-slate-400">Cuántos, dónde operan, zonas</span></td>
+              </tr>
+              <!-- Agregación -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Agregación</td>
+                <td class="py-4 px-3 text-slate-600">Por <span class="font-bold text-emerald-600">mesa</span><br><span class="text-xs text-slate-400">Mesa 1, Mesa 2, etc.</span></td>
+                <td class="py-4 px-3 text-slate-600">Por <span class="font-bold text-teal-600">lista / candidato / zona</span><br><span class="text-xs text-slate-400">Honor Colorado, Fuerza Rep., Zona 3</span></td>
+              </tr>
+              <!-- Códigos QR -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Códigos QR</td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-emerald-600">Aprobar uno a uno</span><br><span class="text-xs text-slate-400">Gestiona solicitudes pendientes</span></td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-teal-600">Estadísticas de uso</span><br><span class="text-xs text-slate-400">Conversión, códigos activos</span></td>
+              </tr>
+              <!-- Cumplimiento -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Cumplimiento</td>
+                <td class="py-4 px-3 text-slate-600">Por <span class="font-bold text-emerald-600">dirigente individual</span><br><span class="text-xs text-slate-400">"Nelly Jara: 8/10 votaron"</span></td>
+                <td class="py-4 px-3 text-slate-600">Por <span class="font-bold text-teal-600">lista / candidato / ranking</span><br><span class="text-xs text-slate-400">Lista 2: 75%, Lista 4: 62%</span></td>
+              </tr>
+              <!-- Alcance -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Alcance geográfico</td>
+                <td class="py-4 px-3 text-slate-600">📍 Una <span class="font-bold">seccional</span><br><span class="text-xs text-slate-400">Locales: 1, 2, 3</span></td>
+                <td class="py-4 px-3 text-slate-600">📍 Un <span class="font-bold">departamento / distrito</span><br><span class="text-xs text-slate-400">Visión completa del territorio</span></td>
+              </tr>
+              <!-- Temporalidad -->
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-4 px-3 font-black text-slate-700 text-xs uppercase tracking-wider">Temporalidad</td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-emerald-600">Tiempo real</span><br><span class="text-xs text-slate-400">Día de la votación</span></td>
+                <td class="py-4 px-3 text-slate-600"><span class="font-bold text-teal-600">Histórico + tendencias</span><br><span class="text-xs text-slate-400">Campaña completa</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Frase final -->
+        <div class="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 text-center">
+          <p class="text-sm font-bold text-slate-700">
+            <i class="fas fa-arrows-alt-h text-emerald-500 mr-1"></i> 
+            Misma plataforma, <span class="text-emerald-700">distinta visión</span>. 
+            El PC ve el <span class="underline decoration-emerald-300">árbol</span> (la mesa de hoy). 
+            El Panel ve el <span class="underline decoration-teal-300">bosque</span> (el partido en su conjunto).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3. TABLA COMPARATIVA GENERAL: QUÉ HACE CADA PERFIL ===== -->
+    <section class="fade-in">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 p-6 md:p-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dimension-icon bg-indigo-100 text-indigo-600 border border-indigo-200 shadow-sm"><i class="fas fa-notes-medical"></i></div>
+          <div>
+            <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">¿Qué hace cada perfil?</h2>
+            <p class="text-xs text-slate-400 font-bold">Funciones específicas por tipo de usuario</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full table-comp">
+            <thead>
+              <tr class="border-b-2 border-slate-200">
+                <th class="text-left py-3 px-3 text-slate-400">Perfil</th>
+                <th class="text-left py-3 px-3 text-slate-400">Link</th>
+                <th class="text-left py-3 px-3 text-slate-400">Usuario</th>
+                <th class="text-left py-3 px-3 text-slate-400">Contraseña</th>
+                <th class="text-left py-3 px-3 text-slate-400 hidden lg:table-cell">¿Qué hace?</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+
+              <!-- MASTER -->
+              <tr class="hover:bg-red-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fas fa-crown"></i> Master</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">1</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Master2024</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Crea usuarios de cualquier nivel. Acceso total a datos, configuración, respaldos. Auditoría completa.
+                </td>
+              </tr>
+
+              <!-- ADMIN GENERAL -->
+              <tr class="hover:bg-slate-100/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-slate-100 text-slate-700 border border-slate-300"><i class="fas fa-shield-alt"></i> Admin General</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/admin_general</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">123</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">123</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Dashboard global. Stats de votación, estructura política, dirigentes, QR pendientes.
+                </td>
+              </tr>
+
+              <!-- NACIONAL -->
+              <tr class="hover:bg-purple-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-purple-100 text-purple-700 border border-purple-200"><i class="fas fa-globe"></i> Nacional</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">2</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Nacional2024</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Supervisa todos los departamentos. Ve estadísticas nacionales, compara rendimiento.
+                </td>
+              </tr>
+
+              <!-- DEPARTAMENTAL -->
+              <tr class="hover:bg-blue-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-blue-100 text-blue-700 border border-blue-200"><i class="fas fa-map"></i> Departamental</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">3</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Dptal2024</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Coordina distritos. Asigna recursos, supervisa seccionales.
+                </td>
+              </tr>
+
+              <!-- DISTRITAL -->
+              <tr class="hover:bg-cyan-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-cyan-100 text-cyan-700 border border-cyan-200"><i class="fas fa-city"></i> Distrital</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">4</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Distrital2024</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Apreba QR, asigna veedores, monitorea mesas en el distrito.
+                </td>
+              </tr>
+
+              <!-- SECCIONAL -->
+              <tr class="hover:bg-orange-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-orange-100 text-orange-700 border border-orange-200"><i class="fas fa-store"></i> Seccional</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">5</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Seccional2024</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  Mesas, asistencia, votos y no_votos del día.
+                </td>
+              </tr>
+
+              <!-- Centro Electoral Local · MASTER -->
+              <tr class="hover:bg-emerald-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fas fa-chart-pie"></i> Centro Electoral Local</span>
+                  <span class="text-[9px] font-bold text-slate-400 ml-1">+ Master</span>
+                </td>
+                <td class="py-3 px-3">
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code>
+                  <span class="text-[9px] text-slate-300">+</span>
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/admin_general</code>
+                </td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">1340130</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">1340130</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-emerald-700">Control operativo + Admin General</strong>. Mismas credenciales, acceso completo al sistema.
+                </td>
+              </tr>
+
+              <!-- PANEL PARTIDO -->
+              <tr class="hover:bg-teal-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-teal-100 text-teal-700 border border-teal-200"><i class="fas fa-flag"></i> Panel Partido</span>
+                </td>
+                <td class="py-3 px-3"><code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/</code></td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">1340125</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">1340125</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-teal-700">Visión estratégica</strong>. Ranking de listas, % cumplimiento por candidato, cobertura territorial.
+                </td>
+              </tr>
+
+              <!-- DIRIGENTE -->
+              <tr class="hover:bg-amber-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-amber-100 text-amber-700 border border-amber-200"><i class="fas fa-user-tie"></i> Dirigente</span>
+                </td>
+                <td class="py-3 px-3">
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/dirigente.html</code>
+                  <br>
+                  <code class="text-[9px] text-slate-400">API Key opcional: sk-nuestro-api-key-aqui</code>
+                </td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">494913</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">494913</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-amber-700">Trabajo de campo</strong>. Gestiona sus posibles votos, busca no votantes, cambia estados, confirma votos seguros. <span class="text-xs text-slate-400">(Usa X-API-Key header para acceso sin login / desde App o Web)</span>
+                </td>
+              </tr>
+
+              <!-- VEEDOR DE ESCUELA / MESA -->
+              <tr class="hover:bg-indigo-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-indigo-100 text-indigo-700 border border-indigo-200"><i class="fas fa-user-shield"></i> Veedor</span>
+                </td>
+                <td class="py-3 px-3">
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/veedores.html</code>
+                  <br>
+                  <code class="text-[9px] bg-indigo-50 text-indigo-700 px-1 rounded font-mono">/App.html (PWA)</code>
+                </td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">Veedor</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Móvil / Web</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-indigo-700">Fiscalización electoral</strong>. Control de apertura de mesa, registro de participación por hora, emisión de alertas de incidencias y transmisión de actas preliminares.
+                </td>
+              </tr>
+
+              <!-- MIEMBRO DE MESA -->
+              <tr class="hover:bg-rose-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-rose-100 text-rose-700 border border-rose-200"><i class="fas fa-person-booth"></i> Miembro Mesa</span>
+                </td>
+                <td class="py-3 px-3">
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/asistencia.html</code>
+                  <br>
+                  <code class="text-[9px] text-slate-400">/mesas.html</code>
+                </td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">Cédula</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">Mesa N°</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-rose-700">Autoridad electoral de mesa</strong>. Presidente y vocales. Registro de asistencia oficial, habilitación de cuartos oscuros, control de firmas e inicio/cierre del sufragio.
+                </td>
+              </tr>
+
+              <!-- CONDUCTOR / LOGÍSTICA -->
+              <tr class="hover:bg-sky-50/30 transition-colors">
+                <td class="py-3 px-3">
+                  <span class="badge-role bg-sky-100 text-sky-700 border border-sky-200"><i class="fas fa-truck-moving"></i> Conductor</span>
+                </td>
+                <td class="py-3 px-3">
+                  <code class="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold">/conductor.html</code>
+                  <br>
+                  <code class="text-[9px] text-slate-400">/transporte.html</code>
+                </td>
+                <td class="py-3 px-3"><span class="font-mono font-bold text-xs">Chofer</span></td>
+                <td class="py-3 px-3"><span class="font-mono text-xs text-slate-500">GPS Activo</span></td>
+                <td class="py-3 px-3 text-slate-600 text-sm hidden lg:table-cell">
+                  <strong class="text-sky-700">Logística y traslado</strong>. App móvil con rastreo GPS continuo (Service Worker). Recibe pedidos de recogida de electores desde los PCs, los lleva a su Escuela y reporta regreso.
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. ÁRBOL JERÁRQUICO EN VIVO ===== -->
+    <section class="fade-in">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 p-6 md:p-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dimension-icon bg-rose-100 text-rose-600 border border-rose-200 shadow-sm"><i class="fas fa-tree"></i></div>
+          <div class="flex-1">
+            <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">Árbol Jerárquico</h2>
+            <p class="text-xs text-slate-400 font-bold">Estructura política viva — datos del sistema</p>
+          </div>
+          <button onclick="cargarJerarquia()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[10px] font-bold transition-all">
+            <i class="fas fa-sync-alt mr-1"></i> Recargar
+          </button>
+        </div>
+        <div id="jerarquiaContainer" class="min-h-[200px]">
+          <div class="text-center py-12 text-slate-400">
+            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+            <p class="font-bold">Cargando estructura jerárquica...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. FLUJO DE TRABAJO POR PERFIL ===== -->
+    <section class="fade-in">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 p-6 md:p-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="dimension-icon bg-amber-100 text-amber-600 border border-amber-200 shadow-sm"><i class="fas fa-exchange-alt"></i></div>
+          <div>
+            <h2 class="text-xl font-black text-slate-900 uppercase tracking-tight">Flujo de trabajo</h2>
+            <p class="text-xs text-slate-400 font-bold">Cómo interactúan los perfiles entre sí</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <!-- Flujo 1: Registro -->
+          <div class="perfil-card border-l-4 border-l-amber-400">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">📲</span>
+              <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">Registro de votantes</h3>
+            </div>
+            <div class="space-y-2 text-xs text-slate-600">
+              <p><span class="badge-role bg-amber-100 text-amber-700 text-[8px]">Dirigente</span> Comparte link QR + código</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-slate-200 text-slate-600 text-[8px]">Votante</span> Ingresa datos + código</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-emerald-100 text-emerald-700 text-[8px]">PC Seccional</span> Aprueba solicitud</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-amber-100 text-amber-700 text-[8px]">Dirigente</span> Votante vinculado ✔️</p>
+            </div>
+          </div>
+
+          <!-- Flujo 2: Seguimiento -->
+          <div class="perfil-card border-l-4 border-l-emerald-400">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">🎯</span>
+              <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">Seguimiento de voto</h3>
+            </div>
+            <div class="space-y-2 text-xs text-slate-600">
+              <p><span class="badge-role bg-amber-100 text-amber-700 text-[8px]">Dirigente</span> Busca votantes que faltan</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-amber-100 text-amber-700 text-[8px]">Dirigente</span> Los agrega a su lista</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-amber-100 text-amber-700 text-[8px]">Dirigente</span> Cambia estado: posible → buscar → confirmado</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-emerald-100 text-emerald-700 text-[8px]">PC Seccional</span> Ve % cumplimiento</p>
+            </div>
+          </div>
+
+          <!-- Flujo 3: Estrategia -->
+          <div class="perfil-card border-l-4 border-l-teal-400">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">📊</span>
+              <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight">Análisis político</h3>
+            </div>
+            <div class="space-y-2 text-xs text-slate-600">
+              <p><span class="badge-role bg-teal-100 text-teal-700 text-[8px]">Panel Partido</span> Revisa ranking por lista</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-teal-100 text-teal-700 text-[8px]">Panel Partido</span> Identifica zonas con baja cobertura</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-purple-100 text-purple-700 text-[8px]">Nacional/Dep.</span> Asigna más recursos</p>
+              <p class="text-center text-slate-300"><i class="fas fa-arrow-down"></i></p>
+              <p><span class="badge-role bg-emerald-100 text-emerald-700 text-[8px]">PC Seccional</span> Ejecuta en terreno</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 6. PIE ===== -->
+    <section class="text-center py-6 text-slate-400 text-xs fade-in">
+      <p class="font-bold">Seccional 40 · Sistema de Control Electoral</p>
+      <p class="mt-1">Roles y Perfiles v2.0 — <span class="text-red-400">#FuerzaRepublicana</span></p>
+    </section>
+
+  </main>
+
+  <script>
+    const API_URL = '/api';
+
+    // Smooth scroll reveal on load
+    document.addEventListener('DOMContentLoaded', function() {
+      const sections = document.querySelectorAll('.fade-in');
+      sections.forEach((el, i) => {
+        el.style.animationDelay = (i * 0.1) + 's';
+      });
+      cargarJerarquia();
+    });
+
+    // ===== ÁRBOL JERÁRQUICO =====
+    async function cargarJerarquia() {
+      const container = document.getElementById('jerarquiaContainer');
+      if (!container) return;
+      try {
+        const r = await fetch(API_URL + '?action=jerarquia&v=' + Date.now());
+        const d = await r.json();
+        if (!d.success || !d.arbol || d.arbol.length === 0) {
+          container.innerHTML = '<div class="text-center py-10 text-slate-400"><i class="fas fa-info-circle text-3xl mb-3"></i><p class="font-bold">No hay estructura configurada</p><p class="text-xs mt-1">Cargue candidatos, grupos y dirigentes para ver el árbol</p></div>';
+          return;
+        }
+        container.innerHTML = renderArbol(d);
+      } catch (e) {
+        container.innerHTML = '<div class="text-center py-10 text-red-400"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><p class="font-bold">Error al cargar: ' + e.message + '</p></div>';
+      }
+    }
+
+    function renderArbol(d) {
+      const arbol = d.arbol || [];
+      let html = '<div class="space-y-4">';
+
+      arbol.forEach((int, idx) => {
+        const color = int.lista_color || '#dc2626';
+        const icono = idx === 0 ? 'fa-crown' : 'fa-user-tie';
+        html += `
+          <div class="border-2 rounded-2xl overflow-hidden transition-all" style="border-color:${color}40">
+            <!-- INTENDENTE -->
+            <div class="px-4 py-3 flex items-center gap-3" style="background:${color}15">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-sm" style="background:${color}">
+                <i class="fas ${icono}"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-black text-slate-900 text-sm truncate">${int.nombre}</p>
+                <p class="text-[10px] text-slate-500 font-bold">
+                  <span style="color:${color}">●</span> ${int.lista_nombre || ('Lista ' + int.lista_nro)}
+                  · ${int.total_dirigentes} dirigentes · ${int.total_posibles} posibles · <strong class="text-green-600">${int.total_confirmados} seguros</strong>
+                </p>
+              </div>
+              <div class="text-right">
+                <div class="text-xl font-black" style="color:${color}">${int.total_concejales}</div>
+                <div class="text-[8px] font-black text-slate-400 uppercase">concejales</div>
+              </div>
+            </div>
+            <!-- CONCEJALES -->
+            <div class="divide-y divide-slate-100">
+              ${int.concejales.map(con => `
+                <div class="px-4 py-2 pl-14 hover:bg-slate-50/50 transition-all">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-bold text-slate-800 truncate">
+                        <i class="fas fa-user text-slate-400 text-[10px] mr-1.5"></i>${con.nombre}
+                      </p>
+                      <p class="text-[10px] text-slate-500 font-mono">
+                        ${con.total_grupos} PC${con.total_grupos !== 1 ? 's' : ''}
+                        · ${con.total_dirigentes} dirigentes
+                        · <span class="text-amber-600">${con.total_posibles} posibles</span>
+                        · <span class="text-green-600">${con.total_confirmados} seguros</span>
+                      </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <button onclick="toggleGrupos(this)" class="px-2.5 py-1 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 rounded-lg transition-all">
+                        <i class="fas fa-chevron-down mr-1"></i> ${con.total_grupos} PCs
+                      </button>
+                    </div>
+                  </div>
+                  <!-- GRUPOS (hidden) -->
+                  <div class="hidden mt-2 space-y-1 ml-2 pl-3 border-l-2 border-slate-200">
+                    ${con.grupos.map(gr => `
+                      <div class="bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-xs font-bold text-slate-800">📋 ${gr.nombre}</p>
+                            <p class="text-[9px] text-slate-500">${gr.zona ? 'Zona ' + gr.zona : ''}${gr.seccional ? ' · Secc. ' + gr.seccional : ''}</p>
+                          </div>
+                          <div class="text-right">
+                            <p class="text-xs font-black text-slate-700">${gr.total_dirigentes}</p>
+                            <p class="text-[7px] text-slate-400 uppercase font-black">dirig.</p>
+                          </div>
+                        </div>
+                        <!-- DIRIGENTES -->
+                        ${gr.dirigentes.length > 0 ? `
+                        <div class="mt-1.5 pt-1.5 border-t border-slate-200 space-y-1">
+                          ${gr.dirigentes.map(dir => `
+                            <div class="flex items-center justify-between text-[10px] pl-2">
+                              <span class="font-bold text-slate-700 truncate">${dir.nombre}</span>
+                              <span class="text-slate-400">
+                                <span class="text-amber-600">${dir.posibles}</span> ·
+                                <span class="text-green-600">${dir.confirmados}</span>
+                              </span>
+                            </div>
+                          `).join('')}
+                        </div>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      });
+
+      html += '</div>';
+      return html;
+    }
+
+    // Toggle grupos accordion
+    function toggleGrupos(btn) {
+      const container = btn.closest('div').nextElementSibling;
+      if (container && container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Ocultar PCs';
+      } else if (container) {
+        container.classList.add('hidden');
+        btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> ' + (container.querySelectorAll('.space-y-1 > div').length) + ' PCs';
+      }
+    }
+  </script>
+</body>
+</html>

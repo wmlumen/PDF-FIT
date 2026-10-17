@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encuesta de Intención de Voto</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+  <style>
+    #mapa-recogida { height: 220px; border-radius: 14px; }
+    /* Sin tiles externos (app offline): fondo de cuadricula en vez de imagen satelital/calles */
+    .leaflet-container { background: repeating-linear-gradient(0deg, #1e293b, #1e293b 24px, #273548 25px),
+                                      repeating-linear-gradient(90deg, transparent, transparent 24px, #334155 25px); }
+  </style>
+  <script src="party_theme.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
+  <div id="app" class="w-full max-w-sm"></div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const unidadIdParam = params.get('unidad') || '';
+    const dirigenteCed = params.get('dirigente') || '';
+
+    let persona = null;      // { cedula, nombre, mesa, unidad_organizacion_id }
+    let candidatos = [];
+    let paso = 'buscar';     // buscar -> encuesta -> transporte -> gracias
+    let quiereTransporte = null;
+    let estaEnCasa = null;
+    let mapa = null, marcador = null, coords = null;
+    let enviando = false;
+
+    function esc(v) { return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+    async function buscarCedula(ev) {
+      ev.preventDefault();
+      const ced = document.getElementById('in-cedula')?.value?.trim();
+      if (!ced) { alert('Ingresá tu cédula.'); return; }
+      const btn = document.getElementById('btn-buscar');
+      if (btn) { btn.disabled = true; btn.textContent = 'Buscando...'; }
+      try {
+        const r = await fetch(`/api/padron/buscar?cedula=${encodeURIComponent(ced)}`).then(x => x.json());
+        if (!r.success) {
+          persona = { cedula: ced, nombre: '', mesa: null, unidad_organizacion_id: unidadIdParam || null };
+        } else {
+          persona = { cedula: ced, nombre: r.nombre, mesa: r.mesa, unidad_organizacion_id: r.unidad_organizacion_id || unidadIdParam || null };
+        }
+        if (persona.unidad_organizacion_id) {
+          try {
+            const rc = await fetch(`/api/seccional/candidatos?unidad_organizacion_id=${persona.unidad_organizacion_id}`).then(x => x.json());
+            candidatos = rc.success ? rc.candidatos : [];
+          } catch (e) { candidatos = []; }
+        }
+        paso = 'encuesta';
+        render();
+      } catch (e) {
+        alert('No se pudo buscar: ' + e.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Continuar'; }
+      }
+    }
+
+    function elegirIntencion(ev) {
+      ev.preventDefault();
+      const intencion = document.getElementById('in-intencion')?.value;
+      if (!intencion) { alert('Elegí una opción.'); return; }
+      window._intencion = intencion;
+      window._comentario = document.getElementById('in-comentario')?.value?.trim() || '';
+      paso = 'transporte';
+      render();
+    }
+
+    function marcarTransporte(quiere) {
+      quiereTransporte = quiere;
+      if (!quiere) { finalizarTodo(); return; }
+      render();
+    }
+
+    function marcarEnCasa(enCasa) {
+      estaEnCasa = enCasa;
+      render();
+      if (!enCasa) setTimeout(initMapa, 50);
+    }
+
+    function initMapa() {
+      const el = document.getElementById('mapa-recogida');
+      if (!el || mapa) return;
+      mapa = L.map('mapa-recogida').setView([-25.2637, -57.5759], 13); // Asunción
+      // Sin tiles externos: la app funciona 100% offline, sin depender de internet para el mapa.
+      mapa.on('click', (e) => {
+        coords = e.latlng;
+        if (marcador) marcador.setLatLng(coords); else marcador = L.marker(coords).addTo(mapa);
+      });
+    }
+
+    async function finalizarTodo(ev) {
+      if (ev) ev.preventDefault();
+      if (enviando) return;
+      enviando = true;
+      try {
+        await fetch('/api/encuesta/responder', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cedula: persona.cedula, nombre: persona.nombre, mesa: persona.mesa || 0,
+            unidad_organizacion_id: persona.unidad_organizacion_id, dirigente_cedula: dirigenteCed,
+            intencion: window._intencion || 'No especificada', comentario: window._comentario || ''
+          })
+        });
+        if (quiereTransporte) {
+          const direccion = estaEnCasa ? 'Mi casa (según padrón)' : (document.getElementById('in-direccion')?.value?.trim() || '');
+          const ubicacion = coords ? `${direccion} (lat:${coords.lat.toFixed(5)}, lng:${coords.lng.toFixed(5)})` : direccion;
+          const horario = document.getElementById('in-horario')?.value || '';
+          if (ubicacion && horario) {
+            await fetch('/api/encuesta/solicitar_transporte', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                cedula: persona.cedula, nombre: persona.nombre, dirigente_cedula: dirigenteCed,
+                hora_recogida: horario, ubicacion: ubicacion, descripcion: 'Solicitado desde encuesta pública'
+              })
+            });
+          }
+        }
+        paso = 'gracias';
+        render();
+      } catch (e) {
+        alert('No se pudo enviar: ' + e.message);
+      } finally {
+        enviando = false;
+      }
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+
+      if (paso === 'buscar') {
+        app.innerHTML = `
+          <form onsubmit="buscarCedula(event)" class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-3">
+            <h1 class="text-base font-black text-center mb-1">Encuesta rápida de intención de voto</h1>
+            <p class="text-xs text-slate-400 text-center mb-3">Tus datos son confidenciales. Tarda 15 segundos.</p>
+            <label class="text-xs font-bold text-slate-300">Cédula
+              <input id="in-cedula" inputmode="numeric" placeholder="Ej: 4512378" required
+                class="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm">
+            </label>
+            <button id="btn-buscar" type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm">Continuar</button>
+          </form>`;
+        return;
+      }
+
+      if (paso === 'encuesta') {
+        app.innerHTML = `
+          <form onsubmit="elegirIntencion(event)" class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-3">
+            ${persona.nombre ? `<p class="text-sm text-center text-emerald-400 font-bold">¡Hola, ${esc(persona.nombre.split(' ')[0])}!</p>` : ''}
+            ${persona.mesa ? `<p class="text-xs text-center text-slate-400">Tu mesa: N° ${esc(persona.mesa)}</p>` : ''}
+
+            ${candidatos.length ? `
+              <div class="border-t border-slate-800 pt-3">
+                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">Candidatos de tu Seccional</p>
+                <div class="grid grid-cols-2 gap-2">
+                  ${candidatos.map(c => `
+                    <div class="bg-slate-800 rounded-xl p-2.5 text-center border border-slate-700">
+                      <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center text-sm font-black mb-1"
+                           style="background:${esc(c.color)}22;color:${esc(c.color)};border:2px solid ${esc(c.color)}">
+                        ${c.foto_url ? `<img src="${esc(c.foto_url)}" class="w-full h-full rounded-full object-cover">` : '<i class="fas fa-user"></i>'}
+                      </div>
+                      <p class="text-[11px] font-black leading-tight">${esc(c.nombre)}</p>
+                      <p class="text-[10px] text-slate-400 capitalize">${esc(c.cargo.replace('_',' '))}</p>
+                      ${c.lista_nro ? `<p class="text-[9px] text-amber-400 font-bold">Lista ${esc(c.lista_nro)}</p>` : '<p class="text-[9px] text-slate-500">Lista a confirmar</p>'}
+                    </div>`).join('')}
+                </div>
+              </div>` : ''}
+
+            <label class="text-xs font-bold text-slate-300 block pt-2">¿Cuál es tu intención de voto?
+              <select id="in-intencion" required class="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm">
+                <option value="">Elegí una opción</option>
+                <option value="ANR - Honor Colorado">ANR - Honor Colorado</option>
+                <option value="ANR - Otro movimiento">ANR - Otro movimiento</option>
+                <option value="Otro partido">Otro partido</option>
+                <option value="Indeciso">Todavía no decidí</option>
+                <option value="No voy a votar">No voy a votar</option>
+              </select>
+            </label>
+            <textarea id="in-comentario" placeholder="Comentario (opcional)" rows="2"
+              class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm"></textarea>
+            <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm">Siguiente</button>
+          </form>`;
+        return;
+      }
+
+      if (paso === 'transporte') {
+        if (quiereTransporte === null) {
+          app.innerHTML = `
+            <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4 text-center">
+              <i class="fas fa-shuttle-van text-3xl text-amber-400"></i>
+              <h2 class="text-sm font-black">¿Querés que te busquemos el día de las elecciones para ir a votar?</h2>
+              <div class="flex gap-3">
+                <button onclick="marcarTransporte(true)" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-black text-sm">Sí, quiero</button>
+                <button onclick="marcarTransporte(false)" class="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-black text-sm">No, gracias</button>
+              </div>
+            </div>`;
+          return;
+        }
+        if (estaEnCasa === null) {
+          app.innerHTML = `
+            <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4 text-center">
+              <i class="fas fa-house text-3xl text-amber-400"></i>
+              <h2 class="text-sm font-black">¿Te busco en tu casa (la del padrón)?</h2>
+              <div class="flex gap-3">
+                <button onclick="marcarEnCasa(true)" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-black text-sm">Sí, en casa</button>
+                <button onclick="marcarEnCasa(false)" class="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-black text-sm">Otro lugar</button>
+              </div>
+            </div>`;
+          return;
+        }
+        app.innerHTML = `
+          <form onsubmit="finalizarTodo(event)" class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-3">
+            <h2 class="text-sm font-black text-center">¿Dónde y a qué hora te buscamos?</h2>
+            ${!estaEnCasa ? `
+              <label class="text-xs font-bold text-slate-300">Dirección (calle y número)
+                <input id="in-direccion" placeholder="Ej: Mcal. López 1234" class="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm">
+              </label>
+              <p class="text-[11px] text-slate-400">o marcá el lugar en el mapa:</p>
+              <div id="mapa-recogida"></div>
+            ` : ''}
+            <label class="text-xs font-bold text-slate-300">Horario que preferís
+              <select id="in-horario" required class="w-full mt-1 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm">
+                <option value="">Elegí un horario</option>
+                <option value="07:00 - 09:00">07:00 - 09:00</option>
+                <option value="09:00 - 11:00">09:00 - 11:00</option>
+                <option value="11:00 - 13:00">11:00 - 13:00</option>
+                <option value="13:00 - 15:00">13:00 - 15:00</option>
+                <option value="15:00 - 17:00">15:00 - 17:00</option>
+              </select>
+            </label>
+            <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl text-sm">${enviando ? 'Enviando...' : 'Confirmar'}</button>
+          </form>`;
+        if (!estaEnCasa) setTimeout(initMapa, 50);
+        return;
+      }
+
+      // gracias
+      app.innerHTML = `
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-8 text-center">
+          <i class="fas fa-check-circle text-4xl text-amber-400 mb-3"></i>
+          <h1 class="text-lg font-black">¡Gracias por responder!</h1>
+          <p class="text-sm text-slate-400 mt-1">${quiereTransporte ? 'Tu pedido de transporte quedó registrado.' : 'Tu respuesta fue registrada.'}</p>
+        </div>`;
+    }
+
+    render();
+  </script>
+</body>
+</html>

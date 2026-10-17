@@ -1,0 +1,16 @@
+database/
+__pycache__/
+*.bak*
+.env
+static/vendor/
+# Datos crudos de fuente (padron TSJE, >1.5GB) y builds de la APK: no son codigo.
+fuentes_padron/
+mobile-apk/
+# Bibliotecas vendor duplicadas en static/ (minificadas): no son código del
+# proyecto y generan cientos de símbolos basura (o(), Bh(), Ae()...) que
+# contaminan las comunidades. Ya se usa static/vendor/tailwind.js en runtime.
+static/tailwind.min.js
+static/lucide.min.js
+# Otros minificados/vendor genéricos por las dudas
+*.min.js
+*.min.css

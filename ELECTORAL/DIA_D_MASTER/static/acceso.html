@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIA D MASTER - Sistema Electoral Unificado</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <style>
+    .stat-card { transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(197, 160, 89, 0.4); }
+    .nav-card { transition: all 0.2s; cursor: pointer; }
+    .nav-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); border-color: rgba(197, 160, 89, 0.45); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .badge-master { background: linear-gradient(135deg, #dfc07b, #c5a059); color: #09090b; font-weight: 800; border: 1px solid #997a3a; }
+    .badge-nacional { background: #0f172a; color: #dfc07b; border: 1px solid rgba(197, 160, 89, 0.4); font-weight: 800; }
+    .badge-departamental { background: #1e293b; color: #e2e8f0; font-weight: 700; }
+    .badge-distrital { background: #334155; color: #e2e8f0; font-weight: 700; }
+    .badge-seccional { background: #475569; color: #e2e8f0; font-weight: 700; }
+    .badge-dirigente { background: #18181b; color: #c5a059; border: 1px solid rgba(197, 160, 89, 0.3); font-weight: 700; }
+    .access-shell { background: radial-gradient(ellipse at 18% 12%, rgba(199,163,92,.13), transparent 34%), #0b0e13; }
+    .access-input { min-height: 54px; transition: border-color .18s, box-shadow .18s, background .18s; }
+    .access-input:focus { border-color: #c7a35c; box-shadow: 0 0 0 4px rgba(199,163,92,.12); background: #11151c; outline: none; }
+    .access-card { box-shadow: 0 28px 90px rgba(0,0,0,.35); }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+    @media print { .no-print { display: none !important; } }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-slate-100/70 text-slate-800">
+  <div id="app"></div>
+
+  <script src="config.js"></script>
+    <script src="auth.js"></script>
+  <script>
+    // ==================== CONFIG ====================
+    const API_URL = '/api';
+    const USER_KEY = 'seccional40_user';
+
+    // ==================== AUTH ====================
+    function getUser() { try { return JSON.parse(sessionStorage.getItem(USER_KEY)); } catch { return null; } }
+    function getNivel() { const u = getUser(); return u ? u.nivel || '' : ''; }
+
+    const LEVEL_LABELS = {
+      master: { label: 'Master', icon: 'fa-crown', color: 'badge-master' },
+      nacional: { label: 'Nacional', icon: 'fa-flag', color: 'badge-nacional' },
+      departamental: { label: 'Departamental', icon: 'fa-building', color: 'badge-departamental' },
+      distrital: { label: 'Distrital', icon: 'fa-map-pin', color: 'badge-distrital' },
+      seccional: {
+        get label() { return window.PartyTheme ? window.PartyTheme.getNombreUnidad() : 'Seccional'; },
+        icon: 'fa-layer-group',
+        color: 'badge-seccional'
+      },
+      dirigente: { label: 'Dirigente', icon: 'fa-user-tie', color: 'badge-dirigente' }
+    };
+
+    // ==================== STATE ====================
+    let state = {
+      autenticado: !!getUser(),
+      usuario: getUser(),
+      cargando: false,
+      dashboard: null,
+      panelPoliticoHTML: '<div class="col-span-2 md:col-span-4 text-center py-4 text-slate-400"><i class="fas fa-spinner fa-spin text-xl mb-1 text-amber-500"></i><p class="text-xs">Cargando estructura política…</p></div>',
+      actualizado: '',
+      error: '',
+      mostrarModulos: false,
+      mostrarAccesos: false,
+      accesos: [],
+      distritosGeo: [],
+      seccionalesGeo: [],
+      localesGeo: [],
+      filtroGeo: { distrito: '', seccional: '', local: '' }
+    };
+
+    // ==================== HELPERS ====================
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+    function cedulaReducida(value) {
+      const digits = String(value || '').replace(/\D/g, '');
+      return digits.length > 4 ? `•••• ${digits.slice(-4)}` : '';
+    }
+    function estadoActividad(estado) {
+      const estados = {
+        voto: { label: 'Voto registrado', icon: 'fa-check', color: 'bg-emerald-600' },
+        ausente: { label: 'Ausente', icon: 'fa-user-slash', color: 'bg-slate-500' },
+        controversia: { label: 'Revisar', icon: 'fa-triangle-exclamation', color: 'bg-orange-500' },
+        no_voto: { label: 'No votó', icon: 'fa-minus', color: 'bg-slate-500' }
+      };
+      return estados[estado] || { label: 'Registro actualizado', icon: 'fa-circle', color: 'bg-blue-600' };
+    }
+    function nivelMinimo(nivel) {
+      const jerarquia = ['dirigente', 'seccional', 'distrital', 'departamental', 'nacional', 'master'];
+      return jerarquia.indexOf(nivel) >= 0;
+    }
+    function tieneAcceso(minimo) {
+      return nivelMinimo(getNivel()) >= nivelMinimo(minimo);
+    }
+
+    // ==================== MODULOS POR NIVEL ====================
+    const MODULOS = [
+      { id: 'votacion', label: 'Votación', desc: 'Registro principal de votos en mesa.', icon: 'fa-check-circle', color: 'from-slate-900 to-black', text: 'text-amber-400', nivel: 'dirigente', href: 'votacion.html' },
+      { id: 'mesas', label: 'Mesas', desc: 'Gestión operativa de miembros y mesas.', icon: 'fa-table', color: 'from-slate-800 to-slate-900', text: 'text-slate-300', nivel: 'dirigente', href: 'mesas.html' },
+      { id: 'consulta_mesa', label: 'Consulta Mesa', desc: 'Verificación puntual por número de mesa.', icon: 'fa-magnifying-glass-location', color: 'from-zinc-800 to-zinc-900', text: 'text-slate-300', nivel: 'dirigente', href: 'consulta_mesa.html' },
+      { id: 'no_voto', label: 'No Voto', desc: 'Registro y control de ausencias.', icon: 'fa-user-slash', color: 'from-slate-800 to-slate-900', text: 'text-slate-400', nivel: 'dirigente', href: 'No_voto.html' },
+      { id: 'padron', label: 'Padrón', desc: 'Consulta integral del padrón unificado.', icon: 'fa-address-book', color: 'from-slate-950 to-black', text: 'text-amber-400', nivel: 'dirigente', href: 'padron_unificado.html' },
+      { id: 'dirigente', label: 'Dirigentes', desc: 'CRM político y seguimiento territorial.', icon: 'fa-user-tie', color: 'from-zinc-900 to-black', text: 'text-amber-300', nivel: 'dirigente', href: 'dirigente.html' },
+      { id: 'seguimiento', label: 'Seguimiento', desc: 'Asistencia y control operativo.', icon: 'fa-clipboard-list', color: 'from-slate-800 to-slate-900', text: 'text-slate-300', nivel: 'seccional', href: 'asistencia.html' },
+      { id: 'gestion_territorial', label: 'Gestión Territorial', desc: 'PCs, votantes por colegio, veedores, transporte y voto seguro.', icon: 'fa-map-marked-alt', color: 'from-slate-950 to-black', text: 'text-amber-400', nivel: 'seccional', href: 'gestion_territorial.html' },
+      { id: 'registro_qr', label: 'Registro QR', desc: 'Altas previas y pendientes por QR.', icon: 'fa-qrcode', color: 'from-zinc-800 to-black', text: 'text-amber-400', nivel: 'dirigente', href: 'registro_qr.html' },
+      { id: 'anomalias', label: 'Anomalías', desc: 'Monitoreo de alertas e irregularidades.', icon: 'fa-exclamation-triangle', color: 'from-zinc-900 to-black', text: 'text-amber-500', nivel: 'seccional', href: 'anomalias.html' },
+      { id: 'escrutinio', label: 'Escrutinio', desc: 'Carga general de resultados.', icon: 'fa-chart-bar', color: 'from-slate-950 to-black', text: 'text-amber-400', nivel: 'seccional', href: 'escrutinio.html' },
+      { id: 'escrutinio_int', label: 'Escrutinio Int.', desc: 'Carga específica para intendentes.', icon: 'fa-building-columns', color: 'from-slate-950 to-black', text: 'text-amber-400', nivel: 'seccional', href: 'escrutinio_intendentes.html' },
+      { id: 'transporte', label: 'Transporte', desc: 'Control de vehículos, rutas y ubicación GPS.', icon: 'fa-truck-moving', color: 'from-slate-800 to-slate-900', text: 'text-slate-300', nivel: 'seccional', href: 'transporte.html' },
+      { id: 'veedores', label: 'Veedores', desc: 'Cobertura de mesas y participación electoral.', icon: 'fa-user-shield', color: 'from-zinc-900 to-black', text: 'text-amber-400', nivel: 'seccional', href: 'veedores.html' },
+      { id: 'dhondt', label: "Cálculo D'Hondt", desc: 'Simulador y distribución de bancas.', icon: 'fa-calculator', color: 'from-amber-600 via-yellow-600 to-amber-700', text: 'text-black', nivel: 'dirigente', href: 'dhondt.html' },
+      { id: 'ranking', label: 'Ranking Dirigentes', desc: 'Gamificación y efectividad en urnas.', icon: 'fa-trophy', color: 'from-yellow-600 via-amber-500 to-amber-700', text: 'text-black', nivel: 'dirigente', href: 'ranking.html' },
+      { id: 'apk_download', label: 'Descargas APK', desc: 'Instaladores Android para celulares.', icon: 'fa-mobile-alt', color: 'from-zinc-800 to-black', text: 'text-amber-400', nivel: 'dirigente', href: 'descargas.html' },
+      { id: 'app_pwa', label: 'App Móvil PWA', desc: 'Entrada a la PWA táctil de veedores.', icon: 'fa-tablet-screen-button', color: 'from-slate-950 to-black', text: 'text-amber-400', nivel: 'dirigente', href: 'App.html' },
+      { id: 'historial', label: 'Historial Partidos', desc: 'Resumen histórico de organizaciones.', icon: 'fa-landmark', color: 'from-slate-800 to-slate-900', text: 'text-slate-300', nivel: 'dirigente', href: '#' },
+      { id: 'admin_users', label: 'Admin General', desc: 'Administración central de usuarios y clientes.', icon: 'fa-users-gear', color: 'from-black to-zinc-950', text: 'text-amber-400', nivel: 'master', href: 'admin_general.html' },
+    ];
+
+    function getModulosPermitidos() {
+      const nivel = getNivel();
+      const jerarquia = ['dirigente', 'seccional', 'distrital', 'departamental', 'nacional', 'master'];
+      const idx = jerarquia.indexOf(nivel);
+      return MODULOS.filter(m => jerarquia.indexOf(m.nivel) <= idx);
+    }
+
+    // ==================== PANEL POR ROL (redirección al ingresar) ====================
+    // El mapeo rol->panel vive en auth.js (PANEL_POR_ROL / getPanelesDeUsuario),
+    // fuente única compartida con la barra de pestañas de rol. Acá solo se enriquece
+    // con la descripción/color para las tarjetas de "Tus accesos".
+    const DESC_PANEL = {
+        'acceso.html':    { desc: 'Estadísticas, estructura política y monitoreo general del sistema.', color: 'from-slate-900 to-black', text: 'text-amber-400' },
+        'dirigente.html': { desc: 'Trabajo de campo: posibles votos, no votantes, votos seguros.', color: 'from-zinc-900 to-black', text: 'text-amber-300' },
+        'conductor.html': { desc: 'Logística y traslado: GPS, recogida de electores, viajes.', color: 'from-sky-900 to-black', text: 'text-sky-300' },
+        'veedores.html':  { desc: 'Fiscalización electoral y cobertura de mesas.', color: 'from-zinc-900 to-black', text: 'text-amber-400' },
+        'asistencia.html':{ desc: 'Asistencia oficial, control de firmas y cierre de sufragio.', color: 'from-rose-900 to-black', text: 'text-rose-300' }
+    };
+    function getPanelesHabilitados(u) {
+      const base = (typeof getPanelesDeUsuario === 'function') ? getPanelesDeUsuario(u) : [];
+      return base.map(p => {
+        const extra = DESC_PANEL[p.href] || {};
+        return {
+          ...p,
+          href: p.href,
+          label: p.href === 'acceso.html' ? 'Tablero Institucional' : p.label,
+          desc: extra.desc || 'Panel de ' + p.label + '.',
+          color: extra.color || 'from-slate-900 to-black',
+          text: extra.text || 'text-amber-400'
+        };
+      });
+    }
+
+    // Tras el login: dirigir al panel del rol. Si hay un solo panel (y no es esta
+    // misma página), redirige directo; si hay varios roles con paneles distintos,
+    // muestra la pantalla "Tus accesos". Si el único panel es el tablero, lo renderiza.
+    async function irAPanel() {
+      const paneles = getPanelesHabilitados(state.usuario);
+      state.accesos = paneles;
+      if (paneles.length === 1 && paneles[0].href !== 'acceso.html') {
+        window.location.href = paneles[0].href;
+        return;
+      }
+      if (paneles.length > 1) {
+        state.mostrarAccesos = true;
+        render();
+        return;
+      }
+      // Único panel = Tablero Institucional: comportamiento actual.
+      await cargarDashboard();
+    }
+
+    // ==================== API ====================
+    async function fetchApi(url, options) {
+      const u = typeof getSessionUser === 'function' ? getSessionUser() : null;
+      if (u && u.session_id) {
+        options = options || {};
+        options.headers = { ...(options.headers || {}), 'x-session-id': u.session_id };
+      }
+      const r = await fetch(url, options);
+      const t = await r.text();
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('text/html') || t.trim().toLowerCase().startsWith('<!doctype html'))
+        throw new Error('Backend no disponible.');
+      return JSON.parse(t);
+    }
+
+    // ==================== LOGIN ====================
+    function limpiarCedula(v) { return String(v || '').replace(/[.\s,-]/g, '').trim(); }
+
+    function mostrarErrorAcceso(mensaje, tipo = 'error') {
+      const box = document.getElementById('loginFeedback');
+      if (!box) return;
+      box.textContent = mensaje;
+      box.className = `min-h-5 text-sm ${tipo === 'ok' ? 'text-emerald-300' : 'text-rose-300'}`;
+      box.setAttribute('role', tipo === 'ok' ? 'status' : 'alert');
+    }
+
+    function alternarPassword() {
+      const input = document.getElementById('passwordLogin');
+      const boton = document.getElementById('togglePassword');
+      if (!input || !boton) return;
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      boton.innerHTML = `<i class="fas ${visible ? 'fa-eye-slash' : 'fa-eye'}" aria-hidden="true"></i>`;
+      input.focus();
+    }
+
+    async function login() {
+      const ced = limpiarCedula(document.getElementById('cedulaLogin')?.value || '');
+      const pw = document.getElementById('passwordLogin')?.value?.trim() || '';
+      const boton = document.getElementById('loginSubmit');
+      if (!ced || !pw) { mostrarErrorAcceso('Ingresá tu cédula y contraseña para continuar.'); return; }
+      if (boton?.disabled) return;
+      if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2" aria-hidden="true"></i>Verificando acceso'; }
+      mostrarErrorAcceso('');
+      try {
+        const d = await fetchApi(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', cedula: ced, password: pw }) });
+        if (!d.success) { mostrarErrorAcceso(d.error || 'No pudimos validar tus datos. Revisalos e intentá de nuevo.'); return; }
+        sessionStorage.setItem(USER_KEY, JSON.stringify(d.usuario));
+        sessionStorage.setItem('user_pw', pw);
+        state.usuario = d.usuario;
+        state.autenticado = true;
+        if (d.usuario.requiere_cambio_clave) {
+          await promptCambioClave(d.usuario.cedula, pw);
+        }
+        await irAPanel();
+      } catch (e) { mostrarErrorAcceso('No se pudo conectar con el sistema. Revisá tu conexión e intentá de nuevo.'); }
+      finally {
+        const actual = document.getElementById('loginSubmit');
+        if (actual) { actual.disabled = false; actual.innerHTML = '<i class="fas fa-arrow-right-to-bracket mr-2" aria-hidden="true"></i>Ingresar'; }
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem(USER_KEY);
+      window.location.href = 'acceso.html';
+    }
+
+    // ==================== DASHBOARD DATA ====================
+    async function cargarDashboard() {
+      state.cargando = true;
+      state.error = '';
+      render();
+      try {
+        const miCedula = getUser()?.cedula || '';
+        const fg = state.filtroGeo;
+        let url = API_URL + '?action=dashboard&cedula=' + encodeURIComponent(miCedula) + '&v=' + Date.now();
+        if (fg.distrito) url += '&distrito_filtro=' + encodeURIComponent(fg.distrito);
+        if (fg.seccional) url += '&sec_loc_filtro=' + encodeURIComponent(fg.seccional);
+        if (fg.local) url += '&local_filtro=' + encodeURIComponent(fg.local);
+        const d = await fetchApi(url);
+        if (!d || d.success === false) throw new Error(d?.error || 'No se pudieron cargar las estadísticas');
+        state.dashboard = d;
+        state.actualizado = new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+        state.cargando = false;
+        if (!state.distritosGeo.length) cargarDistritosGeo();
+        // Cargar panel político en paralelo
+        cargarPanelPolitico();
+      } catch (e) {
+        state.cargando = false;
+        state.error = 'Error cargando datos: ' + e.message;
+      }
+      render();
+    }
+
+    // ==================== DRILL-DOWN GEOGRÁFICO DEL DASHBOARD ====================
+    async function cargarDistritosGeo() {
+      try {
+        const d = await fetchApi(API_URL + '?action=distritos_padron&v=' + Date.now());
+        if (d.success) state.distritosGeo = d.distritos || [];
+      } catch (e) { /* silent */ }
+      render();
+    }
+
+    async function cambiarDistritoGeo(codigo) {
+      state.filtroGeo = { distrito: codigo, seccional: '', local: '' };
+      state.seccionalesGeo = [];
+      state.localesGeo = [];
+      if (codigo) {
+        try {
+          const d = await fetchApi(API_URL + '?action=seccionales_por_distrito&distrito_filtro=' + encodeURIComponent(codigo) + '&v=' + Date.now());
+          if (d.success) state.seccionalesGeo = d.seccionales || [];
+        } catch (e) { /* silent */ }
+      }
+      await cargarDashboard();
+    }
+
+    async function cambiarSeccionalGeo(sec) {
+      state.filtroGeo.seccional = sec;
+      state.filtroGeo.local = '';
+      state.localesGeo = [];
+      if (sec) {
+        try {
+          const d = await fetchApi(API_URL + '?action=locales_por_seccional&distrito_filtro=' + encodeURIComponent(state.filtroGeo.distrito) + '&sec_loc_filtro=' + encodeURIComponent(sec) + '&v=' + Date.now());
+          if (d.success) state.localesGeo = d.locales || [];
+        } catch (e) { /* silent */ }
+      }
+      await cargarDashboard();
+    }
+
+    async function cambiarLocalGeo(local) {
+      state.filtroGeo.local = local;
+      await cargarDashboard();
+    }
+
+    function limpiarFiltroGeo() {
+      state.filtroGeo = { distrito: '', seccional: '', local: '' };
+      state.seccionalesGeo = [];
+      state.localesGeo = [];
+      cargarDashboard();
+    }
+
+    function renderFiltroGeo() {
+      const fg = state.filtroGeo;
+      return `
+        <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-200 fade-in">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-black text-slate-900 m-0"><i class="fas fa-filter mr-2 text-amber-500"></i>Ver estadísticas por distrito / seccional / local</h3>
+            ${(fg.distrito || fg.seccional || fg.local) ? `<button onclick="limpiarFiltroGeo()" class="text-[11px] font-bold text-slate-400 hover:text-slate-600">Limpiar <i class="fas fa-times ml-1"></i></button>` : ''}
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <select onchange="cambiarDistritoGeo(this.value)" class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700">
+              <option value="">Todo el país</option>
+              ${state.distritosGeo.map(d => `<option value="${d.codigo}" ${fg.distrito==d.codigo?'selected':''}>${d.nombre}</option>`).join('')}
+            </select>
+            <select onchange="cambiarSeccionalGeo(this.value)" ${!fg.distrito?'disabled':''} class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 disabled:opacity-40">
+              <option value="">Todas las seccionales</option>
+              ${state.seccionalesGeo.map(s => `<option value="${s}" ${fg.seccional==s?'selected':''}>Seccional ${s}</option>`).join('')}
+            </select>
+            <select onchange="cambiarLocalGeo(this.value)" ${!fg.seccional?'disabled':''} class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 disabled:opacity-40">
+              <option value="">Todos los locales</option>
+              ${state.localesGeo.map(l => `<option value="${l.id}" ${fg.local==l.id?'selected':''}>${l.nombre}</option>`).join('')}
+            </select>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-2">El % de participación se calcula sobre el nivel elegido acá, no sobre el total nacional.</p>
+        </div>`;
+    }
+
+    // ==================== RENDER LOGIN ====================
+    function renderLogin() {
+      return `
+        <main class="access-shell min-h-screen flex items-center justify-center p-4 sm:p-8 text-white">
+          <div data-login-card class="access-card w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-[#10141b] fade-in md:grid md:grid-cols-[.9fr_1.1fr]">
+            <section class="hidden md:flex flex-col justify-between bg-gradient-to-br from-[#171b22] to-[#0d1015] p-10 lg:p-14 border-r border-white/10">
+              <div>
+                <div class="flex items-center gap-3 mb-16">
+                  <span class="grid h-11 w-11 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 text-amber-300"><i class="fas fa-landmark" aria-hidden="true"></i></span>
+                  <span class="text-xs font-bold uppercase tracking-[.22em] text-slate-300">Día D · Operaciones</span>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-[.2em] text-amber-300">Sistema electoral unificado</p>
+                <h1 class="mt-4 max-w-sm text-4xl font-semibold leading-tight tracking-tight text-white lg:text-5xl">Coordinación clara para cada jornada.</h1>
+                <p class="mt-5 max-w-sm text-sm leading-6 text-slate-400">Ingresá a tu espacio de trabajo para consultar la información y las herramientas habilitadas para tu perfil.</p>
+              </div>
+              <p class="text-xs text-slate-500">Acceso protegido · DIA D MASTER</p>
+            </section>
+            <section class="p-6 sm:p-10 lg:p-14">
+              <div class="mb-8 flex items-center gap-3 md:hidden">
+                <span class="grid h-10 w-10 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 text-amber-300"><i class="fas fa-landmark" aria-hidden="true"></i></span>
+                <span class="text-xs font-bold uppercase tracking-[.18em] text-slate-300">Día D · Operaciones</span>
+              </div>
+              <div class="mb-8">
+                <p class="text-xs font-bold uppercase tracking-[.18em] text-amber-300">Bienvenido</p>
+                <h2 class="mt-2 text-2xl font-semibold tracking-tight text-white">Ingresar a mi cuenta</h2>
+                <p class="mt-2 text-sm text-slate-400">Usá las credenciales asociadas a tu usuario.</p>
+              </div>
+              <form id="loginForm" onsubmit="event.preventDefault(); login()" class="space-y-5" novalidate>
+                <div>
+                  <label for="cedulaLogin" class="mb-2 block text-sm font-medium text-slate-200">Número de cédula</label>
+                  <input type="text" id="cedulaLogin" inputmode="numeric" autocomplete="username" autocapitalize="off" spellcheck="false" required placeholder="Ej.: 4.804.166"
+                    class="access-input w-full rounded-xl border border-white/10 bg-[#0b0e13] px-4 text-base text-white placeholder:text-slate-600"
+                    oninput="document.getElementById('loginFeedback').textContent=''">
+                </div>
+                <div>
+                  <label for="passwordLogin" class="mb-2 block text-sm font-medium text-slate-200">Contraseña</label>
+                  <div class="relative">
+                    <input type="password" id="passwordLogin" autocomplete="current-password" required placeholder="Tu contraseña"
+                      class="access-input w-full rounded-xl border border-white/10 bg-[#0b0e13] px-4 pr-12 text-base text-white placeholder:text-slate-600"
+                      oninput="document.getElementById('loginFeedback').textContent=''">
+                    <button type="button" id="togglePassword" onclick="alternarPassword()" aria-label="Mostrar contraseña" class="absolute inset-y-0 right-0 grid w-12 place-items-center text-slate-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 rounded-r-xl"><i class="fas fa-eye" aria-hidden="true"></i></button>
+                  </div>
+                </div>
+                <p id="loginFeedback" class="min-h-5 text-sm" role="status" aria-live="polite"></p>
+                <button id="loginSubmit" type="submit" class="w-full rounded-xl bg-amber-300 px-5 py-4 text-sm font-bold text-[#17130a] transition hover:bg-amber-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/30 disabled:cursor-wait disabled:opacity-70">
+                  <i class="fas fa-arrow-right-to-bracket mr-2" aria-hidden="true"></i>Ingresar
+                </button>
+              </form>
+              <div data-login-utilities class="mt-6 grid gap-2 border-t border-white/10 pt-6"></div>
+              <div class="mt-6 text-center">
+                <p class="text-xs leading-5 text-slate-500">¿Todavía no tenés cuenta?</p>
+                <a href="dirigente.html" class="mt-2 inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold text-amber-200 transition hover:bg-white/5 hover:text-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">Solicitar acceso como dirigente <span class="ml-2" aria-hidden="true">→</span></a>
+              </div>
+              <p class="mt-8 text-center text-[11px] text-slate-600 md:text-left">Tu perfil determina los módulos disponibles.</p>
+            </section>
+          </div>
+        </main>
+      `;
+    }
+
+    // ==================== RENDER DASHBOARD ====================
+    function renderDashboard() {
+      const u = state.usuario;
+      const lvl = LEVEL_LABELS[getNivel()] || { label: getNivel(), icon: 'fa-user', color: 'badge-seccional' };
+      const d = state.dashboard;
+      const modulos = getModulosPermitidos();
+
+      return `
+        <!-- HEADER -->
+        <header class="bg-slate-950 text-white sticky top-0 z-40 shadow-xl border-b border-amber-500/20 no-print">
+          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="p-2.5 bg-gradient-to-br from-amber-500/20 to-black rounded-xl border border-amber-500/30">
+                <i class="fas fa-landmark text-amber-400 text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-lg font-black uppercase tracking-tight text-white leading-none">DIA D <span class="text-amber-400">MASTER</span></h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Tablero Institucional</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold text-white">${escapeHtml(u.nombre)}</p>
+                <p class="text-[10px] text-slate-400 font-mono">Céd. ${u.cedula}</p>
+              </div>
+              <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${lvl.color}">
+                <i class="fas ${lvl.icon} mr-1"></i> ${lvl.label}
+              </span>
+              <button onclick="logout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-400 border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                <i class="fas fa-sign-out-alt mr-1"></i> Salir
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+          <!-- WELCOME -->
+          <div class="fade-in">
+            <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+              Hola, <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700">${escapeHtml(u.nombre || 'equipo')}</span>
+            </h2>
+            <p class="text-slate-500 text-sm mt-1">
+              ${getNivel() === 'master' ? 'Acceso administrativo total al sistema.' :
+                getNivel() === 'nacional' ? 'Visión nacional consolidada.' :
+                getNivel() === 'departamental' ? 'Gestión territorial departamental.' :
+                getNivel() === 'distrital' ? 'Gestión distrital.' :
+                getNivel() === 'seccional' ? 'Gestión operativa local.' :
+                'Panel operativo de terreno.'}
+            </p>
+          </div>
+
+          ${state.cargando ? `
+            <div class="text-center py-12">
+              <div class="inline-block w-12 h-12 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+              <p class="text-slate-500 font-bold">Cargando indicadores...</p>
+            </div>
+          ` : state.error ? `
+            <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 text-center text-white">
+              <i class="fas fa-exclamation-circle text-amber-400 text-3xl mb-2"></i>
+              <p class="text-slate-300 font-bold">${state.error}</p>
+              <button onclick="cargarDashboard()" class="mt-3 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl text-sm">
+                Reintentar
+              </button>
+            </div>
+          ` : d ? `
+          ${['master', 'nacional'].includes(getNivel()) ? renderFiltroGeo() : ''}
+          <!-- STATS ROW -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 fade-in">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-users text-slate-800"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Electores</p>
+                  <p class="text-xl font-black text-slate-900">${(d.total_electores || 0).toLocaleString('es-PY')}</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200"><i class="fas fa-check-circle text-amber-600"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Votaron</p>
+                  <p class="text-xl font-black text-amber-700">${(d.total_votos || 0).toLocaleString('es-PY')}</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-user-slash text-slate-600"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Sin voto registrado</p>
+                  <p class="text-xl font-black text-slate-700">${Math.max(0, (Number(d.total_electores) || 0) - (Number(d.total_votos) || 0)).toLocaleString('es-PY')}</p>
+                  <p class="mt-1 text-[9px] leading-tight text-slate-500">${(Number(d.total_no_votos) || 0).toLocaleString('es-PY')} reportes de no-voto</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800"><i class="fas fa-chart-line text-amber-400"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Participación</p>
+                  <p class="text-xl font-black text-slate-900">${d.participacion || '0.0%'}</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-table text-slate-800"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Mesas</p>
+                  <p class="text-xl font-black text-slate-900">${d.total_mesas_con_datos || 0} / ${d.total_mesas_padron || 0}</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
+              <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200"><i class="fas fa-user-tie text-amber-700"></i></div>
+                <div>
+                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Dirigentes</p>
+                  <p class="text-xl font-black text-slate-900">${(d.total_dirigentes || 0).toLocaleString('es-PY')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ALERTAS / CONTROVERSIAS -->
+          ${(d.total_controversias || 0) > 0 ? `
+            <div class="bg-amber-50/70 border-2 border-amber-300 rounded-2xl p-4 flex items-center gap-3 fade-in">
+              <div class="p-2 bg-amber-100 rounded-full"><i class="fas fa-exclamation-triangle text-amber-700 text-xl"></i></div>
+              <div>
+                <p class="font-black text-amber-900">${d.total_controversias} controversias detectadas</p>
+                <p class="text-xs text-amber-700 font-semibold">Se registraron votos contradictorios. Revisar en la sección Anomalías.</p>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- MODULOS DE NAVEGACION (oculto por defecto: lo primero que se ve son las estadísticas) -->
+          <div class="fade-in">
+            <button onclick="state.mostrarModulos=!state.mostrarModulos; render();"
+              class="w-full flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hover:border-amber-300 transition-all">
+              <h3 class="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2 m-0">
+                <i class="fas fa-th-large text-amber-500"></i> Módulos del Sistema
+              </h3>
+              <i class="fas fa-chevron-${state.mostrarModulos ? 'up' : 'down'} text-slate-400"></i>
+            </button>
+            ${state.mostrarModulos ? `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3">
+              ${modulos.map(m => `
+                <a href="${m.href}" class="nav-card bg-white rounded-2xl p-4 shadow-sm border border-slate-200 block" ${m.id === 'historial' ? `onclick="mostrarHistorial(); return false;"` : ''}>
+                  <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center shadow-md border border-white/10">
+                      <i class="fas ${m.icon} ${m.text || 'text-white'} text-lg"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <p class="text-sm font-black text-slate-900 tracking-tight">${m.label}</p>
+                        <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 border border-slate-200">${m.nivel}</span>
+                      </div>
+                      <p class="mt-1 text-xs leading-relaxed text-slate-500">${m.desc}</p>
+                    </div>
+                  </div>
+                </a>
+              `).join('')}
+            </div>` : ''}
+          </div>
+
+          <!-- ACTIVIDAD RECIENTE Y TOP MESAS -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 fade-in">
+            <!-- Actividad Reciente -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-3 tracking-tight flex items-center justify-between gap-2">
+                <span class="flex items-center gap-2"><i class="fas fa-clock text-amber-500"></i> Actividad reciente</span>
+                <span class="text-[10px] font-medium text-slate-400">Actualizado ${escapeHtml(state.actualizado || '—')}</span>
+              </h3>
+              ${d.recientes && d.recientes.length > 0 ? `
+                <div class="space-y-2 max-h-80 overflow-y-auto">
+                  ${d.recientes.map(r => {
+                    const estado = estadoActividad(r.estado);
+                    return `
+                    <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-all">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white
+                        ${estado.color}">
+                        <i class="fas ${estado.icon}" aria-hidden="true"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-800 truncate">${escapeHtml(r.nombre || 'Elector sin nombre')}</p>
+                        <p class="text-[10px] text-slate-400">Mesa ${Number(r.mesa) || '—'} · Orden ${Number(r.orden) || '—'} · ${escapeHtml(estado.label)}${cedulaReducida(r.cedula) ? ` · ${cedulaReducida(r.cedula)}` : ''}</p>
+                      </div>
+                      <span class="text-[10px] text-slate-400 whitespace-nowrap">${escapeHtml(r.timestamp ? r.timestamp.split(' ')[1] || '' : '')}</span>
+                    </div>
+                  `}).join('')}
+                </div>
+              ` : '<p class="text-sm text-slate-400 text-center py-4">Sin actividad registrada</p>'}
+            </div>
+
+            <!-- Top Mesas -->
+            <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100">
+              <h3 class="text-sm font-black text-slate-900 mb-3 tracking-tighter">
+                <i class="fas fa-trophy mr-2 text-amber-500"></i>Mesas con Mayor Actividad
+              </h3>
+              ${d.top_mesas && d.top_mesas.length > 0 ? `
+                <div class="space-y-2">
+                  ${d.top_mesas.map((m, i) => {
+                    const maxTotal = Math.max(1, ...d.top_mesas.map(x => Number(x.total) || 0));
+                    const barW = Math.min(100, ((Number(m.total) || 0) / maxTotal) * 100);
+                    return `
+                      <div class="flex items-center gap-3">
+                        <span class="w-5 text-center text-xs font-black text-slate-400">${i + 1}</span>
+                        <div class="flex-1">
+                          <div class="flex justify-between text-xs mb-1">
+                            <span class="font-bold text-slate-700">Mesa ${Number(m.mesa) || '—'}</span>
+                            <span class="text-slate-500">${Number(m.total) || 0} registros · ${Number(m.votos) || 0} votos</span>
+                          </div>
+                          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-600 rounded-full" style="width: ${barW}%"></div>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              ` : '<p class="text-sm text-slate-400 text-center py-4">Sin datos de mesas</p>'}
+            </div>
+          </div>
+
+          <!-- PANEL POLÍTICO (datos vivos) -->
+          <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100 fade-in">
+            <h3 class="text-sm font-black text-slate-900 mb-3 tracking-tighter flex items-center justify-between">
+              <span><i class="fas fa-flag mr-2 text-amber-500"></i>Panel Político</span>
+              <span class="text-[10px] font-bold text-slate-400">Estructura electoral</span>
+            </h3>
+            <div id="panelPolitico" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              ${state.panelPoliticoHTML}
+            </div>
+          </div>
+
+          <!-- HISTORIAL PARTIDOS (colapsable) -->
+          <div class="bg-white rounded-2xl shadow-md border border-slate-100 fade-in">
+            <button onclick="toggleHistorial()" class="w-full p-3 flex items-center justify-between hover:bg-slate-50 transition-all" aria-expanded="false">
+              <h3 class="text-sm font-black text-slate-700 flex items-center gap-2">
+                <i class="fas fa-landmark text-amber-500"></i>Resumen Histórico · Elecciones Internas 2026
+              </h3>
+              <i id="histIcon" class="fas fa-chevron-down text-slate-400 transition-transform"></i>
+            </button>
+            <div id="histContent" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+              <div class="text-center p-3 bg-slate-50 rounded-xl">
+                <p class="text-[10px] font-black uppercase text-slate-400">Organizaciones</p>
+                <p class="text-2xl font-black text-slate-900">39</p>
+              </div>
+              <div class="text-center p-3 bg-slate-50 rounded-xl">
+                <p class="text-[10px] font-black uppercase text-slate-400">Total Mesas</p>
+                <p class="text-2xl font-black text-slate-900">${(d.historial_mesas || 0).toLocaleString('es-PY')}</p>
+              </div>
+              <div class="text-center p-3 bg-slate-50 rounded-xl">
+                <p class="text-[10px] font-black uppercase text-slate-400">Total Electores</p>
+                <p class="text-2xl font-black text-slate-900">${(d.historial_electores || 0).toLocaleString('es-PY')}</p>
+              </div>
+              <div class="text-center p-3 bg-slate-50 rounded-xl flex items-center justify-center">
+                <button onclick="mostrarHistorial()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all">
+                  <i class="fas fa-eye mr-1"></i> Ver todos
+                </button>
+              </div>
+            </div>
+          </div>
+
+          ` : ''}
+        </main>
+      `;
+    }
+
+    // ==================== MODAL HISTORIAL ====================
+    async function mostrarHistorial() {
+      try {
+        const d = await fetchApi(API_URL + '?action=historial_partidos');
+        if (!d.partidos || d.partidos.length === 0) { alert('Sin datos históricos'); return; }
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+        modal.onclick = () => modal.remove();
+        modal.innerHTML = `
+          <div class="bg-white rounded-[2rem] w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-black text-slate-900">Partidos · Internas 2026</h2>
+              <button onclick="this.closest('.fixed').remove()" class="w-8 h-8 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              ${d.partidos.map((p, i) => `
+                <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50">
+                  <span class="w-6 h-6 rounded-full bg-slate-900 text-amber-400 border border-amber-500/30 flex items-center justify-center text-[10px] font-black">${i + 1}</span>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-slate-800 truncate">${p.nombre}</p>
+                    <p class="text-[10px] text-slate-400">${(p.mesas || 0).toLocaleString('es-PY')} mesas · ${(p.electores || 0).toLocaleString('es-PY')} electores</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-center text-xs text-slate-400">
+              Total: ${d.total} organizaciones · ${(d.total_mesas || 0).toLocaleString('es-PY')} mesas · ${(d.total_electores || 0).toLocaleString('es-PY')} electores
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    // ==================== PANEL POLÍTICO ====================
+    async function cargarPanelPolitico() {
+      try {
+        const d = await fetchApi(API_URL + '?action=jerarquia');
+        if (!d.success || !d.arbol) {
+          state.panelPoliticoHTML = '<p class="col-span-2 md:col-span-4 text-center text-slate-400 text-sm py-4">Sin estructura política configurada</p>';
+          const panel = document.getElementById('panelPolitico');
+          if (panel) panel.innerHTML = state.panelPoliticoHTML;
+          return;
+        }
+        // Calcular totales globales
+        let totalDirigentes = 0, totalPosibles = 0, totalConfirmados = 0;
+        d.arbol.forEach(intendente => {
+          totalDirigentes += intendente.total_dirigentes || 0;
+          totalPosibles += intendente.total_posibles || 0;
+          totalConfirmados += intendente.total_confirmados || 0;
+        });
+        const pct = totalPosibles > 0 ? Math.round((totalConfirmados / totalPosibles) * 100) : 0;
+
+        state.panelPoliticoHTML = `
+          <div class="col-span-1 bg-gradient-to-br from-slate-900 to-black border border-amber-500/30 rounded-xl p-4 text-white">
+            <p class="text-[10px] font-black uppercase tracking-wide mb-1 text-slate-400">Listas / Intendentes</p>
+            <p class="text-3xl font-black text-amber-400">${Number(d.total_intendentes) || 0}</p>
+            <p class="text-xs text-slate-400">${d.arbol.map(i => escapeHtml(i.lista_nombre || ('Lista ' + i.lista_nro))).join(', ') || 'Sin listas cargadas'}</p>
+          </div>
+          <div class="col-span-1 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+            <p class="text-[10px] font-black uppercase tracking-wide mb-1">Dirigentes en campo</p>
+            <p class="text-3xl font-black">${totalDirigentes}</p>
+            <p class="text-xs opacity-80">${d.arbol.reduce((a,b)=>a+(b.total_concejales||0),0)} Concejales · ${d.arbol.reduce((a,b)=>a+(b.total_grupos||0),0)} PCs</p>
+          </div>
+          <div class="col-span-1 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
+            <p class="text-[10px] font-black uppercase tracking-wide mb-1">Votantes comprometidos</p>
+            <p class="text-3xl font-black">${totalPosibles.toLocaleString('es-PY')}</p>
+            <p class="text-xs opacity-80">${totalConfirmados} confirmados (${pct}%)</p>
+          </div>
+          <div class="col-span-1 bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
+            <p class="text-[10px] font-black uppercase tracking-wide mb-1">Cumplimiento global</p>
+            <p class="text-3xl font-black">${pct}%</p>
+            <div class="w-full h-2 bg-white/30 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-white rounded-full" style="width:${pct}%"></div>
+            </div>
+          </div>
+        `;
+        const panel = document.getElementById('panelPolitico');
+        if (panel) panel.innerHTML = state.panelPoliticoHTML;
+      } catch (e) {
+        state.panelPoliticoHTML = `<p class="col-span-2 md:col-span-4 text-center text-slate-500 text-sm py-4">No se pudo cargar la estructura política. <button class="font-bold text-amber-700 underline" onclick="cargarPanelPolitico()">Reintentar</button></p>`;
+        const panel = document.getElementById('panelPolitico');
+        if (panel) panel.innerHTML = state.panelPoliticoHTML;
+      }
+    }
+
+    // Toggle histórico
+    function toggleHistorial() {
+      const content = document.getElementById('histContent');
+      const icon = document.getElementById('histIcon');
+      const btn = content.previousElementSibling;
+      const expanded = !content.classList.contains('hidden');
+      content.classList.toggle('hidden');
+      icon.classList.toggle('fa-chevron-down', expanded);
+      icon.classList.toggle('fa-chevron-up', !expanded);
+      btn.setAttribute('aria-expanded', !expanded);
+    }
+
+    // ==================== RENDER "TUS ACCESOS" (multi-rol) ====================
+    // Se muestra cuando el usuario tiene más de un panel habilitado: le deja elegir
+    // a qué panel entrar. Cada tarjeta indica el rol y a dónde navega.
+    function renderAccesos() {
+      const u = state.usuario || {};
+      const paneles = state.accesos && state.accesos.length ? state.accesos : getPanelesHabilitados(u);
+      return `
+        <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
+          <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-8 fade-in">
+              <div class="inline-flex p-3 bg-gradient-to-br from-amber-500/20 to-black border border-amber-500/30 rounded-2xl mb-3">
+                <i class="fas fa-landmark text-amber-400 text-2xl"></i>
+              </div>
+              <h1 class="text-2xl font-black text-white uppercase tracking-tight">DIA D <span class="text-amber-400">MASTER</span></h1>
+              <p class="text-slate-400 text-sm mt-1">Hola, <span class="font-bold text-white">${u.nombre || ''}</span> — elegí a dónde entrar</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ${paneles.map(p => {
+                const esTablero = p.href === 'acceso.html';
+                const card = `
+                  <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${p.color} flex items-center justify-center shadow-md border border-white/10">
+                      <i class="fas ${p.icon} ${p.text || 'text-white'} text-lg"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-black text-slate-900 tracking-tight">${p.label}</p>
+                      <p class="mt-1 text-xs leading-relaxed text-slate-500">${p.desc}</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-slate-300 self-center"></i>
+                  </div>`;
+                // El Tablero Institucional es esta misma página: se abre sin recargar.
+                return esTablero
+                  ? `<button onclick="state.mostrarAccesos=false;cargarDashboard();" class="nav-card bg-white rounded-2xl p-4 shadow-lg border border-slate-200 block w-full text-left">${card}</button>`
+                  : `<a href="${p.href}" class="nav-card bg-white rounded-2xl p-4 shadow-lg border border-slate-200 block">${card}</a>`;
+              }).join('')}
+            </div>
+            <div class="text-center mt-6">
+              <button onclick="logout()" class="text-xs text-slate-400 hover:text-slate-200 font-bold">
+                <i class="fas fa-sign-out-alt mr-1"></i> Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ==================== RENDER ====================
+    function render() {
+      const app = document.getElementById('app');
+      if (!state.autenticado) {
+        app.innerHTML = renderLogin();
+        return;
+      }
+      if (state.mostrarAccesos) {
+        app.innerHTML = renderAccesos();
+        return;
+      }
+      app.innerHTML = renderDashboard();
+    }
+
+    // ==================== INIT ====================
+    (async function init() {
+      const u = getUser();
+      if (u) {
+        state.usuario = u;
+        state.autenticado = true;
+        await irAPanel();
+      } else {
+        render();
+      }
+    })();
+  </script>
+
+<!-- ============ REGISTRO SUB-DIRIGENTE + VINCULACIÓN ============ -->
+<script>
+  function mostrarRegistroSub() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+        <div class="w-full max-w-md">
+          <div class="text-center mb-6">
+            <div class="inline-flex p-3 bg-gradient-to-br from-blue-500/20 to-black border border-blue-500/30 rounded-xl mb-3">
+              <i class="fas fa-user-plus text-blue-400 text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-black text-white">Crear cuenta de Sub-Dirigente</h1>
+            <p class="text-xs text-slate-400 mt-1">Regístrate y luego vincúlate a un dirigente</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-2xl">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Cédula</label>
+                <input id="reg_cedula" type="text" class="input" placeholder="Tu cédula" autofocus>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nombre completo</label>
+                <input id="reg_nombre" type="text" class="input" placeholder="Nombre y apellido">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Email</label>
+                <input id="reg_email" type="email" class="input" placeholder="tu@email.com">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Contraseña</label>
+                <input id="reg_password" type="password" class="input" placeholder="Mínimo 4 caracteres">
+              </div>
+            </div>
+            <button onclick="registrarSubDirigente()" class="btn-primary w-full py-3 mt-4 text-sm">
+              <i class="fas fa-user-plus mr-1"></i> Crear cuenta
+            </button>
+            <button onclick="mostrarVinculoSub()" class="btn-secondary w-full py-2 mt-2 text-xs">
+              <i class="fas fa-link mr-1"></i> Ya tengo cuenta — vincularme a un dirigente
+            </button>
+            <button onclick="location.href='acceso.html'" class="w-full text-center text-xs text-slate-400 mt-3 hover:text-slate-600">
+              ← Volver al inicio
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function mostrarVinculoSub() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+        <div class="w-full max-w-md">
+          <div class="text-center mb-6">
+            <div class="inline-flex p-3 bg-gradient-to-br from-green-500/20 to-black border border-green-500/30 rounded-xl mb-3">
+              <i class="fas fa-link text-green-400 text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-black text-white">Vincularse a un Dirigente</h1>
+            <p class="text-xs text-slate-400 mt-1">Ingresa la cédula del dirigente que te invitó</p>
+          </div>
+          <div class="bg-white rounded-2xl p-6 shadow-2xl">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Tu cédula</label>
+                <input id="vinc_cedula" type="text" class="input" placeholder="Tu cédula" autofocus>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Cédula del dirigente</label>
+                <input id="vinc_dirigente" type="text" class="input" placeholder="Cédula del dirigente">
+              </div>
+            </div>
+            <button onclick="solicitarVinculo()" class="btn-primary w-full py-3 mt-4 text-sm">
+              <i class="fas fa-paper-plane mr-1"></i> Enviar solicitud
+            </button>
+            <button onclick="mostrarRegistroSub()" class="btn-secondary w-full py-2 mt-2 text-xs">
+              <i class="fas fa-user-plus mr-1"></i> Crear cuenta nueva
+            </button>
+            <button onclick="location.href='acceso.html'" class="w-full text-center text-xs text-slate-400 mt-3 hover:text-slate-600">
+              ← Volver al inicio
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function registrarSubDirigente() {
+    const ced = (document.getElementById('reg_cedula')?.value || '').replace(/[.\s,-]/g,'').trim();
+    const nombre = document.getElementById('reg_nombre')?.value || '';
+    const email = document.getElementById('reg_email')?.value || '';
+    const password = document.getElementById('reg_password')?.value || '';
+    if (!ced || !nombre || !password) { alert('Complete cédula, nombre y contraseña.'); return; }
+    if (password.length < 4) { alert('Mínimo 4 caracteres.'); return; }
+    try {
+      const r = await fetch('/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: 'registrar_dirigente', cedula: ced, nombre, email, password })
+      });
+      const d = await r.json();
+      if (d.success) {
+        alert('Cuenta creada. Ahora vincúlate a un dirigente.');
+        mostrarVinculoSub();
+        document.getElementById('vinc_cedula').value = ced;
+      } else {
+        alert('Error: ' + (d.error || 'No se pudo crear'));
+      }
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function solicitarVinculo() {
+    const ced = (document.getElementById('vinc_cedula')?.value || '').replace(/[.\s,-]/g,'').trim();
+    const dir = (document.getElementById('vinc_dirigente')?.value || '').replace(/[.\s,-]/g,'').trim();
+    if (!ced || !dir) { alert('Ingresa tu cédula y la del dirigente.'); return; }
+    try {
+      const r = await fetch('/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: 'solicitar_vinculo_subdirigente', cedula: ced, dirigente_cedula: dir })
+      });
+      const d = await r.json();
+      if (d.success) {
+        alert('Solicitud enviada a ' + (d.dirigente_nombre || 'dirigente') + '. Espera su aceptación.');
+        location.href = 'acceso.html';
+      } else {
+        alert('Error: ' + (d.error || 'No se pudo enviar'));
+      }
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  // Agregar botones de registro en la pantalla principal de acceso
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'grid gap-2';
+    btnContainer.innerHTML = `
+      <button onclick="mostrarRegistroSub()" class="min-h-11 rounded-lg border border-white/10 px-3 text-left text-xs font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white">
+        <i class="fas fa-user-plus mr-1"></i>Crear cuenta sub-dirigente
+      </button>
+      <button onclick="mostrarVinculoSub()" class="min-h-11 rounded-lg border border-white/10 px-3 text-left text-xs font-semibold text-slate-300 transition hover:bg-white/5 hover:text-white">
+        <i class="fas fa-link mr-1"></i>Vincularme a dirigente
+      </button>
+    `;
+    const slot = document.querySelector('[data-login-utilities]');
+    if (slot) slot.appendChild(btnContainer);
+  });
+</script>
+
+</body>
+</html>

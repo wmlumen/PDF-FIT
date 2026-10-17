@@ -1,0 +1,668 @@
+/* ===================================================
+   DIA D MASTER — Tema Institucional Ejecutivo
+   Paleta: Grafito/Obsidiana profundo, Dorado de prestigio,
+   y pasteles fríos (blanco hielo y marfil)
+   =================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Paleta Dorada de Prestigio */
+  --gold-primary: #c5a059;
+  --gold-light: #dfc07b;
+  --gold-dark: #997a3a;
+  --gold-glow: rgba(197, 160, 89, 0.28);
+  --gold-subtle: rgba(197, 160, 89, 0.12);
+  --gold-border: rgba(197, 160, 89, 0.38);
+  --gold-gradient: linear-gradient(135deg, #dfc07b 0%, #c5a059 50%, #997a3a 100%);
+
+  /* Paleta Grafito / Obsidiana profundo */
+  --black-rich: #09090b;
+  --black-slate: #1a1d23;      /* grafito profundo */
+  --black-surface: #23262d;    /* superficie grafito */
+  --graphite: #2f333a;         /* gris grafito intermedio */
+  --graphite-soft: #3d424b;    /* grafito suave */
+  --black-gradient: linear-gradient(180deg, #09090b 0%, #1a1d23 100%);
+
+  /* Neutros, grises y PASTELES FRÍOS */
+  --gray-bg: #f4f5f0;          /* marfil muy suave de fondo */
+  --gray-surface: #ffffff;
+  --ivory: #fffff4;            /* marfil */
+  --ivory-warm: #faf7ee;       /* marfil cálido */
+  --ice-white: #f8fafc;        /* blanco hielo */
+  --ice-blue: #eef4f8;         /* blanco hielo azulado */
+  --ice-border: #e3eaf0;       /* borde blanco hielo */
+  --gray-border: #d8dcd6;      /* borde cálido sutil */
+  --gray-border-subtle: #eceee8;
+  --gray-text-primary: #1a1d23;
+  --gray-text-secondary: #4b5058;
+  --gray-text-muted: #8b9099;
+
+  /* Tema Dinámico de Partido (ANR: Rojo, PLRA: Azul, o Personalizado) */
+  --party-color: #dc2626;
+  --party-color-rgb: 220, 38, 38;
+  --party-color-light: #ef4444;
+  --party-color-dark: #b91c1c;
+  --party-subtle: rgba(220, 38, 38, 0.12);
+  --party-border: rgba(220, 38, 38, 0.35);
+  --party-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+  /* Estados Semánticos (desaturados, integrados con marfil/grafito/dorado) */
+  --state-success-bg: #edf4ec;
+  --state-success-border: #b8d4b5;
+  --state-success-text: #1e4620;
+
+  --state-warning-bg: #fcf2e6;
+  --state-warning-border: #f0caa3;
+  --state-warning-text: #7c2d12;
+
+  --state-error-bg: #fbf0f0;
+  --state-error-border: #eec4c4;
+  --state-error-text: #781d1d;
+
+  --state-info-bg: #f0f2f5;
+  --state-info-border: #d0d6de;
+  --state-info-text: #2b3440;
+}
+
+/* --- Reset y Tipografía --- */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--ivory-warm);
+  color: var(--gray-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Clases Doradas de Prestigio --- */
+.bg-gold-gradient {
+  background: var(--gold-gradient) !important;
+}
+
+.text-gold {
+  color: var(--gold-primary) !important;
+}
+
+.text-gold-light {
+  color: var(--gold-light) !important;
+}
+
+.text-gold-gradient {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.border-gold {
+  border-color: var(--gold-border) !important;
+}
+
+.border-gold-subtle {
+  border-color: rgba(197, 160, 89, 0.2) !important;
+}
+
+.gold-badge {
+  background: var(--gold-subtle);
+  color: #dfc07b;
+  border: 1px solid var(--gold-border);
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.gold-chip {
+  background: var(--gold-gradient);
+  color: #09090b;
+  font-weight: 800;
+  border-radius: 9999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.gold-glow {
+  box-shadow: 0 4px 20px var(--gold-glow);
+}
+
+/* --- Clases Dinámicas de Partido (ANR / PLRA / Personalizado) --- */
+.party-badge {
+  background: var(--party-subtle) !important;
+  color: var(--party-color) !important;
+  border: 1px solid var(--party-border) !important;
+  font-weight: 800;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.party-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--party-subtle);
+}
+
+.party-chip {
+  background: var(--party-gradient) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  border-radius: 9999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px var(--party-subtle);
+}
+
+.party-accent-text {
+  color: var(--party-color) !important;
+}
+
+.party-accent-bg {
+  background-color: var(--party-color) !important;
+  color: #ffffff !important;
+}
+
+.party-accent-border {
+  border-color: var(--party-border) !important;
+}
+
+.party-accent-glow {
+  box-shadow: 0 4px 20px var(--party-subtle) !important;
+}
+
+/* --- Badges y componentes de estado semántico (éxito/alerta/error/info) ---
+   Paleta propia del sistema: pastel apagado + tinta profunda (WCAG AAA),
+   desvinculada del dorado y del rojo de partido para no generar confusión. */
+.badge-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.badge-success {
+  background-color: var(--state-success-bg) !important;
+  border-color: var(--state-success-border) !important;
+  color: var(--state-success-text) !important;
+}
+
+.badge-warning {
+  background-color: var(--state-warning-bg) !important;
+  border-color: var(--state-warning-border) !important;
+  color: var(--state-warning-text) !important;
+}
+
+.badge-error {
+  background-color: var(--state-error-bg) !important;
+  border-color: var(--state-error-border) !important;
+  color: var(--state-error-text) !important;
+}
+
+.badge-info {
+  background-color: var(--state-info-bg) !important;
+  border-color: var(--state-info-border) !important;
+  color: var(--state-info-text) !important;
+}
+
+.status-dot-success { background-color: #2e7d32; }
+.status-dot-warning { background-color: #d97706; }
+.status-dot-error   { background-color: #c62828; }
+.status-dot-info    { background-color: #475569; }
+
+/* Validación de formularios institucionales: foco normal dorado, error en tinta vino */
+.form-field-error {
+  border-color: var(--state-error-text) !important;
+}
+.form-help-error {
+  color: var(--state-error-text) !important;
+  font-size: 0.75rem;
+}
+
+/* --- Redirección global de las clases Tailwind de estado (green/emerald, yellow, red, blue)
+   hacia la paleta sobria de --state-*, para que badges, alertas y validaciones de TODAS las
+   páginas (no solo las operativas) usen el mismo sistema sin reescribir cada HTML.
+   Alcance deliberado: solo tonos pastel (50/100/200) y tinta de texto (600-900), nunca los
+   tonos sólidos (400/500/600 de fondo) que usan botones de acción, para no despintar CTAs.
+   No toca "amber"/"orange" (reservados para el dorado institucional y niveles intermedios). */
+.bg-green-50, .bg-emerald-50   { background-color: var(--state-success-bg) !important; }
+.bg-green-100, .bg-emerald-100 { background-color: var(--state-success-bg) !important; }
+.border-green-100, .border-emerald-100,
+.border-green-200, .border-emerald-200 { border-color: var(--state-success-border) !important; }
+.text-green-600, .text-emerald-600,
+.text-green-700, .text-emerald-700,
+.text-green-800, .text-emerald-800,
+.text-green-900, .text-emerald-900 { color: var(--state-success-text) !important; }
+
+.bg-yellow-50  { background-color: var(--state-warning-bg) !important; }
+.bg-yellow-100 { background-color: var(--state-warning-bg) !important; }
+.border-yellow-100, .border-yellow-200 { border-color: var(--state-warning-border) !important; }
+.text-yellow-600, .text-yellow-700,
+.text-yellow-800, .text-yellow-900 { color: var(--state-warning-text) !important; }
+
+.bg-red-50  { background-color: var(--state-error-bg) !important; }
+.bg-red-100 { background-color: var(--state-error-bg) !important; }
+.border-red-100, .border-red-200 { border-color: var(--state-error-border) !important; }
+.text-red-600, .text-red-700,
+.text-red-800, .text-red-900 { color: var(--state-error-text) !important; }
+
+.bg-blue-50  { background-color: var(--state-info-bg) !important; }
+.bg-blue-100 { background-color: var(--state-info-bg) !important; }
+.border-blue-100, .border-blue-200 { border-color: var(--state-info-border) !important; }
+.text-blue-600, .text-blue-700,
+.text-blue-800, .text-blue-900 { color: var(--state-info-text) !important; }
+
+/* --- Escala completa de tonos de partido (reemplazo dinámico de red-50..red-900) ---
+   Las páginas operativas (escrutinio, votación, mesas, veedores, transporte, consulta
+   de mesa, registro QR) tenían el rojo de ANR escrito a mano en vez de usar
+   --party-color, así que el theming por candidato (tema-cliente.css) no les hacía
+   nada. Esta escala cubre los mismos matices que usaban (50 a 900) pero derivados de
+   la variable, para poder reemplazar bg-red-600 -> bg-party-600 uno a uno sin cambiar
+   el aspecto visual de hoy (ANR sigue viéndose rojo), y que si el cliente tiene su
+   propio color, estas páginas lo respeten como ya hacían index/dirigente con el dorado. */
+.bg-party-50  { background-color: color-mix(in srgb, var(--party-color) 6%,  white) !important; }
+.bg-party-100 { background-color: color-mix(in srgb, var(--party-color) 14%, white) !important; }
+.bg-party-200 { background-color: color-mix(in srgb, var(--party-color) 25%, white) !important; }
+.bg-party-400 { background-color: var(--party-color-light) !important; }
+.bg-party-500 { background-color: var(--party-color-light) !important; }
+.bg-party-600 { background-color: var(--party-color) !important; }
+.bg-party-700 { background-color: var(--party-color-dark) !important; }
+.bg-party-800 { background-color: color-mix(in srgb, var(--party-color) 85%, black) !important; }
+
+.text-party-100 { color: color-mix(in srgb, var(--party-color) 20%, white) !important; }
+.text-party-200 { color: color-mix(in srgb, var(--party-color) 35%, white) !important; }
+.text-party-300 { color: color-mix(in srgb, var(--party-color) 55%, white) !important; }
+.text-party-400 { color: var(--party-color-light) !important; }
+.text-party-500 { color: var(--party-color-light) !important; }
+.text-party-600 { color: var(--party-color) !important; }
+.text-party-700 { color: var(--party-color-dark) !important; }
+.text-party-800 { color: color-mix(in srgb, var(--party-color) 80%, black) !important; }
+.text-party-900 { color: color-mix(in srgb, var(--party-color) 65%, black) !important; }
+
+.border-party-50  { border-color: color-mix(in srgb, var(--party-color) 8%,  white) !important; }
+.border-party-100 { border-color: color-mix(in srgb, var(--party-color) 16%, white) !important; }
+.border-party-200 { border-color: var(--party-border) !important; }
+.border-party-400 { border-color: var(--party-color-light) !important; }
+.border-t-party-600 { border-top-color: var(--party-color) !important; }
+.divide-party-50 > :not([hidden]) ~ :not([hidden]) { border-color: color-mix(in srgb, var(--party-color) 6%, white) !important; }
+
+.shadow-party-200 { --tw-shadow-color: color-mix(in srgb, var(--party-color) 25%, white) !important; }
+
+/* Gradientes: replican el mecanismo de Tailwind (--tw-gradient-from/to/stops).
+   Los fallback (0%/100%) son necesarios: si --tw-gradient-from-position no está
+   definida en ningún lado (Tailwind no generó estos nombres de clase porque no
+   los reconoce), la variable entera queda inválida y el navegador descarta todo
+   el degradado en vez de solo esa parte. */
+.from-party-50  { --tw-gradient-from: color-mix(in srgb, var(--party-color) 6%, white) var(--tw-gradient-from-position, 0%); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position, 100%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.from-party-500 { --tw-gradient-from: var(--party-color-light) var(--tw-gradient-from-position, 0%); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position, 100%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.from-party-600 { --tw-gradient-from: var(--party-color) var(--tw-gradient-from-position, 0%); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position, 100%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.from-party-700 { --tw-gradient-from: var(--party-color-dark) var(--tw-gradient-from-position, 0%); --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position, 100%); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.to-party-100   { --tw-gradient-to: color-mix(in srgb, var(--party-color) 16%, white) var(--tw-gradient-to-position, 100%); }
+.to-party-500   { --tw-gradient-to: var(--party-color-light) var(--tw-gradient-to-position, 100%); }
+.to-party-700   { --tw-gradient-to: var(--party-color-dark) var(--tw-gradient-to-position, 100%); }
+.to-party-800   { --tw-gradient-to: color-mix(in srgb, var(--party-color) 85%, black) var(--tw-gradient-to-position, 100%); }
+
+/* --- Encabezados Institucionales --- */
+.header-institutional {
+  background: var(--black-gradient) !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid var(--gold-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Sub-navegación estilo barra ejecutiva */
+.subnav-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(197, 160, 89, 0.28);
+}
+
+.subnav-link {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ice-border);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.subnav-link:hover {
+  color: var(--gold-light);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.subnav-link.active {
+  background: var(--gold-gradient);
+  color: #09090b;
+  font-weight: 800;
+}
+
+/* --- Botones Institucionales --- */
+.btn-gold {
+  background: var(--gold-gradient);
+  color: #09090b;
+  font-weight: 800;
+  border: 1px solid var(--gold-dark);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.45);
+  filter: brightness(1.06);
+}
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-obsidian {
+  background: var(--black-slate);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+.btn-obsidian:hover {
+  background: var(--black-rich);
+  border-color: var(--gold-border);
+  color: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+.btn-slate {
+  background: var(--ice-blue);
+  color: var(--gray-text-primary);
+  border: 1px solid var(--ice-border);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+.btn-slate:hover {
+  background: var(--ice-border);
+  color: var(--black-rich);
+}
+
+/* --- Formularios e Inputs --- */
+.input-executive {
+  width: 100%;
+  border: 2px solid var(--gray-border);
+  border-radius: 0.85rem;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  color: var(--gray-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.input-executive:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+}
+
+/* --- Tarjetas y Contenedores --- */
+.card-executive {
+  background: var(--gray-surface);
+  border: 1px solid var(--gray-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+.card-executive:hover {
+  border-color: var(--gold-border);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.card-gold {
+  background: #ffffff;
+  border: 1.5px solid var(--gold-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 18px rgba(197, 160, 89, 0.08);
+}
+
+.nav-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  border: 1px solid var(--gray-border);
+  border-radius: 1rem;
+  background: #ffffff;
+}
+.nav-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold-border);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* --- Grilla de Electores y Mesas --- */
+.grid-electores {
+  display: grid;
+  gap: 4px;
+}
+@media (max-width: 480px) {
+  .grid-electores { grid-template-columns: repeat(5, 1fr); gap: 2px; }
+}
+@media (min-width: 481px) and (max-width: 767px) {
+  .grid-electores { grid-template-columns: repeat(10, 1fr); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-electores { grid-template-columns: repeat(15, 1fr); }
+}
+@media (min-width: 1024px) {
+  .grid-electores { grid-template-columns: repeat(20, 1fr); }
+}
+
+.btn-elector {
+  aspect-ratio: 1;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--gray-border);
+  background: var(--gray-surface);
+  color: var(--gray-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-elector:hover {
+  transform: scale(1.08);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+.btn-elector.voto {
+  background: var(--black-slate);
+  color: var(--gold-light);
+  border-color: var(--gold-primary);
+  box-shadow: 0 2px 6px rgba(197, 160, 89, 0.3);
+  font-weight: 800;
+}
+.btn-elector.ausente {
+  background: var(--ice-blue);
+  color: var(--gray-text-muted);
+  border-color: var(--ice-border);
+}
+.btn-elector.controversia {
+  background: #d97706;
+  color: var(--gray-surface);
+  border-color: #b45309;
+}
+
+/* --- Tablas Ejecutivas --- */
+.tabla-responsive {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.tabla-responsive th {
+  background: var(--black-slate);
+  color: var(--ice-white);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--gold-primary);
+}
+.tabla-responsive td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-border-subtle);
+  background: var(--gray-surface);
+}
+.tabla-responsive tr:nth-child(even) td {
+  background: var(--ivory-warm);
+}
+.tabla-responsive tr:hover td {
+  background-color: var(--ice-blue);
+}
+
+/* --- Scrollbars Personalizados --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gray-border-subtle);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-text-muted);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+/* --- Animaciones suaves --- */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================
+   REGLAS DE NEUTRALIZACIÓN INSTITUCIONAL
+   Transforma fondos rojizos heredados en pizarra y obsidiana
+   =================================================== */
+
+/* Fondos de página */
+body.bg-gradient-to-br,
+body.bg-gradient-to-br.from-slate-50.via-red-50,
+.from-slate-50.via-red-50.to-slate-50 {
+  background: var(--ivory-warm) !important;
+  color: var(--gray-text-primary) !important;
+}
+
+/* Encabezados */
+header.bg-red-900,
+header.bg-red-800,
+header.bg-red-700,
+header.bg-slate-900 {
+  background: linear-gradient(180deg, #09090b 0%, #1a1d23 100%) !important;
+  border-bottom: 1px solid rgba(197, 160, 89, 0.35) !important;
+}
+
+/* Barras de sub-navegación dentro de encabezados */
+header div.bg-red-800\/50,
+header div.bg-red-900\/50 {
+  background: rgba(35, 38, 45, 0.85) !important;
+  border-color: rgba(197, 160, 89, 0.3) !important;
+}
+
+/* Íconos de encabezados */
+header div.bg-red-500,
+header div.bg-red-600 {
+  background: linear-gradient(135deg, rgba(223, 192, 123, 0.2), rgba(0, 0, 0, 0.8)) !important;
+  border: 1px solid rgba(197, 160, 89, 0.4) !important;
+  color: #dfc07b !important;
+}
+
+header div.bg-red-500 i,
+header div.bg-red-600 i {
+  color: #dfc07b !important;
+}
+
+/* Texto de subtítulos en encabezados */
+header p.text-red-200,
+header span.text-red-200,
+header span.text-red-300,
+header span.text-red-400 {
+  color: var(--gray-text-muted) !important;
+}
+
+/* Botones y enlaces en encabezados */
+header a.bg-red-600,
+header button.bg-red-600,
+header a.bg-red-500 {
+  background: linear-gradient(135deg, #dfc07b, #c5a059) !important;
+  color: #09090b !important;
+  font-weight: 800 !important;
+}
+
+header a.hover\:bg-red-700:hover,
+header button.hover\:bg-red-600:hover,
+header button.hover\:bg-red-700:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #dfc07b !important;
+}
+
+header button.bg-red-700,
+header button.bg-red-800 {
+  background: var(--graphite) !important;
+  border: 1px solid rgba(197, 160, 89, 0.3) !important;
+  color: var(--ice-white) !important;
+}

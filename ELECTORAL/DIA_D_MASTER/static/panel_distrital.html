@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Distrital - Intendente y Concejales | DIA D MASTER</title>
+  <script src="vendor/tailwind.js"></script>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <script src="vendor/chart.umd.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script src="auth.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background-color: var(--ivory-warm); color: var(--gray-text-primary); }
+    .kpi-hero { background: linear-gradient(135deg, var(--black-rich) 0%, var(--black-slate) 100%); }
+    .glass { background: rgba(255,255,255,0.72); backdrop-filter: blur(8px); }
+    .hero-num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .medal-1 { background: linear-gradient(135deg,#dfc07b,#c5a059); color:#09090b; }
+    .medal-2 { background: linear-gradient(135deg,#d8dcd6,#b8bcc0); color:#1a1d23; }
+    .medal-3 { background: linear-gradient(135deg,#d9a06b,#b57340); color:#fff; }
+    table.resp th { position: sticky; top: 0; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- LOGIN -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-[2rem] p-8 shadow-2xl border max-w-md w-full text-center" style="border-color:var(--gray-border)">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border" style="background:linear-gradient(135deg,var(--black-rich),var(--black-slate));border-color:var(--gold-border);color:var(--gold-light)">
+        <i class="fas fa-landmark"></i>
+      </div>
+      <h1 class="text-xl font-black uppercase tracking-tight mb-1" style="color:var(--gray-text-primary)">Panel Distrital</h1>
+      <p class="text-sm mb-6" style="color:var(--gray-text-secondary)">Intendente electo y concejales. Ingresá con tu cuenta.</p>
+      <div class="space-y-3 text-left">
+        <input type="text" id="pdCedula" placeholder="Cédula" class="w-full px-4 py-3 border-2 rounded-xl font-bold outline-none" style="border-color:var(--gray-border)" onkeypress="if(event.key==='Enter') document.getElementById('pdPassword').focus()">
+        <input type="password" id="pdPassword" placeholder="Contraseña" class="w-full px-4 py-3 border-2 rounded-xl font-bold outline-none" style="border-color:var(--gray-border)" onkeypress="if(event.key==='Enter') loginPanel()">
+        <button onclick="loginPanel()" class="w-full py-3 rounded-xl font-black btn-gold">Ingresar</button>
+      </div>
+      <p id="pdLoginError" class="text-xs font-bold mt-3" style="color:var(--party-color)"></p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="panelApp" style="display:none;">
+    <!-- Header -->
+    <header class="header-institutional sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <a href="acceso.html" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition" title="Volver"><i class="fa fa-arrow-left"></i></a>
+          <div class="p-2.5 rounded-xl border" style="background:linear-gradient(135deg,rgba(223,192,123,0.2),rgba(0,0,0,0.8));border-color:var(--gold-border);color:var(--gold-light)">
+            <i class="fas fa-landmark text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-black uppercase tracking-tight">Panel Distrital</h1>
+            <p class="text-[10px] font-bold" style="color:var(--gray-text-muted)" id="pdSubtitulo">Intendente y Concejales</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-mono px-2 py-1 rounded-lg glass" style="color:var(--gray-text-secondary)" id="pdUsuario"></span>
+          <button onclick="logoutPanel()" class="px-3 py-1.5 rounded-xl text-xs font-bold btn-obsidian"><i class="fas fa-sign-out-alt mr-1"></i>Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+      <!-- Selector de distrito -->
+      <section class="fade-in">
+        <div class="glass rounded-2xl border p-4 flex flex-wrap items-center gap-3" style="border-color:var(--gray-border)">
+          <label class="text-xs font-black uppercase tracking-wider" style="color:var(--gray-text-secondary)"><i class="fas fa-map-marker-alt mr-1" style="color:var(--party-color)"></i>Distrito</label>
+          <select id="pdDistrito" class="px-4 py-2.5 border-2 rounded-xl font-bold outline-none text-sm" style="border-color:var(--gray-border);background:#fff" onchange="cargarPanel()">
+            <option value="254">Asunción (Capital)</option>
+          </select>
+          <span class="ml-auto text-[10px] font-bold" style="color:var(--gray-text-muted)" id="pdActualizado"></span>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <section class="fade-in grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="kpi-hero rounded-2xl p-5 border" style="border-color:var(--gold-border)">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:var(--gold-light)">Intendente</div>
+          <div class="text-2xl font-black hero-num text-white truncate" id="kpiIntendente">—</div>
+          <div class="text-xs mt-1 font-bold" style="color:var(--gold-light)" id="kpiIntendenteLista"></div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border" style="border-color:var(--gray-border)">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:var(--gray-text-muted)">Concejales</div>
+          <div class="text-2xl font-black hero-num" style="color:var(--gray-text-primary)" id="kpiConcejales">—</div>
+          <div class="text-xs mt-1 font-bold" style="color:var(--gray-text-muted)">en la lista distrital</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border" style="border-color:var(--gray-border)">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:var(--gray-text-muted)">Listas</div>
+          <div class="text-2xl font-black hero-num" style="color:var(--gray-text-primary)" id="kpiListas">—</div>
+          <div class="text-xs mt-1 font-bold" style="color:var(--gray-text-muted)">compitiendo</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border" style="border-color:var(--gray-border)">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:var(--gray-text-muted)">Votos seguros</div>
+          <div class="text-2xl font-black hero-num" style="color:var(--party-color)" id="kpiVotos">—</div>
+          <div class="text-xs mt-1 font-bold" style="color:var(--gray-text-muted)">confirmados por dirigentes</div>
+        </div>
+      </section>
+
+      <!-- Intendente destacado + gráfico -->
+      <section class="fade-in grid lg:grid-cols-3 gap-6">
+        <!-- Tarjeta intendente -->
+        <div class="bg-white rounded-2xl border p-6 flex flex-col items-center text-center" style="border-color:var(--gray-border)" id="cardIntendente">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-3" style="color:var(--gold-dark)">Candidato a Intendente</div>
+          <div class="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black mb-3 border-2" id="intendenteAvatar" style="border-color:var(--gold-border);background:var(--ivory-warm);color:var(--gold-dark)">—</div>
+          <h2 class="text-xl font-black" style="color:var(--gray-text-primary)" id="intendenteNombre">—</h2>
+          <span class="mt-2 party-badge" id="intendenteLista"></span>
+          <div class="mt-4 w-full pt-4 border-t flex justify-around" style="border-color:var(--gray-border-subtle)">
+            <div><div class="text-lg font-black" style="color:var(--party-color)" id="intendenteVotos">0</div><div class="text-[10px] font-bold uppercase" style="color:var(--gray-text-muted)">Votos</div></div>
+            <div><div class="text-lg font-black" style="color:var(--gray-text-primary)" id="intendenteOrden">—</div><div class="text-[10px] font-bold uppercase" style="color:var(--gray-text-muted)">Orden</div></div>
+          </div>
+        </div>
+
+        <!-- Gráfico composición -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border p-6" style="border-color:var(--gray-border)">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-black uppercase tracking-wider" style="color:var(--gray-text-primary)"><i class="fas fa-chart-pie mr-1" style="color:var(--party-color)"></i>Concejales por lista</h3>
+          </div>
+          <div class="relative" style="height:280px"><canvas id="chartConcejales"></canvas></div>
+        </div>
+      </section>
+
+      <!-- Ranking de concejales -->
+      <section class="fade-in bg-white rounded-2xl border p-6" style="border-color:var(--gray-border)">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color:var(--gray-text-primary)"><i class="fas fa-list-ol mr-1" style="color:var(--party-color)"></i>Lista de Concejales</h3>
+          <div class="flex gap-2">
+            <input type="text" id="pdBuscar" placeholder="Buscar..." class="px-3 py-2 border-2 rounded-xl text-sm outline-none" style="border-color:var(--gray-border)" oninput="renderTabla()">
+            <button onclick="exportarXLSX()" class="px-4 py-2 rounded-xl text-xs font-black btn-gold"><i class="fas fa-file-excel mr-1"></i>Exportar</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto" style="max-height:480px">
+          <table class="resp w-full text-sm">
+            <thead>
+              <tr style="background:var(--black-slate);color:var(--ice-white)">
+                <th class="text-left py-3 px-3 text-[10px] font-black uppercase tracking-widest">#</th>
+                <th class="text-left py-3 px-3 text-[10px] font-black uppercase tracking-widest">Concejal</th>
+                <th class="text-left py-3 px-3 text-[10px] font-black uppercase tracking-widest">Lista</th>
+                <th class="text-right py-3 px-3 text-[10px] font-black uppercase tracking-widest">Votos</th>
+              </tr>
+            </thead>
+            <tbody id="pdTablaBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+<script>
+const SESSION_KEY = 'panelDistritalSession';
+const DISTRITO_ID = 254; // Asunción
+let usuario = null;
+let datos = { intendente: null, concejales: [], listas: {} };
+let chartConcejales = null;
+
+function getSession(){ try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } }
+
+async function loginPanel(){
+  const cedula = document.getElementById('pdCedula').value.trim();
+  const password = document.getElementById('pdPassword').value;
+  const err = document.getElementById('pdLoginError');
+  err.textContent = '';
+  if(!cedula || !password){ err.textContent = 'Ingresá cédula y contraseña.'; return; }
+  try {
+    const r = await fetch('/api', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'login', cedula, password }) });
+    const d = await r.json();
+    if(d.success && d.usuario){
+      usuario = d.usuario;
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(usuario));
+      // Sesión compartida (auth.js): permite que aparezca la barra de pestañas de rol.
+      try { sessionStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(usuario)); setRolActivo(usuario.roles && usuario.roles[0] ? usuario.roles[0] : { rol: usuario.nivel }); } catch(e) {}
+      entrarPanel();
+    } else {
+      err.textContent = d.error || 'Credenciales inválidas.';
+    }
+  } catch(e){ err.textContent = 'Error de conexión.'; }
+}
+
+function logoutPanel(){ sessionStorage.removeItem(SESSION_KEY); location.reload(); }
+
+function entrarPanel(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('panelApp').style.display = 'block';
+  document.getElementById('pdUsuario').textContent = (usuario.nombre || usuario.cedula || '').split(' ')[0];
+  cargarPanel();
+}
+
+function sesHeaders(){ return (usuario && usuario.session_id) ? { 'x-session-id': usuario.session_id } : {}; }
+
+async function apiGet(action, params=''){
+  const r = await fetch('/api?action=' + action + (params ? '&' + params : ''), { headers: sesHeaders() });
+  return await r.json();
+}
+
+async function cargarPanel(){
+  try {
+    // Candidatos del distrito
+    const res = await apiGet('candidatos', 'distrito_id=' + DISTRITO_ID);
+    if(!res.success){ return; }
+    const cands = res.candidatos || [];
+    datos.intendente = cands.find(c => c.cargo === 'intendente') || null;
+    datos.concejales = cands.filter(c => c.cargo === 'concejal');
+
+    // Agrupar por lista
+    datos.listas = {};
+    datos.concejales.forEach(c => {
+      const key = c.lista_nombre || ('Lista ' + c.lista_nro);
+      if(!datos.listas[key]) datos.listas[key] = { nombre:key, color:c.lista_color||'#6b7280', cantidad:0, votos:0 };
+      datos.listas[key].cantidad++;
+      datos.listas[key].votos += (c.votos_posibles || 0);
+    });
+
+    pintarKPIs();
+    pintarIntendente();
+    pintarGrafico();
+    renderTabla();
+    document.getElementById('pdActualizado').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-PY');
+  } catch(e){ console.error(e); }
+}
+
+function pintarKPIs(){
+  document.getElementById('kpiIntendente').textContent = datos.intendente ? datos.intendente.nombre : '—';
+  document.getElementById('kpiIntendenteLista').textContent = datos.intendente ? (datos.intendente.lista_nombre || '') : '';
+  document.getElementById('kpiConcejales').textContent = datos.concejales.length;
+  document.getElementById('kpiListas').textContent = Object.keys(datos.listas).length;
+  const totalVotos = datos.concejales.reduce((s,c)=>s+(c.votos_posibles||0),0) + (datos.intendente?(datos.intendente.votos_posibles||0):0);
+  document.getElementById('kpiVotos').textContent = totalVotos;
+}
+
+function pintarIntendente(){
+  const el = datos.intendente;
+  if(!el){ return; }
+  const ini = el.nombre.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('intendenteAvatar').textContent = ini;
+  document.getElementById('intendenteNombre').textContent = el.nombre;
+  const bl = document.getElementById('intendenteLista');
+  bl.textContent = el.lista_nombre || ('Lista ' + el.lista_nro);
+  bl.style.background = 'rgba(' + hexToRgb(el.lista_color||'#6b7280') + ',0.12)';
+  bl.style.color = el.lista_color || '#6b7280';
+  bl.style.borderColor = 'rgba(' + hexToRgb(el.lista_color||'#6b7280') + ',0.35)';
+  document.getElementById('intendenteVotos').textContent = el.votos_posibles || 0;
+  document.getElementById('intendenteOrden').textContent = el.orden || '—';
+}
+
+function hexToRgb(hex){
+  hex = (hex||'').replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const n = parseInt(hex,16);
+  return ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255);
+}
+
+function pintarGrafico(){
+  const entries = Object.values(datos.listas).sort((a,b)=>b.cantidad-a.cantidad);
+  const labels = entries.map(e=>e.nombre);
+  const data = entries.map(e=>e.cantidad);
+  const colors = entries.map(e=>e.color);
+  const ctx = document.getElementById('chartConcejales').getContext('2d');
+  if(chartConcejales) chartConcejales.destroy();
+  chartConcejales = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'Concejales', data, backgroundColor:colors, borderRadius:6 }] },
+    options: {
+      indexAxis: 'y', responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ display:false } },
+      scales: { x:{ beginAtZero:true, grid:{ color:'rgba(0,0,0,0.05)' } }, y:{ grid:{ display:false } } }
+    }
+  });
+}
+
+function renderTabla(){
+  const filtro = (document.getElementById('pdBuscar').value||'').toLowerCase();
+  const tb = document.getElementById('pdTablaBody');
+  const rows = datos.concejales
+    .filter(c => !filtro || c.nombre.toLowerCase().includes(filtro) || (c.lista_nombre||'').toLowerCase().includes(filtro))
+    .sort((a,b)=>(b.votos_posibles||0)-(a.votos_posibles||0));
+  tb.innerHTML = rows.map((c,i) => {
+    const medal = i===0?'medal-1':i===1?'medal-2':i===2?'medal-3':'';
+    return `<tr class="hover:bg-slate-50/50 transition-colors" style="border-bottom:1px solid var(--gray-border-subtle)">
+      <td class="py-2.5 px-3"><span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black ${medal}" style="${medal?'':'background:var(--ice-blue);color:var(--gray-text-muted)'}">${i+1}</span></td>
+      <td class="py-2.5 px-3 font-bold" style="color:var(--gray-text-primary)">${c.nombre}</td>
+      <td class="py-2.5 px-3"><span class="party-badge" style="background:rgba(${hexToRgb(c.lista_color||'#6b7280')},0.12);color:${c.lista_color||'#6b7280'};border-color:rgba(${hexToRgb(c.lista_color||'#6b7280')},0.35)">${c.lista_nombre||('Lista '+c.lista_nro)}</span></td>
+      <td class="py-2.5 px-3 text-right font-black" style="color:var(--party-color)">${c.votos_posibles||0}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" class="py-8 text-center" style="color:var(--gray-text-muted)">Sin concejales.</td></tr>';
+}
+
+function exportarXLSX(){
+  // Exportar CSV (compatible con Excel) — preferencia del usuario
+  let csv = '#;Concejal;Lista;Votos\n';
+  const rows = [...datos.concejales].sort((a,b)=>(b.votos_posibles||0)-(a.votos_posibles||0));
+  rows.forEach((c,i)=>{ csv += `${i+1};${c.nombre};${c.lista_nombre||('Lista '+c.lista_nro)};${c.votos_posibles||0}\n`; });
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `concejales_asuncion_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// Init
+const saved = getSession();
+if(saved){ usuario = saved; entrarPanel(); }
+// Asegura la sesión compartida (auth.js) si la página se abrió con sesión ya iniciada
+// desde otro panel, para que se inyecte la barra de pestañas de rol.
+try { if (!sessionStorage.getItem(AUTH_SHARED_KEY) && usuario) sessionStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(usuario)); } catch(e) {}
+</script>
+</body>
+</html>

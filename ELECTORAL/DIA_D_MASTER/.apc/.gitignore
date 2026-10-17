@@ -1,0 +1,54 @@
+# APC repository-safe context only.
+# Runtime state belongs in ~/.apx/projects/<id>/, not in .apc/.
+
+# Per-agent runtime dirs (agent definitions are flat: agents/<slug>.md)
+agents/*/
+
+# Runtime sessions / conversations / messages
+sessions/
+conversations/
+messages/
+chats/
+threads/
+transcripts/
+runs/
+
+# Runtime memory, indexes, databases, and caches
+memory.local.md
+auto-memory.md
+cache/
+tmp/
+private/
+secrets/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+project.db
+memory.db
+memory-index.jsonl
+memory-cursor.json
+
+# Local config and secrets
+.env
+*.local.json
+*.secret.json
+*.env
+*.env.*
+*.key
+*.pem
+*.p12
+*.crt
+credentials.json
+service-account*.json
+token*.json
+mcps.local.json
+config.local.json
+
+# Scratch planning state
+plans/scratch/
+plans/*.local.md
+
+# Migration marker and OS noise
+migrate.md
+.DS_Store

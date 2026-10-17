@@ -1,0 +1,17 @@
+CSS por cliente
+================
+styles.css (en static/) es el tema por defecto y lo cargan todas las paginas.
+
+Para personalizar un cliente, crear aqui un archivo con la sigla/codigo del
+partido declarado como activo en Administracion General:
+
+    temas/ANR.css
+    temas/PLRA.css
+    temas/YOCREO.css
+
+Se carga automaticamente despues de styles.css (via /tema-cliente.css), asi que
+solo hace falta escribir lo que cambia. Ejemplo:
+
+    :root { --gold-primary: #DC2626; --gold-light: #F87171; }
+
+Si no existe archivo para el cliente activo, se usa solo styles.css.

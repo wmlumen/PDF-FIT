@@ -1,0 +1,1494 @@
+{
+  "communities": {
+    "0": [
+      "static_party_theme",
+      "static_party_theme_clienteobservado",
+      "static_party_theme_credencialesauth",
+      "static_party_theme_esadminmaster",
+      "static_party_theme_mostrarbannercliente",
+      "static_party_theme_partythemeengine",
+      "static_party_theme_partythemeengine_activarporid",
+      "static_party_theme_partythemeengine_activarpreset",
+      "static_party_theme_partythemeengine_applycssvariables",
+      "static_party_theme_partythemeengine_applydom",
+      "static_party_theme_partythemeengine_cargarunidadesoperativas",
+      "static_party_theme_partythemeengine_closemodal",
+      "static_party_theme_partythemeengine_constructor",
+      "static_party_theme_partythemeengine_crearpcconfirm",
+      "static_party_theme_partythemeengine_crearunidadconfirm",
+      "static_party_theme_partythemeengine_createmodal",
+      "static_party_theme_partythemeengine_eliminarpcconfirm",
+      "static_party_theme_partythemeengine_eliminarunidadconfirm",
+      "static_party_theme_partythemeengine_fetchremoteconfig",
+      "static_party_theme_partythemeengine_getcolor",
+      "static_party_theme_partythemeengine_getconfig",
+      "static_party_theme_partythemeengine_getnombrepc",
+      "static_party_theme_partythemeengine_getnombreunidad",
+      "static_party_theme_partythemeengine_getprefijounidad",
+      "static_party_theme_partythemeengine_getsigla",
+      "static_party_theme_partythemeengine_guardarpersonalizado",
+      "static_party_theme_partythemeengine_hextorgb",
+      "static_party_theme_partythemeengine_init",
+      "static_party_theme_partythemeengine_injectheaderpill",
+      "static_party_theme_partythemeengine_isanr",
+      "static_party_theme_partythemeengine_isplra",
+      "static_party_theme_partythemeengine_loadlocalconfig",
+      "static_party_theme_partythemeengine_loadlocalpartidos",
+      "static_party_theme_partythemeengine_mostrarformnuevaunidad",
+      "static_party_theme_partythemeengine_mostrarformnuevopc",
+      "static_party_theme_partythemeengine_mostrartoast",
+      "static_party_theme_partythemeengine_notifylisteners",
+      "static_party_theme_partythemeengine_onchange",
+      "static_party_theme_partythemeengine_ondomready",
+      "static_party_theme_partythemeengine_openmodal",
+      "static_party_theme_partythemeengine_reloadclientcss",
+      "static_party_theme_partythemeengine_renderlistaunidades",
+      "static_party_theme_partythemeengine_rendermodalcontent",
+      "static_party_theme_partythemeengine_renderpillhtml",
+      "static_party_theme_partythemeengine_rendertabestructura",
+      "static_party_theme_partythemeengine_rendertabpersonalizar",
+      "static_party_theme_partythemeengine_rendertabpresets",
+      "static_party_theme_partythemeengine_restablecerdefault",
+      "static_party_theme_partythemeengine_savelocalconfig",
+      "static_party_theme_partythemeengine_savelocalpartidos",
+      "static_party_theme_partythemeengine_setquickcolor",
+      "static_party_theme_partythemeengine_settab",
+      "static_party_theme_partythemeengine_updateheaderpill",
+      "static_party_theme_partythemeengine_updatepreview",
+      "static_party_theme_sesionactual",
+      "static_party_theme_usuariosesion"
+    ],
+    "1": [
+      "app_get_distritos",
+      "app_get_listas_partido",
+      "app_get_mesas_conteo",
+      "app_health_check",
+      "app_health_simple",
+      "app_listar_cargos_electivos",
+      "app_listar_elecciones",
+      "app_listar_gastos_transporte",
+      "app_listar_listas_de_partido",
+      "app_listar_listas_todas",
+      "app_listar_transportes",
+      "app_listar_veedores_mesa",
+      "app_permisos_lista",
+      "app_rationale_10405",
+      "app_rationale_10556",
+      "app_rationale_4716",
+      "app_rationale_4782",
+      "app_rationale_4938",
+      "app_rationale_5001",
+      "app_rationale_5042",
+      "app_rationale_5060",
+      "app_rationale_529",
+      "app_rationale_5490",
+      "app_rationale_586",
+      "app_rationale_5938",
+      "app_rationale_6507",
+      "app_rationale_9282",
+      "app_rationale_9299",
+      "app_roles_disponibles",
+      "app_seccional_candidatos",
+      "app_serve_admin_general",
+      "app_serve_admin_usuarios",
+      "app_serve_app",
+      "app_serve_index",
+      "app_serve_party_theme",
+      "get"
+    ],
+    "2": [
+      "app_armar_viaje_redondo",
+      "app_autorizar_recogida",
+      "app_completar_tramo",
+      "app_conductor_asignar",
+      "app_conductor_ubicacion",
+      "app_crear_tramo",
+      "app_enviar_push",
+      "app_optimizar_asignaciones",
+      "app_rationale_649",
+      "app_rationale_7626",
+      "app_rationale_7710",
+      "app_rationale_7938",
+      "app_rationale_8094",
+      "app_rationale_8147",
+      "app_rationale_8194",
+      "app_rationale_8238",
+      "app_rationale_8303",
+      "app_rationale_8361",
+      "app_rationale_8452",
+      "app_resolver_casa_votante",
+      "app_resolver_local_votacion",
+      "app_tomar_tramo",
+      "app_votante_publico",
+      "docs_roadmap_app_conductor",
+      "docs_roadmap_app_conductor_diagnóstico_de_brechas_arquitectónicas",
+      "docs_roadmap_app_conductor_epic_cond_01_geocerca_automática_y_auto_checkin_en_backend",
+      "docs_roadmap_app_conductor_epic_cond_02_notificaciones_push_reales_y_despertador_de_pantalla",
+      "docs_roadmap_app_conductor_epic_cond_03_unificación_de_ui_y_trazado_de_geometría_en_el_mapa",
+      "docs_roadmap_app_conductor_epic_cond_04_modo_offline_cola_outbox_y_pantalla_siempre_activa_wakelock",
+      "docs_roadmap_app_conductor_epic_cond_05_geocodificación_de_respaldo_para_votantes",
+      "docs_roadmap_app_conductor_epic_cond_06_empaquetado_apk_nativo_android_con_capacitor",
+      "docs_roadmap_app_conductor_matriz_de_pruebas_y_validación_checklist",
+      "docs_roadmap_app_conductor_roadmap_especificación_conversión_a_app_móvil_módulo_conductor_día_d",
+      "docs_roadmap_app_conductor_épicas_y_tareas_técnicas_pendientes"
+    ],
+    "3": [
+      "app_auditoria_exportar",
+      "app_auditoria_lista",
+      "app_cancelar_recogida",
+      "app_cliente_dashboard",
+      "app_cliente_de_cedula",
+      "app_cliente_perfil",
+      "app_completar_tarea",
+      "app_conductor_confirmar",
+      "app_conductor_pendientes",
+      "app_conductor_ultima_ubicacion",
+      "app_eliminar_cliente",
+      "app_eliminar_usuario",
+      "app_get_solicitudes_recogida",
+      "app_mi_dashboard_resumen_candidatos",
+      "app_normalizar_cedula",
+      "app_padron_buscar",
+      "app_rationale_2844",
+      "app_rationale_5208",
+      "app_rationale_5299",
+      "app_rationale_6482",
+      "app_rationale_7187",
+      "app_rationale_7471",
+      "app_rationale_7549",
+      "app_rationale_7652",
+      "app_rationale_8049",
+      "app_rationale_8071",
+      "app_rationale_8932",
+      "app_rationale_9371",
+      "app_rationale_9422",
+      "app_rationale_9476",
+      "app_rationale_9708",
+      "app_rationale_9761",
+      "app_sesiones_lista"
+    ],
+    "4": [
+      "docs_audit_api_completa",
+      "docs_audit_api_completa_2_1_crear_registrar_12",
+      "docs_audit_api_completa_2_2_actualizar_5",
+      "docs_audit_api_completa_2_3_eliminar_8",
+      "docs_audit_api_completa_2_4_listar_ver_5",
+      "docs_audit_api_completa_2_5_asignar_gestionar_9",
+      "docs_audit_api_completa_2_6_buscar_verificar_2",
+      "docs_audit_api_completa_2_7_otros_32",
+      "docs_audit_api_completa_2_acciones_muertas_backend_tiene_frontend_no_llama_73",
+      "docs_audit_api_completa_3_1_tablas_sin_get_listar_ni_post_crear_crítico",
+      "docs_audit_api_completa_3_2_tablas_con_get_y_post_pero_sin_delete",
+      "docs_audit_api_completa_3_crud_faltante_priorizado",
+      "docs_audit_api_completa_4_apis_faltante_propuestas_30",
+      "docs_audit_api_completa_5_campos_de_respuesta",
+      "docs_audit_api_completa_6_plan_de_acción_sugerido",
+      "docs_audit_api_completa_7_comandos_de_verificación",
+      "docs_audit_api_completa_8_notas",
+      "docs_audit_api_completa_candidatos_y_elecciones_7",
+      "docs_audit_api_completa_certificación_3",
+      "docs_audit_api_completa_crm_y_dirigentes_4",
+      "docs_audit_api_completa_dia_d_master_auditoría_completa_de_apis",
+      "docs_audit_api_completa_estructura_política_3",
+      "docs_audit_api_completa_fase_1_bloqueadores_impacto_inmediato_3_fixes",
+      "docs_audit_api_completa_fase_2_apis_crud_faltante_7_tablas_sin_get_post",
+      "docs_audit_api_completa_fase_3_apis_de_eliminación_6_tablas",
+      "docs_audit_api_completa_fase_4_evaluar_73_acciones_muertas",
+      "docs_audit_api_completa_resumen_ejecutivo",
+      "docs_audit_api_completa_transporte_y_logística_6",
+      "docs_audit_api_completa_veeduría_4",
+      "docs_audit_api_completa_votación_y_padrón_3"
+    ],
+    "5": [
+      "static_auth",
+      "static_auth_apipost",
+      "static_auth_cambiarrol",
+      "static_auth_esadmin",
+      "static_auth_escliente",
+      "static_auth_esconductor",
+      "static_auth_esdirigente",
+      "static_auth_espc",
+      "static_auth_getnivel",
+      "static_auth_getrolactivo",
+      "static_auth_getroleconfig",
+      "static_auth_getroles",
+      "static_auth_getsessionuser",
+      "static_auth_getusercedula",
+      "static_auth_getusername",
+      "static_auth_guardarpassword",
+      "static_auth_isloggedin",
+      "static_auth_loginconcredenciales",
+      "static_auth_logoutglobal",
+      "static_auth_nivel_cliente",
+      "static_auth_nivel_hierarchy",
+      "static_auth_nivelindex",
+      "static_auth_nivelminimo",
+      "static_auth_promptcambioclave",
+      "static_auth_setrolactivo",
+      "static_auth_tienenivel",
+      "static_auth_tienerol"
+    ],
+    "6": [
+      "app_admin_estadisticas_generales",
+      "app_check_nivel",
+      "app_delete_pc",
+      "app_delete_unidad",
+      "app_formatear_partido_config",
+      "app_get_partido_config",
+      "app_get_partido_unidades",
+      "app_nivel_index",
+      "app_obtener_partido_activo_id",
+      "app_post_crear_pc",
+      "app_post_crear_unidad",
+      "app_post_partido_config",
+      "app_rationale_2822",
+      "app_rationale_471",
+      "app_rationale_479",
+      "app_rationale_5556",
+      "app_rationale_5602",
+      "app_rationale_5708",
+      "app_rationale_5786",
+      "app_rationale_5843",
+      "app_rationale_5900",
+      "app_rationale_5914",
+      "app_rationale_7134",
+      "app_require_auth",
+      "delete"
+    ],
+    "7": [
+      "app_cliente_dirigente_crear",
+      "app_cliente_dirigente_quitar",
+      "app_cliente_logistica_autorizar",
+      "app_cliente_pc_crear",
+      "app_cliente_pc_eliminar",
+      "app_cliente_transporte_crear",
+      "app_cliente_transporte_editar",
+      "app_crear_candidato_electo",
+      "app_dirigente_movilidad_actualizar",
+      "app_encuesta_solicitar_transporte",
+      "app_rationale_10049",
+      "app_rationale_10096",
+      "app_rationale_10149",
+      "app_rationale_10171",
+      "app_rationale_6534",
+      "app_rationale_7010",
+      "app_rationale_7411",
+      "app_rationale_7447",
+      "app_rationale_7687",
+      "app_rationale_9896",
+      "app_rationale_9919",
+      "app_rationale_9982",
+      "app_toggle_candidato_electo",
+      "app_votante_link_ubicacion",
+      "request"
+    ],
+    "8": [
+      "add_internas_rules",
+      "add_municipal_rules",
+      "adjust_paraguay_elecciones",
+      "adjust_paraguay_voting",
+      "check_3_elecciones",
+      "check_structure",
+      "check_titulares",
+      "check_transporte",
+      "complete_config",
+      "contextvars",
+      "database",
+      "database_get_connection",
+      "datetime",
+      "final_adjustment",
+      "final_summary",
+      "simulacion_elecciones",
+      "sys",
+      "test_api",
+      "test_electoral",
+      "test_indices",
+      "test_internas",
+      "transport_status",
+      "transport_status_rationale_1"
+    ],
+    "9": [
+      "app",
+      "app_buscar_elector_padron_completo",
+      "app_detectar_base_url_default",
+      "app_permisos_check",
+      "app_rationale_166",
+      "app_rationale_27",
+      "app_rationale_426",
+      "app_tiene_permiso",
+      "app_veedores_consultar_donde_vota",
+      "app_verify_dirigente_api_key",
+      "dotenv",
+      "email_mime_multipart",
+      "email_mime_text",
+      "fastapi",
+      "fastapi_middleware_cors",
+      "fastapi_responses",
+      "fastapi_staticfiles",
+      "openpyxl",
+      "openpyxl_styles",
+      "urllib_parse",
+      "urllib_request"
+    ],
+    "10": [
+      "app_auditar_accion",
+      "app_crear_tarea",
+      "app_log_auditoria",
+      "app_permisos_asignar_multi",
+      "app_rationale_380",
+      "app_rationale_458",
+      "app_rationale_8905",
+      "app_rationale_9201",
+      "app_rationale_9223",
+      "app_rationale_9261",
+      "app_rationale_9336",
+      "app_rationale_9501",
+      "app_rationale_9642",
+      "app_rationale_9670",
+      "app_sesiones_cerrar",
+      "app_usuarios_asignar_rol",
+      "app_usuarios_perfil",
+      "app_usuarios_quitar_rol",
+      "app_usuarios_toggle",
+      "app_usuarios_toggle_branding"
+    ],
+    "11": [
+      "app_cliente_dirigente_editar",
+      "app_conductor_completar",
+      "app_conductor_disponibilidad",
+      "app_crear_eleccion",
+      "app_crear_gasto_transporte",
+      "app_crear_no_voto",
+      "app_crear_transporte",
+      "app_crear_ubicacion_gps",
+      "app_editar_recogida",
+      "app_encuesta_responder",
+      "app_normalizar_texto",
+      "app_rationale_10020",
+      "app_rationale_4739",
+      "app_rationale_4799",
+      "app_rationale_5130",
+      "app_rationale_6892",
+      "app_rationale_7588",
+      "app_rationale_8024",
+      "app_rationale_8585"
+    ],
+    "12": [
+      "app_api_post",
+      "app_certificar",
+      "app_cliente_de_request",
+      "app_cliente_de_sesion",
+      "app_css_color",
+      "app_ejecutar_desvinculo",
+      "app_enviar_email_cuenta_nueva",
+      "app_estado_certificacion",
+      "app_get_certificacion",
+      "app_rationale_10461",
+      "app_rationale_10487",
+      "app_rationale_10518",
+      "app_rationale_216",
+      "app_rationale_2806",
+      "app_rationale_2855",
+      "app_rationale_2869",
+      "app_rationale_2882",
+      "app_serve_tema_cliente"
+    ],
+    "13": [
+      "app_autenticar_unificado",
+      "app_cargar_roles_unificado",
+      "app_check_password",
+      "app_generar_session_id",
+      "app_migrar_legacy_a_unificado",
+      "app_migrar_roles_legacy",
+      "app_rationale_2530",
+      "app_rationale_2554",
+      "app_rationale_2705",
+      "app_rationale_2730",
+      "app_rationale_356",
+      "app_rationale_371",
+      "app_rationale_393",
+      "app_rationale_9528",
+      "app_seguridad_estado",
+      "app_verificar_bloqueo",
+      "hashlib",
+      "secrets"
+    ],
+    "14": [
+      "app_cliente_transporte_eliminar",
+      "app_crear_cargo_electivo",
+      "app_crear_lista_partido",
+      "app_crear_veedor_mesa",
+      "app_eliminar_candidato",
+      "app_eliminar_tarea",
+      "app_rationale_10195",
+      "app_rationale_4956",
+      "app_rationale_5013",
+      "app_rationale_5079",
+      "app_rationale_5161",
+      "app_rationale_7767",
+      "app_rationale_7984",
+      "app_solicitar_recogida",
+      "app_votante_publico_ubicacion",
+      "post"
+    ],
+    "15": [
+      "app_enviar_bienvenida_cliente",
+      "app_enviar_sms",
+      "app_enviar_whatsapp",
+      "app_rationale_267",
+      "app_rationale_274",
+      "app_rationale_307",
+      "app_twilio_enviar",
+      "docs_planes_y_precios",
+      "docs_planes_y_precios_add_on_1_branding_de_campaña_dónde_votás_con_tu_marca",
+      "docs_planes_y_precios_add_on_2_notificaciones_email_sms_whatsapp",
+      "docs_planes_y_precios_add_on_3_promoción_de_candidato_por_un_dirigente_independiente",
+      "docs_planes_y_precios_plan_básico_incluido_gratuito",
+      "docs_planes_y_precios_planes_y_precios_dia_d_master",
+      "docs_planes_y_precios_próximos_pasos_sugeridos",
+      "docs_planes_y_precios_resumen_de_paquetes_combinados_sugerido_para_vender_más_fácil",
+      "docs_planes_y_precios_servicios_identificados_en_el_sistema"
+    ],
+    "16": [
+      "app_startup",
+      "database_asignar_permisos_default",
+      "database_completar_nombres_geo_padron",
+      "database_init_db",
+      "database_migrar_usuacionales_existentes",
+      "database_rationale_1656",
+      "database_rationale_1693",
+      "database_rationale_1723",
+      "database_rationale_200",
+      "database_sembrar_permisos",
+      "importar_afiliados",
+      "importar_afiliados_importar",
+      "importar_afiliados_rationale_2",
+      "on_event",
+      "pandas"
+    ],
+    "17": [
+      "argparse",
+      "os",
+      "requests",
+      "server",
+      "server_banner",
+      "server_check_dependencies",
+      "server_init_database",
+      "server_main",
+      "server_rationale_1",
+      "server_rationale_40",
+      "server_rationale_53",
+      "subprocess",
+      "test_api2",
+      "test_auth",
+      "time"
+    ],
+    "18": [
+      "graph_protocol",
+      "graph_protocol_1_antes_de_tocar_código_o_leer_archivos",
+      "graph_protocol_2_nunca_leer_archivos_enteros_sin_ubicar_la_línea_exacta_primero",
+      "graph_protocol_3_después_de_modificar_código",
+      "graph_protocol_4_pendientes_y_documentación",
+      "graph_protocol_5_documentos_de_especificación_roadmap_planes_etc",
+      "graph_protocol_comandos_útiles",
+      "graph_protocol_el_problema",
+      "graph_protocol_estructura_del_grafo",
+      "graph_protocol_flujo_obligatorio_5_pasos",
+      "graph_protocol_graph_protocol_md_protocolo_multi_ia_grafo_primero",
+      "graph_protocol_la_solución",
+      "graph_protocol_reglas_adicionales",
+      "graph_protocol_resumen",
+      "graph_protocol_verificación_de_cumplimiento"
+    ],
+    "19": [
+      "app_api_get",
+      "app_api_get_safe_count",
+      "app_calcular_dhondt_custom",
+      "app_cargos_permitidos_cliente",
+      "app_contar_padron_completo",
+      "app_rationale_10220",
+      "app_rationale_2764",
+      "app_rationale_2783",
+      "app_rationale_347",
+      "app_rationale_681",
+      "app_resolver_candidato_por_dominio",
+      "app_row_to_dict",
+      "app_tiene_dato_general",
+      "re"
+    ],
+    "20": [
+      "app_conductor_register_push",
+      "app_get_partido",
+      "app_get_partidos",
+      "app_rationale_5433",
+      "app_rationale_5449",
+      "app_rationale_7957",
+      "app_rationale_8385",
+      "app_rationale_8538",
+      "app_veedores_mesa_estado_get",
+      "app_veedores_mesa_estado_post",
+      "app_viajes_activos",
+      "app_viajes_de_mis_votantes",
+      "json"
+    ],
+    "21": [
+      "database_rationale_1780",
+      "database_rationale_1814",
+      "database_rationale_2124",
+      "database_rationale_2258",
+      "database_rationale_2616",
+      "database_seed_candidatos_electos",
+      "database_seed_candidatos_electos_get_distrito",
+      "database_seed_candidatos_electos_insertar_candidato",
+      "database_seed_data",
+      "database_seed_distritos",
+      "database_seed_elecciones",
+      "database_seed_estructura_geografica",
+      "database_seed_partidos"
+    ],
+    "22": [
+      "app_authenticate",
+      "app_cargar_fuente",
+      "app_exportar_excel_dirigente",
+      "app_exportar_excel_dirigente_escribir_hoja",
+      "app_parsear_archivo_dirigente",
+      "app_rationale_2757",
+      "app_rationale_6560",
+      "app_rationale_6725",
+      "app_rationale_7831",
+      "app_votante_publico_imagen",
+      "io",
+      "uploadfile"
+    ],
+    "23": [
+      "app_dirigente_movilidad",
+      "app_distancia_haversine_km",
+      "app_km_haversine",
+      "app_obtener_ruta_calles",
+      "app_rationale_282",
+      "app_rationale_6936",
+      "app_rationale_6947",
+      "app_rationale_8208",
+      "app_rationale_8334",
+      "app_trazar_tramo",
+      "app_vueltas_disponibles",
+      "math"
+    ],
+    "24": [
+      "static_manifest",
+      "static_manifest_background_color",
+      "static_manifest_description",
+      "static_manifest_display",
+      "static_manifest_icons",
+      "static_manifest_name",
+      "static_manifest_orientation",
+      "static_manifest_scope",
+      "static_manifest_short_name",
+      "static_manifest_start_url",
+      "static_manifest_theme_color"
+    ],
+    "25": [
+      "app_alcance_geografico_cliente",
+      "app_mi_dashboard",
+      "app_mi_dashboard_detalle",
+      "app_mi_dashboard_encuesta",
+      "app_mi_dashboard_mesa_detalle",
+      "app_rationale_6210",
+      "app_rationale_6256",
+      "app_rationale_6310",
+      "app_rationale_6915",
+      "app_rationale_7054"
+    ],
+    "26": [
+      "app_hash_password",
+      "app_rationale_141",
+      "app_rationale_8991",
+      "app_rationale_9111",
+      "app_rationale_9164",
+      "app_rationale_9569",
+      "app_transporte_editar",
+      "app_usuarios_cambiar_password",
+      "app_usuarios_crear",
+      "app_usuarios_editar"
+    ],
+    "27": [
+      "apc_skills_electoral_kpi_dashboard_skill",
+      "apc_skills_electoral_kpi_dashboard_skill_1_kpis_esenciales_tarjetas_superiores_semáforo",
+      "apc_skills_electoral_kpi_dashboard_skill_2_gráficos_que_sirven_y_para_qué",
+      "apc_skills_electoral_kpi_dashboard_skill_3_tablas_de_respaldo_el_gráfico_resume_la_tabla_prueba",
+      "apc_skills_electoral_kpi_dashboard_skill_4_principios_de_diseño",
+      "apc_skills_electoral_kpi_dashboard_skill_5_datos_de_dónde_sale_cada_kpi_en_este_proyecto",
+      "apc_skills_electoral_kpi_dashboard_skill_6_pitfalls_de_datos_electorales_en_vivo",
+      "apc_skills_electoral_kpi_dashboard_skill_electoral_kpi_dashboard_estándar_de_visualización_dia_d_master",
+      "app_serve_page"
+    ],
+    "28": [
+      "api_actividad_reciente",
+      "api_conductor_lista",
+      "api_login",
+      "api_rutas",
+      "api_solicitudes_recogida",
+      "api_transportes",
+      "api_ubicaciones",
+      "role_conductor",
+      "static_transporte"
+    ],
+    "29": [
+      "static_app_ao",
+      "static_app_do",
+      "static_app_jd",
+      "static_app_ld",
+      "static_app_po",
+      "static_app_th",
+      "static_app_ud",
+      "static_app_wn",
+      "static_app_xd"
+    ],
+    "30": [
+      "api_endpoint",
+      "static_panel_cliente_desvinculardirigente",
+      "static_panel_cliente_rendercampana",
+      "static_panel_distrital_cargarpanel",
+      "static_panel_distrital_loginpanel",
+      "static_panel_distrital_pintargrafico",
+      "static_registro_qr_registrarsolicitud",
+      "static_registro_qr_verificarcodigo"
+    ],
+    "31": [
+      "app_rationale_330",
+      "app_rationale_408",
+      "app_registrar_consulta_publica",
+      "app_registrar_intento_login",
+      "docs_audit_api_completa_1_1_action_registrar_no_existe_en_dispatcher",
+      "docs_audit_api_completa_1_2_action_solicitar_recogida_no_existe_como_action",
+      "docs_audit_api_completa_1_3_conductor_html_usa_length_en_lugar_de_campo_correcto",
+      "docs_audit_api_completa_1_bloqueantes_rompen_funcionalidad"
+    ],
+    "32": [
+      "app_enviar_contacto",
+      "app_enviar_email",
+      "app_rationale_191",
+      "app_rationale_6787",
+      "app_recuperar_password",
+      "random",
+      "smtplib"
+    ],
+    "33": [
+      "agents",
+      "agents_convenciones_y_reglas_de_código",
+      "agents_dia_d_master_apc_agent_guide_agents_md",
+      "agents_equipo_de_agentes_apx_configurados",
+      "agents_graphify",
+      "agents_visión_general_del_proyecto"
+    ],
+    "34": [
+      "app_alcance_por_plan",
+      "app_clientes_visibles",
+      "app_es_admin_master",
+      "app_rationale_42",
+      "app_rationale_61",
+      "middleware"
+    ],
+    "35": [
+      "app_cargar_masivo_dirigente",
+      "app_default_password",
+      "app_rationale_147",
+      "app_rationale_6611",
+      "app_rationale_9604",
+      "app_usuarios_resetear_password"
+    ],
+    "36": [
+      "docs_credenciales_dev",
+      "docs_credenciales_dev_credenciales_dia_d_master",
+      "docs_credenciales_dev_cuentas_todas_con_contraseña_cédula",
+      "docs_credenciales_dev_estado",
+      "docs_credenciales_dev_importante_reiniciar_el_servidor",
+      "docs_credenciales_dev_política_de_contraseña_por_defecto_aplicada_2026_10_14"
+    ],
+    "37": [
+      "fix_encoding",
+      "fix_encoding_fix",
+      "seed_default_structure",
+      "seed_default_structure_run",
+      "sqlite3",
+      "test_verify_structure"
+    ],
+    "38": [
+      "readme",
+      "readme_despliegue_en_celulares_de_campo",
+      "readme_dia_d_master_sistema_electoral_unificado",
+      "readme_estructura_del_proyecto",
+      "readme_inicio_rápido_en_windows",
+      "readme_roles_y_credenciales_iniciales"
+    ],
+    "39": [
+      "backend_api_veedores_mesa_estado",
+      "static_app_api_fetch",
+      "static_app_sync_from_backend",
+      "static_app_sync_to_backend",
+      "static_no_voto_html"
+    ],
+    "40": [
+      "grafos",
+      "grafos_actualización_automática",
+      "grafos_consultar_en_vez_de_grep_read_masivos",
+      "grafos_dia_d_master_grafo_de_conocimiento_graphify",
+      "grafos_exclusiones_graphifyignore"
+    ],
+    "41": [
+      "role_departamental",
+      "role_dirigente",
+      "role_distrital",
+      "role_nacional",
+      "role_seccional"
+    ],
+    "42": [
+      "static_admin_general_abrirActividadCliente",
+      "static_admin_general_buscarClientes",
+      "static_admin_general_cargarClientes",
+      "static_admin_general_renderClienteDetalle",
+      "static_admin_general_renderTabClientes"
+    ],
+    "43": [
+      "static_escrutinio",
+      "static_escrutinio_intendentes",
+      "static_gestion_territorial",
+      "static_index",
+      "static_mesas"
+    ],
+    "44": [
+      "api_autorizar_recogida",
+      "api_conductor_todas_ubicaciones",
+      "api_registrar_transporte",
+      "static_transporte_html"
+    ],
+    "45": [
+      "run",
+      "run_rationale_1",
+      "run_server",
+      "uvicorn"
+    ],
+    "46": [
+      "static_app_autoprefixer",
+      "static_app_jit_engine",
+      "static_app_mutation_observer",
+      "static_app_tailwind_cdn"
+    ],
+    "47": [
+      "static_conductor_actualizarmapa",
+      "static_conductor_iniciargps",
+      "static_conductor_recargar",
+      "static_conductor_showmainapp"
+    ],
+    "48": [
+      "api_confirmar_participacion",
+      "api_registrar_veedor",
+      "static_veedores_html"
+    ],
+    "49": [
+      "api_padron",
+      "api_votos",
+      "static_votacion_html"
+    ],
+    "50": [
+      "database_ensure_padron2026_completo",
+      "database_ensure_padron2026_completo_flush_batch",
+      "database_ensure_padron2026_completo_merge_row"
+    ],
+    "51": [
+      "inter_font",
+      "static_app_html",
+      "static_app_state"
+    ],
+    "52": [
+      "static_app_mt",
+      "static_app_pl",
+      "static_app_vh"
+    ],
+    "53": [
+      "agents_electoral",
+      "readme_dhondt"
+    ],
+    "54": [
+      "api_jerarquia",
+      "static_roles"
+    ],
+    "55": [
+      "app_actividad_reciente",
+      "app_rationale_8694"
+    ],
+    "56": [
+      "app_actividad_votantes",
+      "app_rationale_8732"
+    ],
+    "57": [
+      "app_candidatos_agrupados",
+      "app_rationale_7331"
+    ],
+    "58": [
+      "app_cliente_dirigentes",
+      "app_rationale_9945"
+    ],
+    "59": [
+      "app_cliente_logistica",
+      "app_rationale_10066"
+    ],
+    "60": [
+      "app_cliente_pcs",
+      "app_rationale_9852"
+    ],
+    "61": [
+      "app_cliente_transporte",
+      "app_rationale_10131"
+    ],
+    "62": [
+      "app_clientes_resumen",
+      "app_rationale_5950"
+    ],
+    "63": [
+      "app_conductor_detalle",
+      "app_rationale_8965"
+    ],
+    "64": [
+      "app_conductor_historial",
+      "app_rationale_7526"
+    ],
+    "65": [
+      "app_conductor_historial_extendido",
+      "app_rationale_8603"
+    ],
+    "66": [
+      "app_conductor_lista",
+      "app_rationale_7916"
+    ],
+    "67": [
+      "app_conductor_stats",
+      "app_rationale_8633"
+    ],
+    "68": [
+      "app_dashboard_stats",
+      "app_rationale_7221"
+    ],
+    "69": [
+      "app_descargar_apk",
+      "app_rationale_10427"
+    ],
+    "70": [
+      "app_detalle_transporte",
+      "app_rationale_4853"
+    ],
+    "71": [
+      "app_eliminar_departamento",
+      "app_rationale_5352"
+    ],
+    "72": [
+      "app_eliminar_distrito",
+      "app_rationale_5393"
+    ],
+    "73": [
+      "app_eliminar_no_voto",
+      "app_rationale_4921"
+    ],
+    "74": [
+      "app_eliminar_partido",
+      "app_rationale_5257"
+    ],
+    "75": [
+      "app_eliminar_transporte",
+      "app_rationale_4831"
+    ],
+    "76": [
+      "app_eliminar_veedor_mesa",
+      "app_rationale_4984"
+    ],
+    "77": [
+      "app_estadisticas_candidatos_electos",
+      "app_rationale_6181"
+    ],
+    "78": [
+      "app_gamificacion_ranking",
+      "app_rationale_10281"
+    ],
+    "79": [
+      "app_get_candidato_electo",
+      "app_rationale_7389"
+    ],
+    "80": [
+      "app_get_candidatos_electos",
+      "app_rationale_6140"
+    ],
+    "81": [
+      "app_get_certificacion_resumen",
+      "app_rationale_10498"
+    ],
+    "82": [
+      "app_get_departamentos",
+      "app_rationale_5930"
+    ],
+    "83": [
+      "app_get_votantes_paginados",
+      "app_rationale_10359"
+    ],
+    "84": [
+      "app_listar_no_voto",
+      "app_rationale_4877"
+    ],
+    "85": [
+      "app_listar_tipos_eleccion",
+      "app_rationale_4768"
+    ],
+    "86": [
+      "app_listar_ubicaciones_gps",
+      "app_rationale_5112"
+    ],
+    "87": [
+      "app_mesas_estado_dirigente",
+      "app_rationale_8821"
+    ],
+    "88": [
+      "app_mi_dashboard_dirigente_detalle",
+      "app_rationale_7100"
+    ],
+    "89": [
+      "app_obtener_permisos_rol",
+      "app_rationale_442"
+    ],
+    "90": [
+      "app_rationale_7789",
+      "app_votante_publico_editar"
+    ],
+    "91": [
+      "app_rationale_7888",
+      "app_servir_mi_recogida"
+    ],
+    "92": [
+      "app_rationale_8559",
+      "app_stats_conductor"
+    ],
+    "93": [
+      "app_rationale_8878",
+      "app_tareas_lista"
+    ],
+    "94": [
+      "app_rationale_9032",
+      "app_transporte_eliminar"
+    ],
+    "95": [
+      "app_rationale_9050",
+      "app_todas_ubicaciones"
+    ],
+    "96": [
+      "app_rationale_9073",
+      "app_usuarios_lista"
+    ],
+    "97": [
+      "backend_api_partidos",
+      "static_admin_general_html"
+    ],
+    "98": [
+      "check_syntax",
+      "py_compile"
+    ],
+    "99": [
+      "database_aplicar_alcance",
+      "database_rationale_18"
+    ],
+    "100": [
+      "gamificacion_api",
+      "static_ranking_cargarranking"
+    ],
+    "101": [
+      "render_yaml",
+      "requirements_txt"
+    ],
+    "102": [
+      "static_admin_general_cargarUsuarios",
+      "static_admin_general_guardarUsuario"
+    ],
+    "103": [
+      "static_admin_usuarios_cargarPaquetes",
+      "static_admin_usuarios_guardarPaquete"
+    ],
+    "104": [
+      "static_anomalias_analizarMesas",
+      "static_anomalias_cargarDatos"
+    ],
+    "105": [
+      "static_app",
+      "static_app_icons"
+    ],
+    "106": [
+      "static_app_dc",
+      "static_app_pd"
+    ],
+    "107": [
+      "static_asistencia_loadAll",
+      "static_asistencia_registrarAsistencia"
+    ],
+    "108": [
+      "static_conductor_sw",
+      "static_conductor_sw_assets_to_cache"
+    ],
+    "109": [
+      "static_dirigente_agregarposible",
+      "static_dirigente_cargarmisposibles"
+    ],
+    "110": [
+      "static_panel_cliente_renderdashboard",
+      "static_panel_cliente_rendereditprofile"
+    ],
+    "111": [
+      "static_panel_cliente_renderregstep4",
+      "static_panel_cliente_renderregstep5"
+    ],
+    "112": [
+      "static_sw",
+      "static_sw_assets"
+    ],
+    "113": [
+      "agents_auditoria"
+    ],
+    "114": [
+      "agents_desarrollador"
+    ],
+    "115": [
+      "agents_logistica"
+    ],
+    "116": [
+      "apc_agents_auditoria"
+    ],
+    "117": [
+      "apc_agents_desarrollador"
+    ],
+    "118": [
+      "apc_agents_electoral"
+    ],
+    "119": [
+      "apc_agents_logistica"
+    ],
+    "120": [
+      "apc_skills_electoral_kpi_dashboard_skill_electoral_kpi_dashboard"
+    ],
+    "121": [
+      "readme_gamification"
+    ],
+    "122": [
+      "role_admin_general"
+    ],
+    "123": [
+      "role_master"
+    ],
+    "124": [
+      "role_miembro_mesa"
+    ],
+    "125": [
+      "role_panel_partido"
+    ],
+    "126": [
+      "role_veedor"
+    ],
+    "127": [
+      "static_admin_general_cargarAltas"
+    ],
+    "128": [
+      "static_admin_general_cargarEstadisticasGenerales"
+    ],
+    "129": [
+      "static_admin_general_guardarCliente"
+    ],
+    "130": [
+      "static_admin_general_party_theme"
+    ],
+    "131": [
+      "static_admin_usuarios_cargarUsuarios"
+    ],
+    "132": [
+      "static_app_bd"
+    ],
+    "133": [
+      "static_app_ic"
+    ],
+    "134": [
+      "static_app_lucide_icons"
+    ],
+    "135": [
+      "static_app_pc"
+    ],
+    "136": [
+      "static_app_qc"
+    ],
+    "137": [
+      "static_app_se"
+    ],
+    "138": [
+      "static_app_yh"
+    ],
+    "139": [
+      "static_conductor_completarviaje"
+    ],
+    "140": [
+      "static_conductor_handleLogin"
+    ],
+    "141": [
+      "static_conductor_iniciarviaje"
+    ],
+    "142": [
+      "static_conductor_state"
+    ],
+    "143": [
+      "static_conductor_toggledisponibilidad"
+    ],
+    "144": [
+      "static_consulta_mesa_aplicarmarcapordominio"
+    ],
+    "145": [
+      "static_consulta_mesa_buscar"
+    ],
+    "146": [
+      "static_descargas_apk_final"
+    ],
+    "147": [
+      "static_descargas_apk_offline"
+    ],
+    "148": [
+      "static_dhondt_calcular"
+    ],
+    "149": [
+      "static_dirigente_asignarcandidato"
+    ],
+    "150": [
+      "static_dirigente_buscarpadron"
+    ],
+    "151": [
+      "static_dirigente_cargarmovilidad"
+    ],
+    "152": [
+      "static_dirigente_enviarsolicitudtransporte"
+    ],
+    "153": [
+      "static_encuesta_voto"
+    ],
+    "154": [
+      "static_padron_unificado"
+    ],
+    "155": [
+      "static_panel_cliente"
+    ],
+    "156": [
+      "static_registro_qr_buscarenpadron"
+    ],
+    "157": [
+      "static_temas_leeme"
+    ],
+    "158": [
+      "twilio_txt"
+    ]
+  },
+  "cohesion": {
+    "0": 0.08571428571428572,
+    "1": 0.05555555555555555,
+    "2": 0.06951871657754011,
+    "3": 0.06060606060606061,
+    "4": 0.06666666666666667,
+    "5": 0.14814814814814814,
+    "6": 0.09666666666666666,
+    "7": 0.08,
+    "8": 0.22134387351778656,
+    "9": 0.10952380952380952,
+    "10": 0.1,
+    "11": 0.10526315789473684,
+    "12": 0.12418300653594772,
+    "13": 0.1111111111111111,
+    "14": 0.125,
+    "15": 0.13333333333333333,
+    "16": 0.1523809523809524,
+    "17": 0.20952380952380953,
+    "18": 0.13333333333333333,
+    "19": 0.16483516483516483,
+    "20": 0.15384615384615385,
+    "21": 0.15384615384615385,
+    "22": 0.16666666666666666,
+    "23": 0.16666666666666666,
+    "24": 0.18181818181818182,
+    "25": 0.2,
+    "26": 0.2,
+    "27": 0.2222222222222222,
+    "28": 0.2222222222222222,
+    "29": 0.3055555555555556,
+    "30": 0.25,
+    "31": 0.25,
+    "32": 0.2857142857142857,
+    "33": 0.3333333333333333,
+    "34": 0.3333333333333333,
+    "35": 0.3333333333333333,
+    "36": 0.3333333333333333,
+    "37": 0.4666666666666667,
+    "38": 0.3333333333333333,
+    "39": 0.4,
+    "40": 0.4,
+    "41": 0.4,
+    "42": 0.4,
+    "43": 0.4,
+    "44": 0.5,
+    "45": 0.5,
+    "46": 0.6666666666666666,
+    "47": 0.5,
+    "48": 0.6666666666666666,
+    "49": 0.6666666666666666,
+    "50": 0.6666666666666666,
+    "51": 0.6666666666666666,
+    "52": 0.6666666666666666,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0,
+    "136": 1.0,
+    "137": 1.0,
+    "138": 1.0,
+    "139": 1.0,
+    "140": 1.0,
+    "141": 1.0,
+    "142": 1.0,
+    "143": 1.0,
+    "144": 1.0,
+    "145": 1.0,
+    "146": 1.0,
+    "147": 1.0,
+    "148": 1.0,
+    "149": 1.0,
+    "150": 1.0,
+    "151": 1.0,
+    "152": 1.0,
+    "153": 1.0,
+    "154": 1.0,
+    "155": 1.0,
+    "156": 1.0,
+    "157": 1.0,
+    "158": 1.0
+  },
+  "gods": [
+    {
+      "id": "database_get_connection",
+      "label": "get_connection()",
+      "degree": 183
+    },
+    {
+      "id": "app_normalizar_cedula",
+      "label": "normalizar_cedula()",
+      "degree": 85
+    },
+    {
+      "id": "static_party_theme_partythemeengine",
+      "label": "PartyThemeEngine",
+      "degree": 49
+    },
+    {
+      "id": "app_normalizar_texto",
+      "label": "normalizar_texto()",
+      "degree": 48
+    },
+    {
+      "id": "app_api_post",
+      "label": "api_post()",
+      "degree": 26
+    },
+    {
+      "id": "app_log_auditoria",
+      "label": "log_auditoria()",
+      "degree": 22
+    },
+    {
+      "id": "database_init_db",
+      "label": "init_db()",
+      "degree": 20
+    },
+    {
+      "id": "app_api_get",
+      "label": "api_get()",
+      "degree": 20
+    },
+    {
+      "id": "app_autenticar_unificado",
+      "label": "_autenticar_unificado()",
+      "degree": 17
+    },
+    {
+      "id": "app_recuperar_password",
+      "label": "recuperar_password()",
+      "degree": 14
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Estado",
+      "target": "_autenticar_unificado()",
+      "source_files": [
+        "docs/CREDENCIALES_DEV.md",
+        "app.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `Estado` unexpectedly reaches hub `_autenticar_unificado()`"
+    },
+    {
+      "source": "1.1 `action=registrar` — NO existe en dispatcher",
+      "target": "api_post()",
+      "source_files": [
+        "docs/audit_api_completa.md",
+        "app.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Servicios identificados en el sistema",
+      "target": "enviar_bienvenida_cliente()",
+      "source_files": [
+        "docs/PLANES_Y_PRECIOS.md",
+        "app.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; peripheral node `Servicios identificados en el sistema` unexpectedly reaches hub `enviar_bienvenida_cliente()`"
+    },
+    {
+      "source": "EPIC-COND-01: Geocerca Automática y Auto-Checkin en Backend",
+      "target": "conductor_ubicacion()",
+      "source_files": [
+        "docs/ROADMAP_APP_CONDUCTOR.md",
+        "app.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; peripheral node `EPIC-COND-01: Geocerca Automática y Auto-Checkin en Backend` unexpectedly reaches hub `conductor_ubicacion()`"
+    },
+    {
+      "source": "EPIC-COND-05: Geocodificación de Respaldo para Votantes",
+      "target": "_resolver_casa_votante()",
+      "source_files": [
+        "docs/ROADMAP_APP_CONDUCTOR.md",
+        "app.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; peripheral node `EPIC-COND-05: Geocodificación de Respaldo para Votantes` unexpectedly reaches hub `_resolver_casa_votante()`"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `get_connection()` connect `get_partido_config` to `Motor de Temas de UI (party_theme.js)`, `api_get`, `get_connection`, `Autorización de Roles en Frontend (auth.js)`, `app.py`, `normalizar_cedula`, `DIA_D_MASTER — Auditoría Completa de APIs`, `recuperar_password`, `Scripts de Despliegue del Servidor`, `Configuración del Manifest PWA`, `_alcance_geografico_cliente`, `Logistics API Documentation`, `Project Conventions and Agents`, `json`, `api_post`, `Database Structure Maintenance`, `GRAPH_PROTOCOL.md — Protocolo Multi-IA \"Grafo Primero\"`, `init_db`, `seed_data`, `Electoral System Modules`, `Transport Management API`, `autorizar_recogida`, `Tailwind CSS Integration`, `seguridad_estado`, `exportar_excel_dirigente`, `estadisticas_candidatos_electos`, `run.py`, `admin_estadisticas_generales`, `get_departamentos`, `get_votantes_paginados`, `health_check`, `health_simple`, `mesas_estado_dirigente`, `auditoria_lista`, `conductor_historial_extendido`, `conductor_stats`, `get_solicitudes_recogida`, `actividad_reciente`, `auditoria_exportar`, `candidatos_agrupados`, `usuarios_lista`, `crear_tarea`, `detalle_transporte`, `General Admin Interface`, `Python Syntax Validation`, `Gamification Ranking API`, `Deployment Configuration`, `User Data Persistence`, `Package Data Persistence`, `Polling Station Analysis`, `UI Icon Definitions`, `Module Cache Management`, `Attendance Registration`, `Driver Service Worker`, `Prospect Management`, `Profile and Dashboard Rendering`, `Registration Step Rendering`, `App Service Worker`, `Auditor Agent`, `Full Stack Developer Agent`, `Logistics Coordinator Agent`, `Audit Documentation`, `Developer Agent`, `Electoral Documentation`, `cliente_logistica`?",
+      "why": "High betweenness centrality (0.120) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `cargarUsuarios`, `guardarUsuario`, `cargarPaquetes` to the rest of the system?",
+      "why": "107 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `database.py` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.08571428571428572 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `1.1 `action=registrar` — NO existe en dispatcher` connect `Electoral System Modules` to `Scripts de Despliegue del Servidor`?",
+      "why": "High betweenness centrality (0.049) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Motor de Temas de UI (party_theme.js)` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `1. BLOQUEANTES (rompen funcionalidad)` connect `Electoral System Modules` to `get`?",
+      "why": "High betweenness centrality (0.048) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `api_get` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.06951871657754011 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

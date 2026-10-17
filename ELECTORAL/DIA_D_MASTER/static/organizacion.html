@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIA_D_MASTER — Organización del Partido</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b}
+  .header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:20px 28px}
+  .header h1{font-size:1.3rem;font-weight:800}
+  .header p{font-size:.76rem;color:#94a3b8;margin-top:4px}
+  .container{max-width:1400px;margin:0 auto;padding:18px}
+
+  .bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  select{padding:9px 14px;border-radius:10px;border:2px solid #e2e8f0;font-weight:700;font-size:.85rem;background:#fff;min-width:280px}
+  select:focus{outline:none;border-color:#fbbf24}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+  .stat{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .stat .n{font-size:1.5rem;font-weight:800;color:#0f172a}
+  .stat .l{font-size:.66rem;text-transform:uppercase;font-weight:700;color:#64748b;letter-spacing:.04em;margin-top:2px}
+  .stat.hl .n{color:#ca8a04}
+
+  .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 14px rgba(0,0,0,.06);margin-bottom:16px}
+  .card h2{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:12px}
+
+  /* Árbol */
+  .nivel{margin-left:0}
+  .nodo{border-left:3px solid #cbd5e1;padding:8px 0 8px 14px;margin:6px 0}
+  .nodo.dep{border-left-color:#2563eb}
+  .nodo.dis{border-left-color:#0891b2;margin-left:18px}
+  .nodo.sec{border-left-color:#9333ea;margin-left:18px}
+  .nodo.pc{border-left-color:#ca8a04;margin-left:18px}
+  .nodo-head{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .nodo-head:hover{color:#0f172a}
+  .chev{font-size:.7rem;color:#94a3b8;width:12px;transition:transform .2s}
+  .chev.open{transform:rotate(90deg)}
+  .nodo-t{font-weight:800;font-size:.85rem}
+  .nodo-sub{font-size:.7rem;color:#64748b;font-weight:600}
+  .hijos{margin-left:8px;display:none}
+  .hijos.open{display:block}
+  .chip{display:inline-block;font-size:.64rem;font-weight:700;padding:2px 8px;border-radius:6px;margin:2px 3px 0 0}
+  .chip-cand{background:#dbeafe;color:#1e40af}
+  .chip-cond{background:#dcfce7;color:#166534}
+  .chip-none{background:#f1f5f9;color:#94a3b8}
+  .vacio{color:#94a3b8;font-size:.75rem;font-style:italic;padding:4px 0 4px 14px}
+
+  .loading{text-align:center;padding:40px;color:#64748b;font-weight:700}
+  .err{background:#fef2f2;border:2px solid #fecaca;color:#991b1b;border-radius:12px;padding:14px;font-weight:700;font-size:.85rem}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.7rem;font-weight:700;color:#475569;margin-top:10px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+</style>
+  <script src="config.js"></script>
+  </head>
+<body>
+<div class="header">
+  <h1>🏛️ DIA_D_MASTER — Organización del Partido</h1>
+  <p>Cliente (Partido) → Departamental → Distrital → Seccional → PC → Candidatos + Conductores</p>
+</div>
+
+<div class="container">
+  <div class="bar">
+    <label style="font-size:.78rem;font-weight:800;color:#475569">PARTIDO:</label>
+    <select id="selPartido" onchange="cargarArbol()"></select>
+    <button onclick="cargarArbol()" style="padding:9px 16px;border-radius:10px;border:0;background:#ca8a04;color:#fff;font-weight:800;font-size:.8rem;cursor:pointer">↻ Actualizar</button>
+  </div>
+
+  <div id="stats"></div>
+  <div id="arbol"><div class="loading">Seleccioná un partido…</div></div>
+
+  <div class="card">
+    <h2>Leyenda</h2>
+    <div class="legend">
+      <span><span class="dot" style="background:#2563eb"></span> Departamental</span>
+      <span><span class="dot" style="background:#0891b2"></span> Distrital</span>
+      <span><span class="dot" style="background:#9333ea"></span> Seccional</span>
+      <span><span class="dot" style="background:#ca8a04"></span> PC</span>
+      <span><span class="chip chip-cand" style="margin:0">Candidato</span></span>
+      <span><span class="chip chip-cond" style="margin:0">Conductor</span></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api/organizacion';
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function cargarPartidos(){
+  try{
+    const r = await fetch(API + '/partidos'); const j = await r.json();
+    const sel = document.getElementById('selPartido');
+    sel.innerHTML = (j.partidos||[]).map(p =>
+      `<option value="${p.id}">${esc(p.nombre_oficial)} ${p.sigla?'('+esc(p.sigla)+')':''} — ${p.seccionales||0} secc, ${p.dirigentes||0} dir</option>`
+    ).join('');
+    if((j.partidos||[]).length) cargarArbol();
+  }catch(e){
+    document.getElementById('arbol').innerHTML = `<div class="err">No se pudo cargar partidos: ${esc(e.message)}</div>`;
+  }
+}
+
+async function cargarArbol(){
+  const pid = document.getElementById('selPartido').value;
+  if(!pid) return;
+  document.getElementById('arbol').innerHTML = '<div class="loading">Cargando árbol…</div>';
+  try{
+    const r = await fetch(`${API}/partido/${pid}/arbol`); const j = await r.json();
+    if(!j.success){ document.getElementById('arbol').innerHTML = `<div class="err">${esc(j.error)}</div>`; return; }
+    renderStats(j);
+    renderArbol(j);
+  }catch(e){
+    document.getElementById('arbol').innerHTML = `<div class="err">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderStats(j){
+  const t = j.totales||{}, v = j.votantes||{};
+  const items = [
+    ['Departamentos', t.departamentos, 1], ['Distritos', t.distritos, 0],
+    ['Seccionales', t.seccionales, 0], ['PCs', t.pcs, 1],
+    ['Escuelas', t.escuelas, 1], ['Dirigentes', t.dirigentes, 0],
+    ['Votaron', (v.votaron||0).toLocaleString(), 0], ['Pendientes', (v.pendientes||0).toLocaleString(), 0]
+  ];
+  document.getElementById('stats').innerHTML = items.map(([l,n,hl]) =>
+    `<div class="stat ${hl?'hl':''}"><div class="n">${n}</div><div class="l">${l}</div></div>`
+  ).join('');
+}
+
+function toggle(el){
+  const h = el.nextElementSibling;
+  const c = el.querySelector('.chev');
+  if(h){ h.classList.toggle('open'); if(c) c.classList.toggle('open'); }
+}
+
+function pcHtml(pc){
+  const cands = (pc.candidatos||[]).map(c => `<span class="chip chip-cand">👤 ${esc(c.nombre)} (${esc(c.cargo)})</span>`).join('');
+  const conds = (pc.conductores||[]).map(c => `<span class="chip chip-cond">🚗 ${esc(c.nombre)} ${c.placa?'· '+esc(c.placa):''}</span>`).join('');
+  return `
+    <div class="nodo pc">
+      <div class="nodo-head" onclick="toggle(this)">
+        <span class="chev">▶</span>
+        <span class="nodo-t">${esc(pc.codigo||('PC '+pc.numero))}</span>
+        <span class="nodo-sub">${esc(pc.rol||'')} · ${(pc.candidatos||[]).length} cand · ${(pc.conductores||[]).length} cond</span>
+      </div>
+      <div class="hijos">
+        <div style="padding:4px 0 2px 14px"><span class="nodo-sub">Candidatos que apoya:</span><br>${cands||'<span class="chip chip-none">ninguno</span>'}</div>
+        <div style="padding:4px 0 2px 14px"><span class="nodo-sub">Conductores:</span><br>${conds||'<span class="chip chip-none">ninguno</span>'}</div>
+      </div>
+    </div>`;
+}
+
+function renderArbol(j){
+  let html = '';
+  const deptos = j.departamentos||[];
+  if(!deptos.length){
+    html = '<div class="vacio">Este partido no tiene seccionales cargadas.</div>';
+  }
+  deptos.forEach(dep => {
+    html += `
+      <div class="nodo dep">
+        <div class="nodo-head" onclick="toggle(this)">
+          <span class="chev">▶</span>
+          <span class="nodo-t">🏛️ ${esc(dep.nombre)}</span>
+          <span class="nodo-sub">${(dep.distritos||[]).length} distritos</span>
+        </div>
+        <div class="hijos">`;
+    (dep.distritos||[]).forEach(dis => {
+      html += `
+          <div class="nodo dis">
+            <div class="nodo-head" onclick="toggle(this)">
+              <span class="chev">▶</span>
+              <span class="nodo-t">🗺️ ${esc(dis.nombre)}</span>
+              <span class="nodo-sub">${(dis.seccionales||[]).length} seccionales</span>
+            </div>
+            <div class="hijos">`;
+      (dis.seccionales||[]).forEach(sec => {
+        html += `
+              <div class="nodo sec">
+                <div class="nodo-head" onclick="toggle(this)">
+                  <span class="chev">▶</span>
+                  <span class="nodo-t">📍 ${esc(sec.nombre)}</span>
+                  <span class="nodo-sub">${(sec.pcs||[]).length} PCs</span>
+                </div>
+                <div class="hijos">${(sec.pcs||[]).map(pcHtml).join('') || '<div class="vacio">Sin PCs</div>'}</div>
+              </div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  // Escuelas
+  const escuelas = j.escuelas||[];
+  html += `
+    <div class="nodo dep" style="border-left-color:#dc2626;margin-top:14px">
+      <div class="nodo-head" onclick="toggle(this)">
+        <span class="chev">▶</span>
+        <span class="nodo-t">🎓 Escuelas Electorales</span>
+        <span class="nodo-sub">${escuelas.length}</span>
+      </div>
+      <div class="hijos">${escuelas.map(e=>`<div style="padding:4px 0 4px 14px"><span class="chip chip-cand">${esc(e.nombre)}</span> <span class="nodo-sub">${esc(e.telefono||'')}</span></div>`).join('') || '<div class="vacio">Sin escuelas</div>'}</div>
+    </div>`;
+
+  // Dirigentes
+  const dirs = j.dirigentes||[];
+  html += `
+    <div class="nodo dep" style="border-left-color:#16a34a">
+      <div class="nodo-head" onclick="toggle(this)">
+        <span class="chev">▶</span>
+        <span class="nodo-t">👥 Dirigentes del partido</span>
+        <span class="nodo-sub">${dirs.length}</span>
+      </div>
+      <div class="hijos">${dirs.map(d=>`<div style="padding:4px 0 4px 14px"><span class="chip chip-cond">${esc(d.nombre)}</span> <span class="nodo-sub">${esc(d.rol_partido||'')} · ${esc(d.cedula)}</span></div>`).join('') || '<div class="vacio">Sin dirigentes vinculados</div>'}</div>
+    </div>`;
+
+  document.getElementById('arbol').innerHTML = `<div class="card">${html}</div>`;
+}
+
+cargarPartidos();
+</script>
+</body>
+</html>

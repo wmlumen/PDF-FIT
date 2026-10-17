@@ -1,0 +1,86 @@
+/* ===================================================
+   TEMA CLIENTE — Puente a styles.css
+   Todas las páginas enlazan este archivo.
+   Aquí solo van reglas adicionales del cliente que no
+   están en styles.css. Todo lo demás vive en styles.css.
+   =================================================== */
+
+@import "styles.css";
+
+/* --- Responsive helpers globales --- */
+@media (max-width: 640px) {
+  .hide-mobile { display: none !important; }
+  .only-mobile { display: block !important; }
+}
+@media (min-width: 641px) {
+  .only-mobile { display: none !important; }
+  .only-desktop { display: block !important; }
+}
+
+/* --- Print helpers --- */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+}
+
+/* --- Utilidades comunes --- */
+.scroll-hidden::-webkit-scrollbar { width: 6px; }
+.scroll-hidden::-webkit-scrollbar-track { background: transparent; }
+.scroll-hidden::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.scroll-hidden::-webkit-scrollbar-thumb:hover { background: #c5a059; }
+
+.scroll-thin::-webkit-scrollbar { width: 4px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.28);
+  border-color: #c5a059;
+}
+
+/* ===================================================
+   SOBREESCRITURA DINAMICA DE ACENTO
+   Las paginas operativas (escrutinio, votacion, mesas,
+   veedores, transporte, consulta_mesa, registro_qr) tienen
+   el rojo ANR hardcodeado. Aca lo redirigimos a
+   var(--party-color) que el backend genera segun el
+   cliente logueado (/tema-cliente.css).
+
+   SOLO se tocan clases de ACENTO/MARCA.
+   Los colores de estado (red-50, red-100, red-200,
+   text-red-500, text-red-800, etc.) se dejan intactos
+   porque son semanticos (alertas, errores) y no deben
+   cambiar con el tema del partido.
+   =================================================== */
+
+/* Fondos de acento -> color del partido */
+.bg-red-500 { background-color: var(--party-color) !important; }
+.bg-red-600 { background-color: var(--party-color) !important; }
+.bg-red-700 { background-color: var(--party-color-dark) !important; }
+.bg-red-800 { background-color: var(--party-color-dark) !important; }
+
+/* Texto de acento -> color del partido */
+.text-red-500 { color: var(--party-color) !important; }
+.text-red-600 { color: var(--party-color) !important; }
+.text-red-700 { color: var(--party-color-dark) !important; }
+.text-red-800 { color: var(--party-color-dark) !important; }
+
+/* Bordes de acento -> color del partido */
+.border-red-200 { border-color: var(--party-color-rgb, 220, 38, 38) !important; }
+.border-red-400 { border-color: var(--party-color) !important; }
+.border-red-600 { border-color: var(--party-color) !important; }
+
+/* Colores hex hardcodeados en <style> inline */
+[style*="#dc2626"] { color: var(--party-color) !important; }
+[style*="#ef4444"] { color: var(--party-color) !important; }
+[style*="#b91c1c"] { color: var(--party-color-dark) !important; }
+[style*="#991b1b"] { color: var(--party-color-dark) !important; }
+[style*="background: #dc2626"] { background: var(--party-color) !important; }
+[style*="background:#dc2626"] { background: var(--party-color) !important; }
+[style*="background: #ef4444"] { background: var(--party-color) !important; }
+[style*="background:#ef4444"] { background: var(--party-color) !important; }
+
+/* rgba(220, 38, 38, ...) -> rgba(var(--party-color-rgb), ...) */
+[style*="rgba(220, 38, 38"] { border-color: rgba(var(--party-color-rgb), 0.5) !important; }
+[style*="rgba(220,38,38"] { border-color: rgba(var(--party-color-rgb), 0.5) !important; }

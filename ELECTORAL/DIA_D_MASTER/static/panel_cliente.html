@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Panel del Cliente - DIA</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <script src="vendor/tailwind.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#fef2f2',100:'#fee2e2',200:'#fecaca',300:'#fca5a5',400:'#f87171',500:'#ef4444',600:'#dc2626',700:'#b91c1c',800:'#991b1b',900:'#7f1d1d' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    /* Sin tiles externos (app offline): fondo de cuadricula en vez de imagen satelital/calles */
+    .leaflet-container { background: repeating-linear-gradient(0deg, #e2e8f0, #e2e8f0 24px, #f1f5f9 25px),
+                                      repeating-linear-gradient(90deg, transparent, transparent 24px, #cbd5e1 25px); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .slide-in { animation: slideIn 0.4s ease-out; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+    .input-field { @apply w-full px-4 py-3 text-sm font-bold border-2 border-slate-200 rounded-xl focus:border-primary-500 focus:outline-none transition-all bg-white; }
+    .btn-primary { @apply w-full py-3 bg-primary-600 text-white text-sm font-black rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200; }
+    .btn-secondary { @apply w-full py-3 bg-slate-100 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all; }
+    .step-dot { @apply w-3 h-3 rounded-full transition-all; }
+    .step-dot.active { @apply bg-primary-600 scale-125; }
+    .step-dot.done { @apply bg-green-500; }
+    .step-dot:not(.active):not(.done) { @apply bg-slate-300; }
+    .scroll-thin::-webkit-scrollbar { width: 4px; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+    #mapaEscuelas { height: 300px; border-radius: 1rem; }
+    @media (max-width: 640px) { #mapaEscuelas { height: 220px; } }
+  </style>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50 to-slate-50">
+<div id="app"></div>
+
+<script src="auth.js"></script>
+<script>
+const API = '/api';
+let S = {
+  screen: 'login', // login | registro | dashboard | campana
+  usuario: null,
+  perfil: null,
+  servicio: null,
+  stats: null,
+  cargando: true,
+  msg: '', msgTipo: '',
+  // Registro wizard
+  regStep: 1,
+  regTotal: 5,
+  regData: { tipo_cliente:'', partido_id:null, departamento_id:null, distrito_id:null,
+             intendente_cedula:null, lista_nro:null, lista_nombre:'',
+             nombre:'', apellido:'', cedula:'', email:'', password:'' },
+  // Listas cargadas
+  partidos: [],
+  departamentos: [],
+  distritos: [],
+  intendentes: [],
+  listas: [],
+  // Campaña
+  camTab: 'resumen',
+  escuelas: [],
+  mapa: null,
+  // Editar perfil
+  editando: false,
+  editData: {},
+  mostrarModulos: false,
+};
+
+// ─── HELPERS ──────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function limpiar(c) { return (c||'').replace(/[.\s,-]/g,'').trim(); }
+function showToast(msg, tipo='info') { S.msg=msg; S.msgTipo=tipo; render(); setTimeout(()=>{ S.msg=''; render(); },3500); }
+
+function headersSesion() {
+  const h = {};
+  if (S.usuario && S.usuario.session_id) h['x-session-id'] = S.usuario.session_id;
+  return h;
+}
+async function apiGet(params) {
+  // La contraseña nunca va en la URL (se filtra en logs/historial) — si viene en params,
+  // se saca de la query y se manda como header X-Password, como ya espera el backend.
+  const headers = { ...headersSesion() };
+  if (params && params.password) {
+    headers['X-Password'] = params.password;
+    params = { ...params };
+    delete params.password;
+  }
+  const r = await fetch(API+'?'+new URLSearchParams(params)+'&v='+Date.now(), { headers });
+  return r.json();
+}
+async function apiPost(data) {
+  if (S.usuario) { data.cedula_auth = S.usuario.cedula; data.password_auth = sessionStorage.getItem('pw')||''; }
+  const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json', ...headersSesion()}, body:JSON.stringify(data) });
+  return r.json();
+}
+
+// ─── LOGIN ────────────────────────────────────────────
+async function login() {
+  const ced = limpiar($('loginCed')?.value||'');
+  const pw = $('loginPw')?.value||'';
+  if (!ced||!pw) return showToast('Ingrese cédula y contraseña','error');
+  try {
+    const d = await apiGet({action:'login', cedula:ced, password:pw});
+    if (d.success && d.usuario) {
+      sessionStorage.setItem('pw', pw);
+      // Sesión compartida (auth.js): permite la barra de pestañas de rol.
+      try { sessionStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(d.usuario)); if (typeof setRolActivo === 'function' && d.usuario.roles && d.usuario.roles[0]) setRolActivo(d.usuario.roles[0]); } catch(e) {}
+      S.usuario = d.usuario;
+      if (d.usuario.requiere_cambio_clave && typeof promptCambioClave === 'function') {
+        await promptCambioClave(d.usuario.cedula, pw);
+        sessionStorage.setItem('pw', pw);
+      }
+      await cargarDatosCliente(ced);
+    } else { showToast(d.error||'Credenciales inválidas','error'); }
+  } catch(e) { showToast('Error de conexión','error'); }
+}
+
+async function cargarDatosCliente(ced) {
+  S.cargando = true; render();
+  try {
+    const [perfil, servicio] = await Promise.all([
+      apiGet({action:'perfil_completo', cedula:ced}),
+      apiGet({action:'servicio_cliente', cedula:ced})
+    ]);
+    if (perfil.success) S.perfil = perfil.perfil;
+    if (servicio.success) S.servicio = servicio.servicio;
+    // Decidir pantalla
+    if (!S.perfil || !S.perfil.registro_completado) {
+      S.screen = 'registro';
+      S.regData.cedula = ced;
+      S.regData.nombre = S.perfil?.nombre || '';
+      S.regData.apellido = S.perfil?.apellido || '';
+      S.regData.email = S.perfil?.email || '';
+    } else {
+      S.screen = 'dashboard';
+      await cargarDashboard(ced);
+    }
+  } catch(e) { console.error(e); }
+  S.cargando = false; render();
+}
+
+async function cargarDashboard(ced) {
+  try {
+    const [serv, camp] = await Promise.all([
+      apiGet({action:'servicio_cliente', cedula:ced}),
+      apiGet({action:'campana_resumen', cedula:ced})
+    ]);
+    if (serv.success) S.servicio = serv.servicio;
+    if (camp.success) S.stats = camp.stats;
+  } catch(e) { console.error(e); }
+}
+
+// ─── REGISTRO WIZARD ──────────────────────────────────
+function regNext() {
+  if (S.regStep < S.regTotal) { S.regStep++; render(); }
+}
+function regPrev() {
+  if (S.regStep > 1) { S.regStep--; render(); }
+}
+
+async function regSelectTipo(tipo) {
+  S.regData.tipo_cliente = tipo;
+  // Cargar datos
+  const [deps, part] = await Promise.all([
+    apiGet({action:'departamentos'}),
+    apiGet({action:'partidos_lista'})
+  ]);
+  if (deps.success) S.departamentos = deps.departamentos;
+  if (part.success) S.partidos = part.partidos;
+  regNext();
+}
+
+async function regSelectPartido(pid) {
+  S.regData.partido_id = parseInt(pid);
+}
+
+async function regSelectDepto(did) {
+  S.regData.departamento_id = parseInt(did);
+  const d = await apiGet({action:'distritos', departamento_id: did});
+  if (d.success) S.distritos = d.distritos;
+}
+
+async function regSelectDistrito(did) {
+  S.regData.distrito_id = parseInt(did);
+  // Si es concejal, cargar intendentes
+  if (S.regData.tipo_cliente === 'concejal' && S.regData.partido_id) {
+    const d = await apiGet({action:'intendentes_por_distrito', distrito_id:did, partido_id:S.regData.partido_id});
+    if (d.success) S.intendentes = d.intendentes;
+  }
+  // Cargar listas
+  if (S.regData.partido_id) {
+    const l = await apiGet({action:'listas_por_partido', partido_id:S.regData.partido_id});
+    if (l.success) S.listas = l.listas;
+  }
+}
+
+async function regCompletar() {
+  const rd = S.regData;
+  if (!rd.nombre||!rd.apellido||!rd.cedula||!rd.email||!rd.password) {
+    return showToast('Complete todos los campos','error');
+  }
+  // Crear cliente
+  let r = await apiPost({action:'registrar_cliente', cedula:rd.cedula, nombre:rd.nombre,
+    apellido:rd.apellido, email:rd.email, password:rd.password});
+  if (!r.success && r.error?.includes('Ya existe')) {
+    // Ya existe, solo actualizar
+  } else if (!r.success) {
+    return showToast(r.error||'Error al registrar','error');
+  }
+  // Completar registro
+  r = await apiPost({action:'completar_registro', cedula:rd.cedula, nombre:rd.nombre,
+    apellido:rd.apellido, email:rd.email, departamento_id:rd.departamento_id,
+    distrito_id:rd.distrito_id, partido_id:rd.partido_id,
+    intendente_cedula:rd.intendente_cedula, lista_nro:rd.lista_nro,
+    lista_nombre:rd.lista_nombre, tipo_servicio:rd.tipo_cliente,
+    fecha_inicio_servicio:new Date().toISOString().slice(0,10),
+    fecha_fin_servicio:'2030-12-31'});
+  if (r.success) {
+    showToast('Registro completado','success');
+    sessionStorage.setItem('pw', rd.password);
+    S.usuario = {cedula:rd.cedula};
+    await cargarDatosCliente(rd.cedula);
+  } else { showToast(r.error||'Error','error'); }
+}
+
+// ─── CAMPAÑA ──────────────────────────────────────────
+async function cargarCampana(tab) {
+  S.camTab = tab;
+  S.cargando = true; render();
+  const ced = S.usuario.cedula;
+  try {
+    if (tab === 'mapa') {
+      const d = await apiGet({action:'escuelas_electorales', distrito_id:S.perfil.distrito_id});
+      if (d.success) { S.escuelas = d.escuelas || []; initMapa(); }
+    } else if (tab === 'dirigentes') {
+      const d = await apiGet({action:'mis_dirigentes', cedula:ced});
+      if (d.success) S.dirigentes = d.dirigentes || [];
+    } else if (tab === 'solicitudes') {
+      const d = await apiGet({action:'mis_solicitudes', cedula:ced});
+      if (d.success) S.solicitudes = d.solicitudes || [];
+    } else if (tab === 'transporte') {
+      const d = await apiGet({action:'mis_transportes', cedula:ced});
+      if (d.success) S.transportes = d.transportes || [];
+    }
+  } catch(e) { console.error(e); }
+  S.cargando = false; render();
+}
+
+function initMapa() {
+  setTimeout(() => {
+    const el = $('mapaEscuelas');
+    if (!el || S.mapa) return;
+    S.mapa = L.map('mapaEscuelas').setView([-25.2637, -57.5759], 6);
+    // Sin tiles externos: la app funciona 100% offline, sin depender de internet para el mapa.
+    if (S.escuelas.length > 0) {
+      S.escuelas.forEach(e => {
+        if (e.lat && e.lng) {
+          L.marker([e.lat, e.lng]).addTo(S.mapa).bindPopup(`<b>${e.nombre}</b><br>${e.direccion||''}`);
+        }
+      });
+      const latlngs = S.escuelas.filter(e=>e.lat&&e.lng).map(e=>[e.lat,e.lng]);
+      if (latlngs.length) S.mapa.fitBounds(latlngs, {padding:[30,30]});
+    }
+  }, 200);
+}
+
+// ─── PERFIL / EDITAR ──────────────────────────────────
+async function guardarPerfil() {
+  const ed = S.editData;
+  const r = await apiPost({action:'editar_perfil', cedula:S.usuario.cedula, ...ed});
+  if (r.success) {
+    S.editando = false;
+    showToast('Perfil actualizado','success');
+    await cargarDatosCliente(S.usuario.cedula);
+  } else { showToast(r.error||'Error','error'); }
+}
+
+function logout() {
+  sessionStorage.clear();
+  window.location.href = 'acceso.html';
+}
+
+// ─── RENDER ───────────────────────────────────────────
+function render() {
+  const app = $('app');
+  if (!app) return;
+  if (S.screen==='login') app.innerHTML = renderLogin();
+  else if (S.screen==='registro') app.innerHTML = renderRegistro();
+  else if (S.screen==='dashboard') app.innerHTML = renderDashboard();
+  else if (S.screen==='campana') app.innerHTML = renderCampana();
+  // Toast
+  if (S.msg) {
+    const t = document.createElement('div');
+    t.className = `fixed top-4 right-4 z-[9999] px-4 py-3 rounded-xl text-xs font-black shadow-lg fade-in ${
+      S.msgTipo==='error'?'bg-red-600 text-white':'bg-green-600 text-white'}`;
+    t.textContent = S.msg;
+    app.appendChild(t);
+  }
+}
+
+// ─── LOGIN SCREEN ─────────────────────────────────────
+function renderLogin() {
+  return `
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-sm fade-in">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 mx-auto bg-primary-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary-200 mb-4">
+          <i class="fas fa-user-tie text-3xl text-white"></i>
+        </div>
+        <h1 class="text-2xl font-black text-slate-800">Panel del Cliente</h1>
+        <p class="text-sm text-slate-400 font-bold mt-1">Accedé a tu panel de campaña</p>
+      </div>
+      <div class="bg-white rounded-3xl shadow-xl p-6 space-y-4">
+        <div>
+          <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Cédula de Identidad</label>
+          <input id="loginCed" type="text" inputmode="numeric" class="input-field" placeholder="Ej: 1234567" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <div>
+          <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Contraseña</label>
+          <input id="loginPw" type="password" class="input-field" placeholder="Tu contraseña" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button onclick="login()" class="btn-primary">
+          <i class="fas fa-sign-in-alt mr-2"></i>Ingresar
+        </button>
+      </div>
+      <p class="text-center text-xs text-slate-300 mt-6 font-bold">DIA - Sistema Electoral 2026</p>
+    </div>
+  </div>`;
+}
+
+// ─── REGISTRO WIZARD ──────────────────────────────────
+function renderRegistro() {
+  const steps = ['Tipo','Ubicación','Partido','Datos','Confirmar'];
+  return `
+  <div class="min-h-screen p-4 max-w-lg mx-auto">
+    <div class="text-center mb-6 fade-in">
+      <h1 class="text-xl font-black text-slate-800">Registro de Cliente</h1>
+      <p class="text-xs text-slate-400 font-bold mt-1">Completá tu perfil para acceder al sistema</p>
+      <div class="flex items-center justify-center gap-2 mt-4">
+        ${steps.map((s,i) => `<div class="step-dot ${(i+1)===S.regStep?'active':(i+1)<S.regStep?'done':''}"></div>`).join('')}
+      </div>
+      <p class="text-[10px] text-slate-400 font-bold mt-2">Paso ${S.regStep} de ${S.regTotal}: ${steps[S.regStep-1]}</p>
+    </div>
+    <div class="bg-white rounded-3xl shadow-xl p-6 slide-in">
+      ${S.regStep===1 ? renderRegStep1() : ''}
+      ${S.regStep===2 ? renderRegStep2() : ''}
+      ${S.regStep===3 ? renderRegStep3() : ''}
+      ${S.regStep===4 ? renderRegStep4() : ''}
+      ${S.regStep===5 ? renderRegStep5() : ''}
+    </div>
+    <div class="flex gap-3 mt-4">
+      ${S.regStep>1 ? `<button onclick="regPrev()" class="btn-secondary"><i class="fas fa-arrow-left mr-1"></i>Atrás</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderRegStep1() {
+  const tipos = [
+    {id:'partido', icon:'fa-landmark', label:'Partido Político', desc:'Representante del partido'},
+    {id:'intendente', icon:'fa-user-tie', label:'Intendente', desc:'Candidato a intendente'},
+    {id:'concejal', icon:'fa-users', label:'Concejal', desc:'Candidato a concejal'},
+  ];
+  return `
+  <h2 class="text-sm font-black text-slate-700 mb-4">¿Quién sos?</h2>
+  <div class="space-y-3">
+    ${tipos.map(t => `
+    <button onclick="regSelectTipo('${t.id}')" class="w-full p-4 rounded-2xl border-2 ${S.regData.tipo_cliente===t.id?'border-primary-500 bg-primary-50':'border-slate-200 bg-white'} hover:border-primary-300 transition-all text-left flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center ${S.regData.tipo_cliente===t.id?'bg-primary-600 text-white':'bg-slate-100 text-slate-400'}">
+        <i class="fas ${t.icon} text-lg"></i>
+      </div>
+      <div>
+        <p class="text-sm font-black text-slate-800">${t.label}</p>
+        <p class="text-[10px] text-slate-400 font-bold">${t.desc}</p>
+      </div>
+    </button>`).join('')}
+  </div>`;
+}
+
+function renderRegStep2() {
+  return `
+  <h2 class="text-sm font-black text-slate-700 mb-4">¿Dónde operás?</h2>
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Departamento</label>
+      <select id="regDepto" class="input-field" onchange="regSelectDepto(this.value)">
+        <option value="">Seleccionar...</option>
+        ${S.departamentos.map(d => `<option value="${d.id}" ${S.regData.departamento_id==d.id?'selected':''}>${d.nombre}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Distrito</label>
+      <select id="regDist" class="input-field" onchange="regSelectDistrito(this.value)">
+        <option value="">Seleccionar departamento primero...</option>
+        ${S.distritos.map(d => `<option value="${d.id}" ${S.regData.distrito_id==d.id?'selected':''}>${d.nombre}</option>`).join('')}
+      </select>
+    </div>
+    ${S.regData.departamento_id && S.regData.distrito_id ? `
+    <button onclick="regNext()" class="btn-primary mt-2"><i class="fas fa-arrow-right mr-1"></i>Siguiente</button>` : ''}
+  </div>`;
+}
+
+function renderRegStep3() {
+  return `
+  <h2 class="text-sm font-black text-slate-700 mb-4">¿Qué partido?</h2>
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Partido Político</label>
+      <select id="regPartido" class="input-field" onchange="regSelectPartido(this.value)">
+        <option value="">Seleccionar...</option>
+        ${S.partidos.map(p => `<option value="${p.id}" ${S.regData.partido_id==p.id?'selected':''}>${p.sigla} - ${p.nombre}</option>`).join('')}
+      </select>
+    </div>
+    ${S.regData.tipo_cliente==='concejal' && S.intendentes.length > 0 ? `
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Intendente que apoyás</label>
+      <select id="regIntendente" class="input-field" onchange="S.regData.intendente_cedula=this.value">
+        <option value="">Seleccionar...</option>
+        ${S.intendentes.map(i => `<option value="${i.cedula}" ${S.regData.intendente_cedula===i.cedula?'selected':''}>${i.nombre} (${i.lista})</option>`).join('')}
+      </select>
+    </div>` : ''}
+    ${S.listas.length > 0 ? `
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Lista (TSJE)</label>
+      <select id="regLista" class="input-field" onchange="S.regData.lista_nro=parseInt(this.value); S.regData.lista_nombre=this.options[this.selectedIndex].text">
+        <option value="">Seleccionar...</option>
+        ${S.listas.map(l => `<option value="${l.numero}" ${S.regData.lista_nro==l.numero?'selected':''}>Lista ${l.numero} - ${l.nombre}</option>`).join('')}
+      </select>
+    </div>` : ''}
+    ${S.regData.partido_id ? `
+    <button onclick="regNext()" class="btn-primary mt-2"><i class="fas fa-arrow-right mr-1"></i>Siguiente</button>` : ''}
+  </div>`;
+}
+
+function renderRegStep4() {
+  return `
+  <h2 class="text-sm font-black text-slate-700 mb-4">Tus datos</h2>
+  <div class="space-y-3">
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Nombre</label>
+        <input id="regNombre" class="input-field" value="${S.regData.nombre}" oninput="S.regData.nombre=this.value" placeholder="Nombre">
+      </div>
+      <div>
+        <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Apellido</label>
+        <input id="regApellido" class="input-field" value="${S.regData.apellido}" oninput="S.regData.apellido=this.value" placeholder="Apellido">
+      </div>
+    </div>
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Cédula de Identidad</label>
+      <input id="regCedula" class="input-field" value="${S.regData.cedula}" oninput="S.regData.cedula=this.value" placeholder="Ej: 1234567" inputmode="numeric">
+    </div>
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Email</label>
+      <input id="regEmail" type="email" class="input-field" value="${S.regData.email}" oninput="S.regData.email=this.value" placeholder="tu@email.com">
+    </div>
+    <div>
+      <label class="text-xs font-black text-slate-500 uppercase mb-1 block">Contraseña</label>
+      <input id="regPw" type="password" class="input-field" value="${S.regData.password}" oninput="S.regData.password=this.value" placeholder="Mínimo 6 caracteres">
+    </div>
+    ${S.regData.nombre && S.regData.apellido && S.regData.cedula && S.regData.email && S.regData.password ? `
+    <button onclick="regNext()" class="btn-primary mt-2"><i class="fas fa-arrow-right mr-1"></i>Siguiente</button>` : ''}
+  </div>`;
+}
+
+function renderRegStep5() {
+  const dep = S.departamentos.find(d=>d.id==S.regData.departamento_id);
+  const dist = S.distritos.find(d=>d.id==S.regData.distrito_id);
+  const partido = S.partidos.find(p=>p.id==S.regData.partido_id);
+  return `
+  <h2 class="text-sm font-black text-slate-700 mb-4">Confirmá tu registro</h2>
+  <div class="space-y-3">
+    <div class="bg-slate-50 rounded-xl p-4 space-y-2">
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Tipo</span><span class="text-xs font-black text-slate-700 capitalize">${S.regData.tipo_cliente}</span></div>
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Nombre</span><span class="text-xs font-black text-slate-700">${S.regData.nombre} ${S.regData.apellido}</span></div>
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Cédula</span><span class="text-xs font-black text-slate-700">${S.regData.cedula}</span></div>
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Email</span><span class="text-xs font-black text-slate-700">${S.regData.email}</span></div>
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Partido</span><span class="text-xs font-black text-slate-700">${partido?.sigla||'-'}</span></div>
+      <div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Ubicación</span><span class="text-xs font-black text-slate-700">${dep?.nombre||''} / ${dist?.nombre||''}</span></div>
+      ${S.regData.lista_nro ? `<div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Lista</span><span class="text-xs font-black text-slate-700">${S.regData.lista_nombre||S.regData.lista_nro}</span></div>` : ''}
+      ${S.regData.intendente_cedula ? `<div class="flex justify-between"><span class="text-xs text-slate-400 font-bold">Intendente</span><span class="text-xs font-black text-slate-700">${S.intendentes.find(i=>i.cedula==S.regData.intendente_cedula)?.nombre||''}</span></div>` : ''}
+    </div>
+    <button onclick="regCompletar()" class="btn-primary mt-2"><i class="fas fa-check mr-1"></i>Completar Registro</button>
+  </div>`;
+}
+
+// ─── DASHBOARD ────────────────────────────────────────
+function renderDashboard() {
+  if (!S.perfil) return '<div class="p-8 text-center"><i class="fas fa-spinner fa-spin text-2xl text-slate-300"></i></div>';
+  const p = S.perfil;
+  const sv = S.servicio || {};
+  const st = S.stats || {};
+  const color = p.partido_color || '#dc2626';
+  return `
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4 pb-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div>
+            <h1 class="text-sm font-black">${p.nombre||''} ${p.apellido||''}</h1>
+            <p class="text-[10px] opacity-75 font-bold">CI: ${p.cedula||''}</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="S.editando=!S.editando;render()" class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white text-xs">
+            <i class="fas fa-${S.editando?'times':'pen'}"></i>
+          </button>
+          <button onclick="logout()" class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white text-xs">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+      ${S.editando ? renderEditProfile() : `
+      <!-- Service Card -->
+      <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:${color}">
+            <span class="text-white text-[10px] font-black">${p.partido_sigla||'?'}</span>
+          </div>
+          <div>
+            <p class="text-xs font-black">${sv.tipo_servicio||'Servicio'}</p>
+            <p class="text-[10px] opacity-75 font-bold">Vigente hasta ${sv.fecha_fin||'--'}</p>
+          </div>
+        </div>
+        ${p.lista_nro ? `<p class="text-[10px] opacity-75 font-bold">Lista ${p.lista_nro} - ${p.lista_nombre||''}</p>` : ''}
+        ${p.candidato_nombre ? `<p class="text-[10px] opacity-75 font-bold">Candidato: ${p.candidato_nombre}</p>` : ''}
+      </div>`}
+    </div>
+
+    <!-- Stats -->
+    <div class="px-4 -mt-3">
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="bg-white rounded-2xl shadow-sm p-3 text-center">
+          <p class="text-lg font-black text-primary-600">${st.dirigentes||0}</p>
+          <p class="text-[9px] text-slate-400 font-black uppercase">Dirigentes</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-3 text-center">
+          <p class="text-lg font-black text-green-600">${st.votos_confirmados||0}</p>
+          <p class="text-[9px] text-slate-400 font-black uppercase">Votos</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-3 text-center">
+          <p class="text-lg font-black text-amber-600">${st.unidades_distrito||0}</p>
+          <p class="text-[9px] text-slate-400 font-black uppercase">Seccionales</p>
+        </div>
+      </div>
+      <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl shadow-sm p-4 text-center text-white mb-4">
+        <i class="fas fa-eye text-2xl mb-2"></i>
+        <p class="text-3xl font-black">${st.consultas_recibidas||0}</p>
+        <p class="text-[10px] text-purple-100 font-black uppercase">Personas que vieron tu nombre</p>
+        <p class="text-[10px] text-purple-200 mt-1">${S.perfil?.branding_activo ? 'Consultas a "Dónde Votás" por tu dominio' : 'Activá el servicio de branding para empezar a contar'}</p>
+      </div>
+    </div>
+
+    <!-- Módulos del Sistema (ocultos por defecto: lo primero que se ve son las estadísticas) -->
+    <div class="px-4 mb-4">
+      <button onclick="S.mostrarModulos=!S.mostrarModulos; render();"
+        class="w-full flex items-center justify-between bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition-all">
+        <h3 class="text-xs font-black text-slate-400 uppercase m-0"><i class="fas fa-th-large mr-1"></i>Módulos del Sistema</h3>
+        <i class="fas fa-chevron-${S.mostrarModulos ? 'up' : 'down'} text-slate-300"></i>
+      </button>
+      ${S.mostrarModulos ? `
+      <div class="space-y-2 mt-2">
+        <button onclick="S.screen='campana';cargarCampana('resumen')" class="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition-all">
+          <div class="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center"><i class="fas fa-chart-bar text-primary-600"></i></div>
+          <div class="text-left"><p class="text-sm font-black text-slate-800">Panel de Campaña</p><p class="text-[10px] text-slate-400 font-bold">Votos, dirigentes, mesas, logística</p></div>
+          <i class="fas fa-chevron-right text-slate-300 ml-auto"></i>
+        </button>
+        <button onclick="S.screen='campana';cargarCampana('mapa')" class="w-full bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition-all">
+          <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center"><i class="fas fa-map-marked-alt text-green-600"></i></div>
+          <div class="text-left"><p class="text-sm font-black text-slate-800">Mapa Electoral</p><p class="text-[10px] text-slate-400 font-bold">Escuelas electorales del distrito</p></div>
+          <i class="fas fa-chevron-right text-slate-300 ml-auto"></i>
+        </button>
+      </div>` : ''}
+    </div>
+
+    <!-- Info -->
+    <div class="px-4 pb-8">
+      <div class="bg-white rounded-2xl shadow-sm p-4">
+        <h3 class="text-xs font-black text-slate-400 uppercase mb-3">Información del Servicio</h3>
+        <div class="space-y-2">
+          <div class="flex justify-between items-center py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-bold">Tipo de servicio</span>
+            <span class="text-xs font-black text-slate-700 capitalize">${sv.tipo_servicio||'No especificado'}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-bold">Vigencia</span>
+            <span class="text-xs font-black text-slate-700">${sv.fecha_inicio||'--'} al ${sv.fecha_fin||'--'}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-bold">Departamento</span>
+            <span class="text-xs font-black text-slate-700">${p.departamento_nombre||'--'}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-slate-100">
+            <span class="text-xs text-slate-400 font-bold">Distrito</span>
+            <span class="text-xs font-black text-slate-700">${p.distrito_nombre||'--'}</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-xs text-slate-400 font-bold">Partido</span>
+            <span class="text-xs font-black text-slate-700">${p.partido_sigla||'--'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderEditProfile() {
+  const p = S.perfil;
+  return `
+  <div class="bg-white rounded-2xl p-4 text-slate-800 space-y-3">
+    <h3 class="text-sm font-black">Editar Perfil</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <input class="input-field text-xs" value="${p.nombre||''}" oninput="S.editData.nombre=this.value" placeholder="Nombre">
+      <input class="input-field text-xs" value="${p.apellido||''}" oninput="S.editData.apellido=this.value" placeholder="Apellido">
+    </div>
+    <input class="input-field text-xs" value="${p.email||''}" oninput="S.editData.email=this.value" placeholder="Email de campaña">
+
+    <h3 class="text-sm font-black pt-2 border-t border-slate-100">Comunicaciones de campaña</h3>
+    <p class="text-[11px] text-slate-400 -mt-2">Este teléfono y email se usan para identificar las comunicaciones de tu campaña (bienvenidas, avisos).</p>
+    <input class="input-field text-xs" value="${p.telefono||''}" oninput="S.editData.telefono=this.value" placeholder="Teléfono de campaña (ej. +595981000000)">
+
+    <h3 class="text-sm font-black pt-2 border-t border-slate-100">Página pública "Dónde Votás"</h3>
+    <p class="text-[11px] text-slate-400 -mt-2">
+      Por defecto esta página es genérica, sin publicidad de ningún candidato. Si comprás tu propio
+      dominio, lo apuntás a este sistema (tu proveedor te explica cómo) y contratás el servicio de
+      branding, la página pública de consulta de mesa se va a ver con tus colores, tu logo y tu mensaje.
+      ${p.branding_activo
+        ? '<span style="color:#047857;font-weight:700;">● Servicio activo</span>'
+        : '<span style="color:#92400e;font-weight:700;">● Servicio no contratado todavía — guardá tus datos igual, se activan cuando lo contrates.</span>'}
+    </p>
+    <input class="input-field text-xs" value="${p.dominio||''}" oninput="S.editData.dominio=this.value" placeholder="Tu dominio (ej. juanperez2026.com)">
+    <input class="input-field text-xs" value="${p.logo_url||''}" oninput="S.editData.logo_url=this.value" placeholder="URL de tu logo/foto (opcional)">
+    <textarea class="input-field text-xs" rows="2" oninput="S.editData.mensaje_publicitario=this.value" placeholder="Mensaje o recordatorio para los votantes (ej. slogan de campaña)">${p.mensaje_publicitario||''}</textarea>
+
+    <button onclick="guardarPerfil()" class="btn-primary"><i class="fas fa-save mr-1"></i>Guardar Cambios</button>
+  </div>`;
+}
+
+// ─── CAMPAÑA PANEL ────────────────────────────────────
+function renderCampana() {
+  const tabs = [
+    {id:'resumen', icon:'fa-chart-pie', label:'Resumen'},
+    {id:'mapa', icon:'fa-map', label:'Mapa'},
+    {id:'dirigentes', icon:'fa-users', label:'Dirigentes'},
+    {id:'solicitudes', icon:'fa-clipboard-list', label:'Solicitudes'},
+    {id:'transporte', icon:'fa-car', label:'Transporte'},
+  ];
+  return `
+  <div class="min-h-screen">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-4">
+      <div class="flex items-center gap-3">
+        <button onclick="S.screen='dashboard';render()" class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+          <i class="fas fa-arrow-left text-xs"></i>
+        </button>
+        <div>
+          <h1 class="text-sm font-black">Panel de Campaña</h1>
+          <p class="text-[10px] opacity-75 font-bold">${S.perfil?.distrito_nombre||''} · ${S.perfil?.partido_sigla||''}</p>
+        </div>
+        <button onclick="editarPlantillaWhatsappVotacion('partido', S.perfil?.partido_id)" class="ml-auto rounded-lg bg-white/15 px-3 py-2 text-[10px] font-bold hover:bg-white/25">
+          <i class="fab fa-whatsapp mr-1"></i>Mensaje
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="px-4 py-3 overflow-x-auto flex gap-2 bg-white border-b border-slate-100">
+      ${tabs.map(t => `
+      <button onclick="cargarCampana('${t.id}')" class="flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black whitespace-nowrap transition-all ${
+        S.camTab===t.id?'bg-primary-600 text-white shadow':'bg-slate-100 text-slate-500'}">
+        <i class="fas ${t.icon}"></i>${t.label}
+      </button>`).join('')}
+    </div>
+
+    <!-- Content -->
+    <div class="p-4">
+      ${S.camTab==='resumen' ? renderCamResumen() : ''}
+      ${S.camTab==='mapa' ? renderCamMapa() : ''}
+      ${S.camTab==='dirigentes' ? renderCamDirigentes() : ''}
+      ${S.camTab==='solicitudes' ? renderCamSolicitudes() : ''}
+      ${S.camTab==='transporte' ? renderCamTransporte() : ''}
+    </div>
+  </div>`;
+}
+
+function renderCamResumen() {
+  const st = S.stats || {};
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+        <i class="fas fa-users text-2xl text-primary-500 mb-2"></i>
+        <p class="text-2xl font-black text-slate-800">${st.dirigentes||0}</p>
+        <p class="text-[10px] text-slate-400 font-black uppercase">Dirigentes</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+        <i class="fas fa-check-circle text-2xl text-green-500 mb-2"></i>
+        <p class="text-2xl font-black text-slate-800">${st.votos_confirmados||0}</p>
+        <p class="text-[10px] text-slate-400 font-black uppercase">Votos Confirmados</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+        <i class="fas fa-map-pin text-2xl text-amber-500 mb-2"></i>
+        <p class="text-2xl font-black text-slate-800">${st.unidades_distrito||0}</p>
+        <p class="text-[10px] text-slate-400 font-black uppercase">Seccionales</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+        <i class="fas fa-bus text-2xl text-blue-500 mb-2"></i>
+        <p class="text-2xl font-black text-slate-800">${st.transportes_disponibles||0}</p>
+        <p class="text-[10px] text-slate-400 font-black uppercase">Transportes</p>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-4">
+      <h3 class="text-xs font-black text-slate-400 uppercase mb-2">Posibles Votos</h3>
+      <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
+        <div class="bg-green-500 h-4 rounded-full transition-all" style="width:${st.posibles_votos?Math.round((st.votos_confirmados/st.posibles_votos)*100):0}%"></div>
+      </div>
+      <p class="text-[10px] text-slate-400 font-bold mt-1">${st.votos_confirmados||0} / ${st.posibles_votos||0} confirmados</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm p-4">
+      <h3 class="text-xs font-black text-slate-400 uppercase mb-2">Solicitudes Pendientes</h3>
+      <p class="text-lg font-black ${st.solicitudes_pendientes>0?'text-amber-600':'text-green-600'}">${st.solicitudes_pendientes||0}</p>
+    </div>
+  </div>`;
+}
+
+function renderCamMapa() {
+  return `
+  <div class="fade-in">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xs font-black text-slate-400 uppercase"><i class="fas fa-map-marker-alt mr-1"></i>Escuelas Electorales</h3>
+      <span class="text-[10px] font-black text-slate-400">${S.escuelas.length} encontradas</span>
+    </div>
+    <div id="mapaEscuelas" class="bg-slate-200 rounded-2xl"></div>
+    ${S.escuelas.length===0 ? '<p class="text-center text-xs text-slate-400 font-bold mt-4">No hay escuelas registradas en este distrito</p>' : ''}
+  </div>`;
+}
+
+function renderCamDirigentes() {
+  const dirs = S.dirigentes || [];
+  return `
+  <div class="space-y-3 fade-in">
+    <div class="flex items-center justify-between">
+      <h3 class="text-xs font-black text-slate-400 uppercase"><i class="fas fa-users mr-1"></i>Dirigentes</h3>
+      <span class="text-[10px] font-black text-slate-400">${dirs.length} total</span>
+    </div>
+    ${dirs.length===0 ? `
+    <div class="bg-white rounded-2xl p-8 text-center">
+      <i class="fas fa-users text-3xl text-slate-200 mb-2"></i>
+      <p class="text-xs text-slate-400 font-bold">Sin dirigentes asignados</p>
+    </div>` :
+    dirs.map(d => `
+    <div class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 fade-in">
+      <div class="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-600">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-black text-slate-800">${d.nombre||'N/D'}</p>
+        <p class="text-[10px] text-slate-400 font-bold">CI: ${d.cedula||'N/D'} · ${d.tipo||'dirigente'}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-black text-green-600">${d.total_confirmados||0}</p>
+        <p class="text-[9px] text-slate-400 font-bold">votos</p>
+      </div>
+      <button onclick="desvincularDirigente('${d.cedula}', '${(d.nombre||'').replace(/'/g,"\\'")}')"
+        class="px-2 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-[10px] font-black" title="Desvincular de tu campaña (no elimina su cuenta)">
+        <i class="fas fa-user-slash"></i>
+      </button>
+    </div>`).join('')}
+  </div>`;
+}
+
+async function desvincularDirigente(cedulaDir, nombreDir) {
+  if (!confirm(`¿Desvincular a ${nombreDir} de tu campaña?\n\nSu cuenta NO se elimina: podrá seguir usando la plataforma, solo deja de figurar en tu panel.`)) return;
+  try {
+    const r = await apiPost({ action: 'desvincular_dirigente_cliente', cedula: S.usuario.cedula, dirigente_cedula: cedulaDir });
+    if (r.success && r.accion === 'desvinculado') {
+      showToast('Dirigente desvinculado', 'success');
+      const d = await apiGet({ action: 'mis_dirigentes', cedula: S.usuario.cedula });
+      if (d.success) S.dirigentes = d.dirigentes || [];
+      await cargarDashboard(S.usuario.cedula);
+      render();
+    } else if (r.success && (r.accion === 'pendiente_aceptacion' || r.accion === 'ya_pendiente')) {
+      alert(r.mensaje || 'Se le pidió aceptación al dirigente. Sigue figurando en tu panel hasta que responda.');
+    } else { showToast(r.error || 'Error', 'error'); }
+  } catch (e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+function renderCamSolicitudes() {
+  const sols = S.solicitudes || [];
+  const pend = sols.filter(s=>s.estado==='pendiente');
+  const aut = sols.filter(s=>s.estado==='autorizado');
+  return `
+  <div class="space-y-3 fade-in">
+    <h3 class="text-xs font-black text-slate-400 uppercase"><i class="fas fa-clipboard-list mr-1"></i>Solicitudes de Recogida</h3>
+    ${sols.length===0 ? `
+    <div class="bg-white rounded-2xl p-8 text-center">
+      <i class="fas fa-clipboard text-3xl text-slate-200 mb-2"></i>
+      <p class="text-xs text-slate-400 font-bold">Sin solicitudes</p>
+    </div>` : ''}
+    ${pend.length>0 ? pend.map(s => `
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-amber-400 fade-in">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-black text-slate-800">${s.votante_nombre||'N/D'}</p>
+          <p class="text-[10px] text-slate-400 font-bold">Dir: ${s.dirigente_nombre||'N/D'}</p>
+          <p class="text-[10px] text-slate-400 mt-1"><i class="fas fa-clock mr-1"></i>${s.hora_recogida||''} · <i class="fas fa-map-marker-alt mr-1"></i>${s.ubicacion||''}</p>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-600">Pendiente</span>
+      </div>
+    </div>`).join('') : ''}
+    ${aut.length>0 ? aut.map(s => `
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-400 fade-in">
+      <p class="text-sm font-black text-slate-800">${s.votante_nombre||'N/D'}</p>
+      <p class="text-[10px] text-slate-400 font-bold">Dir: ${s.dirigente_nombre||'N/D'}</p>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-600 mt-2 inline-block">Autorizada</span>
+    </div>`).join('') : ''}
+  </div>`;
+}
+
+function renderCamTransporte() {
+  const trans = S.transportes || [];
+  return `
+  <div class="space-y-3 fade-in">
+    <h3 class="text-xs font-black text-slate-400 uppercase"><i class="fas fa-car mr-1"></i>Transporte</h3>
+    ${trans.length===0 ? `
+    <div class="bg-white rounded-2xl p-8 text-center">
+      <i class="fas fa-car text-3xl text-slate-200 mb-2"></i>
+      <p class="text-xs text-slate-400 font-bold">Sin vehículos registrados</p>
+    </div>` :
+    trans.map(t => `
+    <div class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 fade-in">
+      <div class="w-10 h-10 rounded-xl ${t.estado==='disponible'?'bg-green-100 text-green-500':'bg-slate-100 text-slate-400'} flex items-center justify-center">
+        <i class="fas fa-car"></i>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-black text-slate-800">${t.nombre}</p>
+        <p class="text-[10px] text-slate-400 font-bold">${t.placa||'S/P'} · ${t.capacidad||4} pasajeros</p>
+      </div>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${t.estado==='disponible'?'bg-green-100 text-green-600':'bg-slate-100 text-slate-500'}">${t.estado}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ─── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const u = sessionStorage.getItem('AUTH_USER_KEY') || sessionStorage.getItem('dia_user') || sessionStorage.getItem(AUTH_SHARED_KEY);
+  if (u) {
+    try {
+      S.usuario = JSON.parse(u);
+      // Refresca la sesión compartida para que se inyecte la barra de pestañas de rol.
+      try { sessionStorage.setItem(AUTH_SHARED_KEY, JSON.stringify(S.usuario)); } catch(e) {}
+      cargarDatosCliente(S.usuario.cedula);
+    } catch(e) { render(); }
+  } else {
+    S.cargando = false;
+    render();
+  }
+  if (!S.usuario) render();
+});
+</script>
+</body>
+</html>

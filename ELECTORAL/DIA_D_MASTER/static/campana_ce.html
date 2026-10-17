@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaña Centro de Estudiantes 2026</title>
+    <script src="vendor/tailwind.js"></script>
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="vendor/chart.umd.js"></script>
+    <script src="auth.js"></script>
+    <script src="party_theme.js"></script>
+    <style>
+        .cand-card { transition: all 0.3s ease; }
+        .cand-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+        .progress-bar { transition: width 1s ease; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-pendiente { background: #fef3c7; color: #92400e; }
+        .badge-completado { background: #d1fae5; color: #065f46; }
+        .badge-en_progreso { background: #dbeafe; color: #1e40af; }
+        .tab-btn { padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: var(--party-color); color: white; }
+        .tab-btn:not(.active):hover { background: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app" class="max-w-6xl mx-auto p-4">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">🗳️ Campaña Centro de Estudiantes 2026</h1>
+                    <p class="text-gray-500 mt-1">Simulación electoral completa con datos del padrón real</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500">Fecha de elección</div>
+                    <div class="text-lg font-bold text-gray-800">15 de Noviembre, 2026</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 flex-wrap">
+            <button class="tab-btn active" onclick="showTab('resumen')" data-tab="resumen">📊 Resumen</button>
+            <button class="tab-btn" onclick="showTab('candidatos')" data-tab="candidatos">👤 Candidatos</button>
+            <button class="tab-btn" onclick="showTab('miembros')" data-tab="miembros">👥 Miembros</button>
+            <button class="tab-btn" onclick="showTab('logistica')" data-tab="logistica">📋 Logística</button>
+            <button class="tab-btn" onclick="showTab('votos')" data-tab="votos">🗳️ Votos</button>
+            <button class="tab-btn" onclick="showTab('pcs')" data-tab="pcs">🏢 PCs</button>
+            <button class="tab-btn" onclick="showTab('conductores')" data-tab="conductores">🚐 Conductores</button>
+        </div>
+
+        <!-- Contenido -->
+        <div id="content">
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-gray-400"></i>
+                <p class="text-gray-500 mt-4">Cargando datos de la campaña...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let campanaData = null;
+        let currentTab = 'resumen';
+
+        async function loadCampana() {
+            try {
+                const r = await fetch('/api?action=ce_campana');
+                campanaData = await r.json();
+                if (campanaData.success) {
+                    renderTab(currentTab);
+                } else {
+                    document.getElementById('content').innerHTML = '<div class="text-center py-12 text-red-500">Error: ' + campanaData.error + '</div>';
+                }
+            } catch(e) {
+                document.getElementById('content').innerHTML = '<div class="text-center py-12 text-red-500">Error de conexión</div>';
+            }
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            renderTab(tab);
+        }
+
+        function renderTab(tab) {
+            const el = document.getElementById('content');
+            if (!campanaData) return;
+
+            switch(tab) {
+                case 'resumen': renderResumen(el); break;
+                case 'candidatos': renderCandidatos(el); break;
+                case 'miembros': renderMiembros(el); break;
+                case 'logistica': renderLogistica(el); break;
+                case 'votos': renderVotos(el); break;
+                case 'pcs': renderPCs(el); break;
+                case 'conductores': renderConductores(el); break;
+            }
+        }
+
+        function renderResumen(el) {
+            const total = campanaData.total_votos;
+            const c1 = campanaData.candidatos[0];
+            const c2 = campanaData.candidatos[1];
+            const p1 = total > 0 ? Math.round(c1.votos * 100 / total) : 0;
+            const p2 = total > 0 ? Math.round(c2.votos * 100 / total) : 0;
+
+            el.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    ${campanaData.candidatos.map((c, i) => `
+                        <div class="cand-card bg-white rounded-2xl shadow-lg p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style="background: ${i === 0 ? '#3b82f6' : '#ef4444'}">
+                                    ${c.nombre[0]}${c.apellido[0]}
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">${c.nombre} ${c.apellido}</h3>
+                                    <p class="text-gray-500">${c.lista}</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Votos</span>
+                                    <span class="font-bold">${c.votos} (${i === 0 ? p1 : p2}%)</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                    <div class="progress-bar h-3 rounded-full" style="width: ${i === 0 ? p1 : p2}%; background: ${i === 0 ? '#3b82f6' : '#ef4444'}"></div>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-3">${c.propuesta}</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-600">${campanaData.total_votos}</div>
+                        <div class="text-sm text-gray-500">Votos totales</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="text-3xl font-bold text-green-600">${campanaData.miembros.length}</div>
+                        <div class="text-sm text-gray-500">Miembros</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="text-3xl font-bold text-purple-600">${campanaData.logistica.length}</div>
+                        <div class="text-sm text-gray-500">Tareas logísticas</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-4 text-center">
+                        <div class="text-3xl font-bold text-orange-600">6</div>
+                        <div class="text-sm text-gray-500">PCs</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCandidatos(el) {
+            el.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    ${campanaData.candidatos.map((c, i) => `
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold" style="background: ${i === 0 ? '#3b82f6' : '#ef4444'}">
+                                    ${c.nombre[0]}${c.apellido[0]}
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-800">${c.nombre} ${c.apellido}</h3>
+                                    <span class="badge" style="background: ${i === 0 ? '#dbeafe' : '#fee2e2'}; color: ${i === 0 ? '#1e40af' : '#991b1b'}">${c.lista}</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                <h4 class="font-semibold text-gray-700 mb-2">📜 Propuesta</h4>
+                                <p class="text-gray-600 text-sm">${c.propuesta}</p>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold" style="color: ${i === 0 ? '#3b82f6' : '#ef4444'}">${c.votos}</div>
+                                    <div class="text-xs text-gray-500">VOTOS</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold text-gray-700">${campanaData.miembros.filter(m => m.candidato_id === c.id).length}</div>
+                                    <div class="text-xs text-gray-500">MIEMBROS</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderMiembros(el) {
+            el.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">👥 Miembros de Campaña</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-3 px-2 text-sm text-gray-500">Nombre</th>
+                                    <th class="text-left py-3 px-2 text-sm text-gray-500">Rol</th>
+                                    <th class="text-left py-3 px-2 text-sm text-gray-500">Curso</th>
+                                    <th class="text-left py-3 px-2 text-sm text-gray-500">Candidato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${campanaData.miembros.map(m => `
+                                    <tr class="border-b hover:bg-gray-50">
+                                        <td class="py-3 px-2 font-medium">${m.nombre} ${m.apellido}</td>
+                                        <td class="py-3 px-2"><span class="badge badge-en_progreso">${m.rol}</span></td>
+                                        <td class="py-3 px-2 text-gray-600">${m.curso}</td>
+                                        <td class="py-3 px-2 text-gray-600">${m.candidato}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLogistica(el) {
+            const tipos = {};
+            campanaData.logistica.forEach(l => {
+                if (!tipos[l.tipo]) tipos[l.tipo] = [];
+                tipos[l.tipo].push(l);
+            });
+
+            el.innerHTML = `
+                <div class="space-y-4">
+                    ${Object.entries(tipos).map(([tipo, items]) => `
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-3">${tipo}</h3>
+                            <div class="space-y-2">
+                                ${items.map(l => `
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <div class="font-medium text-gray-800">${l.descripcion}</div>
+                                            <div class="text-sm text-gray-500">Responsable: ${l.responsable}</div>
+                                        </div>
+                                        <span class="badge badge-${l.estado}">${l.estado}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderVotos(el) {
+            const total = campanaData.total_votos;
+            el.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">🗳️ Resultados de la Simulación</h3>
+                    <div class="space-y-4">
+                        ${campanaData.candidatos.map((c, i) => {
+                            const pct = total > 0 ? Math.round(c.votos * 100 / total) : 0;
+                            return `
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">${c.nombre} ${c.apellido}</span>
+                                        <span class="font-bold">${c.votos} votos (${pct}%)</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-4">
+                                        <div class="progress-bar h-4 rounded-full" style="width: ${pct}%; background: ${i === 0 ? '#3b82f6' : '#ef4444'}"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="mt-6 p-4 bg-blue-50 rounded-xl">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-600">${total}</div>
+                            <div class="text-sm text-gray-500">Votos totales simulados</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPCs(el) {
+            el.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">🏢 Puestos de Comando</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${[1,2,3].map(i => `
+                            <div class="border rounded-xl p-4">
+                                <h4 class="font-bold text-gray-800 mb-2">PC ${i}</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between"><span class="text-gray-500">Dirigentes:</span><span class="font-medium">3</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Conductores:</span><span class="font-medium">2</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">Rutas:</span><span class="font-medium">1</span></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderConductores(el) {
+            el.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">🚐 Conductores</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${[1,2,3,4,5,6].map(i => `
+                            <div class="border rounded-xl p-4 flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Conductor ${i}</div>
+                                    <div class="text-sm text-gray-500">Vehículo: TEST${i}</div>
+                                    <div class="text-sm text-gray-500">Estado: Disponible</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Cargar al inicio
+        loadCampana();
+    </script>
+</body>
+</html>

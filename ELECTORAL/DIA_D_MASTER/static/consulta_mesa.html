@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DIA D MASTER - Consulta tu Mesa de Votacion</title>
+  <meta property="og:title" content="DIA D MASTER - Dónde Votas">
+  <meta property="og:description" content="Consulta tu mesa de votacion ingresando tu cedula">
+  <meta property="og:image" content="data:image/svg+xml,...">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#09090b">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script src="vendor/tailwind.js"></script>
+  <link href="vendor/fontawesome/css/all.min.css" rel="stylesheet">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+    }
+    .focus-ring:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.28);
+      border-color: #c5a059;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.96); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+    .anim-in { animation: fadeSlideIn 0.35s ease-out; }
+    .anim-pop { animation: popIn 0.28s ease-out; }
+    .header-gradient {
+      background: linear-gradient(180deg, #09090b 0%, #0f172a 100%);
+    }
+    .compact-card {
+      border-radius: 24px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+    .compact-section { border-radius: 18px; }
+    .compact-stat {
+      border-radius: 18px;
+      min-height: 84px;
+    }
+    .input-number::-webkit-inner-spin-button,
+    .input-number::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .input-number { -moz-appearance: textfield; }
+    @media (max-width: 480px) {
+      .compact-card { border-radius: 22px; }
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 10000;
+      width: 290px;
+      max-width: 80vw;
+      background: white;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-header {
+      background: linear-gradient(180deg, #09090b 0%, #0f172a 100%);
+      padding: 1.5rem 1.25rem;
+      color: white;
+    }
+    .sidebar-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.2);
+    }
+    .sidebar-close:hover { background: rgba(255,255,255,0.3); }
+    .sidebar-section { padding: 0.75rem 0; }
+    .sidebar-section-title {
+      padding: 0.5rem 1.25rem 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      text-decoration: none;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-link:hover {
+      background: #f1f5f9;
+      color: var(--party-color);
+      border-left-color: var(--party-color);
+    }
+    .sidebar-link i {
+      width: 1.25rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .sidebar-link:hover i { color: var(--party-color); }
+    .sidebar-link.active {
+      border-left-color: var(--party-color);
+      background: #fef2f2;
+      color: var(--party-color);
+    }
+    .sidebar-link.active i { color: var(--party-color); }
+    .sidebar-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 0.25rem 1.25rem;
+    }
+  </style>
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body>
+
+  <header id="headerMarca" class="header-gradient text-white shadow-2xl shadow-slate-900/20">
+    <div class="px-4 py-3.5 flex items-center gap-3 max-w-lg mx-auto">
+      <button onclick="toggleMenu()" class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0" aria-label="Menu">
+        <i class="fas fa-bars text-white"></i>
+      </button>
+      <div id="logoMarca" class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-landmark text-white"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h1 id="tituloMarca" class="text-base font-extrabold tracking-tight truncate">DIA D MASTER</h1>
+        <p id="subtituloMarca" class="text-[10px] text-slate-400 font-semibold tracking-wide">Sistema Electoral</p>
+      </div>
+      <span class="text-[9px] bg-white/15 px-2.5 py-1.5 rounded-full font-bold tracking-wider flex-shrink-0">PY</span>
+    </div>
+  </header>
+
+  <div id="bannerPublicitario" class="max-w-lg mx-auto px-4" style="display:none;"></div>
+
+  <main class="px-4 pb-8" style="margin-top: -10px;">
+    <div class="max-w-lg mx-auto">
+      <div class="bg-white compact-card border border-slate-100 px-5 py-5 anim-in">
+        <div class="text-center mb-5">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-party-500 to-party-700 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-party-200">
+            <i class="fas fa-search-location"></i>
+          </div>
+          <h2 class="text-xl font-black text-slate-900 tracking-tight">Donde Votas</h2>
+          <p class="text-sm text-slate-400 mt-1 leading-relaxed">
+            Consulta mesa y orden con tu cedula
+          </p>
+        </div>
+
+        <div class="mb-2">
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <i class="fas fa-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300"></i>
+              <input id="cedulaInput" type="text"
+                     placeholder="Nro. de cedula"
+                     autocomplete="off"
+                     inputmode="numeric"
+                     class="input-number w-full pl-10 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-[#c5a059] focus:ring-0 font-bold text-slate-900 text-base placeholder-slate-300 transition-all bg-slate-50 focus:bg-white"
+                     oninput="buscar(this.value)">
+            </div>
+            <button onclick="buscar(document.getElementById('cedulaInput').value)"
+                    class="px-4 py-3.5 bg-gradient-to-br from-party-600 to-party-700 hover:from-party-700 hover:to-party-800 text-white rounded-2xl font-bold transition-all shadow-lg shadow-party-200 active:scale-95">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <p class="text-xs text-slate-400 mt-2 ml-1">
+            <i class="fas fa-info-circle mr-1 text-slate-300"></i>Solo numeros, sin puntos ni guiones
+          </p>
+        </div>
+
+        <div class="mt-3 flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 pt-3">
+          <span id="statusDot" class="w-2 h-2 rounded-full bg-green-400" style="animation: pulse-dot 2s infinite;"></span>
+          <span id="statusText" class="font-medium">Conectando con el padron...</span>
+        </div>
+      </div>
+
+      <div id="resultado" class="mt-3"></div>
+
+      <div class="text-center mt-5">
+        <a id="whatsappShareBtn"
+           href="https://wa.me/?text=SECCIONAL%2040%20-%20Consulta%20tu%20mesa%20de%20votacion%0A%0AIngresa%20tu%20cedula%20y%20conoce%20donde%20votas%20al%20instante%3A%0Ahttps%3A%2F%2Flocalhost%3A8000%2Fconsulta_mesa.html"
+           target="_blank"
+           class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#20bd59] text-white font-bold rounded-2xl transition-all shadow-lg shadow-green-200 active:scale-95 text-sm">
+          <i class="fab fa-whatsapp"></i>
+          Compartir por WhatsApp
+        </a>
+      </div>
+
+      <div class="text-center mt-5 text-xs text-slate-400 leading-relaxed">
+        <i class="fas fa-database mr-1"></i>
+        <span id="statusFull">Padron electoral habilitado</span>
+        <span class="mx-1.5">.</span>
+        DIA D MASTER
+      </div>
+    </div>
+  </main>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="sidebar-close" onclick="toggleMenu()"><i class="fas fa-times"></i></button>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+          <i class="fas fa-landmark text-white text-lg"></i>
+        </div>
+        <div>
+          <p class="text-sm font-extrabold">DIA D MASTER</p>
+          <p class="text-[10px] text-slate-400 font-semibold">Sistema Electoral</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title"><i class="fas fa-th-large mr-1"></i>General</div>
+      <a class="sidebar-link" href="/"><i class="fas fa-chart-pie"></i> Dashboard Principal</a>
+      <a class="sidebar-link" href="/admin_general"><i class="fas fa-shield-alt"></i> Admin General</a>
+      <a class="sidebar-link active" href="/consulta_mesa.html"><i class="fas fa-search-location"></i> Consultar Mesa</a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title"><i class="fas fa-users mr-1"></i>Operadores</div>
+      <a class="sidebar-link" href="/dirigente.html"><i class="fas fa-user-tie"></i> Dirigente</a>
+      <a class="sidebar-link" href="/transporte.html"><i class="fas fa-truck"></i> Transporte</a>
+      <a class="sidebar-link" href="/conductor.html"><i class="fas fa-truck-fast"></i> Conductor</a>
+      <a class="sidebar-link" href="/veedores.html"><i class="fas fa-eye"></i> Veedores</a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title"><i class="fas fa-file-lines mr-1"></i>Electoral</div>
+      <a class="sidebar-link" href="/registro_qr.html"><i class="fas fa-qrcode"></i> Registro QR</a>
+      <a class="sidebar-link" href="/escrutinio.html"><i class="fas fa-vote-yea"></i> Escrutinio</a>
+      <a class="sidebar-link" href="/escrutinio_intendentes.html"><i class="fas fa-city"></i> Escrutinio Intendentes</a>
+      <a class="sidebar-link" href="/votacion.html"><i class="fas fa-check-to-slot"></i> Votacion</a>
+      <a class="sidebar-link" href="/No_voto.html"><i class="fas fa-ban"></i> No Voto</a>
+      <a class="sidebar-link" href="/padron_unificado.html"><i class="fas fa-book"></i> Padron Unificado</a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title"><i class="fas fa-cog mr-1"></i>Administracion</div>
+      <a class="sidebar-link" href="/roles.html"><i class="fas fa-user-shield"></i> Roles y Accesos</a>
+      <a class="sidebar-link" href="/asistencia.html"><i class="fas fa-clipboard-list"></i> Asistencia</a>
+      <a class="sidebar-link" href="/mesas.html"><i class="fas fa-table-cells"></i> Mesas</a>
+      <a class="sidebar-link" href="/anomalias.html"><i class="fas fa-triangle-exclamation"></i> Anomalias</a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title"><i class="fas fa-info-circle mr-1"></i>Informacion</div>
+      <div class="px-5 py-3 text-[10px] text-slate-400 leading-relaxed">
+        <p class="font-semibold">DIA D MASTER</p>
+        <p>Sistema de gestion electoral</p>
+        <p class="mt-1">&copy; 2026</p>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    const VERSION = 2;
+    const API_URL = '/api';
+    let timeoutId = null;
+    let ultimoResultado = null;
+
+    function toggleMenu() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('open');
+      document.body.style.overflow = document.getElementById('sidebar').classList.contains('open') ? 'hidden' : '';
+    }
+
+    // ─── MARCA DEL CANDIDATO (si el dominio actual está vinculado a un cliente) ───
+    const TEMAS_COLOR_FALLBACK = {
+      anr: 'var(--party-color)', plra: '#2563eb', yo_creo: '#059669'
+    };
+
+    function degradadoDesdeHex(hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return null;
+      const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      const oscuro = `rgb(${Math.round(r*0.6)}, ${Math.round(g*0.6)}, ${Math.round(b*0.6)})`;
+      return `linear-gradient(180deg, ${oscuro} 0%, ${hex} 100%)`;
+    }
+
+    async function aplicarMarcaPorDominio() {
+      try {
+        const host = window.location.hostname;
+        const r = await fetch(API_URL + '?action=marca_por_dominio&dominio=' + encodeURIComponent(host));
+        const d = await r.json();
+        if (!d.success || !d.marca) return;
+        const m = d.marca;
+        if (m.candidato_nombre) {
+          document.getElementById('tituloMarca').textContent = m.candidato_nombre;
+          document.title = m.candidato_nombre + (m.candidato_cargo ? ' - ' + m.candidato_cargo : '');
+        }
+        if (m.candidato_cargo) {
+          document.getElementById('subtituloMarca').textContent = m.candidato_cargo;
+        }
+        if (m.logo_url) {
+          document.getElementById('logoMarca').innerHTML =
+            `<img src="${m.logo_url}" alt="${(m.candidato_nombre || '').replace(/"/g, '')}" class="w-full h-full object-cover rounded-xl">`;
+        }
+        const colorHex = m.color_hex || TEMAS_COLOR_FALLBACK[m.css_tema] || '';
+        const gradiente = degradadoDesdeHex(colorHex);
+        if (gradiente) document.getElementById('headerMarca').style.background = gradiente;
+        if (m.mensaje_publicitario) {
+          const banner = document.getElementById('bannerPublicitario');
+          banner.style.display = 'block';
+          banner.innerHTML = `
+            <div class="bg-white compact-card border border-slate-100 px-4 py-3 mt-3 text-center anim-in">
+              <p class="text-sm font-bold text-slate-700">${m.mensaje_publicitario.replace(/</g, '&lt;')}</p>
+            </div>`;
+        }
+      } catch (e) { /* sin marca: se muestra la página genérica */ }
+    }
+
+    async function init() {
+      aplicarMarcaPorDominio();
+      try {
+        const r = await fetch(API_URL + '?action=dashboard&v=' + Date.now());
+        const d = await r.json();
+        const total = (d.total_electores || 0).toLocaleString('es-PY');
+        document.getElementById('statusText').textContent = total + ' electores en padron';
+        document.getElementById('statusFull').textContent = 'Padron: ' + total + ' electores';
+      } catch (e) {
+        document.getElementById('statusText').textContent = 'Padron electoral conectado';
+      }
+    }
+    init();
+
+    function formatearCC(ced) {
+      if (!ced) return ced;
+      return ced.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function renderEstado(html) {
+      document.getElementById('resultado').innerHTML = html;
+    }
+
+    function buscar(valor) {
+      const cedula = valor.replace(/\D/g, '');
+      const resultado = document.getElementById('resultado');
+
+      if (!cedula || cedula.length < 3) {
+        resultado.innerHTML = '';
+        return;
+      }
+
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        renderEstado(`
+          <div class="bg-white compact-card border border-slate-100 p-6 text-center anim-in">
+            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-spinner fa-spin text-slate-400"></i>
+            </div>
+            <p class="font-bold text-slate-500">Buscando elector...</p>
+          </div>
+        `);
+
+        try {
+          const resp = await fetch(API_URL + '?action=buscar_elector&cedula=' + encodeURIComponent(cedula) + '&dominio=' + encodeURIComponent(window.location.hostname));
+          const data = await resp.json();
+
+          if (data.success && data.elector) {
+            const e = data.elector;
+            const badge = e.vinculo === 'ANR2026'
+              ? '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 text-[10px] font-black tracking-wider">ANR 2026</span>'
+              : '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-black tracking-wider">Sin afiliacion</span>';
+
+            ultimoResultado = e;
+            renderEstado(`
+              <div class="bg-white compact-card border border-slate-100 overflow-hidden anim-pop">
+                <div class="${e.vinculo === 'ANR2026' ? 'bg-gradient-to-r from-party-700 to-party-500' : 'bg-gradient-to-r from-slate-500 to-slate-400'} px-5 py-4 text-white">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-check-circle text-white"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <p class="text-[11px] font-bold uppercase tracking-[0.18em] ${e.vinculo === 'ANR2026' ? 'text-amber-400' : 'text-slate-200'}">Elector encontrado</p>
+                        ${badge}
+                      </div>
+                      <h3 class="text-lg font-black leading-tight">${e.nombreCompleto}</h3>
+                      <p class="text-sm ${e.vinculo === 'ANR2026' ? 'text-party-100' : 'text-slate-100'} mt-0.5 font-medium">CC ${formatearCC(e.cedula)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-5 py-4">
+                  <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-party-50 compact-stat py-3 text-center border border-party-100 flex flex-col justify-center">
+                      <p class="text-[10px] font-black uppercase tracking-wider text-party-400">Mesa</p>
+                      <p class="text-2xl font-black text-party-600 mt-1">${e.mesa > 0 ? e.mesa : '-'}</p>
+                    </div>
+                    <div class="bg-slate-50 compact-stat py-3 text-center border border-slate-100 flex flex-col justify-center">
+                      <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Orden</p>
+                      <p class="text-2xl font-black text-slate-900 mt-1">${e.orden > 0 ? e.orden : '-'}</p>
+                    </div>
+                  </div>
+
+                  <div class="bg-slate-50 compact-section p-4 border border-slate-100 space-y-3">
+                    <div class="flex items-start gap-3">
+                      <div class="w-8 h-8 rounded-xl bg-party-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-map-marker-alt text-party-500 text-sm"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Local de Votacion</p>
+                        <p class="font-bold text-slate-900 text-sm leading-snug">${e.local || 'No especificado'}</p>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div class="bg-white rounded-2xl px-3 py-2.5 border border-slate-100">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Departamento</p>
+                        <p class="font-bold text-slate-900 text-sm mt-1">${e.departamento || '-'}</p>
+                      </div>
+                      <div class="bg-white rounded-2xl px-3 py-2.5 border border-slate-100">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Distrito</p>
+                        <p class="font-bold text-slate-900 text-sm mt-1">${e.distrito || '-'}</p>
+                      </div>
+                      <div class="bg-white rounded-2xl px-3 py-2.5 border border-slate-100">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Zona</p>
+                        <p class="font-bold text-slate-900 text-sm mt-1">${e.zona || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button onclick="compartirResultado()"
+                      class="w-full mt-3 py-3 bg-gradient-to-r from-[#25D366] to-[#20bd59] hover:from-[#20bd59] hover:to-[#1da851] text-white font-bold rounded-2xl transition-all shadow-lg shadow-green-200 active:scale-[0.98] text-sm flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp"></i>
+                    Compartir este resultado
+                  </button>
+                </div>
+              </div>
+            `);
+          } else {
+            renderEstado(`
+              <div class="bg-white compact-card border border-slate-100 p-6 text-center anim-pop">
+                <div class="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-user-slash text-amber-500 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-black text-slate-900">Cedula no encontrada</h3>
+                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                  Verifica que el numero ingresado sea correcto<br>
+                  o que la cedula este habilitada para votar.
+                </p>
+                <button onclick="document.getElementById('cedulaInput').value=''; document.getElementById('cedulaInput').focus(); document.getElementById('resultado').innerHTML='';"
+                    class="mt-4 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all text-sm active:scale-95">
+                  <i class="fas fa-redo mr-2"></i>Intentar de nuevo
+                </button>
+              </div>
+            `);
+          }
+        } catch (e) {
+          renderEstado(`
+            <div class="bg-white compact-card border border-slate-100 p-6 text-center anim-pop">
+              <div class="w-14 h-14 rounded-full bg-party-100 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-exclamation-triangle text-party-500 text-xl"></i>
+              </div>
+              <h3 class="text-lg font-black text-slate-900">Error de conexion</h3>
+              <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                No se pudo conectar con el servidor.<br>
+                Verifica tu conexion e intenta de nuevo.
+              </p>
+              <button onclick="buscar(document.getElementById('cedulaInput').value)"
+                  class="mt-4 px-5 py-2.5 bg-party-600 hover:bg-party-700 text-white font-bold rounded-2xl transition-all text-sm active:scale-95">
+                <i class="fas fa-sync-alt mr-2"></i>Reintentar
+              </button>
+            </div>
+          `);
+        }
+      }, 350);
+    }
+
+    function compartirResultado() {
+      const e = ultimoResultado;
+      if (!e) return;
+      const esAnr = e.vinculo === 'ANR2026';
+      const partido = esAnr ? 'Partido Colorado (ANR)' : 'Sin afiliacion partidaria';
+      const ubicacion = [e.departamento, e.distrito, e.zona].filter(Boolean).join(' - ');
+      const txt =
+        '*DIA D MASTER - DATOS DE VOTACION*' +
+        '\n' +
+        '\n' + e.nombreCompleto +
+        '\nCC ' + formatearCC(e.cedula) +
+        '\n' + partido +
+        '\n' +
+        '\nMesa: ' + (e.mesa > 0 ? e.mesa : '-') + '    Orden: ' + (e.orden > 0 ? e.orden : '-') +
+        '\nLocal: ' + (e.local || 'No especificado') +
+        (ubicacion ? '\n' + ubicacion : '') +
+        '\n' +
+        '\nConsulta tu mesa:' +
+        '\nhttps://localhost:8000/consulta_mesa.html';
+      const url = 'https://wa.me/?text=' + encodeURIComponent(txt);
+      window.open(url, '_blank');
+    }
+
+    document.getElementById('cedulaInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') buscar(this.value);
+    });
+  </script>
+</body>
+</html>

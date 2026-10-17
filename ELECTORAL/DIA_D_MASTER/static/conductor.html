@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e293b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>🚗 Conductor</title>
+<script src="config.js"></script>
+    <script src="auth.js"></script>
+<script src="vendor/tailwind.js"></script>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+<script src="vendor/leaflet/leaflet.js"></script>
+<link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+<style>
+* { font-family: 'Inter', sans-serif; }
+html, body { height: 100%; margin: 0; padding: 0; background: #f1f5f9; overflow: hidden; }
+/* Sin tiles externos (app offline): fondo de cuadricula en vez de imagen satelital/calles */
+.leaflet-container { background: repeating-linear-gradient(0deg, #e2e8f0, #e2e8f0 24px, #f1f5f9 25px),
+                                  repeating-linear-gradient(90deg, transparent, transparent 24px, #cbd5e1 25px); }
+.app-container { max-width: 480px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; background: #f1f5f9; position: relative; }
+#mapContainer { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }
+#mapContainer .leaflet-container { width: 100%; height: 100%; }
+.map-header { position: absolute; top: 0; left: 0; right: 0; z-index: 1000; padding: 0.75rem; pointer-events: none; }
+.map-header > * { pointer-events: auto; }
+.bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000; background: white; border-radius: 1.5rem 1.5rem 0 0; box-shadow: 0 -8px 32px rgba(0,0,0,0.12); padding: 1rem 1.25rem 1.5rem; transition: transform 0.3s ease; max-height: 55vh; overflow-y: auto; }
+.bottom-sheet .handle { width: 36px; height: 4px; background: #d1d5db; border-radius: 999px; margin: -0.25rem auto 0.75rem; }
+.card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); padding: 1.25rem; }
+.btn-primary { background: #1e293b; color: white; border-radius: 999px; padding: 0.875rem 1.5rem; font-weight: 700; font-size: 0.9rem; border: none; width: 100%; transition: all 0.2s; cursor: pointer; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.5; }
+.btn-success { background: #059669; color: white; border-radius: 999px; padding: 0.875rem 1.5rem; font-weight: 700; font-size: 0.9rem; border: none; width: 100%; cursor: pointer; }
+.btn-warning { background: #d97706; color: white; border-radius: 999px; padding: 0.875rem 1.5rem; font-weight: 700; font-size: 0.9rem; border: none; width: 100%; cursor: pointer; }
+.btn-outline { background: white; color: #1e293b; border: 2px solid #e2e8f0; border-radius: 999px; padding: 0.875rem 1.5rem; font-weight: 700; font-size: 0.9rem; width: 100%; cursor: pointer; }
+.btn-danger { background: #dc2626; color: white; border-radius: 999px; padding: 0.875rem 1.5rem; font-weight: 700; font-size: 0.9rem; border: none; width: 100%; cursor: pointer; }
+.history-item { border-left: 3px solid #e2e8f0; padding-left: 1rem; margin-bottom: 0.75rem; }
+.history-item.completed { border-left-color: #059669; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.login-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+.login-card { background: white; border-radius: 2rem; padding: 2rem; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+.gps-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+/* ===== BARRA SUPERIOR DE ACCIONES (aislada del control de zoom) ===== */
+.top-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  pointer-events: auto;
+  max-width: calc(100% - 24px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.top-action-bar::-webkit-scrollbar { display: none; }
+
+/* Botones circulares uniformes (nunca se aplastan) */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: rgba(30, 41, 59, 0.85);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+  transition: background-color 0.15s, transform 0.1s;
+  backdrop-filter: blur(6px);
+}
+.icon-btn:hover { background-color: #1e293b; }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn.btn-danger { background-color: rgba(220, 53, 69, 0.92); }
+.icon-btn.btn-danger:hover { background-color: #b02a37; }
+.icon-btn.btn-on { background-color: #059669; }
+
+/* Píldora de estado GPS */
+.badge-gps {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+  background-color: rgba(30, 41, 59, 0.85);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  white-space: nowrap;
+  flex-shrink: 0;
+  backdrop-filter: blur(6px);
+}
+
+/* El control de zoom de Leaflet abajo-derecha: subirlo para no chocar con el bottom sheet */
+.leaflet-bottom.leaflet-right { bottom: 42vh; }
+@media (min-width: 640px) { .leaflet-bottom.leaflet-right { bottom: 12px; } }
+.gps-dot.active { background: #059669; }
+.gps-dot.inactive { background: #ef4444; }
+.badge-pulse { animation: badgePulse 1.5s ease-in-out infinite; }
+@keyframes badgePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.modal-content { background: white; border-radius: 1.5rem; padding: 1.5rem; max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto; }
+.disponible-badge { background: #2e7d32; color: white; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem; }
+.ocupado-badge { background: #c62828; color: white; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem; }
+.pull-indicator { text-align: center; padding: 0.25rem; color: #94a3b8; font-size: 0.6rem; font-weight: 600; transition: opacity 0.2s; }
+.stat-card { background: white; border-radius: 1rem; padding: 0.75rem; text-align: center; border: 1px solid #e2e8f0; }
+.stat-card .num { font-size: 1.5rem; font-weight: 900; color: #1e293b; }
+.stat-card .label { font-size: 0.6rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+.nearby-list { max-height: 150px; overflow-y: auto; }
+.incident-btn { min-height: 42px; }
+</style>
+  <link rel="stylesheet" href="styles.css">
+  <script src="party_theme.js"></script>
+  <link rel="stylesheet" id="tema-cliente" href="tema-cliente.css">
+</head>
+<body>
+
+<div id="connectionBanner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; padding:0.5rem 1rem; text-align:center; font-size:12px; font-weight:700; transition:all 0.3s;"></div>
+<div class="app-container" id="app">
+  <!-- ===== LOGIN SCREEN ===== -->
+  <div id="loginScreen" class="login-screen" style="display:none;">
+    <div class="login-card">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-truck text-white text-2xl"></i>
+        </div>
+        <h1 class="text-2xl font-black text-slate-900">Conductor</h1>
+        <p class="text-xs text-slate-400 font-semibold mt-1">Iniciá sesión con tu cédula</p>
+      </div>
+      <div class="space-y-3">
+        <input id="loginCedula" type="tel" inputmode="numeric" placeholder="Cédula" class="w-full border-2 border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:border-slate-900 focus:outline-none transition-colors">
+        <input id="loginPassword" type="password" placeholder="Contraseña" class="w-full border-2 border-slate-200 rounded-xl p-3.5 text-sm font-semibold focus:border-slate-900 focus:outline-none transition-colors">
+        <button onclick="handleLogin()" class="btn-primary flex items-center justify-center gap-2">
+          <i class="fas fa-right-to-bracket"></i> Entrar
+        </button>
+        <p id="loginError" class="text-red-500 text-xs font-bold text-center hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div id="mainApp" style="display:none; height:100vh; position:relative;">
+
+    <!-- MAPA -->
+    <div id="mapContainer"></div>
+
+    <!-- HEADER -->
+    <div class="map-header">
+      <div class="top-action-bar" id="topActionBar">
+        <!-- Disponibilidad -->
+        <button onclick="toggleDisponibilidad()" id="dispBtn" class="icon-btn" title="Cambiar estado">
+          <i id="dispIcon" class="fas fa-circle text-sm" style="color:#34d399;"></i>
+        </button>
+        <!-- Push: solo nuevas asignaciones -->
+        <button onclick="togglePushSub()" id="pushBtn" class="icon-btn" aria-label="Alertas de nuevas asignaciones" title="Alertas de nuevas asignaciones">
+          <i class="far fa-bell text-sm"></i>
+        </button>
+        <!-- Herramientas -->
+        <button onclick="mostrarHerramientas()" class="icon-btn" aria-label="Herramientas del conductor" title="Herramientas">
+          <i class="fas fa-tools text-sm"></i>
+        </button>
+        <!-- SOS -->
+        <button onclick="activarSOS()" class="icon-btn btn-danger" aria-label="Enviar SOS a central" title="SOS · alerta con ubicación">
+          <i class="fas fa-ambulance text-sm"></i>
+        </button>
+        <!-- Indicador GPS con precisión -->
+        <div id="gpsIndicator" class="badge-gps" style="display:none;">
+          <span class="gps-dot active" id="gpsDot"></span>
+          <span id="gpsText">GPS</span>
+          <span id="gpsPrecision" class="text-slate-300"></span>
+        </div>
+        <!-- Badge nuevos viajes -->
+        <div id="badgeContainer" style="display:none;">
+          <button onclick="recargar()" class="icon-btn btn-danger" style="animation:badgePulse 1.5s ease-in-out infinite;">
+            <i class="fas fa-exclamation text-sm"></i>
+          </button>
+        </div>
+        <!-- Recargar -->
+        <button onclick="recargar()" class="icon-btn" title="Actualizar datos">
+          <i class="fas fa-sync-alt text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- BOTTOM SHEET -->
+    <div class="bottom-sheet" id="bottomSheet">
+      <div class="handle"></div>
+
+      <!-- Tarjeta conductor -->
+      <div class="flex items-center gap-2 mb-3 bg-slate-900 text-white rounded-xl px-3 py-2">
+        <i class="fas fa-truck text-lg"></i>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-black truncate" id="driverName">—</p>
+          <p class="text-[9px] text-slate-400 font-semibold truncate" id="driverVehicle">—</p>
+        </div>
+        <span id="dispStatus" class="disponible-badge"><i class="fas fa-circle text-[6px]"></i> Disponible</span>
+      </div>
+
+      <!-- Pull to refresh indicator -->
+      <div class="pull-indicator" id="pullIndicator" style="display:none;">↓ Tirá para actualizar</div>
+
+      <!-- TRASLADO IDA Y VUELTA (tramos busqueda/ida/vuelta — sistema nuevo, separado
+           del "viaje actual" de un solo tramo de mas abajo) -->
+      <div id="misTramosNuevos" style="display:none;" class="mb-3 space-y-2"></div>
+      <div id="vueltasDisponiblesBox" style="display:none;" class="mb-3"></div>
+
+      <!-- VIAJE ACTUAL -->
+      <div id="viajeActual" style="display:none;">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full pulse"></span>
+            <span class="text-sm font-black text-slate-800 uppercase tracking-tight">Viaje actual</span>
+            <span id="horaActual" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full"></span>
+          </div>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+            <i class="fas fa-circle text-[6px] mr-1 align-middle"></i> En curso
+          </span>
+        </div>
+
+        <!-- Votante info -->
+        <div id="votanteActualCard" class="mb-2 bg-violet-50 border border-violet-200 rounded-xl p-3" style="display:none;">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 bg-violet-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <div>
+                <p class="text-xs font-black text-violet-900" id="votanteActualNombre">—</p>
+                <p class="text-[9px] text-violet-500 font-semibold font-mono" id="votanteActualCedula">—</p>
+              </div>
+            </div>
+            <div class="flex gap-1">
+              <a id="whatsappActualLink" href="#" target="_blank" class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white hover:bg-green-600 transition" title="WhatsApp">
+                <i class="fab fa-whatsapp text-sm"></i>
+              </a>
+              <a id="callActualLink" href="#" class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition" title="Llamar">
+                <i class="fas fa-phone text-xs"></i>
+              </a>
+            </div>
+          </div>
+          <div class="mt-1.5 text-[10px] text-violet-600 font-semibold flex gap-3">
+            <span><i class="far fa-clock mr-0.5"></i><span id="votanteActualHora">—</span></span>
+            <span class="truncate"><i class="fas fa-location-dot mr-0.5"></i><span id="votanteActualUbic">—</span></span>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 bg-blue-50 rounded-xl p-3">
+            <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i class="fas fa-location-dot text-white text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] text-blue-600 font-bold uppercase tracking-wider">Recoger en</p>
+              <p class="text-sm font-bold text-slate-800 truncate" id="actualOrigen">—</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-amber-50 rounded-xl p-3">
+            <div class="w-9 h-9 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i class="fas fa-flag-checkered text-white text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">Llevar a</p>
+              <p class="text-sm font-bold text-slate-800 truncate" id="actualDestino">—</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="abrirNavegacion('waze')" class="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl text-white" style="background:#33CCFF" title="Abrir en Waze">
+              <i class="fas fa-location-arrow"></i>
+            </button>
+            <button onclick="abrirNavegacion('gmaps')" class="btn-outline flex items-center justify-center gap-2 text-sm flex-1">
+              <i class="fas fa-map-signs"></i> Navegar
+            </button>
+            <button onclick="mostrarModalCompletar()" class="btn-success flex items-center justify-center gap-2 text-sm flex-1">
+              <i class="fas fa-check-circle"></i> Completar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRÓXIMO VIAJE -->
+      <div id="proximoViaje" style="display:none;">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-amber-400 rounded-full"></span>
+            <span class="text-sm font-black text-slate-800 uppercase tracking-tight">Próximo viaje</span>
+            <span id="horaProximo" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full"></span>
+          </div>
+          <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
+            <i class="fas fa-clock mr-1"></i> Pendiente
+          </span>
+        </div>
+
+        <!-- Votante info -->
+        <div id="votanteProximoCard" class="mb-2 bg-violet-50 border border-violet-200 rounded-xl p-3" style="display:none;">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-violet-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user text-white text-xs"></i>
+            </div>
+            <div>
+              <p class="text-xs font-black text-violet-900" id="votanteProximoNombre">—</p>
+              <p class="text-[9px] text-violet-500 font-semibold font-mono" id="votanteProximoCedula">—</p>
+            </div>
+          </div>
+          <div class="mt-1 text-[10px] text-violet-600 font-semibold flex gap-3">
+            <span><i class="far fa-clock mr-0.5"></i><span id="votanteProximoHora">—</span></span>
+            <span class="truncate"><i class="fas fa-location-dot mr-0.5"></i><span id="votanteProximoUbic">—</span></span>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 bg-blue-50 rounded-xl p-3">
+            <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i class="fas fa-location-dot text-white text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] text-blue-600 font-bold uppercase tracking-wider">Recoger en</p>
+              <p class="text-sm font-bold text-slate-800 truncate" id="proximoOrigen">—</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-amber-50 rounded-xl p-3">
+            <div class="w-9 h-9 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i class="fas fa-flag-checkered text-white text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">Llevar a</p>
+              <p class="text-sm font-bold text-slate-800 truncate" id="proximoDestino">—</p>
+            </div>
+          </div>
+          <button onclick="iniciarViaje()" class="btn-warning flex items-center justify-center gap-2">
+            <i class="fas fa-play"></i> Iniciar viaje
+          </button>
+        </div>
+      </div>
+
+      <!-- SIN VIAJES -->
+      <div id="sinViajes" class="text-center py-4" style="display:none;">
+        <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="fas fa-check text-slate-400 text-xl"></i>
+        </div>
+        <p class="text-slate-800 font-black text-base">Sin viajes pendientes</p>
+        <p class="text-xs text-slate-500 font-semibold mt-1">Estás disponible. Se revisan asignaciones cada 12 segundos.</p>
+        <div class="mt-3 text-left bg-sky-50 border border-sky-100 rounded-xl p-3">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-[10px] text-sky-800 font-black uppercase"><i class="fas fa-location-crosshairs mr-1"></i>Conductores disponibles cerca</p>
+            <select id="radioCercanos" aria-label="Radio de búsqueda" onchange="cargarConductoresCercanos()" class="text-[10px] border border-sky-200 rounded-lg px-1.5 py-1 bg-white"><option value="2">2 km</option><option value="5" selected>5 km</option><option value="10">10 km</option></select>
+          </div>
+          <div id="conductoresCercanos" class="nearby-list mt-2"><p class="text-[11px] text-slate-500">Esperando ubicación GPS para buscar unidades cercanas.</p></div>
+          <p class="text-[9px] text-slate-400 mt-1">Solo posiciones GPS recibidas en los últimos 10 minutos.</p>
+        </div>
+        <!-- Stats rápidas cuando no hay viajes -->
+        <div id="statsSinViajes" class="mt-3 grid grid-cols-3 gap-1.5" style="display:none;">
+          <div class="stat-card"><div class="num" id="statsHoyNum">0</div><div class="label">Hoy</div></div>
+          <div class="stat-card"><div class="num" id="statsSemanaNum">0</div><div class="label">Semana</div></div>
+          <div class="stat-card"><div class="num" id="statsTotalNum">0</div><div class="label">Total</div></div>
+        </div>
+        <!-- Consejo dinámico -->
+        <div class="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-3 text-left">
+          <p class="text-[10px] text-blue-600 font-bold uppercase mb-1"><i class="fas fa-lightbulb mr-1"></i>Consejo</p>
+          <p class="text-[11px] text-blue-800 font-semibold" id="tipConsejo">Mantené tu ubicación activa para recibir asignaciones más rápido.</p>
+        </div>
+        <!-- Acceso a soporte -->
+        <button onclick="activarSOS()" class="mt-2 w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl text-xs transition-all">
+          <i class="fas fa-headset mr-1"></i>¿Problemas? Contactar soporte
+        </button>
+      </div>
+
+      <!-- HISTORIAL (tabs: Hoy | Ayer | Semana) -->
+      <div id="historialSection" class="mt-2 border-t border-slate-100 pt-2">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-black text-slate-500 uppercase tracking-tight">
+            <i class="fas fa-clock-rotate-left text-slate-300 mr-1.5"></i> Historial
+            <span class="text-[10px] font-bold text-slate-400 ml-1" id="historialCount">0</span>
+          </span>
+          <div class="flex gap-1">
+            <button onclick="switchHistorial('hoy')" id="histabHoy" class="px-2 py-1 text-[9px] font-black rounded-full bg-slate-900 text-white">Hoy</button>
+            <button onclick="switchHistorial('ayer')" id="histabAyer" class="px-2 py-1 text-[9px] font-black rounded-full bg-slate-100 text-slate-400">Ayer</button>
+            <button onclick="switchHistorial('semana')" id="histabSemana" class="px-2 py-1 text-[9px] font-black rounded-full bg-slate-100 text-slate-400">Semana</button>
+          </div>
+        </div>
+        <div id="historialList" style="max-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+          <p class="text-xs text-slate-400 font-semibold text-center py-3">Cargando historial...</p>
+        </div>
+        <div class="text-center mt-1">
+          <span id="historialHoras" class="text-[9px] text-slate-300 font-semibold"></span>
+        </div>
+      </div>
+
+      <!-- Bottom actions -->
+      <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100">
+        <div class="flex items-center gap-2">
+          <button onclick="logout()" class="flex items-center gap-1.5 text-slate-400 hover:text-red-500 transition-colors text-xs font-bold">
+            <i class="fas fa-right-from-bracket"></i> Salir
+          </button>
+          <span id="dispStatus" class="disponible-badge"><i class="fas fa-circle text-[6px]"></i> Disponible</span>
+        </div>
+        <p class="text-[9px] text-slate-300 font-semibold" id="lastUpdate">—</p>
+        <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400">
+          <i class="fas fa-wifi"></i>
+          <span id="connectionStatus">Conectado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPLETAR VIAJE -->
+<div id="modalCompletar" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <h3 class="text-lg font-black text-slate-900 mb-2"><i class="fas fa-check-circle text-emerald-500 mr-2"></i>Completar viaje</h3>
+    <p class="text-xs text-slate-500 font-semibold mb-3">Agregá una observación opcional sobre el viaje:</p>
+    <textarea id="obsCompletar" rows="3" placeholder="Ej: Votante entregado en el colegio, sin incidentes..." class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-medium focus:border-emerald-500 focus:outline-none resize-none"></textarea>
+    <div class="flex gap-2 mt-3">
+      <button onclick="cerrarModalCompletar()" class="btn-outline flex-1 text-sm">Cancelar</button>
+      <button onclick="completarViaje()" class="btn-success flex-1 text-sm flex items-center justify-center gap-2">
+        <i class="fas fa-check"></i> Completar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HERRAMIENTAS -->
+<div id="modalHerramientas" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-black text-slate-900"><i class="fas fa-tools text-slate-600 mr-2"></i>Herramientas</h3>
+      <button onclick="cerrarHerramientas()" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-times text-lg"></i></button>
+    </div>
+
+    <!-- VIAJE -->
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Viaje</p>
+    <div class="space-y-2 mb-4">
+      <button onclick="cerrarHerramientas(); iniciarViaje()" class="w-full flex items-center gap-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-play text-amber-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Iniciar viaje</p><p class="text-[10px] text-slate-500">Arrancar el próximo viaje pendiente</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); mostrarModalCompletar()" class="w-full flex items-center gap-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-check-circle text-emerald-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Completar viaje</p><p class="text-[10px] text-slate-500">Finalizar el viaje en curso</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); abrirNavegacion('gmaps')" class="w-full flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-map-signs text-blue-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Navegar al destino</p><p class="text-[10px] text-slate-500">Abrir ruta en Google Maps</p></div>
+      </button>
+    </div>
+
+    <!-- INCIDENCIAS -->
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Incidencias</p>
+    <div class="space-y-2 mb-4">
+      <button onclick="cerrarHerramientas(); reportarIncidencia('rechazo_traslado')" class="w-full flex items-center gap-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-hand text-amber-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Rechazó traslado</p><p class="text-[10px] text-slate-500">El votante no quiso subir al vehículo</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); reportarIncidencia('elector_ausente')" class="w-full flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-user-slash text-red-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Elector ausente</p><p class="text-[10px] text-slate-500">El votante no se encontraba en el punto</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); abrirModalIncidenciaLibre()" class="w-full flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-triangle-exclamation text-slate-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Otra incidencia</p><p class="text-[10px] text-slate-500">Vehículo, tránsito, seguridad u otra</p></div>
+      </button>
+    </div>
+
+    <!-- COMBUSTIBLE Y GASTOS -->
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Combustible y gastos</p>
+    <div class="space-y-2 mb-4">
+      <button onclick="cerrarHerramientas(); abrirModalGasto()" class="w-full flex items-center gap-3 bg-lime-50 hover:bg-lime-100 border border-lime-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-gas-pump text-lime-600 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Registrar gasto</p><p class="text-[10px] text-slate-500">Cargar combustible o gasto del vehículo</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); verMisGastos()" class="w-full flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-receipt text-slate-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Mis gastos</p><p class="text-[10px] text-slate-500">Ver gastos y rendimiento del vehículo</p></div>
+      </button>
+    </div>
+
+    <!-- COMUNICACIÓN -->
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Comunicación</p>
+    <div class="space-y-2 mb-4">
+      <button onclick="cerrarHerramientas(); contactarVotante('whatsapp')" class="w-full flex items-center gap-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl p-3 text-left transition">
+        <i class="fab fa-whatsapp text-green-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">WhatsApp al votante</p><p class="text-[10px] text-slate-500">Contactar al votante del viaje actual</p></div>
+      </button>
+      <button onclick="cerrarHerramientas(); contactarVotante('llamar')" class="w-full flex items-center gap-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-3 text-left transition">
+        <i class="fas fa-phone text-blue-500 text-lg w-5 text-center"></i>
+        <div><p class="text-sm font-black text-slate-800">Llamar al votante</p><p class="text-[10px] text-slate-500">Marcar el teléfono del votante actual</p></div>
+      </button>
+    </div>
+
+    <!-- EMERGENCIA -->
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Emergencia</p>
+    <button onclick="cerrarHerramientas(); activarSOS()" class="w-full flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white rounded-xl p-3 text-left transition">
+      <i class="fas fa-ambulance text-lg w-5 text-center"></i>
+      <div><p class="text-sm font-black">SOS Emergencia</p><p class="text-[10px] opacity-80">Alertar a la central con tu ubicación</p></div>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL GASTO COMBUSTIBLE -->
+<div id="modalGasto" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <h3 class="text-lg font-black text-slate-900 mb-2"><i class="fas fa-gas-pump text-lime-600 mr-2"></i>Registrar gasto</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="text-[10px] font-black text-slate-400 uppercase">Monto (Gs.)</label>
+        <input id="gastoMonto" type="number" inputmode="numeric" placeholder="Ej: 100000" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-semibold focus:border-lime-500 focus:outline-none mt-1">
+      </div>
+      <div>
+        <label class="text-[10px] font-black text-slate-400 uppercase">Medio</label>
+        <select id="gastoMedio" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-semibold focus:border-lime-500 focus:outline-none mt-1">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] font-black text-slate-400 uppercase">Motivo</label>
+        <input id="gastoMotivo" type="text" placeholder="Ej: Combustible, peaje..." class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-semibold focus:border-lime-500 focus:outline-none mt-1">
+      </div>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button onclick="cerrarModalGasto()" class="btn-outline flex-1 text-sm">Cancelar</button>
+      <button onclick="guardarGasto()" class="btn-success flex-1 text-sm flex items-center justify-center gap-2"><i class="fas fa-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MIS GASTOS -->
+<div id="modalMisGastos" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-black text-slate-900"><i class="fas fa-receipt text-slate-600 mr-2"></i>Mis gastos</h3>
+      <button onclick="cerrarModalGastos()" aria-label="Cerrar" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div id="misGastosContenido"><p class="text-xs text-slate-400 font-semibold text-center py-3">Cargando...</p></div>
+  </div>
+</div>
+
+<!-- MODAL INCIDENCIA LIBRE -->
+<div id="modalIncidenciaLibre" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <h3 class="text-lg font-black text-slate-900 mb-2"><i class="fas fa-triangle-exclamation text-amber-500 mr-2"></i>Otra incidencia</h3>
+    <textarea id="incidenciaDetalle" rows="4" placeholder="Describí la incidencia (vehículo, tránsito, seguridad...)" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-medium focus:border-amber-500 focus:outline-none resize-none"></textarea>
+    <div class="flex gap-2 mt-3">
+      <button onclick="cerrarModalIncidenciaLibre()" class="btn-outline flex-1 text-sm">Cancelar</button>
+      <button onclick="guardarIncidenciaLibre()" class="btn-warning flex-1 text-sm flex items-center justify-center gap-2"><i class="fas fa-paper-plane"></i> Enviar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── SERVICE WORKER ──────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/conductor-sw.js')
+      .then(() => console.log('SW registrado'))
+      .catch(() => console.log('SW no disponible'));
+  });
+}
+
+// ─── STATE ──────────────────────────────
+let state = {
+  viajes: [],
+  viajeActual: null,
+  proximoViaje: null,
+  viajesActivos: [],  // Nuevos tramos del sistema de traslado completo
+  watchId: null,
+  ultimoReporteGPS: 0,
+  _ultimoViajeId: null,
+  refreshInterval: null,
+  driverInfo: null,
+  map: null,
+  markerYo: null,
+  markerOrigen: null,
+  markerDestino: null,
+  currentLat: null,
+  currentLng: null,
+  disponible: true,
+  historialTab: 'hoy',
+  pushSubscribed: false
+};
+
+// Un admin master puede entrar a cualquier panel con su misma credencial
+// (acceso total a la plataforma), sin tener que tener un rol de conductor asignado.
+function tieneAccesoConductor(user) {
+  if (!user) return false;
+  const roles = user.roles || [];
+  return roles.some(r => r.rol === 'conductor' || r.rol === 'master') || user.nivel === 'conductor' || user.nivel === 'master';
+}
+
+// ─── INIT ──────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const user = getSessionUser();
+  const esConductor = tieneAccesoConductor(user);
+  if (esConductor) {
+    showMainApp(user);
+  } else if (user) {
+    window.location.href = '/';
+  } else {
+    showLogin();
+  }
+  // Pull to refresh
+  setupPullToRefresh();
+});
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+  setTimeout(() => document.getElementById('loginCedula').focus(), 100);
+}
+
+function showMainApp(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+
+  state.driverInfo = user;
+  document.getElementById('driverName').textContent = user.nombre || user.cedula;
+
+  // Fetch vehicle info
+  fetch('/api?action=transportes&v=' + Date.now())
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        const v = (d.transportes || []).find(t => t.cedula === user.cedula);
+        if (v) {
+          document.getElementById('driverVehicle').textContent = `${v.tipo} · ${v.placa || 'sin placa'}`;
+          state.disponible = v.estado === 'disponible';
+          actualizarDispUI();
+          if (typeof v.id === 'number') state.transporteId = v.id;
+        }
+      }
+    })
+    .catch(() => {});
+
+  initMap();
+  recargar();
+  state.refreshInterval = setInterval(recargar, 12000);
+  iniciarGPS();
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Check disponibilidad
+  actualizarEstadoInicial();
+}
+
+async function actualizarEstadoInicial() {
+  const user = getSessionUser();
+  if (!user) return;
+  try {
+    const r = await fetch('/api/conductor/detalle?cedula=' + user.cedula);
+    const d = await r.json();
+    if (d.success) {
+      state.disponible = d.conductor.estado === 'disponible';
+      actualizarDispUI();
+    }
+  } catch(e) {}
+}
+
+// ─── DISPONIBILIDAD TOGGLE ─────────────
+async function toggleDisponibilidad() {
+  const user = getSessionUser();
+  if (!user) return;
+  const nuevoEstado = state.disponible ? 'ocupado' : 'disponible';
+  try {
+    const r = await fetch('/api/conductor/disponibilidad', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ cedula: user.cedula, estado: nuevoEstado })
+    });
+    const d = await r.json();
+    if (d.success) {
+      state.disponible = nuevoEstado === 'disponible';
+      actualizarDispUI();
+      cargarConductoresCercanos();
+    }
+  } catch(e) {}
+}
+
+function actualizarDispUI() {
+  const icon = document.getElementById('dispIcon');
+  const status = document.getElementById('dispStatus');
+  const btn = document.getElementById('dispBtn');
+  if (state.disponible) {
+    icon.className = 'fas fa-circle text-sm text-emerald-400';
+    status.innerHTML = '<i class="fas fa-circle text-[6px]"></i> Disponible';
+    status.className = 'disponible-badge';
+    btn.className = 'bg-slate-900/80 backdrop-blur rounded-full p-2 transition-colors shadow-lg hover:bg-slate-800';
+  } else {
+    icon.className = 'fas fa-circle text-sm text-red-400';
+    status.innerHTML = '<i class="fas fa-circle text-[6px]"></i> Ocupado';
+    status.className = 'ocupado-badge';
+    btn.className = 'bg-slate-900/80 backdrop-blur rounded-full p-2 transition-colors shadow-lg hover:bg-slate-800';
+  }
+}
+
+// ─── LEAFLET MAP ───────────────────────
+function initMap() {
+  state.map = L.map('mapContainer', {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([-25.2867, -57.6082], 13);
+
+  // Sin tiles externos: la app funciona 100% offline, sin depender de internet para el mapa.
+
+  L.control.zoom({ position: 'bottomright' }).addTo(state.map);
+
+  const blueIcon = L.divIcon({
+    html: '<div style="width:22px;height:22px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+    className: '',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
+  });
+  state.markerYo = L.marker([-25.2867, -57.6082], { icon: blueIcon }).addTo(state.map);
+  state.markerYo.bindPopup('<div class="text-xs font-bold">Tu ubicación</div>');
+}
+
+function actualizarMapa() {
+  const map = state.map;
+  if (!map) return;
+
+  if (state.markerOrigen) map.removeLayer(state.markerOrigen);
+  if (state.markerDestino) map.removeLayer(state.markerDestino);
+  state.markerOrigen = null;
+  state.markerDestino = null;
+
+  const points = [];
+
+  if (state.currentLat && state.currentLng) {
+    state.markerYo.setLatLng([state.currentLat, state.currentLng]);
+    points.push([state.currentLat, state.currentLng]);
+  }
+
+  const viaje = state.viajeActual || state.proximoViaje;
+  if (!viaje) {
+    if (state.currentLat && state.currentLng) {
+      map.setView([state.currentLat, state.currentLng], 14);
+    }
+    return;
+  }
+
+  // Geocode origen and destino
+  const geocodeQueue = [];
+
+  if (viaje.origen && viaje.origen !== '—') {
+    geocodeQueue.push({
+      key: 'origen',
+      label: 'Recoger en',
+      address: viaje.origen,
+      color: '#3b82f6',
+      icon: 'fa-person-walking',
+      number: '1'
+    });
+  }
+
+  if (viaje.destino && viaje.destino !== '—') {
+    geocodeQueue.push({
+      key: 'destino',
+      label: 'Llevar a',
+      address: viaje.destino,
+      color: '#059669',
+      icon: 'fa-flag-checkered',
+      number: '2'
+    });
+  }
+
+  if (geocodeQueue.length === 0) {
+    if (state.currentLat && state.currentLng) {
+      map.setView([state.currentLat, state.currentLng], 14);
+    }
+    return;
+  }
+
+  let idx = 0;
+  const geoResults = [];
+
+  function nextGeocode() {
+    if (idx >= geocodeQueue.length) {
+      placeMarkers(geoResults);
+      return;
+    }
+    const item = geocodeQueue[idx];
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(item.address + ', Paraguay') + '&limit=1';
+
+    fetch(url, { headers: { 'User-Agent': 'DIA-Mesas/1.0' } })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          geoResults.push({ ...item, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+        } else {
+          geoResults.push({ ...item, lat: state.currentLat || -25.2867, lng: state.currentLng || -57.6082 });
+        }
+        idx++;
+        setTimeout(nextGeocode, 1100);
+      })
+      .catch(() => {
+        geoResults.push({ ...item, lat: state.currentLat || -25.2867, lng: state.currentLng || -57.6082 });
+        idx++;
+        setTimeout(nextGeocode, 1100);
+      });
+  }
+
+  function placeMarkers(results) {
+    results.forEach(item => {
+      const iconHtml = `<div style="position:relative;"><div style="width:28px;height:28px;background:${item.color};border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;"><i class="fas ${item.icon}"></i></div><div style="position:absolute;top:-12px;right:-12px;background:${item.color};color:white;font-size:9px;font-weight:bold;border-radius:999px;padding:1px 6px;border:2px solid white;">${item.number}</div></div>`;
+
+      const ic = L.divIcon({
+        html: iconHtml,
+        className: '',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      });
+
+      const marker = L.marker([item.lat, item.lng], { icon: ic }).addTo(map);
+      marker.bindPopup(`<b>${item.label}:</b> ${item.address}`);
+
+      if (item.key === 'origen') state.markerOrigen = marker;
+      else state.markerDestino = marker;
+
+      points.push([item.lat, item.lng]);
+    });
+
+    if (points.length > 0) {
+      try {
+        const bounds = L.latLngBounds(points);
+        map.fitBounds(bounds.pad(0.3));
+      } catch(e) {}
+    }
+  }
+
+  if (state.currentLat && state.currentLng) {
+    points.push([state.currentLat, state.currentLng]);
+  }
+  nextGeocode();
+}
+
+// ─── PULL TO REFRESH ─────────────────
+let pullStartY = 0;
+function setupPullToRefresh() {
+  const el = document.getElementById('bottomSheet');
+  let startY = 0;
+  el.addEventListener('touchstart', (e) => {
+    if (el.scrollTop === 0) {
+      startY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 60 && el.scrollTop === 0) {
+      document.getElementById('pullIndicator').style.display = 'block';
+      document.getElementById('pullIndicator').textContent = '↻ Soltá para actualizar';
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', () => {
+    const indicator = document.getElementById('pullIndicator');
+    if (indicator.style.display === 'block') {
+      indicator.textContent = '↻ Actualizando...';
+      recargar().then(() => {
+        indicator.style.display = 'none';
+      });
+    }
+  }, { passive: true });
+}
+
+// ─── LOGIN ──────────────────────────
+async function handleLogin() {
+  const cedula = document.getElementById('loginCedula').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const errEl = document.getElementById('loginError');
+  errEl.classList.add('hidden');
+
+  if (!cedula || !password) {
+    errEl.textContent = 'Completá cédula y contraseña';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const d = await loginConCredenciales(cedula, password);
+    if (d.success) {
+      guardarPassword(password);
+      const user = d.usuario;
+      const esConductor = tieneAccesoConductor(user);
+      if (!esConductor) {
+        errEl.textContent = 'Este usuario no es conductor';
+        errEl.classList.remove('hidden');
+        logoutGlobal();
+        return;
+      }
+      // Si tiene múltiples roles, activar el de conductor
+      if (user.roles && user.roles.length > 1) {
+        const rolConductor = user.roles.find(r => r.rol === 'conductor');
+        if (rolConductor) setRolActivo(rolConductor);
+      }
+      showMainApp(user);
+    } else {
+      errEl.textContent = d.error || 'Credenciales inválidas';
+      errEl.classList.remove('hidden');
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ─── PUSH NOTIFICATIONS ──────────────
+async function togglePushSub() {
+  if (state.pushSubscribed) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+    } catch(e) {}
+    state.pushSubscribed = false;
+    document.getElementById('pushBtn').innerHTML = '<i class="far fa-bell text-sm"></i>';
+    document.getElementById('pushBtn').title = 'Activar notificaciones';
+    return;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(
+        'BEl62iUYgUivxIkv69yViEuiBIa-Ib9SMkv7sVcD1Z_d' +
+        'E5M4n9M2d1DZ2WywGt2d1DZ2WywGt2d1DZ2WywGt2Q'
+      )
+    });
+
+    const user = getSessionUser();
+    if (user) {
+      await fetch('/api/conductor/register-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cedula: user.cedula, subscription: sub.toJSON() })
+      });
+    }
+
+    state.pushSubscribed = true;
+    document.getElementById('pushBtn').innerHTML = '<i class="fas fa-bell text-sm"></i>';
+    document.getElementById('pushBtn').title = 'Notificaciones activadas';
+  } catch(e) {
+    alert('No se pudieron activar las notificaciones. Asegurate de usar HTTPS o localhost.');
+  }
+}
+
+// ─── HERRAMIENTAS ─────────────────────
+function abrirModalGasto() {
+  document.getElementById('modalGasto').style.display = 'flex';
+  document.getElementById('gastoMonto').value = '';
+  document.getElementById('gastoMotivo').value = '';
+  setTimeout(() => document.getElementById('gastoMonto').focus(), 100);
+}
+function cerrarModalGasto() {
+  document.getElementById('modalGasto').style.display = 'none';
+}
+
+async function guardarGasto() {
+  const user = getSessionUser();
+  if (!user || !state.transporteId) { alert('No se pudo identificar tu vehículo.'); return; }
+  const monto = parseFloat(document.getElementById('gastoMonto').value);
+  if (!monto || monto <= 0) { alert('Ingresá un monto válido.'); return; }
+  const medio = document.getElementById('gastoMedio').value;
+  const motivo = document.getElementById('gastoMotivo').value.trim();
+  try {
+    const r = await fetch('/api/transporte/gastos', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transporte_id: state.transporteId, monto, medio, motivo,
+        entregado_por_cedula: user.cedula, entregado_por_nombre: user.nombre || user.cedula })
+    });
+    const d = await r.json();
+    if (d.success) { cerrarModalGasto(); alert('✅ Gasto registrado correctamente.'); }
+    else { alert('Error: ' + (d.error || 'No se pudo guardar el gasto.')); }
+  } catch(e) { alert('Error de conexión: ' + e.message); }
+}
+
+async function verMisGastos() {
+  const cont = document.getElementById('misGastosContenido');
+  document.getElementById('modalMisGastos').style.display = 'flex';
+  cont.innerHTML = '<p class="text-xs text-slate-400 font-semibold text-center py-3">Cargando...</p>';
+  if (!state.transporteId) { cont.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Sin vehículo asignado.</p>'; return; }
+  try {
+    const [g, s] = await Promise.all([
+      fetch('/api/transporte/gastos?transporte_id=' + state.transporteId).then(r => r.json()),
+      fetch('/api/transporte/stats_conductor?transporte_id=' + state.transporteId).then(r => r.json())
+    ]);
+    const gastos = g.gastos || [];
+    const total = gastos.reduce((a, x) => a + (Number(x.monto) || 0), 0);
+    let html = '<div class="grid grid-cols-3 gap-1.5 mb-3">' +
+      '<div class="stat-card"><div class="num">' + (s.tramos_completados || 0) + '</div><div class="label">Tramos</div></div>' +
+      '<div class="stat-card"><div class="num">' + (s.km_recorridos || 0) + '</div><div class="label">Km</div></div>' +
+      '<div class="stat-card"><div class="num">' + (s.votantes_trasladados || 0) + '</div><div class="label">Votantes</div></div>' +
+      '</div>';
+    html += '<p class="text-xs font-black text-slate-500 uppercase mb-2">Gastos · Total Gs. ' + total.toLocaleString('es-PY') + '</p>';
+    if (gastos.length === 0) {
+      html += '<p class="text-xs text-slate-400 text-center py-3">Todavía no registraste gastos.</p>';
+    } else {
+      html += '<table class="w-full text-xs"><thead><tr class="text-slate-400"><th class="text-left py-1">Fecha</th><th class="text-left">Motivo</th><th class="text-right">Monto</th></tr></thead><tbody>';
+      gastos.slice(0, 20).forEach((x, i) => {
+        const bg = i % 2 ? 'bg-slate-50' : '';
+        html += '<tr class="' + bg + '"><td class="py-1.5 font-semibold">' + (x.creado_en ? x.creado_en.substring(0,10) : '—') + '</td>' +
+          '<td class="font-semibold text-slate-600">' + (x.motivo || x.medio || '—') + '</td>' +
+          '<td class="text-right font-black">' + Number(x.monto||0).toLocaleString('es-PY') + '</td></tr>';
+      });
+      html += '</tbody></table>';
+    }
+    cont.innerHTML = html;
+  } catch(e) { cont.innerHTML = '<p class="text-xs text-red-500 text-center py-3">Error: ' + e.message + '</p>'; }
+}
+function cerrarModalGastos() { document.getElementById('modalMisGastos').style.display = 'none'; }
+
+function abrirModalIncidenciaLibre() {
+  document.getElementById('modalIncidenciaLibre').style.display = 'flex';
+  document.getElementById('incidenciaDetalle').value = '';
+  setTimeout(() => document.getElementById('incidenciaDetalle').focus(), 100);
+}
+function cerrarModalIncidenciaLibre() { document.getElementById('modalIncidenciaLibre').style.display = 'none'; }
+
+async function guardarIncidenciaLibre() {
+  const user = getSessionUser();
+  const detalle = document.getElementById('incidenciaDetalle').value.trim();
+  if (!detalle) { alert('Escribí una descripción de la incidencia.'); return; }
+  try {
+    const r = await fetch('/api/transporte/reportar_incidencia', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ viaje_id: (state.viajeActual||{}).id || (state.proximoViaje||{}).id,
+        cedula: user.cedula, transporte_id: state.transporteId, tipo: 'otra', detalle,
+        lat: state.currentLat, lng: state.currentLng })
+    });
+    const d = await r.json();
+    if (d.success) { cerrarModalIncidenciaLibre(); alert('✅ Incidencia enviada a la central.'); }
+    else { alert('Error: ' + (d.error || 'No se pudo enviar.')); }
+  } catch(e) { alert('Error de conexión: ' + e.message); }
+}
+
+function contactarVotante(canal) {
+  const v = state.viajeActual || state.proximoViaje;
+  if (!v) { alert('No hay un votante asignado en este momento.'); return; }
+  const tel = v.votante_telefono || v.telefono || '';
+  if (!tel) { alert('El votante no tiene teléfono registrado.'); return; }
+  const limpio = String(tel).replace(/\D/g, '');
+  if (canal === 'whatsapp') window.open('https://wa.me/595' + limpio, '_blank');
+  else window.location.href = 'tel:+595' + limpio;
+}
+
+// ─── SOS ─────────────────────────────
+function activarSOS() {
+  const user = getSessionUser();
+  if (!user) {
+    alert('Debes iniciar sesión para usar SOS');
+    return;
+  }
+
+  if (!state.currentLat || !state.currentLng) {
+    alert('Esperando ubicación GPS... activa el GPS si no lo tienes encendido.');
+    return;
+  }
+
+  if (!confirm('¿Activar alerta de emergencia? Se notificará a la central con tu ubicación actual.')) return;
+
+  fetch('/api/conductor/sos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cedula: user.cedula, lat: state.currentLat, lng: state.currentLng })
+  }).then(r => r.json()).then(d => {
+    if (d.success) {
+      alert(d.canal_notificacion === 'push' ? '🚨 SOS registrado y notificación enviada a la central.' : '🚨 SOS registrado en el sistema. La central podrá verlo en el módulo de alertas.');
+    } else {
+      alert('Error: ' + (d.error || 'No se pudo enviar la alerta.'));
+    }
+  }).catch(e => alert('Error de conexión: ' + e.message));
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
+  return outputArray;
+}
+
+// ─── CARGAR VIAJES ──────────────────
+async function recargar() {
+  const user = getSessionUser();
+  if (!user) return;
+  if (!tieneAccesoConductor(user)) return;
+
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  try {
+    const [pendientes, historialRes] = await Promise.all([
+      fetch('/api/conductor/pendientes?cedula=' + user.cedula + '&v=' + Date.now()).then(r => r.json()),
+      fetch('/api/conductor/historial_extendido?cedula=' + user.cedula + '&dias=7&v=' + Date.now()).then(r => r.json())
+    ]);
+
+    state.viajes = pendientes.success ? (pendientes.viajes || []) : [];
+
+    state.viajeActual = state.viajes.find(v => v.estado === 'en_curso') || null;
+    state.proximoViaje = state.viajes.find(v => v.estado === 'pendiente') || null;
+
+    // Alerta si hay viaje nuevo
+    const nuevoId = (state.viajeActual || state.proximoViaje || {}).id || null;
+    if (nuevoId && nuevoId !== state._ultimoViajeId) {
+      reproducirAlerta();
+      // Mostrar badge
+      document.getElementById('badgeContainer').style.display = 'block';
+      setTimeout(() => { document.getElementById('badgeContainer').style.display = 'none'; }, 8000);
+    }
+    state._ultimoViajeId = nuevoId;
+    const badge = document.getElementById('badgeContainer');
+    if (badge) badge.style.display = nuevoId ? 'block' : 'none';
+
+    // Notificación del navegador
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const viaje = state.viajeActual || state.proximoViaje;
+      if (viaje) {
+        const body = 'Recoger en: ' + (viaje.origen || '?') + ' → ' + (viaje.destino || '?');
+        new Notification('Nuevo viaje', { body, icon: '/manifest.json' });
+      }
+    }
+
+    renderViajes();
+    actualizarMapa();
+    // Render historial según pestaña activa
+    const hist = historialRes.success ? (historialRes.historial || []) : [];
+    renderHistorial(hist, historialRes.success ? (historialRes.por_fecha || {}) : {});
+
+    // Cargar stats
+    cargarStats(user.cedula);
+
+    // Tramos del sistema nuevo (busqueda/ida/vuelta) — siempre cargar, usa transporteId del vehículo
+    await cargarTramosNuevos();
+  } catch(e) {}
+}
+
+// ============ TRAMOS NUEVOS (busqueda/ida/vuelta) — solo lo mio, nunca lo de otro conductor ============
+async function cargarTramosNuevos() {
+  try {
+    const [r1, r2] = await Promise.all([
+        fetch('/api/transporte/viajes_activos?transporte_id=' + state.transporteId).then(r => r.json()),
+      fetch('/api/transporte/vueltas_disponibles?transporte_id=' + state.transporteId).then(r => r.json())
+    ]);
+    state.tramosPropios = r1.success ? (r1.viajes || []).filter(v => v.estado !== 'completado') : [];
+    state.vueltasDisponibles = r2.success ? (r2.vueltas || []) : [];
+  } catch (e) { /* silent */ }
+  renderTramosNuevos();
+}
+
+const COLOR_TRAMO_COND = { busqueda: '#f97316', ida: '#22c55e', vuelta: '#38bdf8' };
+const LABEL_TRAMO_COND = { busqueda: 'Buscar al votante', ida: 'Llevar al local', vuelta: 'Llevar a su casa' };
+
+// Identificar el tramo activo (en_curso o pendiente que aún no se completó)
+function tramoActivo(tramos) {
+  return tramos.find(v => v.estado !== 'completado') || null;
+}
+
+function linksNavegacion(lat, lng) {
+  return {
+    waze: `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`,
+    gmaps: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+  };
+}
+
+function renderTramosNuevos() {
+  const elMios = document.getElementById('misTramosNuevos');
+  const elPool = document.getElementById('vueltasDisponiblesBox');
+
+  if (state.tramosPropios.length === 0) {
+    elMios.style.display = 'none';
+  } else {
+    elMios.style.display = 'block';
+    elMios.innerHTML = state.tramosPropios.map(v => {
+      const nav = linksNavegacion(v.destino_lat, v.destino_lng);
+      return `
+        <div class="rounded-xl p-3 border-2" style="border-color:${COLOR_TRAMO_COND[v.tipo]};background:${COLOR_TRAMO_COND[v.tipo]}11;">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-black uppercase" style="color:${COLOR_TRAMO_COND[v.tipo]}"><i class="fas fa-route mr-1"></i>${LABEL_TRAMO_COND[v.tipo]}</span>
+            <span class="text-[10px] font-bold text-slate-400">${v.distancia_km} km</span>
+          </div>
+          <p class="text-sm font-bold text-slate-800 truncate">${v.votante_nombre || ''}</p>
+          <p class="text-[11px] text-slate-500 truncate"><i class="fas fa-flag-checkered mr-1"></i>${v.destino_nombre || ''}</p>
+          <div class="flex gap-1.5 mt-2">
+            <a href="${nav.waze}" target="_blank" class="flex-1 text-center py-2 bg-[#33CCFF] text-white text-[11px] font-black rounded-lg"><i class="fas fa-location-arrow mr-1"></i>Waze</a>
+            <a href="${nav.gmaps}" target="_blank" class="flex-1 text-center py-2 bg-blue-600 text-white text-[11px] font-black rounded-lg"><i class="fas fa-map mr-1"></i>Maps</a>
+            <button onclick="completarTramoConductor(${v.id})" class="flex-1 py-2 bg-slate-900 text-white text-[11px] font-black rounded-lg">Llegué</button>
+          </div>
+          ${v.tipo === 'busqueda' && v.estado !== 'completado' ? `<div class="grid grid-cols-2 gap-1.5 mt-1.5"><button onclick="reportarIncidencia(${v.id},'elector_ausente')" class="incident-btn px-2 py-2 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-black rounded-lg"><i class="fas fa-house-circle-xmark mr-1"></i>Elector ausente</button><button onclick="reportarIncidencia(${v.id},'rechazo_traslado')" class="incident-btn px-2 py-2 bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-black rounded-lg"><i class="fas fa-hand mr-1"></i>Rechazó traslado</button></div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  if (state.vueltasDisponibles.length === 0) {
+    elPool.style.display = 'none';
+  } else {
+    elPool.style.display = 'block';
+    elPool.innerHTML = `
+      <p class="text-[10px] font-black uppercase text-slate-400 mb-1.5 px-1">Gente esperando volver a su casa</p>
+      <div class="space-y-1.5">
+        ${state.vueltasDisponibles.map(v => `
+          <div class="flex items-center justify-between gap-2 bg-sky-50 border border-sky-200 rounded-xl p-2.5">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-slate-800 truncate">${v.votante_nombre || ''}</p>
+              <p class="text-[10px] text-sky-600">${v.distancia_al_conductor_km != null ? v.distancia_al_conductor_km + ' km de vos' : ''}</p>
+            </div>
+            <button onclick="tomarVuelta(${v.id})" class="px-3 py-1.5 bg-sky-600 text-white text-[10px] font-black rounded-lg flex-shrink-0">Llevarla/o</button>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+}
+
+async function completarTramoConductor(viajeId) {
+  const user = getSessionUser();
+  if (!user || !state.transporteId) return;
+  try {
+    const r = await fetch('/api/transporte/completar_tramo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ viaje_id: viajeId, cedula: user.cedula, transporte_id: state.transporteId }) });
+    const d = await r.json();
+    if (!d.success) { alert(d.error || 'No se pudo completar el tramo'); return; }
+    await cargarTramosNuevos();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function reportarIncidencia(viajeId, tipo) {
+  const user = getSessionUser();
+  if (!user || !state.transporteId) return;
+  const esAusente = tipo === 'elector_ausente';
+  const etiqueta = esAusente ? 'Elector ausente' : 'Rechazó traslado';
+  const detalle = prompt(`${etiqueta}. Agregá un detalle breve para la central (opcional):`, '') || '';
+  if (!confirm(`¿Registrar “${etiqueta}” y liberar este tramo para continuar la jornada?`)) return;
+  try {
+    const r = await fetch('/api/transporte/reportar_incidencia', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ viaje_id: viajeId, cedula: user.cedula, transporte_id: state.transporteId,
+        tipo, detalle, lat: state.currentLat, lng: state.currentLng })
+    });
+    const d = await r.json();
+    if (!d.success) { alert(d.error || 'No se pudo registrar la incidencia'); return; }
+    alert(`${etiqueta} registrada. El tramo quedó cerrado y la incidencia fue enviada a la central.`);
+    await recargar();
+  } catch (e) { alert('Sin conexión: la incidencia no se guardó. Mantené este traslado activo e intentá nuevamente.'); }
+}
+
+async function cargarConductoresCercanos() {
+  const el = document.getElementById('conductoresCercanos');
+  if (!el) return;
+  if (!Number.isFinite(state.currentLat) || !Number.isFinite(state.currentLng)) {
+    el.innerHTML = '<p class="text-[11px] text-slate-500">Esperando ubicación GPS para buscar unidades cercanas.</p>';
+    return;
+  }
+  const radio = Number(document.getElementById('radioCercanos')?.value || 5);
+  el.innerHTML = '<p class="text-[11px] text-slate-500">Actualizando posiciones...</p>';
+  try {
+    const q = new URLSearchParams({lat: state.currentLat, lng: state.currentLng, radio_km: radio,
+      session_id: sessionStorage.getItem('dia_d_session_id') || ''});
+    const d = await fetch('/api/transporte/conductores_cercanos?' + q.toString()).then(r => r.json());
+    if (!d.success) throw new Error(d.error || 'No se pudo consultar');
+    if (!d.conductores.length) {
+      el.innerHTML = `<p class="text-[11px] text-slate-500">No hay unidades disponibles con GPS reciente dentro de ${radio} km.</p>`;
+      return;
+    }
+    el.innerHTML = d.conductores.map(v => `<div class="flex items-center justify-between py-1.5 border-b border-sky-100 last:border-0"><div class="min-w-0"><p class="text-[11px] font-bold text-slate-800 truncate">${escapeHtml(v.nombre || 'Conductor')}</p><p class="text-[9px] text-slate-500">${escapeHtml(v.placa || 'Sin placa')} · GPS ${escapeHtml(v.timestamp || '')}</p></div><span class="ml-2 text-[11px] font-black text-sky-800">${Number(v.distancia_km).toFixed(1)} km</span></div>`).join('');
+  } catch (e) {
+    el.innerHTML = '<p class="text-[11px] text-rose-600">No se pudo actualizar el mapa de unidades. Reintentá en unos segundos.</p>';
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+async function tomarVuelta(viajeId) {
+  try {
+    const r = await fetch('/api/transporte/tomar_tramo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ viaje_id: viajeId, transporte_id: state.transporteId }) });
+    const d = await r.json();
+    if (!d.success) { alert(d.error || 'No se pudo tomar'); }
+    await cargarTramosNuevos();
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function cargarStats(cedula) {
+  try {
+    const r = await fetch('/api/conductor/stats?cedula=' + cedula + '&v=' + Date.now());
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('statsHoyNum').textContent = d.hoy.viajes;
+      document.getElementById('statsSemanaNum').textContent = d.semana.viajes;
+      document.getElementById('statsTotalNum').textContent = d.total.viajes;
+      document.getElementById('statsSinViajes').style.display = 'grid';
+    }
+  } catch(e) {}
+}
+
+// ─── RENDER ──────────────────────────
+function renderViajes() {
+  const elActual = document.getElementById('viajeActual');
+  const elProximo = document.getElementById('proximoViaje');
+  const elSin = document.getElementById('sinViajes');
+
+  elActual.style.display = 'none';
+  elProximo.style.display = 'none';
+  elSin.style.display = 'none';
+
+  if (state.viajeActual) {
+    elActual.style.display = 'block';
+    document.getElementById('actualOrigen').textContent = state.viajeActual.origen || '—';
+    document.getElementById('actualDestino').textContent = state.viajeActual.destino || '—';
+
+    // Votante info
+    const v = state.viajeActual;
+    if (v.votante_nombre) {
+      document.getElementById('votanteActualCard').style.display = 'block';
+      document.getElementById('votanteActualNombre').textContent = v.votante_nombre;
+      document.getElementById('votanteActualCedula').textContent = 'CC ' + (v.votante_cedula || '—');
+      document.getElementById('votanteActualHora').textContent = v.hora_recogida || '—';
+      document.getElementById('votanteActualUbic').textContent = v.solicitud_ubicacion || v.origen || '—';
+      document.getElementById('horaActual').textContent = v.hora_recogida ? '🕐 ' + v.hora_recogida : '';
+      // Contacto links (si hay teléfono, aunque votante no tiene teléfono en rutas, podemos mostrar el del conductor)
+      const waLink = document.getElementById('whatsappActualLink');
+      const callLink = document.getElementById('callActualLink');
+      if (v.votante_cedula) {
+        waLink.href = 'https://wa.me/595' + v.votante_cedula.replace(/^0+/, '');
+        callLink.href = 'tel:+595' + v.votante_cedula.replace(/^0+/, '');
+      }
+    } else {
+      document.getElementById('votanteActualCard').style.display = 'none';
+      document.getElementById('horaActual').textContent = '';
+    }
+  }
+
+  if (state.proximoViaje) {
+    elProximo.style.display = 'block';
+    document.getElementById('proximoOrigen').textContent = state.proximoViaje.origen || '—';
+    document.getElementById('proximoDestino').textContent = state.proximoViaje.destino || '—';
+
+    const v = state.proximoViaje;
+    if (v.votante_nombre) {
+      document.getElementById('votanteProximoCard').style.display = 'block';
+      document.getElementById('votanteProximoNombre').textContent = v.votante_nombre;
+      document.getElementById('votanteProximoCedula').textContent = 'CC ' + (v.votante_cedula || '—');
+      document.getElementById('votanteProximoHora').textContent = v.hora_recogida || '—';
+      document.getElementById('votanteProximoUbic').textContent = v.solicitud_ubicacion || v.origen || '—';
+      document.getElementById('horaProximo').textContent = v.hora_recogida ? '🕐 ' + v.hora_recogida : '';
+    } else {
+      document.getElementById('votanteProximoCard').style.display = 'none';
+      document.getElementById('horaProximo').textContent = '';
+    }
+  }
+
+  if (!state.viajeActual && !state.proximoViaje) {
+    elSin.style.display = 'block';
+    cargarConductoresCercanos();
+  }
+}
+
+// ─── HISTORIAL ───────────────────────
+function switchHistorial(tab) {
+  state.historialTab = tab;
+  ['Hoy','Ayer','Semana'].forEach(t => {
+    const key = t.toLowerCase();
+    const el = document.getElementById('histab' + t);
+    if (key === tab) {
+      el.className = 'px-2 py-1 text-[9px] font-black rounded-full bg-slate-900 text-white';
+    } else {
+      el.className = 'px-2 py-1 text-[9px] font-black rounded-full bg-slate-100 text-slate-400';
+    }
+  });
+  // Re-render with cached data or refetch
+  recargar();
+}
+
+function renderHistorial(historial, porFecha) {
+  const el = document.getElementById('historialList');
+  const total = historial.length;
+  document.getElementById('historialCount').textContent = total + ' viaje' + (total !== 1 ? 's' : '');
+
+  // Calcular horas
+  let totalHoras = 0;
+  historial.forEach(h => {
+    if (h.salida && h.llegada) {
+      try {
+        totalHoras += Math.abs(new Date(h.llegada) - new Date(h.salida)) / 3600000;
+      } catch(e) {}
+    }
+  });
+  document.getElementById('historialHoras').textContent = totalHoras > 0 ? `${totalHoras.toFixed(1)} hs de servicio` : '';
+
+  if (historial.length === 0) {
+    el.innerHTML = '<p class="text-xs text-slate-400 font-semibold text-center py-3">Sin viajes en este período</p>';
+    return;
+  }
+
+  // Filtrar por tab
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().slice(0,10);
+  const ayerStr = new Date(hoy.getTime() - 86400000).toISOString().slice(0,10);
+
+  let filtrados = historial;
+  if (state.historialTab === 'hoy') {
+    filtrados = historial.filter(h => h.llegada && h.llegada.slice(0,10) === hoyStr);
+  } else if (state.historialTab === 'ayer') {
+    filtrados = historial.filter(h => h.llegada && h.llegada.slice(0,10) === ayerStr);
+  }
+  // 'semana' muestra todos
+
+  if (filtrados.length === 0) {
+    el.innerHTML = '<p class="text-xs text-slate-400 font-semibold text-center py-3">Sin viajes en este período</p>';
+    return;
+  }
+
+  // Agrupar por fecha
+  const grupos = {};
+  filtrados.forEach(h => {
+    const f = h.llegada ? h.llegada.slice(0,10) : 'sin_fecha';
+    if (!grupos[f]) grupos[f] = [];
+    grupos[f].push(h);
+  });
+
+  let html = '';
+  Object.keys(grupos).sort().reverse().forEach(fecha => {
+    const items = grupos[fecha];
+    const fechaDisplay = fecha === hoyStr ? 'Hoy' : fecha === ayerStr ? 'Ayer' : fecha;
+    html += `<p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mt-2 mb-1">${fechaDisplay} (${items.length})</p>`;
+    items.forEach(h => {
+      html += `
+        <div class="history-item completed">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold text-slate-800 truncate">${h.origen || '?'} → ${h.destino || '?'}</p>
+              <p class="text-[10px] text-slate-400 font-semibold">${formatTime(h.llegada)} ${h.observacion ? '· ' + h.observacion : ''}</p>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex-shrink-0 ml-2"><i class="fas fa-check mr-0.5"></i> OK</span>
+          </div>
+        </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+function formatTime(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
+// ─── MODAL COMPLETAR ─────────────────
+function mostrarModalCompletar() {
+  if (!state.viajeActual) return;
+  document.getElementById('modalCompletar').style.display = 'flex';
+  document.getElementById('obsCompletar').value = '';
+  setTimeout(() => document.getElementById('obsCompletar').focus(), 100);
+}
+
+function cerrarHerramientas() {
+  document.getElementById('modalHerramientas').style.display = 'none';
+}
+
+function mostrarHerramientas() {
+  document.getElementById('modalHerramientas').style.display = 'flex';
+}
+
+function cerrarModalCompletar() {
+  document.getElementById('modalCompletar').style.display = 'none';
+}
+
+// ─── NAVEGACIÓN ──────────────────────
+function abrirNavegacion(via) {
+  const viaje = state.viajeActual || state.proximoViaje;
+  if (!viaje || !viaje.origen || viaje.origen === '—') return;
+
+  const destino = encodeURIComponent(viaje.origen);
+  const desde = (state.currentLat && state.currentLng)
+    ? `${state.currentLat},${state.currentLng}`
+    : '';
+
+  const url = via === 'waze'
+    ? `https://waze.com/ul?q=${destino}&navigate=yes`
+    : desde
+      ? `https://www.google.com/maps/dir/${desde}/${destino}`
+      : `https://www.google.com/maps/search/${destino}`;
+
+  window.open(url, '_blank');
+}
+
+// ─── ACCIONES ────────────────────────
+async function iniciarViaje() {
+  const user = getSessionUser();
+  if (!state.proximoViaje || !user) return;
+
+  try {
+    const d = await fetch('/api/conductor/confirmar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ruta_id: state.proximoViaje.id, cedula: user.cedula })
+    }).then(r => r.json());
+
+    if (d.success) {
+      await recargar();
+    } else {
+      alert(d.error || 'Error al iniciar viaje');
+    }
+  } catch(e) { alert('Error de conexión'); }
+}
+
+async function completarViaje() {
+  const user = getSessionUser();
+  if (!state.viajeActual || !user) return;
+
+  const observacion = document.getElementById('obsCompletar').value.trim();
+  cerrarModalCompletar();
+
+  try {
+    const d = await fetch('/api/conductor/completar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ruta_id: state.viajeActual.id,
+        cedula: user.cedula,
+        observacion: observacion
+      })
+    }).then(r => r.json());
+
+    if (d.success) {
+      await recargar();
+      if (state.proximoViaje) {
+        if (confirm('Tenés un próximo viaje pendiente. ¿Iniciarlo ahora?')) {
+          await iniciarViaje();
+        }
+      }
+    } else {
+      alert(d.error || 'Error al completar viaje');
+    }
+  } catch(e) { alert('Error de conexión'); }
+}
+
+// ─── ALERTA ──────────────────────────
+function reproducirAlerta() {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 300]);
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+    // Second beep
+    setTimeout(() => {
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.frequency.value = 1100;
+      osc2.type = 'sine';
+      gain2.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc2.start(ctx.currentTime);
+      osc2.stop(ctx.currentTime + 0.3);
+    }, 200);
+  } catch(e) {}
+  document.title = '🔔 Nuevo viaje - Conductor';
+  setTimeout(() => { document.title = '🚗 Conductor'; }, 5000);
+}
+
+// ─── GPS ─────────────────────────────
+function iniciarGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('gpsIndicator').style.display = 'none';
+    return;
+  }
+  document.getElementById('gpsIndicator').style.display = 'flex';
+
+  state.watchId = navigator.geolocation.watchPosition(
+    async (pos) => {
+      const user = getSessionUser();
+      if (!user) return;
+
+      state.currentLat = pos.coords.latitude;
+      state.currentLng = pos.coords.longitude;
+
+      if (state.markerYo) {
+        state.markerYo.setLatLng([state.currentLat, state.currentLng]);
+      }
+      if (state.viajeActual && state.map) {
+        state.map.panTo([state.currentLat, state.currentLng], { animate: true, duration: 0.5 });
+      }
+
+      const velocidad = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) + ' km/h' : 'GPS';
+      const accuracy = pos.coords.accuracy ? Math.round(pos.coords.accuracy) : null;
+      const accuracyStr = accuracy ? `${accuracy}m` : '';
+      document.getElementById('gpsDot').className = 'gps-dot active';
+      document.getElementById('gpsText').textContent = accuracyStr ? `${velocidad} · ${accuracyStr}` : velocidad;
+      // Aviso de precisión baja
+      const precisionEl = document.getElementById('gpsPrecision');
+      if (precisionEl) {
+        if (accuracy && accuracy > 50) {
+          precisionEl.textContent = '⚠️';
+          precisionEl.title = `Precisión baja (${accuracy}m). Buscá mejor señal GPS.`;
+          precisionEl.className = 'text-amber-400 ml-1';
+        } else if (accuracy && accuracy > 20) {
+          precisionEl.textContent = '⚡';
+          precisionEl.title = `Precisión media (${accuracy}m)`;
+          precisionEl.className = 'text-yellow-400 ml-1';
+        } else {
+          precisionEl.textContent = '✓';
+          precisionEl.title = `Precisión buena (${accuracy}m)`;
+          precisionEl.className = 'text-green-400 ml-1';
+        }
+      }
+
+      const ahora = Date.now();
+      if (!state.ultimoReporteGPS || ahora - state.ultimoReporteGPS > 8000) {
+        state.ultimoReporteGPS = ahora;
+        try {
+          await fetch('/api/conductor/ubicacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cedula: user.cedula,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              velocidad: pos.coords.speed || 0,
+              direccion: ''
+            })
+          });
+
+          // ✨ NUEVO: Verificar proximidad automática al destino del tramo en curso
+          if (state.viajeActual && state.viajeActual.estado === 'en_curso') {
+            // Buscar el tramo de 'ida' asociado a este votante
+            const tramos = state.viajes.filter(v => 
+              v.votante_cedula === user.cedula && v.estado !== 'completado'
+            );
+            const tramoActual = tramos.find(v => v.tipo === 'ida');
+            if (tramoActual) {
+              const dist = _distancia_haversine_km(
+                state.currentLat, state.currentLng,
+                tramoActual.destino_lat, tramoActual.destino_lng
+              );
+              if (dist < 50) {  // Menos de 50 metros = auto-complete
+                // Marcar tramo como completado sin abrir modal
+                fetch('/api/transporte/completar_tramo', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ viaje_id: tramoActual.id, cedula: user.cedula })
+                }).then(r => r.json()).then(() => {
+                  // Recargar para actualizar UI
+                  recargar().catch(() => {});
+                  // Notificación opcional
+                  if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('¡Llegaste!', { body: 'Has llegado al local de votación', icon: '/manifest.json' });
+                  }
+                });
+              }
+            }
+          }
+        } catch(e) {}
+      }
+    },
+    () => {
+      document.getElementById('gpsDot').className = 'gps-dot inactive';
+      document.getElementById('gpsText').textContent = 'GPS';
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 8000,
+      maximumAge: 3000
+    }
+  );
+}
+
+// Helper: calcular distancia Haversine en km
+function _distancia_haversine_km(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// ─── LOGOUT ──────────────────────────
+function logout() {
+  if (state.watchId) navigator.geolocation.clearWatch(state.watchId);
+  if (state.refreshInterval) clearInterval(state.refreshInterval);
+  logoutGlobal();
+}
+
+// ─── OFFLINE OUTBOX (IndexedDB) ────────
+const OutboxDB = (() => {
+  const DB_NAME = 'conductor_outbox';
+  const STORE = 'requests';
+  let db = null;
+
+  function open() {
+    return new Promise((resolve, reject) => {
+      if (db) { resolve(db); return; }
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        }
+      };
+      req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+      req.onerror = (e) => reject(e);
+    });
+  }
+
+  async function add(request) {
+    const d = await open();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      store.add(request);
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e);
+    });
+  }
+
+  async function getAll() {
+    const d = await open();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readonly');
+      const store = tx.objectStore(STORE);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = (e) => reject(e);
+    });
+  }
+
+  async function delete_(id) {
+    const d = await open();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      store.delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e);
+    });
+  }
+
+  async function clear() {
+    const d = await open();
+    return new Promise((resolve, reject) => {
+      const tx = d.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      store.clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = (e) => reject(e);
+    });
+  }
+
+  return { add, getAll, delete: delete_, clear };
+})();
+
+// Función para encolar request en el outbox
+async function outboxEnqueue(url, options = {}) {
+  const entry = {
+    url: url,
+    method: options.method || 'GET',
+    headers: options.headers || {},
+    body: options.body || null,
+    timestamp: Date.now(),
+    retries: 0
+  };
+  try {
+    await OutboxDB.add(entry);
+    console.log('[OUTBOX] Encolada:', url);
+  } catch (e) {
+    console.error('[OUTBOX] Error al encolar:', e);
+  }
+}
+
+// Función para sincronizar el outbox
+async function syncOutbox() {
+  let items;
+  try {
+    items = await OutboxDB.getAll();
+  } catch (e) {
+    console.error('[OUTBOX] Error al leer cola:', e);
+    return;
+  }
+
+  if (items.length === 0) return;
+
+  console.log('[OUTBOX] Sincronizando', items.length, 'peticiones...');
+
+  // Ordenar por timestamp
+  items.sort((a, b) => a.timestamp - b.timestamp);
+
+  for (const item of items) {
+    try {
+      const opts = {
+        method: item.method || 'GET',
+        headers: item.headers || {},
+      };
+      if (item.body && item.method !== 'GET') {
+        opts.body = item.body;
+      }
+      const resp = await fetch(item.url, opts);
+      if (resp.ok || resp.status < 500) {
+        // Éxito o error de cliente (no reintentar)
+        await OutboxDB.delete(item.id);
+        console.log('[OUTBOX] Sincronizada:', item.url);
+      } else {
+        // Error de servidor, reintentar después
+        item.retries = (item.retries || 0) + 1;
+        if (item.retries > 5) {
+          await OutboxDB.delete(item.id);
+          console.log('[OUTBOX] Eliminada tras 5 reintentos:', item.url);
+        }
+      }
+    } catch (e) {
+      // Sin conexión, parar
+      console.log('[OUTBOX] Sin conexión, pausando sincronización');
+      break;
+    }
+  }
+}
+
+// Wrapper apiFetch: intenta normal, si falla por red encola
+async function apiFetch(url, options = {}) {
+  try {
+    const resp = await fetch(url, options);
+    // Si el SW devolvió respuesta offline para API, encolar
+    if (resp.headers.get('x-offline') === 'true') {
+      await outboxEnqueue(url, options);
+      return resp;
+    }
+    return resp;
+  } catch (e) {
+    // Error de red: encolar
+    await outboxEnqueue(url, options);
+    // Devolver respuesta ficticia para no romper el flujo
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Sin conexión. La petición se sincronizará cuando vuelva la red.',
+      offline: true
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// Banner de conexión
+function showBanner(isOnline) {
+  const banner = document.getElementById('connectionBanner');
+  if (!banner) return;
+  if (isOnline) {
+    banner.style.display = 'block';
+    banner.style.background = '#059669';
+    banner.style.color = 'white';
+    banner.textContent = '✓ Conexión restaurada. Sincronizando datos...';
+    setTimeout(() => { banner.style.display = 'none'; }, 3000);
+    // Sincronizar outbox
+    syncOutbox().then(() => {
+      // Actualizar datos
+      if (typeof recargar === 'function') recargar().catch(() => {});
+    });
+  } else {
+    banner.style.display = 'block';
+    banner.style.background = '#dc2626';
+    banner.style.color = 'white';
+    banner.textContent = '✕ Sin conexión. Los cambios se guardarán y sincronizarán automáticamente.';
+  }
+}
+
+// Listeners de conexión
+window.addEventListener('online', () => {
+  showBanner(true);
+  const el = document.getElementById('connectionStatus');
+  if (el) {
+    el.textContent = 'Conectado';
+    el.className = 'flex items-center gap-1 text-[9px] font-bold text-emerald-600';
+  }
+});
+
+window.addEventListener('offline', () => {
+  showBanner(false);
+  const el = document.getElementById('connectionStatus');
+  if (el) {
+    el.textContent = 'Sin conexión';
+    el.className = 'flex items-center gap-1 text-[9px] font-bold text-red-500';
+  }
+});
+
+// Reemplazar fetch global para interceptar llamadas
+const _originalFetch = window.fetch;
+window.fetch = function(url, options) {
+  // Solo interceptar si es una API call
+  if (typeof url === 'string' && url.includes('/api/')) {
+    return apiFetch(url, options);
+  }
+  return _originalFetch(url, options);
+};
+
+// También interceptar cuando ya estamos offline al inicio
+if (!navigator.onLine) {
+  showBanner(false);
+}
+
+// Sincronizar al cargar
+window.addEventListener('load', () => {
+  if (navigator.onLine) {
+    syncOutbox();
+  }
+});
+</script>
+</body>
+</html>
