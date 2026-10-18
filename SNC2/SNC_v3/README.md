@@ -54,7 +54,7 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 
 | Artefacto | Contenido |
 |---|---|
-| [`graph.json`](graphify-out/graph.json) | **Grafo completo: 1.398 nodos y 2.166 aristas** — 133 archivos (código, tests, docs, HTML y configuración) en 126 comunidades |
+| [`graph.json`](graphify-out/graph.json) | **Grafo completo: ≈1.400 nodos y ≈2.170 aristas** — todo el corpus indexable (código, tests, docs, HTML y configuración) en ≈126 comunidades |
 | [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: 139 nodos y 801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
 | [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) | Reporte arquitectónico: hubs, comunidades y preguntas sugeridas |
 | [`graph.html`](graphify-out/graph.html) | Visor interactivo (abrir en navegador) |
@@ -74,9 +74,9 @@ npm run audit:sync -- --check                                         # verifica
 > Quedan fuera por seguridad: `data/`, `ejercicio/`, `serviceAccountKey.json`, `_update_user.cjs`,
 > `probar_members.cjs`, `.env`, logs y binarios (`node_modules/`, `dist/`).
 
-Estado al 2026-10-18: grafo construido en el commit `2f202d0`; 133 archivos y 126 comunidades. Incluye la
-auditoría y el plan, los 11 tests, las 12 páginas HTML (como nodo de archivo), `.opencode/` y la
-configuración. El grafo **se regenera, no se edita a mano**, y no debe publicarse en el sitio (ver C-03).
+Estado al 2026-10-18: ≈1.400 nodos y ≈126 comunidades. Incluye la auditoría y el plan, los 11 tests, las
+12 páginas HTML (como nodo de archivo), `.opencode/` y la configuración. El grafo **se regenera, no se edita
+a mano**, y no debe publicarse en el sitio (ver C-03).
 
 ---
 

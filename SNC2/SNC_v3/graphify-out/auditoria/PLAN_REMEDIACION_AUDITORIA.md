@@ -35,7 +35,7 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 6. **No editar artefactos generados.** `dist/`, `data/*.sqlite*` y `graphify-out/` se regeneran; el grafo se actualiza con `npm run graph:refresh`, nunca a mano.
 7. **Mantener el grafo al día** cuando el cambio sea estructural: ejecutar `npm run graph:refresh` y verificar que `graph.json.built_at_commit` coincida con el último commit indexado.
 8. **Mantener el espejo de auditoría:** tras editar el informe o este plan, ejecutar `npm run audit:sync` (y `npm run audit:sync -- --check` en CI). `graphify-out/auditoria/` no se edita a mano.
-9. **Mantener el grafo completo:** `npm run audit:graph` indexa todo el corpus indexable (133 archivos) y purga nodos de archivos borrados o sensibles. Tras un `graphify update .` (que descarta docs) ejecutar `npm run graph:refresh`.
+9. **Mantener el grafo completo:** `npm run audit:graph` indexa todo el corpus indexable y purga nodos de archivos borrados o sensibles. Tras un `graphify update .` (que descarta docs) ejecutar `npm run graph:refresh`.
 
 ---
 

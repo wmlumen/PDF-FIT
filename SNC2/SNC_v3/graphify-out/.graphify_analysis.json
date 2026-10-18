@@ -1,168 +1,6 @@
 {
   "communities": {
     "0": [
-      "docs_frontend_p3_improvements_1_jsdoc_mínimo_en_mapengine",
-      "docs_frontend_p3_improvements_2_centralización_de_estados_globales",
-      "js_datatable",
-      "js_datatable_addrow",
-      "js_datatable_attributehistory",
-      "js_datatable_autocompletewithsnc",
-      "js_datatable_canceledit",
-      "js_datatable_clearselection",
-      "js_datatable_currentdata",
-      "js_datatable_deleterow",
-      "js_datatable_editrow",
-      "js_datatable_escapehtml",
-      "js_datatable_loadtemplatefromlink",
-      "js_datatable_redoattributeedit",
-      "js_datatable_render",
-      "js_datatable_renderselectedparcelsummary",
-      "js_datatable_saverow",
-      "js_datatable_savetoexcel",
-      "js_datatable_selectbyparcelnumber",
-      "js_datatable_selectrow",
-      "js_datatable_togglepin",
-      "js_datatable_undoattributeedit",
-      "js_datatable_updatecell",
-      "js_datatable_updaterequiredfieldsstatus",
-      "js_geometryhistory",
-      "js_geometryhistory_geometryhistory",
-      "js_geometryhistory_geometryhistory_canredo",
-      "js_geometryhistory_geometryhistory_canundo",
-      "js_geometryhistory_geometryhistory_clone",
-      "js_geometryhistory_geometryhistory_commit",
-      "js_geometryhistory_geometryhistory_constructor",
-      "js_geometryhistory_geometryhistory_redo",
-      "js_geometryhistory_geometryhistory_reset",
-      "js_geometryhistory_geometryhistory_rollbacklastcommit",
-      "js_geometryhistory_geometryhistory_syncexternal",
-      "js_geometryhistory_geometryhistory_undo",
-      "js_mapengine",
-      "js_mapengine_adddraftvertex",
-      "js_mapengine_assertmapdependencies",
-      "js_mapengine_assignnumberfrommap",
-      "js_mapengine_cancelvertexedit",
-      "js_mapengine_capturecertificatemapimages",
-      "js_mapengine_checkmapdependencies",
-      "js_mapengine_clearprojectlayer",
-      "js_mapengine_cleartopologyerrors",
-      "js_mapengine_clearvertexmarkers",
-      "js_mapengine_closeparcelinspector",
-      "js_mapengine_commitexternalgeometry",
-      "js_mapengine_commitvertexedit",
-      "js_mapengine_convertpointstopolygon",
-      "js_mapengine_deletedraftvertex",
-      "js_mapengine_downloadenvironmentcache",
-      "js_mapengine_ensurekeyboardshortcuts",
-      "js_mapengine_findsnapcoordinate",
-      "js_mapengine_focusworkpolygon",
-      "js_mapengine_geometryhistory",
-      "js_mapengine_geteditablevertexrefs",
-      "js_mapengine_getgeometrysegments",
-      "js_mapengine_getmap",
-      "js_mapengine_getpolygonfeatures",
-      "js_mapengine_getpolygonvertices",
-      "js_mapengine_getringbypath",
-      "js_mapengine_getsnaptolerancemeters",
-      "js_mapengine_init",
-      "js_mapengine_invalidatesize",
-      "js_mapengine_loadgeojson",
-      "js_mapengine_movecoincidentvertices",
-      "js_mapengine_onvertexeditmapclick",
-      "js_mapengine_opencertificatemap",
-      "js_mapengine_performsplit",
-      "js_mapengine_performsplitlegacy",
-      "js_mapengine_redogeometryedit",
-      "js_mapengine_renderparcelnumberlabels",
-      "js_mapengine_rendervertexeditor",
-      "js_mapengine_restorestartupview",
-      "js_mapengine_samecoordinate",
-      "js_mapengine_selectparcelbynumber",
-      "js_mapengine_setbaselayer",
-      "js_mapengine_setvertexeditmode",
-      "js_mapengine_showparcelinspector",
-      "js_mapengine_showtopologyerrors",
-      "js_mapengine_snc_reference_wms",
-      "js_mapengine_startvertexedit",
-      "js_mapengine_stopparcelnumberassignment",
-      "js_mapengine_takemapscreenshot",
-      "js_mapengine_tile_layers",
-      "js_mapengine_toggledeptos",
-      "js_mapengine_toggledistritos",
-      "js_mapengine_togglemeasuremode",
-      "js_mapengine_toggleparcelnumberassignment",
-      "js_mapengine_togglesncreferencelayer",
-      "js_mapengine_togglesplitmode",
-      "js_mapengine_togglevertexedit",
-      "js_mapengine_undogeometryedit",
-      "js_mapengine_updatehistorycontrols",
-      "js_mapengine_updateutmcoordsdisplay",
-      "js_mapengine_updatevertexcoordinate",
-      "js_mapengine_validateeditedgeojson",
-      "js_state_statemanager_subscribe",
-      "js_utils_calcularcentroide",
-      "js_utils_formatnumber",
-      "js_utils_showtoast"
-    ],
-    "1": [
-      "docs_readme_1_certificación_pdf_completa",
-      "docs_readme_estado_del_proyecto",
-      "docx",
-      "js_export",
-      "js_export_buildresolutionchecklist",
-      "js_export_calculartoleranciasnc",
-      "js_export_captureprofessionalmaps",
-      "js_export_captureprofessionalmaps_capturemap",
-      "js_export_checkdependencies",
-      "js_export_exportgeojson",
-      "js_export_exportkml",
-      "js_export_exportprofessionalreport",
-      "js_export_generateauditcertificate",
-      "js_export_generatecompliancecertificate",
-      "js_export_generateconsultadescriptivapdf",
-      "js_export_generatedualdictamen",
-      "js_export_generategeodesicsection",
-      "js_export_generatepdfreport",
-      "js_export_generateprofessionaldocx",
-      "js_export_generateprofessionalpdf",
-      "js_export_generateprofessionalreport",
-      "js_export_generateshapefile",
-      "js_export_getcertificatevertexrows",
-      "js_export_getdocxlib",
-      "js_export_getexportgeojson",
-      "js_export_getproj",
-      "js_export_packanddownload",
-      "js_export_reprojecttoutm",
-      "js_export_reprojecttoutm_transformcoords",
-      "js_exportformats",
-      "js_exportformats_buildgeojson",
-      "js_exportformats_buildkml",
-      "js_exportformats_escapexml",
-      "js_exportformats_selectofficialproperties",
-      "js_exportformats_xml_escape",
-      "js_parser_downloadparsinglog",
-      "js_segmentlengths",
-      "js_segmentlengths_calculateringsegments",
-      "js_segmentlengths_formatmeters",
-      "js_utils_downloadfile",
-      "ref_docx",
-      "tests_segment_lengths_test",
-      "tests_segment_lengths_test_segments",
-      "tests_workflow_test",
-      "tests_workflow_test_exploded",
-      "tests_workflow_test_geojsontext",
-      "tests_workflow_test_getitem",
-      "tests_workflow_test_input",
-      "tests_workflow_test_kml",
-      "tests_workflow_test_official",
-      "tests_workflow_test_officialfields",
-      "tests_workflow_test_removeitem",
-      "tests_workflow_test_rows",
-      "tests_workflow_test_setitem",
-      "tests_workflow_test_square",
-      "tests_workflow_test_sync"
-    ],
-    "2": [
       "tests_validator_test",
       "tests_validator_test_areafail",
       "tests_validator_test_areaokurbanofeature",
@@ -214,96 +52,52 @@
       "tests_validator_test_zonaokgeo",
       "tests_validator_test_zonatransiciongeo"
     ],
-    "3": [
-      "docs_informe_validacion",
-      "docs_informe_validacion_1_qué_valida_el_sistema_8_criterios_snc_551_2023",
-      "docs_informe_validacion_2_estructura_del_informe_de_validación",
+    "1": [
       "docs_informe_validacion_3_qué_se_hizo_con_los_archivos",
-      "docs_informe_validacion_4_1_campos_obligatorios_art_8_de_la_res",
-      "docs_informe_validacion_4_2_tolerancia_de_área_art_12_de_la_res",
-      "docs_informe_validacion_4_3_proyección_cartográfica_art_15_de_la_res",
-      "docs_informe_validacion_4_4_topología_art_18_de_la_res",
-      "docs_informe_validacion_4_5_estructura_de_archivos_art_20_de_la_res",
-      "docs_informe_validacion_4_6_certificación_anexo_b_de_la_res",
-      "docs_informe_validacion_4_cumplimiento_de_la_resolución_snc_n_551_2023",
-      "docs_informe_validacion_5_tests_de_validación_ejecutados",
-      "docs_informe_validacion_6_cómo_usar_el_sistema_de_validación",
-      "docs_informe_validacion_7_formato_del_informe_de_validación_modal",
-      "docs_informe_validacion_8_checklist_para_el_usuario",
-      "docs_informe_validacion_a_encabezado",
-      "docs_informe_validacion_b_resumen_ejecutivo",
       "docs_informe_validacion_b_transformaciones_aplicadas",
       "docs_informe_validacion_c_archivos_de_salida_generados",
-      "docs_informe_validacion_c_tabla_de_errores_advertencias",
-      "docs_informe_validacion_conclusión",
-      "docs_informe_validacion_criterio_1_integridad_de_geometría",
-      "docs_informe_validacion_criterio_2_archivos_requeridos_shp_zip",
-      "docs_informe_validacion_criterio_3_campos_obligatorios_14_campos",
-      "docs_informe_validacion_criterio_4_tolerancia_de_área",
-      "docs_informe_validacion_criterio_5_coincidencia_geográfica",
-      "docs_informe_validacion_criterio_6_topología_sin_superposición",
-      "docs_informe_validacion_criterio_7_sin_elementos_huérfanos",
-      "docs_informe_validacion_criterio_8_proyección_epsg_32721_utm_21s",
-      "docs_informe_validacion_d_detalle_por_criterio_8_secciones",
-      "docs_informe_validacion_e_mapa_de_errores_opcional",
-      "docs_informe_validacion_ejemplo_visual_del_informe_generado",
-      "docs_informe_validacion_evidencia_de_conformidad",
-      "docs_informe_validacion_f_botones_de_acción",
-      "docs_informe_validacion_informe_de_validación_catastro_py_pro",
-      "docs_informe_validacion_paso_1_cargar_geometría",
-      "docs_informe_validacion_paso_2_cargar_datos_opcional",
-      "docs_informe_validacion_paso_3_validar",
-      "docs_informe_validacion_paso_4_corregir_si_hay_errores",
-      "docs_informe_validacion_paso_5_certificar_y_exportar",
-      "docs_informe_validacion_propósito_de_este_documento",
-      "docs_informe_validacion_resolución_snc_n_551_2023_paraguay",
-      "docs_informe_validacion_resultados_de_tests_unitarios_14_14_pass"
+      "docs_readme_1_certificación_pdf_completa",
+      "docs_readme_estado_del_proyecto",
+      "docx",
+      "js_export",
+      "js_export_buildresolutionchecklist",
+      "js_export_calculartoleranciasnc",
+      "js_export_captureprofessionalmaps",
+      "js_export_captureprofessionalmaps_capturemap",
+      "js_export_checkdependencies",
+      "js_export_exportgeojson",
+      "js_export_exportkml",
+      "js_export_exportprofessionalreport",
+      "js_export_generateauditcertificate",
+      "js_export_generatecompliancecertificate",
+      "js_export_generateconsultadescriptivapdf",
+      "js_export_generatedualdictamen",
+      "js_export_generategeodesicsection",
+      "js_export_generatepdfreport",
+      "js_export_generateprofessionaldocx",
+      "js_export_generateprofessionalpdf",
+      "js_export_generateprofessionalreport",
+      "js_export_generateshapefile",
+      "js_export_getcertificatevertexrows",
+      "js_export_getdocxlib",
+      "js_export_getexportgeojson",
+      "js_export_getproj",
+      "js_export_packanddownload",
+      "js_export_reprojecttoutm",
+      "js_export_reprojecttoutm_transformcoords",
+      "js_exportformats",
+      "js_exportformats_buildgeojson",
+      "js_exportformats_buildkml",
+      "js_exportformats_escapexml",
+      "js_exportformats_selectofficialproperties",
+      "js_exportformats_xml_escape",
+      "js_parser_downloadparsinglog",
+      "js_utils_downloadfile",
+      "js_utils_hideloading",
+      "js_utils_showloading",
+      "ref_docx"
     ],
-    "4": [
-      "js_admin_diagnostic",
-      "js_admin_diagnostic_diagnostic",
-      "js_backup_complement",
-      "js_backup_complement_calculardistancia",
-      "js_backup_complement_calcularsuperficie",
-      "js_backup_complement_exportarexceldescargable",
-      "js_backup_complement_exportarpdfdescargable",
-      "js_backup_complement_generardbf",
-      "js_backup_complement_gradosaradianes",
-      "js_backup_complement_validararchivospresentes",
-      "js_backup_complement_validarcamposobligatorios",
-      "js_layerguard",
-      "js_layerguard_layerguard",
-      "js_layerguard_layerguardclass",
-      "js_layerguard_layerguardclass_addifabsent",
-      "js_layerguard_layerguardclass_clear",
-      "js_layerguard_layerguardclass_constructor",
-      "js_layerguard_layerguardclass_get",
-      "js_layerguard_layerguardclass_has",
-      "js_layerguard_layerguardclass_init",
-      "js_layerguard_layerguardclass_listids",
-      "js_layerguard_layerguardclass_remove",
-      "js_logger",
-      "js_logger_logger",
-      "js_paraguayref",
-      "js_paraguayref_departamentos_py",
-      "js_paraguayref_distritos_py",
-      "js_paraguayref_extractdeptanddistrict",
-      "js_paraguayref_getdepartamento",
-      "js_paraguayref_getdistrito",
-      "js_paraguayref_getdistritospordepartamento",
-      "js_paraguayref_layers_cache",
-      "js_paraguayref_loadlayer",
-      "js_paraguayref_validarclave",
-      "js_paraguayref_validardist",
-      "js_paraguayref_validardpto",
-      "js_payment",
-      "js_payment_express",
-      "js_payment_logger",
-      "js_payment_router",
-      "js_payment_users",
-      "ref_express"
-    ],
-    "5": [
+    "2": [
       "tsconfig",
       "tsconfig_compileroptions",
       "tsconfig_compileroptions_allowjs",
@@ -346,16 +140,52 @@
       "tsconfig_include",
       "tsconfig_paths_server"
     ],
-    "6": [
-      "docs_frontend_p3_improvements",
-      "docs_frontend_p3_improvements_3_evaluación_de_central_html",
+    "3": [
+      "docs_informe_validacion",
+      "docs_informe_validacion_1_qué_valida_el_sistema_8_criterios_snc_551_2023",
+      "docs_informe_validacion_2_estructura_del_informe_de_validación",
+      "docs_informe_validacion_4_1_campos_obligatorios_art_8_de_la_res",
+      "docs_informe_validacion_4_2_tolerancia_de_área_art_12_de_la_res",
+      "docs_informe_validacion_4_3_proyección_cartográfica_art_15_de_la_res",
+      "docs_informe_validacion_4_4_topología_art_18_de_la_res",
+      "docs_informe_validacion_4_5_estructura_de_archivos_art_20_de_la_res",
+      "docs_informe_validacion_4_6_certificación_anexo_b_de_la_res",
+      "docs_informe_validacion_4_cumplimiento_de_la_resolución_snc_n_551_2023",
+      "docs_informe_validacion_5_tests_de_validación_ejecutados",
+      "docs_informe_validacion_6_cómo_usar_el_sistema_de_validación",
+      "docs_informe_validacion_7_formato_del_informe_de_validación_modal",
+      "docs_informe_validacion_8_checklist_para_el_usuario",
+      "docs_informe_validacion_a_encabezado",
+      "docs_informe_validacion_b_resumen_ejecutivo",
+      "docs_informe_validacion_c_tabla_de_errores_advertencias",
+      "docs_informe_validacion_conclusión",
+      "docs_informe_validacion_criterio_1_integridad_de_geometría",
+      "docs_informe_validacion_criterio_2_archivos_requeridos_shp_zip",
+      "docs_informe_validacion_criterio_3_campos_obligatorios_14_campos",
+      "docs_informe_validacion_criterio_4_tolerancia_de_área",
+      "docs_informe_validacion_criterio_5_coincidencia_geográfica",
+      "docs_informe_validacion_criterio_6_topología_sin_superposición",
+      "docs_informe_validacion_criterio_7_sin_elementos_huérfanos",
+      "docs_informe_validacion_criterio_8_proyección_epsg_32721_utm_21s",
+      "docs_informe_validacion_d_detalle_por_criterio_8_secciones",
+      "docs_informe_validacion_e_mapa_de_errores_opcional",
+      "docs_informe_validacion_ejemplo_visual_del_informe_generado",
+      "docs_informe_validacion_evidencia_de_conformidad",
+      "docs_informe_validacion_f_botones_de_acción",
+      "docs_informe_validacion_informe_de_validación_catastro_py_pro",
+      "docs_informe_validacion_paso_1_cargar_geometría",
+      "docs_informe_validacion_paso_2_cargar_datos_opcional",
+      "docs_informe_validacion_paso_3_validar",
+      "docs_informe_validacion_paso_4_corregir_si_hay_errores",
+      "docs_informe_validacion_paso_5_certificar_y_exportar",
+      "docs_informe_validacion_propósito_de_este_documento",
+      "docs_informe_validacion_resolución_snc_n_551_2023_paraguay",
+      "docs_informe_validacion_resultados_de_tests_unitarios_14_14_pass"
+    ],
+    "4": [
       "docs_frontend_p3_improvements_4_deuda_técnica_frontend_y_recomendaciones_de_bundling",
-      "docs_frontend_p3_improvements_archivos_evaluados_para_remover",
-      "docs_frontend_p3_improvements_archivos_modificados",
       "docs_frontend_p3_improvements_deuda_técnica_relevante",
-      "docs_frontend_p3_improvements_mejoras_p3_frontend_snc_v3",
       "docs_frontend_p3_improvements_recomendaciones_de_bundling",
-      "docs_frontend_p3_improvements_resumen_de_cambios",
       "grafos",
       "grafos_1_grafo_tree_sitter_graphify",
       "grafos_comunidades_56_etiquetadas_en_español",
@@ -388,10 +218,42 @@
       "js_state_statemanager_syncgeometrytoparcelrows",
       "js_state_statemanager_synctobackend"
     ],
-    "7": [
+    "5": [
+      "js_datatable",
+      "js_datatable_addrow",
+      "js_datatable_attributehistory",
+      "js_datatable_autocompletewithsnc",
+      "js_datatable_canceledit",
+      "js_datatable_clearselection",
+      "js_datatable_currentdata",
+      "js_datatable_deleterow",
+      "js_datatable_editrow",
+      "js_datatable_escapehtml",
+      "js_datatable_redoattributeedit",
+      "js_datatable_render",
+      "js_datatable_renderselectedparcelsummary",
+      "js_datatable_saverow",
+      "js_datatable_selectbyparcelnumber",
+      "js_datatable_selectrow",
+      "js_datatable_togglepin",
+      "js_datatable_undoattributeedit",
+      "js_datatable_updatecell",
+      "js_datatable_updaterequiredfieldsstatus",
+      "js_geometryhistory",
+      "js_geometryhistory_geometryhistory",
+      "js_geometryhistory_geometryhistory_canredo",
+      "js_geometryhistory_geometryhistory_canundo",
+      "js_geometryhistory_geometryhistory_clone",
+      "js_geometryhistory_geometryhistory_commit",
+      "js_geometryhistory_geometryhistory_constructor",
+      "js_geometryhistory_geometryhistory_redo",
+      "js_geometryhistory_geometryhistory_reset",
+      "js_geometryhistory_geometryhistory_rollbacklastcommit",
+      "js_geometryhistory_geometryhistory_syncexternal",
+      "js_geometryhistory_geometryhistory_undo"
+    ],
+    "6": [
       "docs_informe_validacion_a_archivos_de_entrada_aceptados",
-      "js_geofeatures",
-      "js_geofeatures_explodepolygonfeatures",
       "js_parser",
       "js_parser_actualizarmetadatosgeodesicos",
       "js_parser_detectcoordinatedelimiter",
@@ -421,11 +283,9 @@
       "js_parser_towgs84coordinates",
       "js_parser_updateactivefilelabel",
       "js_utils_actualizarcontadoresui",
-      "js_utils_hideloading",
-      "js_utils_sanitizestring",
-      "js_utils_showloading"
+      "js_utils_sanitizestring"
     ],
-    "8": [
+    "7": [
       "ref_node_module",
       "ref_pg",
       "server_api",
@@ -454,74 +314,9 @@
       "server_api_tempprojects",
       "server_api_user_roles",
       "server_api_user_statuses",
-      "server_api_verifypassword",
-      "start_server",
-      "start_server_sh__entry"
+      "server_api_verifypassword"
     ],
-    "9": [
-      "docs_promotion_checklist_1_criterios_núcleo_snc_551_2023",
-      "docs_promotion_checklist_2_cobertura_funcional",
-      "docs_promotion_checklist_3_pruebas_y_calidad",
-      "docs_promotion_checklist_4_seguridad",
-      "docs_promotion_checklist_5_deploy",
-      "docs_promotion_checklist_6_documentación",
-      "docs_promotion_checklist_7_items_manuales_producción",
-      "docs_promotion_checklist_8_aprobación",
-      "docs_promotion_checklist_pendientes_externos_no_bloquean_código",
-      "docs_promotion_checklist_promoción_snc_v3_checklist",
-      "js_cogo",
-      "js_cogo_buildcogoring",
-      "js_cogo_normalizeazimuth",
-      "js_cogo_parsebearing",
-      "js_cogo_parsecogocourses",
-      "js_cogo_todegrees",
-      "js_cogo_toradians",
-      "js_cogo_validatecourse",
-      "js_cogoui",
-      "js_cogoui_close",
-      "js_cogoui_cogoui",
-      "js_cogoui_createparcel",
-      "js_cogoui_open",
-      "js_cogoui_preview",
-      "js_cogoui_shoelacearea",
-      "tests_cogo_test",
-      "tests_cogo_test_arc",
-      "tests_cogo_test_courses",
-      "tests_cogo_test_pointcourse",
-      "tests_cogo_test_square"
-    ],
-    "10": [
-      "docs_auditoria_snc_v3_2026_10_18_c_06_firestore_roto_fallback_silencioso_a_sqlite",
-      "opencode_coordination_graphclient",
-      "opencode_coordination_graphclient_dirname",
-      "opencode_coordination_graphclient_filename",
-      "opencode_coordination_graphclient_getgraphclient",
-      "opencode_coordination_graphclient_graphclient",
-      "opencode_coordination_graphclient_graphclient_constructor",
-      "opencode_coordination_graphclient_graphclient_findnodesbylabel",
-      "opencode_coordination_graphclient_graphclient_getcommunities",
-      "opencode_coordination_graphclient_graphclient_getcommunityname",
-      "opencode_coordination_graphclient_graphclient_getcommunitynodes",
-      "opencode_coordination_graphclient_graphclient_getdependencies",
-      "opencode_coordination_graphclient_graphclient_getdependents",
-      "opencode_coordination_graphclient_graphclient_getfilesfornode",
-      "opencode_coordination_graphclient_graphclient_getimpactedfiles",
-      "opencode_coordination_graphclient_graphclient_getincomingedges",
-      "opencode_coordination_graphclient_graphclient_getnode",
-      "opencode_coordination_graphclient_graphclient_getnodebylabel",
-      "opencode_coordination_graphclient_graphclient_getnodesbyfile",
-      "opencode_coordination_graphclient_graphclient_getoutgoingedges",
-      "opencode_coordination_graphclient_graphclient_getrelatedfiles",
-      "opencode_coordination_graphclient_graphclient_getstats",
-      "opencode_coordination_graphclient_graphclient_load",
-      "opencode_coordination_graphclient_graphclient_search",
-      "opencode_coordination_graphclient_local_domain",
-      "opencode_coordination_graphclient_local_graph",
-      "opencode_coordination_graphclient_root_domain",
-      "opencode_coordination_graphclient_root_graph",
-      "ref_url"
-    ],
-    "11": [
+    "8": [
       "tests_export_test",
       "tests_export_test_assert",
       "tests_export_test_campos_requeridos",
@@ -551,36 +346,34 @@
       "tests_export_test_ui",
       "tests_export_test_validresults"
     ],
-    "12": [
-      "js_config",
-      "js_config_campos_rurales",
-      "js_config_campos_urbanos",
-      "js_config_config_municipal",
-      "js_config_epsg_32720",
-      "js_config_epsg_32721",
-      "js_config_especificacion_campos_snc",
-      "js_config_map_config",
-      "js_config_max_vertices_before_simplify",
-      "js_config_mensajes",
-      "js_config_metadatos_geodesicos",
-      "js_config_proj_32720",
-      "js_config_proj_32721",
-      "js_config_simplify_threshold",
-      "js_config_tolerancias",
-      "js_config_usos_tierra",
-      "js_config_utm_zone_ranges",
-      "js_config_wkt_32721",
-      "js_municipal",
-      "js_municipal_validadormunicipaldefault",
-      "js_utils",
-      "js_utils_actualizarestadoproyecto",
-      "js_utils_calcularmetricasplanasutm",
-      "js_utils_delay",
-      "js_utils_formatrumbo",
-      "js_utils_generarderrotero",
+    "9": [
+      "js_layerguard",
+      "js_layerguard_layerguard",
+      "js_mapengine",
+      "js_mapengine_assertmapdependencies",
+      "js_mapengine_capturecertificatemapimages",
+      "js_mapengine_checkmapdependencies",
+      "js_mapengine_convertpointstopolygon",
+      "js_mapengine_focusworkpolygon",
+      "js_mapengine_geometryhistory",
+      "js_mapengine_getmap",
+      "js_mapengine_getpolygonvertices",
+      "js_mapengine_init",
+      "js_mapengine_invalidatesize",
+      "js_mapengine_opencertificatemap",
+      "js_mapengine_restorestartupview",
+      "js_mapengine_samecoordinate",
+      "js_mapengine_setbaselayer",
+      "js_mapengine_snc_reference_wms",
+      "js_mapengine_takemapscreenshot",
+      "js_mapengine_tile_layers",
+      "js_mapengine_togglesncreferencelayer",
+      "js_mapengine_updateutmcoordsdisplay",
+      "js_utils_calcularcentroide",
+      "js_utils_formatnumber",
       "js_utils_simplifygeometryifneeded"
     ],
-    "13": [
+    "10": [
       "db_bcrypt",
       "db_cjs_db",
       "db_cjs_db_db",
@@ -606,7 +399,33 @@
       "db_users",
       "ref_bcrypt"
     ],
-    "14": [
+    "11": [
+      "js_config",
+      "js_config_campos_rurales",
+      "js_config_campos_urbanos",
+      "js_config_config_municipal",
+      "js_config_epsg_32720",
+      "js_config_epsg_32721",
+      "js_config_especificacion_campos_snc",
+      "js_config_map_config",
+      "js_config_max_vertices_before_simplify",
+      "js_config_mensajes",
+      "js_config_metadatos_geodesicos",
+      "js_config_proj_32720",
+      "js_config_proj_32721",
+      "js_config_simplify_threshold",
+      "js_config_tolerancias",
+      "js_config_usos_tierra",
+      "js_config_utm_zone_ranges",
+      "js_config_wkt_32721",
+      "js_municipal",
+      "js_municipal_validadormunicipaldefault",
+      "js_utils",
+      "js_utils_delay",
+      "js_utils_formatrumbo",
+      "js_utils_generarderrotero"
+    ],
+    "12": [
       "docs_qa_coverage",
       "docs_qa_coverage_acciones_pendientes",
       "docs_qa_coverage_cobertura_actual_estimada",
@@ -631,8 +450,8 @@
       "scripts_sync_auditoria_sha256",
       "scripts_sync_auditoria_sources"
     ],
-    "15": [
-      "docs_qa_crs_reprojection_assumptions_4_supuestos_en_js_validator_js",
+    "13": [
+      "js_utils_calcularmetricasplanasutm",
       "js_utils_isnumeric",
       "js_validator",
       "js_validator_closemodal",
@@ -656,7 +475,7 @@
       "js_validator_validartopologiasolapamientos",
       "js_validator_validarzonasutm"
     ],
-    "16": [
+    "14": [
       "package",
       "package_name",
       "package_private",
@@ -680,7 +499,7 @@
       "ref_typescript_eslint_parser",
       "ref_xlsx"
     ],
-    "17": [
+    "15": [
       "docs_plan_remediacion_server_api",
       "docs_plan_remediacion_server_api_crit_001_serviceaccountkey_json_hardcodeado_en_código",
       "docs_plan_remediacion_server_api_crit_002_jwt_secret_expuesto_en_config_env_js",
@@ -703,7 +522,7 @@
       "docs_plan_remediacion_server_api_registro_de_cambios",
       "docs_plan_remediacion_server_api_resumen_ejecutivo"
     ],
-    "18": [
+    "16": [
       "docs_qa_checklist",
       "docs_qa_checklist_archivos_principales",
       "docs_qa_checklist_auditorías_programadas",
@@ -726,7 +545,72 @@
       "docs_qa_checklist_qa_checklist_salud_del_proyecto",
       "docs_qa_checklist_tests_unitarios"
     ],
+    "17": [
+      "deploy_10_notas_importantes",
+      "deploy_11_estado_del_proyecto_2026_10_18",
+      "deploy_1_requisitos_previos",
+      "deploy_2_checklist_pre_deploy",
+      "deploy_3_inicio_de_sesión_y_proyecto",
+      "deploy_4_verificar_configuración",
+      "deploy_5_prueba_local_preview",
+      "deploy_6_deploy_a_preview",
+      "deploy_7_deploy_a_producción",
+      "deploy_8_verificar_post_deploy",
+      "deploy_9_rollback",
+      "deploy_archivos_eliminados",
+      "deploy_backend_y_entorno",
+      "deploy_completado",
+      "deploy_configuración_y_secretos",
+      "deploy_código_y_calidad",
+      "deploy_datos_y_hosting",
+      "deploy_deploy_snc_v3_firebase_hosting",
+      "deploy_pendiente_de_verificación_manual",
+      "deploy_seguridad_fase_2_verificada"
+    ],
+    "18": [
+      "js_cogo",
+      "js_cogo_buildcogoring",
+      "js_cogo_normalizeazimuth",
+      "js_cogo_parsebearing",
+      "js_cogo_parsecogocourses",
+      "js_cogo_todegrees",
+      "js_cogo_toradians",
+      "js_cogo_validatecourse",
+      "js_cogoui",
+      "js_cogoui_close",
+      "js_cogoui_cogoui",
+      "js_cogoui_createparcel",
+      "js_cogoui_open",
+      "js_cogoui_preview",
+      "js_cogoui_shoelacearea",
+      "tests_cogo_test",
+      "tests_cogo_test_arc",
+      "tests_cogo_test_courses",
+      "tests_cogo_test_pointcourse",
+      "tests_cogo_test_square"
+    ],
     "19": [
+      "js_admin_diagnostic",
+      "js_admin_diagnostic_diagnostic",
+      "js_app",
+      "js_app_index",
+      "js_app_index_app",
+      "js_app_index_updateprogressstep",
+      "js_config_campos_requeridos",
+      "js_lineageui",
+      "js_lineageui_escapehtml",
+      "js_lineageui_renderlineage",
+      "js_logger",
+      "js_logger_logger",
+      "js_state",
+      "js_state_length",
+      "js_state_localstoragepolyfill",
+      "js_state_state",
+      "js_utils_actualizarestadoproyecto",
+      "js_workspace",
+      "js_workspace_workspace"
+    ],
+    "20": [
       "js_firestore_db",
       "js_firestore_db_admin",
       "js_firestore_db_db",
@@ -747,7 +631,7 @@
       "js_firestore_db_usage",
       "js_firestore_db_users"
     ],
-    "20": [
+    "21": [
       "js_versioning",
       "js_versioning_clone",
       "js_versioning_compareversions",
@@ -768,7 +652,7 @@
       "tests_versioning_test_v1",
       "tests_versioning_test_v2"
     ],
-    "21": [
+    "22": [
       "package_scripts",
       "package_scripts_audit_graph",
       "package_scripts_audit_sync",
@@ -789,7 +673,27 @@
       "package_scripts_test",
       "package_scripts_typecheck"
     ],
-    "22": [
+    "23": [
+      "docs_frontend_p3_improvements_1_jsdoc_mínimo_en_mapengine",
+      "docs_frontend_p3_improvements_2_centralización_de_estados_globales",
+      "docs_frontend_p3_improvements_3_evaluación_de_central_html",
+      "docs_frontend_p3_improvements_resumen_de_cambios",
+      "js_datatable_loadtemplatefromlink",
+      "js_datatable_savetoexcel",
+      "js_mapengine_cleartopologyerrors",
+      "js_mapengine_commitexternalgeometry",
+      "js_mapengine_downloadenvironmentcache",
+      "js_mapengine_performsplit",
+      "js_mapengine_performsplitlegacy",
+      "js_mapengine_showtopologyerrors",
+      "js_mapengine_toggledeptos",
+      "js_mapengine_toggledistritos",
+      "js_mapengine_togglemeasuremode",
+      "js_mapengine_togglesplitmode",
+      "js_state_statemanager_subscribe",
+      "js_utils_showtoast"
+    ],
+    "24": [
       "opencode_coordination_cli_handlecheck",
       "opencode_coordination_cli_handlelock",
       "opencode_coordination_cli_handleunlock",
@@ -809,7 +713,27 @@
       "opencode_coordination_coordinator_readjsonl",
       "opencode_coordination_coordinator_safewritefilesync"
     ],
-    "23": [
+    "25": [
+      "opencode_coordination_graphclient_getgraphclient",
+      "opencode_coordination_graphclient_graphclient",
+      "opencode_coordination_graphclient_graphclient_constructor",
+      "opencode_coordination_graphclient_graphclient_findnodesbylabel",
+      "opencode_coordination_graphclient_graphclient_getcommunities",
+      "opencode_coordination_graphclient_graphclient_getcommunitynodes",
+      "opencode_coordination_graphclient_graphclient_getdependencies",
+      "opencode_coordination_graphclient_graphclient_getdependents",
+      "opencode_coordination_graphclient_graphclient_getfilesfornode",
+      "opencode_coordination_graphclient_graphclient_getimpactedfiles",
+      "opencode_coordination_graphclient_graphclient_getincomingedges",
+      "opencode_coordination_graphclient_graphclient_getnode",
+      "opencode_coordination_graphclient_graphclient_getnodebylabel",
+      "opencode_coordination_graphclient_graphclient_getnodesbyfile",
+      "opencode_coordination_graphclient_graphclient_getoutgoingedges",
+      "opencode_coordination_graphclient_graphclient_getrelatedfiles",
+      "opencode_coordination_graphclient_graphclient_load",
+      "opencode_coordination_graphclient_graphclient_search"
+    ],
+    "26": [
       "package_devdependencies",
       "package_devdependencies_dxf_parser",
       "package_devdependencies_eslint",
@@ -829,7 +753,7 @@
       "package_devdependencies_vitejs_plugin_legacy",
       "package_devdependencies_xlsx"
     ],
-    "24": [
+    "27": [
       "cachedb",
       "cachedb_cachelog",
       "cachedb_db",
@@ -848,7 +772,7 @@
       "docs_auditoria_snc_v3_2026_10_18_7_hallazgos_bajos",
       "ref_sqlite3"
     ],
-    "25": [
+    "28": [
       "db_data_dir",
       "db_js_db",
       "db_js_db_db",
@@ -867,7 +791,7 @@
       "ref_node_fs",
       "ref_node_path"
     ],
-    "26": [
+    "29": [
       "docs_diagnostics_summary",
       "docs_diagnostics_summary_1_admin_html_panel_de_administración",
       "docs_diagnostics_summary_2_fluxograma_html_flujograma_interactivo",
@@ -886,24 +810,41 @@
       "docs_diagnostics_summary_resumen_de_diagnósticos",
       "docs_diagnostics_summary_validación_validator_js"
     ],
-    "27": [
-      "js_app",
-      "js_app_index",
-      "js_app_index_app",
-      "js_app_index_updateprogressstep",
-      "js_config_campos_requeridos",
-      "js_lineageui",
-      "js_lineageui_escapehtml",
-      "js_lineageui_renderlineage",
-      "js_plans_plans",
-      "js_state",
-      "js_state_length",
-      "js_state_localstoragepolyfill",
-      "js_state_state",
-      "js_workspace",
-      "js_workspace_workspace"
+    "30": [
+      "js_geofeatures",
+      "js_geofeatures_explodepolygonfeatures",
+      "tests_workflow_test",
+      "tests_workflow_test_exploded",
+      "tests_workflow_test_geojsontext",
+      "tests_workflow_test_getitem",
+      "tests_workflow_test_input",
+      "tests_workflow_test_kml",
+      "tests_workflow_test_official",
+      "tests_workflow_test_officialfields",
+      "tests_workflow_test_removeitem",
+      "tests_workflow_test_rows",
+      "tests_workflow_test_setitem",
+      "tests_workflow_test_square",
+      "tests_workflow_test_sync"
     ],
-    "28": [
+    "31": [
+      "js_mapengine_assignnumberfrommap",
+      "js_mapengine_clearvertexmarkers",
+      "js_mapengine_closeparcelinspector",
+      "js_mapengine_getpolygonfeatures",
+      "js_mapengine_loadgeojson",
+      "js_mapengine_renderparcelnumberlabels",
+      "js_mapengine_selectparcelbynumber",
+      "js_mapengine_showparcelinspector",
+      "js_mapengine_stopparcelnumberassignment",
+      "js_mapengine_toggleparcelnumberassignment",
+      "js_segmentlengths",
+      "js_segmentlengths_calculateringsegments",
+      "js_segmentlengths_formatmeters",
+      "tests_segment_lengths_test",
+      "tests_segment_lengths_test_segments"
+    ],
+    "32": [
       "config_env",
       "config_env_env",
       "js_mailer",
@@ -919,7 +860,7 @@
       "js_mailer_wrap",
       "ref_dotenv"
     ],
-    "29": [
+    "33": [
       "docs_plan_db_completo",
       "docs_plan_db_completo_comandos_de_verificación",
       "docs_plan_db_completo_criterios_de_cierre_definition_of_done",
@@ -935,7 +876,7 @@
       "docs_plan_db_completo_plan_capa_de_base_de_datos_completa_sqlite_firestore_cache",
       "docs_plan_db_completo_plan_de_ejecución"
     ],
-    "30": [
+    "34": [
       "docs_readme_campos_obligatorios_14_2_según_anexo_a_res_551_2023",
       "docs_readme_catastro_py_pro_v3_0_snc_551_2023",
       "docs_readme_checklist_de_salud_del_proyecto",
@@ -951,7 +892,7 @@
       "docs_readme_validación_oficial_8_criterios_res_snc_551_2023",
       "docs_readme_variables_de_entorno_647"
     ],
-    "31": [
+    "35": [
       "docs_auditoria_snc_v3_2026_10_18_5_hallazgos_altos",
       "docs_auditoria_snc_v3_2026_10_18_a_01_api_usage_increment_responde_403_siempre",
       "docs_auditoria_snc_v3_2026_10_18_a_02_health_check_que_siempre_dice_ok",
@@ -966,7 +907,7 @@
       "members_api_block",
       "members_api_block_api"
     ],
-    "32": [
+    "36": [
       "grafos_2_grafo_de_dominio",
       "grafos_aristas",
       "grafos_consulta_rápida_python",
@@ -981,7 +922,22 @@
       "js_municipal_validadormunicipal_validarloteurbano",
       "js_municipal_validadormunicipal_validarretiros"
     ],
-    "33": [
+    "37": [
+      "js_geoprocessingui",
+      "js_geoprocessingui_close",
+      "js_geoprocessingui_featurelabel",
+      "js_geoprocessingui_modal",
+      "js_geoprocessingui_open",
+      "js_geoprocessingui_run",
+      "js_lineage_createlineageevent",
+      "js_lineage_getparcelid",
+      "js_topologyrepairui",
+      "js_topologyrepairui_apply",
+      "js_topologyrepairui_clearlayer",
+      "js_topologyrepairui_close",
+      "js_topologyrepairui_open"
+    ],
+    "38": [
       "opencode_coordination_cli_handlefail",
       "opencode_coordination_cli_handlepass",
       "opencode_coordination_coordinator_appendjsonl",
@@ -996,7 +952,22 @@
       "opencode_coordination_coordinator_readjson",
       "opencode_coordination_coordinator_writejson"
     ],
-    "34": [
+    "39": [
+      "opencode_coordination_graphclient",
+      "opencode_coordination_graphclient_dirname",
+      "opencode_coordination_graphclient_filename",
+      "opencode_coordination_graphclient_local_domain",
+      "opencode_coordination_graphclient_local_graph",
+      "opencode_coordination_graphclient_root_domain",
+      "opencode_coordination_graphclient_root_graph",
+      "ref_fs",
+      "ref_path",
+      "ref_url",
+      "ref_vite",
+      "ref_vitejs_plugin_legacy",
+      "vite_config"
+    ],
+    "40": [
       "opencode_coordination_orchestrator_agentorchestrator_delegateanywhere",
       "opencode_coordination_orchestrator_agentorchestrator_spawnsubagentanywhere",
       "opencode_coordination_orchestrator_mainagent",
@@ -1011,7 +982,7 @@
       "opencode_coordination_orchestrator_subagent_execute",
       "opencode_coordination_orchestrator_subagent_getstatus"
     ],
-    "35": [
+    "41": [
       "ref_proj4",
       "tests_geometry_history_test",
       "tests_geometry_history_test_featurecollection",
@@ -1026,7 +997,7 @@
       "tests_geometry_history_test_undo",
       "tests_geometry_history_test_utm"
     ],
-    "36": [
+    "42": [
       "tests_api_security_test",
       "tests_api_security_test_assertequal",
       "tests_api_security_test_assertthrows",
@@ -1041,7 +1012,7 @@
       "tests_api_security_test_sanitizeclientstate",
       "tests_api_security_test_sanitizefilesarray"
     ],
-    "37": [
+    "43": [
       "deploy_windows_1_login_y_proyecto_windows",
       "deploy_windows_2_gate_pre_promoción_tests_wsl",
       "deploy_windows_3_preview_windows",
@@ -1055,7 +1026,63 @@
       "deploy_windows_opción_a_firebase_console",
       "deploy_windows_opción_b_re_deploy_desde_commit_anterior"
     ],
-    "38": [
+    "44": [
+      "docs_auditoria_snc_v3_2026_10_18_10_conclusión",
+      "docs_auditoria_snc_v3_2026_10_18_1_resumen_ejecutivo",
+      "docs_auditoria_snc_v3_2026_10_18_2_inventario_auditado",
+      "docs_auditoria_snc_v3_2026_10_18_3_verificaciones_ejecutadas_evidencia",
+      "docs_auditoria_snc_v3_2026_10_18_6_hallazgos_medios",
+      "docs_auditoria_snc_v3_2026_10_18_8_plan_de_remediación_priorizado",
+      "docs_auditoria_snc_v3_2026_10_18_9_anexo_parches_sugeridos_orientativos",
+      "docs_auditoria_snc_v3_2026_10_18_auditoría_técnica_snc_v3_catastro_py_res_snc_551_2023",
+      "docs_auditoria_snc_v3_2026_10_18_fase_0_contención_0_48_h",
+      "docs_auditoria_snc_v3_2026_10_18_fase_1_corrección_funcional_y_de_autorización_semana_1",
+      "docs_auditoria_snc_v3_2026_10_18_fase_2_calidad_y_cadena_de_entrega_semanas_2_3",
+      "docs_auditoria_snc_v3_2026_10_18_fase_3_endurecimiento_y_deuda_backlog"
+    ],
+    "45": [
+      "js_mapengine_cancelvertexedit",
+      "js_mapengine_clearprojectlayer",
+      "js_mapengine_commitvertexedit",
+      "js_mapengine_ensurekeyboardshortcuts",
+      "js_mapengine_onvertexeditmapclick",
+      "js_mapengine_redogeometryedit",
+      "js_mapengine_startvertexedit",
+      "js_mapengine_togglevertexedit",
+      "js_mapengine_undogeometryedit",
+      "js_mapengine_updatehistorycontrols",
+      "js_mapengine_updatevertexcoordinate",
+      "js_mapengine_validateeditedgeojson"
+    ],
+    "46": [
+      "js_paraguayref",
+      "js_paraguayref_departamentos_py",
+      "js_paraguayref_distritos_py",
+      "js_paraguayref_extractdeptanddistrict",
+      "js_paraguayref_getdepartamento",
+      "js_paraguayref_getdistrito",
+      "js_paraguayref_getdistritospordepartamento",
+      "js_paraguayref_layers_cache",
+      "js_paraguayref_loadlayer",
+      "js_paraguayref_validarclave",
+      "js_paraguayref_validardist",
+      "js_paraguayref_validardpto"
+    ],
+    "47": [
+      "js_plans",
+      "js_plans_cancreateexpediente",
+      "js_plans_cancreateproject",
+      "js_plans_canexport",
+      "js_plans_getplanfeatures",
+      "js_plans_getplantype",
+      "js_plans_getrolecapabilities",
+      "js_plans_getwatermark",
+      "js_plans_plans",
+      "js_plans_resolveplan",
+      "js_plans_role_capabilities",
+      "server_api_activatepayment"
+    ],
+    "48": [
       "js_topologyrepair",
       "js_topologyrepair_buildtopologyrepairpreview",
       "js_topologyrepair_cleangeometry",
@@ -1069,7 +1096,7 @@
       "tests_topology_repair_test_repaired",
       "tests_topology_repair_test_result"
     ],
-    "39": [
+    "49": [
       "opencode_coordination_coordinator",
       "opencode_coordination_coordinator_changelog_dir",
       "opencode_coordination_coordinator_dirname",
@@ -1083,7 +1110,7 @@
       "opencode_coordination_selftest_gc",
       "opencode_coordination_selftest_r"
     ],
-    "40": [
+    "50": [
       "package_dependencies",
       "package_dependencies_bcrypt",
       "package_dependencies_better_sqlite3",
@@ -1097,7 +1124,7 @@
       "package_dependencies_nodemailer",
       "package_dependencies_sqlite3"
     ],
-    "41": [
+    "51": [
       "agents_1_1_fuente_de_la_verdad_graphify_out",
       "agents_1_regla_inviolable_aislamiento_de_entornos",
       "agents_2_ciclo_de_vida_obligatorio_para_cada_tarea",
@@ -1110,20 +1137,7 @@
       "agents_paso_5_registrar_el_aprendizaje_feedback_loop",
       "agents_protocolo_de_trabajo_y_coordinación_multi_ia_snc_551_2023"
     ],
-    "42": [
-      "js_plans",
-      "js_plans_cancreateexpediente",
-      "js_plans_cancreateproject",
-      "js_plans_canexport",
-      "js_plans_getplanfeatures",
-      "js_plans_getplantype",
-      "js_plans_getrolecapabilities",
-      "js_plans_getwatermark",
-      "js_plans_resolveplan",
-      "js_plans_role_capabilities",
-      "server_api_activatepayment"
-    ],
-    "43": [
+    "52": [
       "opencode_coordination_readme",
       "opencode_coordination_readme_1_locks_evitar_solapamiento",
       "opencode_coordination_readme_2_error_registry_no_repetir_errores",
@@ -1136,7 +1150,7 @@
       "opencode_coordination_readme_inicio_rápido",
       "opencode_coordination_readme_integración_ci_cd_opcional"
     ],
-    "44": [
+    "53": [
       "agents_0_contexto_obligatorio_auditoría_abierta_2026_10_18",
       "agents_reglas_adicionales_mientras_la_auditoría_esté_abierta",
       "docs_auditoria_snc_v3_2026_10_18_a_07_sanitización_de_html_por_regex_y_reporte_público_que_exige_login",
@@ -1148,19 +1162,55 @@
       "server_api_adminmiddleware",
       "server_api_authmiddleware"
     ],
-    "45": [
-      "deploy_10_notas_importantes",
-      "deploy_1_requisitos_previos",
-      "deploy_3_inicio_de_sesión_y_proyecto",
-      "deploy_4_verificar_configuración",
-      "deploy_5_prueba_local_preview",
-      "deploy_6_deploy_a_preview",
-      "deploy_7_deploy_a_producción",
-      "deploy_8_verificar_post_deploy",
-      "deploy_9_rollback",
-      "deploy_deploy_snc_v3_firebase_hosting"
+    "54": [
+      "docs_auditoria_snc_v3_2026_10_18_4_hallazgos_críticos",
+      "docs_auditoria_snc_v3_2026_10_18_c_01_credenciales_reales_versionadas_en_git",
+      "docs_auditoria_snc_v3_2026_10_18_c_02_clave_privada_de_firebase_admin_en_el_workspace",
+      "docs_auditoria_snc_v3_2026_10_18_c_03_el_despliegue_publica_todo_el_repositorio",
+      "docs_auditoria_snc_v3_2026_10_18_c_04_idor_multi_tenant_en_proyectos_expedientes_archivos_y_pagos",
+      "docs_auditoria_snc_v3_2026_10_18_c_06_firestore_roto_fallback_silencioso_a_sqlite",
+      "docs_auditoria_snc_v3_2026_10_18_c_07_endpoints_core_en_500_contrato_db_cjs_incompleto_y_files_json_inexistente",
+      "docs_auditoria_snc_v3_2026_10_18_c_08_el_webhook_de_pagos_no_puede_validar_la_firma",
+      "opencode_coordination_graphclient_graphclient_getcommunityname",
+      "opencode_coordination_graphclient_graphclient_getstats"
     ],
-    "46": [
+    "55": [
+      "docs_promotion_checklist_1_criterios_núcleo_snc_551_2023",
+      "docs_promotion_checklist_2_cobertura_funcional",
+      "docs_promotion_checklist_3_pruebas_y_calidad",
+      "docs_promotion_checklist_4_seguridad",
+      "docs_promotion_checklist_5_deploy",
+      "docs_promotion_checklist_6_documentación",
+      "docs_promotion_checklist_7_items_manuales_producción",
+      "docs_promotion_checklist_8_aprobación",
+      "docs_promotion_checklist_pendientes_externos_no_bloquean_código",
+      "docs_promotion_checklist_promoción_snc_v3_checklist"
+    ],
+    "56": [
+      "docs_qa_crs_reprojection_assumptions",
+      "docs_qa_crs_reprojection_assumptions_1_principios_generales",
+      "docs_qa_crs_reprojection_assumptions_2_supuestos_en_js_parser_js",
+      "docs_qa_crs_reprojection_assumptions_3_supuestos_en_js_export_js",
+      "docs_qa_crs_reprojection_assumptions_4_supuestos_en_js_validator_js",
+      "docs_qa_crs_reprojection_assumptions_5_matriz_de_responsabilidad_crs",
+      "docs_qa_crs_reprojection_assumptions_6_trazabilidad_y_riesgos",
+      "docs_qa_crs_reprojection_assumptions_7_cambios_asociados",
+      "docs_qa_crs_reprojection_assumptions_supuestos_crs_y_reproyección_parser_export",
+      "js_parser_getparsinglogs"
+    ],
+    "57": [
+      "js_mapengine_adddraftvertex",
+      "js_mapengine_deletedraftvertex",
+      "js_mapengine_findsnapcoordinate",
+      "js_mapengine_geteditablevertexrefs",
+      "js_mapengine_getgeometrysegments",
+      "js_mapengine_getringbypath",
+      "js_mapengine_getsnaptolerancemeters",
+      "js_mapengine_movecoincidentvertices",
+      "js_mapengine_rendervertexeditor",
+      "js_mapengine_setvertexeditmode"
+    ],
+    "58": [
       "opencode_coordination_cli",
       "opencode_coordination_cli_coord",
       "opencode_coordination_cli_dirname",
@@ -1172,29 +1222,40 @@
       "opencode_coordination_coordinator_getgraphclient",
       "ref_node_url"
     ],
-    "47": [
-      "docs_qa_crs_reprojection_assumptions",
-      "docs_qa_crs_reprojection_assumptions_1_principios_generales",
-      "docs_qa_crs_reprojection_assumptions_2_supuestos_en_js_parser_js",
-      "docs_qa_crs_reprojection_assumptions_3_supuestos_en_js_export_js",
-      "docs_qa_crs_reprojection_assumptions_5_matriz_de_responsabilidad_crs",
-      "docs_qa_crs_reprojection_assumptions_6_trazabilidad_y_riesgos",
-      "docs_qa_crs_reprojection_assumptions_7_cambios_asociados",
-      "docs_qa_crs_reprojection_assumptions_supuestos_crs_y_reproyección_parser_export",
-      "js_parser_getparsinglogs"
+    "59": [
+      "js_backup_complement",
+      "js_backup_complement_calculardistancia",
+      "js_backup_complement_calcularsuperficie",
+      "js_backup_complement_exportarexceldescargable",
+      "js_backup_complement_exportarpdfdescargable",
+      "js_backup_complement_generardbf",
+      "js_backup_complement_gradosaradianes",
+      "js_backup_complement_validararchivospresentes",
+      "js_backup_complement_validarcamposobligatorios"
     ],
-    "48": [
-      "js_geoprocessing",
-      "js_geoprocessing_booleanresult",
-      "js_geoprocessing_ensurefeature",
-      "js_geoprocessing_executegeoprocessing",
+    "60": [
+      "js_layerguard_layerguardclass",
+      "js_layerguard_layerguardclass_addifabsent",
+      "js_layerguard_layerguardclass_clear",
+      "js_layerguard_layerguardclass_constructor",
+      "js_layerguard_layerguardclass_get",
+      "js_layerguard_layerguardclass_has",
+      "js_layerguard_layerguardclass_init",
+      "js_layerguard_layerguardclass_listids",
+      "js_layerguard_layerguardclass_remove"
+    ],
+    "61": [
+      "js_lineage",
+      "js_lineage_applylineageevent",
+      "js_lineage_clone",
+      "js_lineage_technicalid",
       "ref_node_assert",
-      "ref_turf_turf",
-      "tests_geoprocessing_test",
-      "tests_geoprocessing_test_check",
-      "tests_geoprocessing_test_geojson"
+      "tests_lineage_test",
+      "tests_lineage_test_event",
+      "tests_lineage_test_geojson",
+      "tests_lineage_test_updated"
     ],
-    "49": [
+    "62": [
       "js_redticket_api",
       "js_redticket_api_authheader",
       "js_redticket_api_createcharge",
@@ -1205,7 +1266,7 @@
       "js_redticket_api_request",
       "js_redticket_api_verifywebhook"
     ],
-    "50": [
+    "63": [
       "opencode_coordination_orchestrator",
       "opencode_coordination_orchestrator_cpu_threshold",
       "opencode_coordination_orchestrator_default_swarm_config",
@@ -1216,7 +1277,7 @@
       "opencode_coordination_orchestrator_memory_threshold",
       "ref_node_events"
     ],
-    "51": [
+    "64": [
       "opencode_coordination_orchestrator_agentorchestrator",
       "opencode_coordination_orchestrator_agentorchestrator_constructor",
       "opencode_coordination_orchestrator_agentorchestrator_getagent",
@@ -1227,7 +1288,7 @@
       "opencode_coordination_orchestrator_agentorchestrator_stopheartbeat",
       "opencode_coordination_orchestrator_createagentswarm"
     ],
-    "52": [
+    "65": [
       "readme_arranque_rápido",
       "readme_bloqueantes_conocidos_leer_antes_de_desplegar",
       "readme_documentación",
@@ -1238,7 +1299,7 @@
       "readme_snc_v3_catastro_py_res_snc_n_551_2023",
       "readme_verificaciones_de_referencia_2026_10_18"
     ],
-    "53": [
+    "66": [
       "agents",
       "deploy",
       "deploy_windows_md_deploy_windows",
@@ -1248,7 +1309,7 @@
       "docs_readme",
       "readme"
     ],
-    "54": [
+    "67": [
       "docs_plan_remediacion_auditoria_0_estado",
       "docs_plan_remediacion_auditoria_2_fase_0_contención_0_48_h_bloqueante_de_despliegue",
       "docs_plan_remediacion_auditoria_3_fase_1_autorización_y_funcionalidad_core_semana_1",
@@ -1258,7 +1319,7 @@
       "docs_plan_remediacion_auditoria_7_cómo_retomar_el_trabajo",
       "docs_plan_remediacion_auditoria_plan_de_remediación_auditoría_2026_10_18"
     ],
-    "55": [
+    "68": [
       "docs_readme_2_botón_de_certificación_con_fondo_de_parcelas",
       "docs_readme_3_readme_actualizado_con_rutas_nuevas",
       "docs_readme_4_readme_actualizado_con_migración_json_sqlite",
@@ -1268,7 +1329,7 @@
       "docs_readme_8_detalles_menores_de_ui_docs",
       "docs_readme_pendientes_de_desarrollo"
     ],
-    "56": [
+    "69": [
       "docs_readme_administración",
       "docs_readme_autenticación",
       "docs_readme_catastro_y_cache",
@@ -1278,17 +1339,17 @@
       "docs_readme_utilidades",
       "docs_readme_variables_de_entorno"
     ],
-    "57": [
-      "js_lineage",
-      "js_lineage_applylineageevent",
-      "js_lineage_clone",
-      "js_lineage_technicalid",
-      "tests_lineage_test",
-      "tests_lineage_test_event",
-      "tests_lineage_test_geojson",
-      "tests_lineage_test_updated"
+    "70": [
+      "js_geoprocessing",
+      "js_geoprocessing_booleanresult",
+      "js_geoprocessing_ensurefeature",
+      "js_geoprocessing_executegeoprocessing",
+      "ref_turf_turf",
+      "tests_geoprocessing_test",
+      "tests_geoprocessing_test_check",
+      "tests_geoprocessing_test_geojson"
     ],
-    "58": [
+    "71": [
       "opencode_coordination_changelogs_espejo_auditoria_graphify",
       "opencode_coordination_changelogs_espejo_auditoria_graphify_2026_10_18_imp_1792361697889_6t3zepfm",
       "opencode_coordination_changelogs_espejo_auditoria_graphify_2026_10_18_imp_1792361697998_ipv7002q",
@@ -1298,25 +1359,17 @@
       "opencode_coordination_changelogs_espejo_auditoria_graphify_2026_10_18_imp_1792361698514_p7mxptx0",
       "opencode_coordination_changelogs_espejo_auditoria_graphify_2026_10_18_imp_1792361698622_woclefft"
     ],
-    "59": [
-      "docs_auditoria_snc_v3_2026_10_18_10_conclusión",
-      "docs_auditoria_snc_v3_2026_10_18_1_resumen_ejecutivo",
-      "docs_auditoria_snc_v3_2026_10_18_2_inventario_auditado",
-      "docs_auditoria_snc_v3_2026_10_18_3_verificaciones_ejecutadas_evidencia",
-      "docs_auditoria_snc_v3_2026_10_18_6_hallazgos_medios",
-      "docs_auditoria_snc_v3_2026_10_18_9_anexo_parches_sugeridos_orientativos",
-      "docs_auditoria_snc_v3_2026_10_18_auditoría_técnica_snc_v3_catastro_py_res_snc_551_2023"
+    "72": [
+      "opencode_coordination_changelogs_grafo_completo",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362418967_9a0r4yqd",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419072_yueibjyo",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419162_ljvt8gvf",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419253_98m5hyod",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419349_uqs8torm",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419441_t36uoh0a",
+      "opencode_coordination_changelogs_grafo_completo_2026_10_18_imp_1792362419525_tvv39bfz"
     ],
-    "60": [
-      "docs_auditoria_snc_v3_2026_10_18_4_hallazgos_críticos",
-      "docs_auditoria_snc_v3_2026_10_18_c_01_credenciales_reales_versionadas_en_git",
-      "docs_auditoria_snc_v3_2026_10_18_c_02_clave_privada_de_firebase_admin_en_el_workspace",
-      "docs_auditoria_snc_v3_2026_10_18_c_03_el_despliegue_publica_todo_el_repositorio",
-      "docs_auditoria_snc_v3_2026_10_18_c_04_idor_multi_tenant_en_proyectos_expedientes_archivos_y_pagos",
-      "docs_auditoria_snc_v3_2026_10_18_c_07_endpoints_core_en_500_contrato_db_cjs_incompleto_y_files_json_inexistente",
-      "docs_auditoria_snc_v3_2026_10_18_c_08_el_webhook_de_pagos_no_puede_validar_la_firma"
-    ],
-    "61": [
+    "73": [
       "docs_funcionalidades",
       "docs_funcionalidades_funcionalidades_activas_mantenidas",
       "docs_funcionalidades_funcionalidades_descartadas_eliminadas",
@@ -1325,7 +1378,7 @@
       "docs_funcionalidades_resumen_de_clasificación",
       "docs_funcionalidades_tabla_comparativa_de_funcionalidades"
     ],
-    "62": [
+    "74": [
       "docs_readme_archivos_principales_html",
       "docs_readme_datos_data",
       "docs_readme_descripción_de_archivos",
@@ -1334,16 +1387,7 @@
       "docs_readme_módulos_javascript_js",
       "docs_readme_tests_tests"
     ],
-    "63": [
-      "js_geoprocessingui",
-      "js_geoprocessingui_close",
-      "js_geoprocessingui_featurelabel",
-      "js_geoprocessingui_modal",
-      "js_geoprocessingui_open",
-      "js_geoprocessingui_run",
-      "js_lineage_getparcelid"
-    ],
-    "64": [
+    "75": [
       "js_redticket_payments",
       "js_redticket_payments_buildchargepayload",
       "js_redticket_payments_parsewebhookbody",
@@ -1352,7 +1396,7 @@
       "js_redticket_payments_verifywebhook",
       "ref_node_crypto"
     ],
-    "65": [
+    "76": [
       "opencode_coordination_changelogs_indexar_auditoria_grafo",
       "opencode_coordination_changelogs_indexar_auditoria_grafo_2026_10_18_imp_1792361978615_cdbg8xgy",
       "opencode_coordination_changelogs_indexar_auditoria_grafo_2026_10_18_imp_1792361978856_pzuwhpo0",
@@ -1361,15 +1405,7 @@
       "opencode_coordination_changelogs_indexar_auditoria_grafo_2026_10_18_imp_1792361979705_vx219571",
       "opencode_coordination_changelogs_indexar_auditoria_grafo_2026_10_18_imp_1792361979835_qgm8mt2w"
     ],
-    "66": [
-      "deploy_2_checklist_pre_deploy",
-      "deploy_backend_y_entorno",
-      "deploy_configuración_y_secretos",
-      "deploy_código_y_calidad",
-      "deploy_datos_y_hosting",
-      "deploy_seguridad_fase_2_verificada"
-    ],
-    "67": [
+    "77": [
       "docs_funcionalidades_catastro_copia_duplicado_eliminar",
       "docs_funcionalidades_catastro_index_versiones_antiguas_eliminar",
       "docs_funcionalidades_catastrov2_obsoleto_eliminar",
@@ -1377,7 +1413,7 @@
       "docs_funcionalidades_nueva_carpeta_duplicado_eliminar",
       "docs_funcionalidades_proyectos_catastro_js_versión_funcional_origen"
     ],
-    "68": [
+    "78": [
       "js_app_municipal",
       "js_municipalclient",
       "js_municipalclient_municipalclient",
@@ -1385,7 +1421,7 @@
       "js_municipalclient_rendermunicipalaudit",
       "ref"
     ],
-    "69": [
+    "79": [
       "js_firebase_client",
       "js_firebase_client_app",
       "js_firebase_client_auth",
@@ -1393,15 +1429,15 @@
       "js_firebase_client_firebaseconfig",
       "ref_firebase"
     ],
-    "70": [
-      "js_lineage_createlineageevent",
-      "js_topologyrepairui",
-      "js_topologyrepairui_apply",
-      "js_topologyrepairui_clearlayer",
-      "js_topologyrepairui_close",
-      "js_topologyrepairui_open"
+    "80": [
+      "js_payment",
+      "js_payment_express",
+      "js_payment_logger",
+      "js_payment_router",
+      "js_payment_users",
+      "ref_express"
     ],
-    "71": [
+    "81": [
       "opencode_coordination_changelogs_documentar_auditoria",
       "opencode_coordination_changelogs_documentar_auditoria_2026_10_18_imp_1792361399688_esel27pj",
       "opencode_coordination_changelogs_documentar_auditoria_2026_10_18_imp_1792361399793_c91fa2qt",
@@ -1409,7 +1445,7 @@
       "opencode_coordination_changelogs_documentar_auditoria_2026_10_18_imp_1792361400018_p94tvm5k",
       "opencode_coordination_changelogs_documentar_auditoria_2026_10_18_imp_1792361400156_psgiog42"
     ],
-    "72": [
+    "82": [
       "opencode_coordination_changelogs_guard_graph_refresh",
       "opencode_coordination_changelogs_guard_graph_refresh_2026_10_18_imp_1792362097704_7uhlkuu6",
       "opencode_coordination_changelogs_guard_graph_refresh_2026_10_18_imp_1792362097778_u8fc7x14",
@@ -1417,7 +1453,7 @@
       "opencode_coordination_changelogs_guard_graph_refresh_2026_10_18_imp_1792362097910_s5dk5un8",
       "opencode_coordination_changelogs_guard_graph_refresh_2026_10_18_imp_1792362097974_jih2rzi4"
     ],
-    "73": [
+    "83": [
       "ref_node_http",
       "scripts_localhost_proxy",
       "scripts_localhost_proxy_http",
@@ -1425,338 +1461,333 @@
       "scripts_localhost_proxy_server",
       "scripts_localhost_proxy_targetport"
     ],
-    "74": [
-      "docs_auditoria_snc_v3_2026_10_18_8_plan_de_remediación_priorizado",
-      "docs_auditoria_snc_v3_2026_10_18_fase_0_contención_0_48_h",
-      "docs_auditoria_snc_v3_2026_10_18_fase_1_corrección_funcional_y_de_autorización_semana_1",
-      "docs_auditoria_snc_v3_2026_10_18_fase_2_calidad_y_cadena_de_entrega_semanas_2_3",
-      "docs_auditoria_snc_v3_2026_10_18_fase_3_endurecimiento_y_deuda_backlog"
-    ],
-    "75": [
+    "84": [
       "docs_readme_criterios_mínimos_de_promoción",
       "docs_readme_flujo_recomendado",
       "docs_readme_guía_de_promoción_a_producción",
       "docs_readme_mantenimiento_recomendado",
       "docs_readme_rollback"
     ],
-    "76": [
+    "85": [
       "docs_readme_criterios_mínimos_de_promoción_473",
       "docs_readme_flujo_recomendado_482",
       "docs_readme_guía_de_promoción_a_producción_471",
       "docs_readme_mantenimiento_recomendado_494",
       "docs_readme_rollback_490"
     ],
-    "77": [
+    "86": [
       "js_firebase_admin",
       "js_firebase_admin_getfirebaseauth",
       "js_firebase_admin_getfirestoredb",
       "js_firebase_admin_initfirebaseadmin",
       "ref_firebase_admin"
     ],
-    "78": [
+    "87": [
       "opencode_coordination_changelogs_security",
       "opencode_coordination_changelogs_security_2026_10_18_imp_20261018_municipal_postgis",
       "opencode_coordination_changelogs_security_2026_10_18_imp_20261018_repo_hygiene",
       "opencode_coordination_changelogs_security_2026_10_18_imp_20261018_security_secrets",
       "opencode_coordination_changelogs_security_changelog_security"
     ],
-    "79": [
-      "ref_fs",
-      "ref_path",
-      "ref_vite",
-      "ref_vitejs_plugin_legacy",
-      "vite_config"
-    ],
-    "80": [
-      "deploy_11_estado_del_proyecto_2026_10_18",
-      "deploy_archivos_eliminados",
-      "deploy_completado",
-      "deploy_pendiente_de_verificación_manual"
-    ],
-    "81": [
+    "88": [
       "deploy_windows_confirm_continue",
       "deploy_windows_ps1_deploy_windows",
       "deploy_windows_write_status",
       "deploy_windows_write_step"
     ],
-    "82": [
+    "89": [
+      "docs_frontend_p3_improvements",
+      "docs_frontend_p3_improvements_archivos_evaluados_para_remover",
+      "docs_frontend_p3_improvements_archivos_modificados",
+      "docs_frontend_p3_improvements_mejoras_p3_frontend_snc_v3"
+    ],
+    "90": [
       "opencode_coordination_changelogs_grafo_graphify_out",
       "opencode_coordination_changelogs_grafo_graphify_out_2026_10_18_imp_1792361579215_lvkle3b2",
       "opencode_coordination_changelogs_grafo_graphify_out_2026_10_18_imp_1792361579280_fxyi8m5x",
       "opencode_coordination_changelogs_grafo_graphify_out_2026_10_18_imp_1792361579364_4g14d6bi"
     ],
-    "83": [
+    "91": [
       "opencode_coordination_changelogs_repo_hygiene",
       "opencode_coordination_changelogs_repo_hygiene_2026_10_18_imp_20261018_repo_hygiene",
       "opencode_coordination_changelogs_repo_hygiene_2026_10_18_imp_20261018_security_secrets",
       "opencode_coordination_changelogs_repo_hygiene_changelog_repo_hygiene"
     ],
-    "84": [
+    "92": [
       "docs_project_structure",
       "docs_project_structure_estructura_segura_de_snc_v3",
       "docs_project_structure_reglas_de_seguridad"
     ],
-    "85": [
+    "93": [
       "docs_readme_acceso",
       "docs_readme_migración_json_sqlite",
       "docs_readme_panel_de_gestión_members_html"
     ],
-    "86": [
+    "94": [
       "docs_readme_archivos_generados",
       "docs_readme_exportación_y_certificación",
       "docs_readme_flujo_de_certificación_según_anexo_b"
     ],
-    "87": [
+    "95": [
       "docs_readme_backend_api",
       "docs_readme_frontend",
       "docs_readme_tecnologías"
     ],
-    "88": [
+    "96": [
       "docs_readme_base_del_proyecto",
       "docs_readme_módulos_js",
       "docs_readme_notas_de_origen_y_versiones"
     ],
-    "89": [
+    "97": [
       "docs_readme_compatibilidad_de_formatos",
       "docs_readme_entrada_parsers_resolución_art_14",
       "docs_readme_salida_exportadores_anexo_b_res_551_2023"
     ],
-    "90": [
+    "98": [
       "opencode_coordination_changelogs_architecture",
       "opencode_coordination_changelogs_architecture_2026_10_18_imp_20261018_architecture_split",
       "opencode_coordination_changelogs_architecture_changelog_architecture"
     ],
-    "91": [
+    "99": [
       "opencode_coordination_changelogs_code_quality",
       "opencode_coordination_changelogs_code_quality_2026_10_18_imp_20261018_code_quality_tooling",
       "opencode_coordination_changelogs_code_quality_changelog_code_quality"
     ],
-    "92": [
+    "100": [
+      "opencode_coordination_changelogs_grafo_completo_final",
+      "opencode_coordination_changelogs_grafo_completo_final_2026_10_18_imp_1792362484799_q0kdczx1",
+      "opencode_coordination_changelogs_grafo_completo_final_2026_10_18_imp_1792362484886_jqrhxwfi"
+    ],
+    "101": [
       "opencode_coordination_changelogs_municipal_compliance",
       "opencode_coordination_changelogs_municipal_compliance_2026_10_18_imp_20261018_municipal_postgis",
       "opencode_coordination_changelogs_municipal_compliance_changelog_municipal_compliance"
     ],
-    "93": [
+    "102": [
       "opencode_coordination_changelogs_performance",
       "opencode_coordination_changelogs_performance_2026_10_18_imp_20261018_bundler_setup",
       "opencode_coordination_changelogs_performance_changelog_performance"
     ],
-    "94": [
+    "103": [
       "ref_coordination_coordinator_mjs",
       "register_errors",
       "register_errors_gc"
     ],
-    "95": [
+    "104": [
       "tests_validator_test_formatcoordinate",
       "tests_validator_test_validarcierreanillos",
       "tests_validator_test_validargeometria"
     ],
-    "96": [
+    "105": [
       "js_topology_worker",
       "js_topology_worker_dobboxesoverlap"
     ],
-    "97": [
+    "106": [
       "opencode_coordination_changelogs_repair_topology",
       "opencode_coordination_changelogs_repair_topology_2026_10_18_imp_1792361341299_8pl7wsoo"
     ],
-    "98": [
+    "107": [
       "opencode_coordination_changelogs_runtime_mismatch_isolation",
       "opencode_coordination_changelogs_runtime_mismatch_isolation_2026_10_18_imp_1792361652994_lpt3c59y"
     ],
-    "99": [
+    "108": [
       "probe_free_models",
       "probe_free_models_sh__entry"
     ],
-    "100": [
+    "109": [
       "scripts_backup_sqlite",
       "scripts_backup_sqlite_sh__entry"
     ],
-    "101": [
+    "110": [
       "scripts_promotion_gate",
       "scripts_promotion_gate_sh__entry"
     ],
-    "102": [
+    "111": [
       "scripts_restore_sqlite",
       "scripts_restore_sqlite_sh__entry"
     ],
-    "103": [
+    "112": [
       "scripts_rotate_legacy_hashes",
       "scripts_rotate_legacy_hashes_sh__entry"
     ],
-    "104": [
+    "113": [
+      "start_server",
+      "start_server_sh__entry"
+    ],
+    "114": [
       "tests_validator_test_simulaterunexportvalidation",
       "tests_validator_test_simulatevalidarproyeccion"
     ],
-    "105": [
+    "115": [
       "admin_html"
     ],
-    "106": [
+    "116": [
       "config_examples_serviceaccountkey_example_json"
     ],
-    "107": [
+    "117": [
       "db_load"
     ],
-    "108": [
+    "118": [
       "eslintrc"
     ],
-    "109": [
+    "119": [
       "firebase_json"
     ],
-    "110": [
+    "120": [
       "firebase_scripts_json"
     ],
-    "111": [
+    "121": [
       "fluxograma_html"
     ],
-    "112": [
+    "122": [
       "geoconverter_html"
     ],
-    "113": [
+    "123": [
       "index_html"
     ],
-    "114": [
+    "124": [
       "index_municipal_html"
     ],
-    "115": [
+    "125": [
       "js_runtimecompat"
     ],
-    "116": [
+    "126": [
       "login_directo_html"
     ],
-    "117": [
+    "127": [
       "members_html"
     ],
-    "118": [
+    "128": [
       "presentacion_html"
     ],
-    "119": [
+    "129": [
       "privacy_html"
     ],
-    "120": [
+    "130": [
       "recover_html"
     ],
-    "121": [
+    "131": [
       "register_html"
     ],
-    "122": [
+    "132": [
       "run_server"
     ],
-    "123": [
+    "133": [
       "scripts_backup_secure"
     ],
-    "124": [
+    "134": [
       "scripts_restore_secure_secret"
     ],
-    "125": [
+    "135": [
       "terms_html"
     ]
   },
   "cohesion": {
-    "0": 0.050475635798874006,
-    "1": 0.06428571428571428,
-    "2": 0.04,
-    "3": 0.046511627906976744,
-    "4": 0.056910569105691054,
-    "5": 0.04878048780487805,
-    "6": 0.08205128205128205,
-    "7": 0.12773109243697478,
-    "8": 0.07311827956989247,
-    "9": 0.10574712643678161,
-    "10": 0.08620689655172414,
-    "11": 0.07407407407407407,
-    "12": 0.10541310541310542,
-    "13": 0.09420289855072464,
-    "14": 0.11067193675889328,
-    "15": 0.16600790513833993,
-    "16": 0.09090909090909091,
-    "17": 0.09523809523809523,
-    "18": 0.09523809523809523,
-    "19": 0.10526315789473684,
-    "20": 0.19298245614035087,
-    "21": 0.10526315789473684,
-    "22": 0.2222222222222222,
-    "23": 0.1111111111111111,
-    "24": 0.19852941176470587,
-    "25": 0.14705882352941177,
-    "26": 0.11764705882352941,
-    "27": 0.18095238095238095,
-    "28": 0.3076923076923077,
-    "29": 0.14285714285714285,
+    "0": 0.04,
+    "1": 0.09191583610188261,
+    "2": 0.04878048780487805,
+    "3": 0.05,
+    "4": 0.10338680926916222,
+    "5": 0.125,
+    "6": 0.13978494623655913,
+    "7": 0.07881773399014778,
+    "8": 0.07407407407407407,
+    "9": 0.13666666666666666,
+    "10": 0.09420289855072464,
+    "11": 0.11594202898550725,
+    "12": 0.11067193675889328,
+    "13": 0.17391304347826086,
+    "14": 0.09090909090909091,
+    "15": 0.09523809523809523,
+    "16": 0.09523809523809523,
+    "17": 0.1,
+    "18": 0.18947368421052632,
+    "19": 0.15789473684210525,
+    "20": 0.10526315789473684,
+    "21": 0.19298245614035087,
+    "22": 0.10526315789473684,
+    "23": 0.1568627450980392,
+    "24": 0.2222222222222222,
+    "25": 0.1437908496732026,
+    "26": 0.1111111111111111,
+    "27": 0.19852941176470587,
+    "28": 0.14705882352941177,
+    "29": 0.11764705882352941,
     "30": 0.14285714285714285,
-    "31": 0.15384615384615385,
-    "32": 0.21794871794871795,
-    "33": 0.20512820512820512,
-    "34": 0.21794871794871795,
+    "31": 0.20952380952380953,
+    "32": 0.3076923076923077,
+    "33": 0.14285714285714285,
+    "34": 0.14285714285714285,
     "35": 0.15384615384615385,
-    "36": 0.15384615384615385,
-    "37": 0.16666666666666666,
-    "38": 0.2727272727272727,
+    "36": 0.21794871794871795,
+    "37": 0.32051282051282054,
+    "38": 0.20512820512820512,
     "39": 0.16666666666666666,
-    "40": 0.16666666666666666,
-    "41": 0.18181818181818182,
-    "42": 0.2909090909090909,
-    "43": 0.18181818181818182,
-    "44": 0.2222222222222222,
-    "45": 0.2,
-    "46": 0.2222222222222222,
-    "47": 0.25,
-    "48": 0.3055555555555556,
-    "49": 0.3055555555555556,
-    "50": 0.2777777777777778,
-    "51": 0.3333333333333333,
-    "52": 0.2222222222222222,
-    "53": 0.42857142857142855,
-    "54": 0.25,
-    "55": 0.25,
-    "56": 0.25,
-    "57": 0.35714285714285715,
-    "58": 0.25,
-    "59": 0.2857142857142857,
-    "60": 0.2857142857142857,
-    "61": 0.2857142857142857,
-    "62": 0.2857142857142857,
-    "63": 0.5714285714285714,
-    "64": 0.38095238095238093,
-    "65": 0.2857142857142857,
-    "66": 0.3333333333333333,
-    "67": 0.3333333333333333,
-    "68": 0.3333333333333333,
-    "69": 0.3333333333333333,
-    "70": 0.6,
-    "71": 0.3333333333333333,
-    "72": 0.3333333333333333,
-    "73": 0.3333333333333333,
-    "74": 0.4,
-    "75": 0.4,
-    "76": 0.4,
-    "77": 0.6,
-    "78": 0.4,
-    "79": 0.4,
-    "80": 0.5,
-    "81": 0.5,
-    "82": 0.5,
-    "83": 0.5,
-    "84": 0.6666666666666666,
-    "85": 0.6666666666666666,
-    "86": 0.6666666666666666,
-    "87": 0.6666666666666666,
-    "88": 0.6666666666666666,
-    "89": 0.6666666666666666,
-    "90": 0.6666666666666666,
-    "91": 0.6666666666666666,
+    "40": 0.21794871794871795,
+    "41": 0.15384615384615385,
+    "42": 0.15384615384615385,
+    "43": 0.16666666666666666,
+    "44": 0.16666666666666666,
+    "45": 0.2727272727272727,
+    "46": 0.19696969696969696,
+    "47": 0.25757575757575757,
+    "48": 0.2727272727272727,
+    "49": 0.16666666666666666,
+    "50": 0.16666666666666666,
+    "51": 0.18181818181818182,
+    "52": 0.18181818181818182,
+    "53": 0.2222222222222222,
+    "54": 0.2,
+    "55": 0.2,
+    "56": 0.2222222222222222,
+    "57": 0.3333333333333333,
+    "58": 0.2222222222222222,
+    "59": 0.25,
+    "60": 0.2222222222222222,
+    "61": 0.3055555555555556,
+    "62": 0.3055555555555556,
+    "63": 0.2777777777777778,
+    "64": 0.3333333333333333,
+    "65": 0.2222222222222222,
+    "66": 0.42857142857142855,
+    "67": 0.25,
+    "68": 0.25,
+    "69": 0.25,
+    "70": 0.35714285714285715,
+    "71": 0.25,
+    "72": 0.25,
+    "73": 0.2857142857142857,
+    "74": 0.2857142857142857,
+    "75": 0.38095238095238093,
+    "76": 0.2857142857142857,
+    "77": 0.3333333333333333,
+    "78": 0.3333333333333333,
+    "79": 0.3333333333333333,
+    "80": 0.3333333333333333,
+    "81": 0.3333333333333333,
+    "82": 0.3333333333333333,
+    "83": 0.3333333333333333,
+    "84": 0.4,
+    "85": 0.4,
+    "86": 0.6,
+    "87": 0.4,
+    "88": 0.5,
+    "89": 0.5,
+    "90": 0.5,
+    "91": 0.5,
     "92": 0.6666666666666666,
     "93": 0.6666666666666666,
     "94": 0.6666666666666666,
     "95": 0.6666666666666666,
-    "96": 1.0,
-    "97": 1.0,
-    "98": 1.0,
-    "99": 1.0,
-    "100": 1.0,
-    "101": 1.0,
-    "102": 1.0,
-    "103": 1.0,
-    "104": 1.0,
+    "96": 0.6666666666666666,
+    "97": 0.6666666666666666,
+    "98": 0.6666666666666666,
+    "99": 0.6666666666666666,
+    "100": 0.6666666666666666,
+    "101": 0.6666666666666666,
+    "102": 0.6666666666666666,
+    "103": 0.6666666666666666,
+    "104": 0.6666666666666666,
     "105": 1.0,
     "106": 1.0,
     "107": 1.0,
@@ -1777,7 +1808,17 @@
     "122": 1.0,
     "123": 1.0,
     "124": 1.0,
-    "125": 1.0
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0
   },
   "gods": [
     {
@@ -1844,15 +1885,26 @@
       "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `6. Hallazgos medios` unexpectedly reaches hub `resolvePlan()`"
     },
     {
-      "source": "7. Hallazgos bajos",
-      "target": "pruneCache()",
+      "source": "1) JSDoc mínimo en MapEngine",
+      "target": "loadGeoJSON()",
       "source_files": [
-        "docs/AUDITORIA_SNC_v3_2026-10-18.md",
-        "cacheDb.js"
+        "docs/frontend-p3-improvements.md",
+        "js/mapEngine.js"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; peripheral node `7. Hallazgos bajos` unexpectedly reaches hub `pruneCache()`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "1) JSDoc mínimo en MapEngine",
+      "target": "toggleSNCReferenceLayer()",
+      "source_files": [
+        "docs/frontend-p3-improvements.md",
+        "js/mapEngine.js"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     },
     {
       "source": "God Nodes (más conectados)",
@@ -1860,17 +1912,6 @@
       "source_files": [
         "GRAFOS.md",
         "js/utils.js"
-      ],
-      "confidence": "INFERRED",
-      "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
-    },
-    {
-      "source": "C. ARCHIVOS DE SALIDA GENERADOS",
-      "target": "generateConsultaDescriptivaPDF()",
-      "source_files": [
-        "docs/INFORME_VALIDACION.md",
-        "js/export.js"
       ],
       "confidence": "INFERRED",
       "relation": "references",
@@ -1891,8 +1932,8 @@
   "questions": [
     {
       "type": "bridge_node",
-      "question": "Why does `@turf/turf` connect `Utilidades y Geometría` to `Linting y Calidad`, `Linting y Calidad`, `validator.test.mjs`, `Utilidades y Geometría`?",
-      "why": "High betweenness centrality (0.107) - this node is a cross-community bridge."
+      "question": "Why does `logger` connect `Estado y Persistencia` to `Community 28`, `Exportación y Certificados`, `Mapa y Capas Leaflet`, `Carga de Archivos Geo`, `Estado y Persistencia`, `Mapa y Capas Leaflet`, `Versionado y Municipal`, `Utilidades y Geometría`, `Mapa y Capas Leaflet`, `Mapa y Capas Leaflet`, `Community 77`, `Mapa y Capas Leaflet`?",
+      "why": "High betweenness centrality (0.104) - this node is a cross-community bridge."
     },
     {
       "type": "isolated_nodes",
@@ -1901,28 +1942,28 @@
     },
     {
       "type": "low_cohesion",
-      "question": "Should `Catastro Cache` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.050475635798874006 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "bridge_node",
-      "question": "Why does `logger` connect `Probe Modelos Free` to `Catastro Cache`, `Versionado y Municipal`, `Versionado y Municipal`, `Rate Limiting y Planes`, `Auditoría 2026-10-18`, `Community 81`, `Auditoría 2026-10-18`, `Auditoría 2026-10-18`, `Deploy Windows`?",
-      "why": "High betweenness centrality (0.103) - this node is a cross-community bridge."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `Versionado y Municipal` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.06428571428571428 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "bridge_node",
-      "question": "Why does `showToast()` connect `Catastro Cache` to `Versionado y Municipal`, `logger`, `Versionado y Municipal`, `Utilidades y Geometría`, `Utilidades y Geometría`, `Auditoría 2026-10-18`, `Auditoría 2026-10-18`, `Migración DB`, `Auditoría 2026-10-18`, `Utilidades y Geometría`?",
-      "why": "High betweenness centrality (0.073) - this node is a cross-community bridge."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `validator.test.mjs` be split into smaller, more focused modules?",
+      "question": "Should `Tests Validator` be split into smaller, more focused modules?",
       "why": "Cohesion score 0.04 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `showToast()` connect `Mapa y Capas Leaflet` to `Exportación y Certificados`, `Estado y Persistencia`, `Mapa y Capas Leaflet`, `Community 63`, `Carga de Archivos Geo`, `Mapa y Capas Leaflet`, `Versionado y Municipal`, `Mapa y Capas Leaflet`, `Utilidades y Geometría`, `Mapa y Capas Leaflet`, `Estado y Persistencia`, `Versionado y Municipal`, `Mapa y Capas Leaflet`, `Mapa y Capas Leaflet`?",
+      "why": "High betweenness centrality (0.081) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Exportación y Certificados` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.09191583610188261 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `@turf/turf` connect `Community 48` to `Community 38`, `Tests Validator`, `Catastro Cache`, `Versionado y Municipal`?",
+      "why": "High betweenness centrality (0.077) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 5` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.04878048780487805 - nodes in this community are weakly interconnected."
     }
   ]
 }
