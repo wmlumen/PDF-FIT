@@ -34,6 +34,7 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 5. **Respetar el protocolo multi-IA** de [`AGENTS.md`](../AGENTS.md): `route → check → lock → cambio + test → pass|fail`.
 6. **No editar artefactos generados.** `dist/`, `data/*.sqlite*` y `graphify-out/` se regeneran; el grafo se actualiza con `graphify update .`, nunca a mano.
 7. **Mantener el grafo al día** cuando el cambio sea estructural: ejecutar `graphify update .` y verificar que `graph.json.built_at_commit` coincida con `git rev-parse HEAD`.
+8. **Mantener el espejo de auditoría:** tras editar el informe o este plan, ejecutar `npm run audit:sync` (y `npm run audit:sync -- --check` en CI). `graphify-out/auditoria/` no se edita a mano.
 
 ---
 

@@ -13,6 +13,7 @@
     "lint:fix": "eslint . --ext .js,.mjs,.cjs --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
+    "audit:sync": "node scripts/sync-auditoria.mjs",
     "predeploy": "bash scripts/promotion_gate.sh && npm test",
     "deploy": "firebase deploy --only hosting,functions",
     "deploy:all": "npm run predeploy && npm run deploy",

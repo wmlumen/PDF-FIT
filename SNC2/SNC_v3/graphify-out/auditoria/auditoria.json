@@ -1,0 +1,373 @@
+{
+  "schema": "snc-auditoria/1",
+  "project": "SNC_v3",
+  "audit_date": "2026-10-18",
+  "verdict": "NO APTO para producción",
+  "canonical": {
+    "audit": "docs/AUDITORIA_SNC_v3_2026-10-18.md",
+    "plan": "docs/PLAN_REMEDIACION_AUDITORIA.md"
+  },
+  "mirror": "graphify-out/auditoria/",
+  "sources": {
+    "docs/AUDITORIA_SNC_v3_2026-10-18.md": {
+      "sha256": "a14f5eca96d2e95e53a5a0163d02169d8fffeeef58948f75dedb6b378c0438de",
+      "bytes": 38770
+    },
+    "docs/PLAN_REMEDIACION_AUDITORIA.md": {
+      "sha256": "bd37d337d9dbe43a83fe3b94de9a744b00a769fa4bf4c2142cefac3c1fd648f6",
+      "bytes": 9575
+    }
+  },
+  "counts": {
+    "critico": 8,
+    "alto": 11,
+    "medio": 10,
+    "bajo": 9,
+    "total": 38,
+    "abiertos": 38
+  },
+  "findings": [
+    {
+      "id": "C-01",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "Credenciales reales versionadas en Git",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-01"
+    },
+    {
+      "id": "C-02",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "Clave privada de Firebase Admin en el workspace",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-02"
+    },
+    {
+      "id": "C-03",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "El despliegue publica todo el repositorio",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-03"
+    },
+    {
+      "id": "C-04",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "IDOR multi-tenant en proyectos, expedientes, archivos y pagos",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-04"
+    },
+    {
+      "id": "C-05",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "Tokens JWT forjables / sesiones no revocables",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-05"
+    },
+    {
+      "id": "C-06",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "Firestore roto + fallback silencioso a SQLite",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-06"
+    },
+    {
+      "id": "C-07",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "Endpoints core en 500: contrato db.cjs incompleto y files_json inexistente",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-07"
+    },
+    {
+      "id": "C-08",
+      "severity": "critico",
+      "phase": 0,
+      "status": "abierto",
+      "title": "El webhook de pagos no puede validar la firma",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#C-08"
+    },
+    {
+      "id": "A-01",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "/api/usage/increment responde 403 siempre",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-01"
+    },
+    {
+      "id": "A-02",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Health check que siempre dice \"ok\"",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-02"
+    },
+    {
+      "id": "A-03",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Los usuarios con hash legacy no pueden iniciar sesión",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-03"
+    },
+    {
+      "id": "A-04",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "El primer usuario registrado se convierte en administrador",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-04"
+    },
+    {
+      "id": "A-05",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Rate limiting inefectivo",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-05"
+    },
+    {
+      "id": "A-06",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "XSS almacenado en el checkout de pagos (y alcanzable por un admin vía IDOR)",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-06"
+    },
+    {
+      "id": "A-07",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Sanitización de HTML por regex y reporte \"público\" que exige login",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-07"
+    },
+    {
+      "id": "A-08",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Logs con datos sensibles y sin rotación",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-08"
+    },
+    {
+      "id": "A-09",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Pipeline de calidad y promoción roto",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-09"
+    },
+    {
+      "id": "A-10",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "Sin tests de API ni de autorización; dependencias no reproducibles",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-10"
+    },
+    {
+      "id": "A-11",
+      "severity": "alto",
+      "phase": 1,
+      "status": "abierto",
+      "title": "El frontend de autenticación no está versionado",
+      "evidence": null,
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#A-11"
+    },
+    {
+      "id": "M-01",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Tres capas de datos divergentes",
+      "evidence": "db.cjs (SQLite callback), db.js (better-sqlite3 ESM, huérfano), js/firestore-db.cjs (Firestore)",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-01"
+    },
+    {
+      "id": "M-02",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Migraciones improvisadas",
+      "evidence": "db.cjs:57-62 ALTER TABLE con callbacks vacíos; PRAGMA journal_mode=DELETE vs WAL en db.js:11",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-02"
+    },
+    {
+      "id": "M-03",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Assets duplicados",
+      "evidence": "SHA-256 idéntico en css/styles.css, public/css/styles.css, public/css/css/styles.css; img/icon.svg y public/img/img/icon.svg",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-03"
+    },
+    {
+      "id": "M-04",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "14 módulos huérfanos",
+      "evidence": "db.js, js/firebase-client.js, js/firebase-admin.js, js/payment.js, js/admin_diagnostic.js, js/backup_complement.js, members_api_block.js, migrate.mjs, db.load.mjs, fix_members_auth.mjs, register-errors.mjs, probar_members.cjs, …",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-04"
+    },
+    {
+      "id": "M-05",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "vite.config.js con defectos",
+      "evidence": "Clave css duplicada (121 y 138) → pierde devSourcemap; alias @server → server/ inexistente (132); optimizeDeps.include de jspdf, leaflet, qrcode, dom-to-image no instalados; manualChunks para paquetes ausentes",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-05"
+    },
+    {
+      "id": "M-06",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Dependencias declaradas y no usadas",
+      "evidence": "graphify, node-cache, husky, lint-staged, typescript, @typescript-eslint/*; firebase/firebase-functions ausentes pero usados",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-06"
+    },
+    {
+      "id": "M-07",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "CSP y cadena de suministro permisivas",
+      "evidence": "server-api.js:263 permite unpkg.com, cdnjs.cloudflare.com, cdn.jsdelivr.net, cdn.tailwindcss.com; admin.html:11 y otras páginas cargan Tailwind CDN (no recomendado en producción); js/topology.worker.js:4 hace importScripts('https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js'); 0 atributos integrity en el repo",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-07"
+    },
+    {
+      "id": "M-08",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Endurecimiento HTTP incompleto",
+      "evidence": "Sin helmet, sin compresión, sin redirección HTTPS, sin trust proxy; errores internos devueltos al cliente: pgErr.message/e.message en 1038, 1420, 1479, 1563, 1623; res.json con detail en validaciones",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-08"
+    },
+    {
+      "id": "M-09",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Modelo de planes/uso defectuoso",
+      "evidence": "tempProjects en memoria sin límite ni TTL (470, 687-766); resolvePlan cae a free en silencio (129-131); snc-toggle responde pero no persiste (312-325); check-then-increment TOCTOU",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-09"
+    },
+    {
+      "id": "M-10",
+      "severity": "medio",
+      "phase": 2,
+      "status": "abierto",
+      "title": "Documentación que contradice el código",
+      "evidence": "docs/README.md:5,131 \"production-ready\"; docs/PROMOTION_CHECKLIST.md:30,44,64 marca [x] tests, health real y gate; docs/PROJECT_STRUCTURE.md:6 \"las bases de datos no se versionan\" mientras data/users.json y data/*.bak están versionados; DEPLOY.md \"0 errores críticos\"",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#M-10"
+    },
+    {
+      "id": "B-01",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Ruido de repositorio",
+      "evidence": "Nodos error (rojo punteado） (archivo vacío con caracteres inválidos), cacheDb.db (0 bytes), docs/frontend-p2-improvements.diff, members_api_block.js (fragmento suelto), firebase.scripts.json (config alternativa), .opencode/coordination/ (~1.400 líneas de meta-herramientas), probar_members.cjs, fix_members_auth.mjs, register-errors.mjs",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-01"
+    },
+    {
+      "id": "B-02",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Encoding: un solo caso real (el resto era falso positivo)",
+      "evidence": "Solo js/mapEngine.js:1852 tiene doble codificación UTF-8 (cartogrÃ¡ficas, certificaciÃ³n). El resto de los archivos —incluidos login-directo.html, js/app.js, DEPLOY.md, js/topology.worker.js— es UTF-8 válido; el \"mojibake\" observado era un artefacto de la consola de Windows. Corregir la línea y añadir .editorconfig + check de encoding en CI",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-02"
+    },
+    {
+      "id": "B-03",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Rutas y credenciales hardcodeadas",
+      "evidence": "deploy-windows.ps1:36-37 rutas absolutas de la máquina del autor; probar_members.cjs:30 credenciales santo.palo@gmail.com / 123*. Ese correo corresponde a una cuenta admin en la base local; verificado que 123* no coincide con el hash almacenado, pero el correo y el patrón de contraseña quedan expuestos",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-03"
+    },
+    {
+      "id": "B-04",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Grafo del repo versionado (decisión del proyecto)",
+      "evidence": "graphify-out/ (graph.json, grafo_dominio.json, GRAPH_REPORT.md, graph.html, cache/) se versiona a propósito como fuente de verdad. Riesgo real: se publica por C-03 y está desactualizado (built_at_commit: 259c361). Mantenerlo con graphify update . y excluirlo del deploy; nunca editarlo a mano",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-04"
+    },
+    {
+      "id": "B-05",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Archivos WAL/SHM versionados",
+      "evidence": "data/catastro_cache.db-shm, data/catastro_cache.db-wal (binarios que cambian en cada ejecución)",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-05"
+    },
+    {
+      "id": "B-06",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Configuración TypeScript/ESLint histórica",
+      "evidence": "tsconfig.json con server//* inexistente y claves duplicadas; .eslintrc.cjs incompatible con ESLint 10; sin .editorconfig",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-06"
+    },
+    {
+      "id": "B-07",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Rendimiento del caché catastral",
+      "evidence": "cacheDb.js:135-140 guarda features con await secuencial (N+1) y ejecuta pruneCache() (COUNT + DELETE) en cada lote; con 20.000 filas es O(n) por request",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-07"
+    },
+    {
+      "id": "B-08",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Uso implícito de crypto global",
+      "evidence": "db.cjs:319 usa crypto.randomUUID() sin require('node:crypto'); funciona por el global de Node ≥ 19, pero es frágil",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-08"
+    },
+    {
+      "id": "B-09",
+      "severity": "bajo",
+      "phase": 3,
+      "status": "abierto",
+      "title": "Fallback SPA y bloqueo por extensión",
+      "evidence": "server-api.js:1654 devuelve 404 a cualquier ruta con extensión (extname), incluidas rutas legítimas con punto; admin.html está bloqueado en el fallback y además servido por Hosting (C-03)",
+      "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-09"
+    }
+  ]
+}

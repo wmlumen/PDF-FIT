@@ -13,6 +13,8 @@ Antes de la primera acción en este repositorio, leer en este orden:
 2. [`docs/PLAN_REMEDIACION_AUDITORIA.md`](docs/PLAN_REMEDIACION_AUDITORIA.md) — tareas accionables, criterios de cierre y zonas congeladas.
 3. [`README.md`](README.md) — estado del proyecto, bloqueantes y arranque rápido.
 
+> Espejo para agentes: los mismos documentos están en [`graphify-out/auditoria/`](graphify-out/auditoria/README.md), junto a `auditoria.json` (38 hallazgos con id, severidad, fase y estado) y al plan de remediación.
+
 ### Reglas adicionales mientras la auditoría esté abierta
 
 1. **No desplegar** (`firebase deploy`, `npm run deploy`, `deploy-windows.ps1`) hasta cerrar la Fase 0 del plan.
@@ -47,6 +49,7 @@ La estructura viva del repositorio y sus relaciones están indexadas en `graphif
 * **`graphify-out/grafo_dominio.json`**: Grafo de dominio (tablas SQLite, schemas, endpoints de API REST).
 * **`graphify-out/GRAPH_REPORT.md`**: Reporte arquitectónico, hubs de navegación y comunidades de código.
 * **`graphify-out/graph.html`**: Visor gráfico interactivo (abrir en navegador para inspección visual).
+* **`graphify-out/auditoria/`**: espejo del informe de auditoría y del plan de remediación, más `auditoria.json` (38 hallazgos con id, severidad, fase y estado). Se regenera con `npm run audit:sync` y se verifica con `npm run audit:sync -- --check`; no se edita a mano.
 
 La CLI de coordinación (`node .opencode/coordination/cli.mjs route`) consulta automáticamente ambos grafos en `graphify-out/` para darte la ruta exacta en milisegundos con 0 costo de tokens.
 Al completar cambios estructurales grandes, actualiza el grafo con:

@@ -58,11 +58,14 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 | [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: ~139 nodos y ~801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
 | [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) | Reporte arquitectónico: hubs, comunidades y preguntas sugeridas |
 | [`graph.html`](graphify-out/graph.html) | Visor interactivo (abrir en navegador) |
+| [`graphify-out/auditoria/`](graphify-out/auditoria/README.md) | Espejo legible por agentes del informe y del plan + `auditoria.json` con los 38 hallazgos |
 
 ```bash
 node .opencode/coordination/cli.mjs route "descripcion de la tarea"   # ruteo sobre el grafo
 graphify query "como funciona el flujo de expedientes"                # BFS/DFS sobre graph.json
 graphify update .                                                     # re-indexar tras cambios
+npm run audit:sync                                                    # regenerar el espejo de auditoría
+npm run audit:sync -- --check                                         # verificar que esté al día (CI)
 ```
 
 Estado al 2026-10-18: grafo construido en el commit `259c361`; hay cambios posteriores sin re-indexar y el
@@ -137,6 +140,7 @@ Notas:
 
 - [Auditoría técnica 2026-10-18](docs/AUDITORIA_SNC_v3_2026-10-18.md)
 - [Plan de remediación](docs/PLAN_REMEDIACION_AUDITORIA.md)
+- [Espejo de auditoría para agentes](graphify-out/auditoria/README.md) · [`auditoria.json`](graphify-out/auditoria/auditoria.json)
 - [Grafo del repositorio (reporte)](graphify-out/GRAPH_REPORT.md)
 - [Protocolo multi-IA](AGENTS.md)
 - [Estructura y reglas de seguridad](docs/PROJECT_STRUCTURE.md)
