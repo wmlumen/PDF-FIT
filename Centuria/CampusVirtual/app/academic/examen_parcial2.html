@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Segundo Examen Parcial — TIC (Unidades 4–6) | Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+<style>
+:root{--vosc:#007A33;--vmed:#00B140;--vcla:#E6F4EA;--dor:#C5A55A;--txt:#2D2D2D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Montserrat,'Segoe UI',Arial,sans-serif;background:#f2f6f2;color:var(--txt);min-height:100vh;padding:18px}
+.wrap{max-width:920px;margin:0 auto}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
+.head{background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;padding:20px 24px}
+.head h1{font-size:1.15rem;letter-spacing:.5px}
+.head p{font-size:.78rem;opacity:.9;margin-top:4px}
+.body{padding:22px 24px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.badge{background:var(--vcla);color:var(--vosc);font-weight:700;font-size:.72rem;padding:6px 12px;border-radius:20px}
+.badge.gold{background:#f7efda;color:#8a6d2b}
+.timer{font-size:1.1rem;font-weight:800;color:var(--vosc)}
+.q{border:1px solid #e3e9e3;border-radius:12px;padding:16px;margin:12px 0}
+.q h3{font-size:.92rem;color:var(--vosc);margin-bottom:4px}
+.q .ind{display:inline-block;font-size:.66rem;font-weight:700;background:#eef4ee;color:#3c6b4c;border-radius:12px;padding:3px 10px;margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border:1px solid #dfe5df;border-radius:10px;background:#fff;cursor:pointer;font-size:.86rem}
+.opt:hover{border-color:var(--vmed);background:#f3faf3}
+.opt.sel{border-color:var(--vmed);background:var(--vcla);font-weight:700}
+.opt.ok{border-color:var(--vmed);background:var(--vcla)}
+.opt.bad{border-color:#dc3545;background:#fdeeee}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer}
+.btn:disabled{opacity:.5}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:12px}
+th,td{border:1px solid #e0e0e0;padding:8px;text-align:left}
+th{background:var(--vosc);color:#fff}
+.res{font-size:1.6rem;font-weight:800;color:var(--vosc)}
+small.mut{color:#777}
+@media print{.noprint{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><div class="head">
+<h1>Segundo Examen Parcial — TIC · Unidades 4, 5 y 6</h1>
+<p>Instituto Superior Centuria · Asignatura: Tecnología de la Información y la Comunicación (ADE18) · No incluye contenidos del Primer Parcial</p>
+</div><div class="body">
+<div class="meta">
+<span class="badge">9 indicadores · 1 punto c/u · Total 9</span>
+<span class="badge gold">Peso: 20% de la nota final</span>
+<span class="badge">Tiempo: 60 min</span>
+<span class="badge timer" id="timer">60:00</span>
+</div>
+<p><small class="mut">Alumno: <strong id="alumno">—</strong> · Cada pregunta responde a un indicador del programa. Marque una sola opción.</small></p>
+<div id="exam"></div>
+<button class="btn noprint" id="btnFin" onclick="finalizar()">Finalizar y calificar</button>
+<div id="resultado" style="display:none;margin-top:16px"></div>
+</div></div>
+</div>
+<script>
+if(!sessionStorage.getItem('current_cedula')){location.replace('../index.html');}
+document.getElementById('alumno').textContent=(sessionStorage.getItem('current_nombre')||'')+' (CI: '+(sessionStorage.getItem('current_cedula')||'')+')';
+const BANK=[
+{u:'4',ind:'U4-I1',indName:'Describe módulos ERP',q:'Nóminas, selección, capacitación y desempeño pertenecen al módulo ERP de:',opts:['A) Finanzas','B) Recursos humanos','C) Logística'],ok:1},,
+{u:'4',ind:'U4-I2',indName:'Analiza TCO y costo-beneficio',q:'El TCO de un ERP incluye:',opts:['A) Solo el precio de las licencias','B) Solo el hardware','C) Adquisición, implementación, operación, mantenimiento y actualización'],ok:2},,
+{u:'4',ind:'U4-I3',indName:'Propone plan de implantación ERP',q:'Orden correcto posterior al contrato:',opts:['A) Go-live, capacitación, migración y pruebas','B) Capacitación, migración de datos, configuración, pruebas, puesta en marcha y soporte','C) Soporte, pruebas, configuración y migración'],ok:1},,
+{u:'5',ind:'U5-I1',indName:'Identifica componentes hardware/software',q:'¿Qué componente ejecuta las instrucciones del software?',opts:['A) Memoria RAM','B) CPU','C) Disco SSD'],ok:1},,
+{u:'5',ind:'U5-I2',indName:'Clasifica software sistema/programación/aplicación',q:'El antivirus es:',opts:['A) Software de sistema (utilitario)','B) Software de aplicación','C) Software de programación'],ok:0},,
+{u:'5',ind:'U5-I3',indName:'Compara tipos de computadoras',q:'Un banco con cientos de usuarios simultáneos necesita:',opts:['A) Mainframe','B) Microcomputadora','C) Computadora embebida'],ok:0},,
+{u:'6',ind:'U6-I1',indName:'Explica arquitectura de red y protocolos',q:'Para conectar 20 PC e impresoras dentro de una oficina se usa:',opts:['A) Switch','B) Router','C) Módem'],ok:0},,
+{u:'6',ind:'U6-I2',indName:'Diseña infraestructura de red empresarial',q:'Tres sucursales con sistema central y portal para proveedores requieren:',opts:['A) Solo una LAN','B) Solo Internet hogareño','C) LAN por sucursal + conectividad + Intranet + Extranet'],ok:2},,
+{u:'6',ind:'U6-I3',indName:'Evalúa seguridad de red',q:'Medida básica de seguridad de red:',opts:['A) Misma clave para todos','B) Acceso total sin permisos','C) Autenticación, permisos, actualizaciones y copias de seguridad'],ok:2},
+];
+const TOTAL=BANK.length, PESO=20, MIN=60, STORE='examen_P2_';
+let seg=MIN*60, timer=null, fin=false;
+function render(){
+ const box=document.getElementById('exam'); box.innerHTML='';
+ BANK.forEach((p,i)=>{
+  const d=document.createElement('div'); d.className='q';
+  d.innerHTML='<h3>Pregunta '+(i+1)+' — Unidad '+p.u+'</h3><span class="ind">'+p.ind+' · '+p.indName+' · 1 p</span><p style="margin:8px 0;font-size:.88rem">'+p.q+'</p>';
+  p.opts.forEach((o,j)=>{
+   const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+   b.onclick=()=>{if(fin)return; [...d.querySelectorAll('.opt')].forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); d.dataset.r=j;};
+   d.appendChild(b);
+  });
+  box.appendChild(d);
+ });
+}
+function tick(){
+ const m=String(Math.floor(seg/60)).padStart(2,'0'), s=String(seg%60).padStart(2,'0');
+ document.getElementById('timer').textContent=m+':'+s;
+ if(seg<=0){finalizar();return;} seg--;
+}
+function finalizar(){
+ if(fin)return; fin=true; clearInterval(timer);
+ document.getElementById('btnFin').disabled=true;
+ const cards=[...document.querySelectorAll('.q')]; let pts=0, rows='';
+ BANK.forEach((p,i)=>{
+  const r=cards[i].dataset.r===undefined?-1:parseInt(cards[i].dataset.r);
+  const ok=r===p.ok; if(ok)pts++;
+  [...cards[i].querySelectorAll('.opt')].forEach((b,j)=>{ if(j===p.ok)b.classList.add('ok'); else if(j===r)b.classList.add('bad'); b.disabled=true; });
+  rows+='<tr><td>'+(i+1)+'</td><td>'+p.ind+' — '+p.indName+'</td><td>'+(ok?'✓':'✗')+'</td><td>'+(ok?1:0)+'</td></tr>';
+ });
+ const pct=Math.round(pts/TOTAL*100), aporte=(pts/TOTAL*PESO).toFixed(1);
+ document.getElementById('resultado').style.display='block';
+ document.getElementById('resultado').innerHTML='<div class="res">'+pts+' / '+TOTAL+' ('+pct+'%)</div><p><small class="mut">Aporte a la nota final: '+aporte+' / '+PESO+'</small></p><table><tr><th>N°</th><th>Indicador</th><th>R</th><th>Pts</th></tr>'+rows+'</table>';
+ try{localStorage.setItem(STORE+sessionStorage.getItem('current_cedula'),JSON.stringify({pts,total:TOTAL,pct,fecha:new Date().toISOString()}));}catch(e){}
+ window.scrollTo(0,document.body.scrollHeight);
+}
+render(); timer=setInterval(tick,1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primer Examen Parcial — TIC (Unidades 1–3) | Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+<style>
+:root{--vosc:#007A33;--vmed:#00B140;--vcla:#E6F4EA;--dor:#C5A55A;--txt:#2D2D2D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Montserrat,'Segoe UI',Arial,sans-serif;background:#f2f6f2;color:var(--txt);min-height:100vh;padding:18px}
+.wrap{max-width:920px;margin:0 auto}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
+.head{background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;padding:20px 24px}
+.head h1{font-size:1.15rem;letter-spacing:.5px}
+.head p{font-size:.78rem;opacity:.9;margin-top:4px}
+.body{padding:22px 24px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.badge{background:var(--vcla);color:var(--vosc);font-weight:700;font-size:.72rem;padding:6px 12px;border-radius:20px}
+.badge.gold{background:#f7efda;color:#8a6d2b}
+.timer{font-size:1.1rem;font-weight:800;color:var(--vosc)}
+.q{border:1px solid #e3e9e3;border-radius:12px;padding:16px;margin:12px 0}
+.q h3{font-size:.92rem;color:var(--vosc);margin-bottom:4px}
+.q .ind{display:inline-block;font-size:.66rem;font-weight:700;background:#eef4ee;color:#3c6b4c;border-radius:12px;padding:3px 10px;margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border:1px solid #dfe5df;border-radius:10px;background:#fff;cursor:pointer;font-size:.86rem}
+.opt:hover{border-color:var(--vmed);background:#f3faf3}
+.opt.sel{border-color:var(--vmed);background:var(--vcla);font-weight:700}
+.opt.ok{border-color:var(--vmed);background:var(--vcla)}
+.opt.bad{border-color:#dc3545;background:#fdeeee}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer}
+.btn:disabled{opacity:.5}
+table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:12px}
+th,td{border:1px solid #e0e0e0;padding:8px;text-align:left}
+th{background:var(--vosc);color:#fff}
+.res{font-size:1.6rem;font-weight:800;color:var(--vosc)}
+small.mut{color:#777}
+@media print{.noprint{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><div class="head">
+<h1>Primer Examen Parcial — TIC · Unidades 1, 2 y 3</h1>
+<p>Instituto Superior Centuria · Asignatura: Tecnología de la Información y la Comunicación (ADE18)</p>
+</div><div class="body">
+<div class="meta">
+<span class="badge">9 indicadores · 1 punto c/u · Total 9</span>
+<span class="badge gold">Peso: 20% de la nota final</span>
+<span class="badge">Tiempo: 60 min</span>
+<span class="badge timer" id="timer">60:00</span>
+</div>
+<p><small class="mut">Alumno: <strong id="alumno">—</strong> · Cada pregunta responde a un indicador del programa. Marque una sola opción.</small></p>
+<div id="exam"></div>
+<button class="btn noprint" id="btnFin" onclick="finalizar()">Finalizar y calificar</button>
+<div id="resultado" style="display:none;margin-top:16px"></div>
+</div></div>
+</div>
+<script>
+if(!sessionStorage.getItem('current_cedula')){location.replace('../index.html');}
+document.getElementById('alumno').textContent=(sessionStorage.getItem('current_nombre')||'')+' (CI: '+(sessionStorage.getItem('current_cedula')||'')+')';
+const BANK=[
+{u:'1',ind:'U1-I1',indName:'Define SI, TI y diferencia dato/información',q:'El cuaderno de caja anota cada venta del día sin totalizar ni comparar. Esos montos son:',opts:['A) Información','B) Datos','C) Conocimiento'],ok:1},,
+{u:'1',ind:'U1-I2',indName:'Clasifica TPS/MIS/DSS/EIS correctamente',q:'El sistema que cobra y registra cada venta al instante y el que emite el informe mensual de gestión son, respectivamente:',opts:['A) MIS y TPS','B) TPS y MIS','C) DSS y EIS'],ok:1},,
+{u:'1',ind:'U1-I3',indName:'Explica ciclo de vida y variables determinantes',q:'Orden correcto del ciclo de vida de un SI:',opts:['A) Diseño, análisis, planificación y mantenimiento','B) Implementación, diseño, análisis y planificación','C) Planificación, análisis, diseño, implementación, pruebas, instalación y mantenimiento'],ok:2},,
+{u:'2',ind:'U2-I1',indName:'Aplica 5 Fuerzas de Porter',q:'Abre un competidor al lado y el supermercado baja sus precios. ¿Qué fuerza de Porter actúa?',opts:['A) Poder de los proveedores','B) Rivalidad entre competidores','C) Productos sustitutos'],ok:1},,
+{u:'2',ind:'U2-I2',indName:'Elabora matriz DESTEP',q:'Para abrir una sucursal se analizan inflación, leyes laborales y uso de redes sociales. Dimensiones DESTEP:',opts:['A) Económica, político-legal y social','B) Demográfica, ecológica y tecnológica','C) Solo económica'],ok:0},,
+{u:'2',ind:'U2-I3',indName:'Formula estrategia TIC alineada',q:'Una estrategia TIC alineada significa que…',opts:['A) Se compra la tecnología más nueva','B) Se informatiza todo sin prioridades','C) La tecnología responde a los objetivos del negocio'],ok:2},,
+{u:'3',ind:'U3-I1',indName:'Modela ER y normaliza 1NF-3NF',q:'En un diagrama entidad-relación, el rombo representa:',opts:['A) La entidad','B) La relación','C) El atributo'],ok:1},,
+{u:'3',ind:'U3-I2',indName:'Escribe consultas SQL básicas',q:'Listar nombre y precio de productos con precio mayor a 100000:',opts:['A) SELECT nombre, precio FROM productos WHERE precio > 100000;','B) SELECT * FROM productos WHERE nombre > 100000;','C) UPDATE productos SET precio > 100000;'],ok:0},,
+{u:'3',ind:'U3-I3',indName:'Diferencia SGBD y tipos de BD',q:'¿Cuál NO es un SGBD relacional?',opts:['A) MySQL','B) PostgreSQL','C) MongoDB'],ok:2},
+];
+const TOTAL=BANK.length, PESO=20, MIN=60, STORE='examen_P1_';
+let seg=MIN*60, timer=null, fin=false;
+function render(){
+ const box=document.getElementById('exam'); box.innerHTML='';
+ BANK.forEach((p,i)=>{
+  const d=document.createElement('div'); d.className='q';
+  d.innerHTML='<h3>Pregunta '+(i+1)+' — Unidad '+p.u+'</h3><span class="ind">'+p.ind+' · '+p.indName+' · 1 p</span><p style="margin:8px 0;font-size:.88rem">'+p.q+'</p>';
+  p.opts.forEach((o,j)=>{
+   const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+   b.onclick=()=>{if(fin)return; [...d.querySelectorAll('.opt')].forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); d.dataset.r=j;};
+   d.appendChild(b);
+  });
+  box.appendChild(d);
+ });
+}
+function tick(){
+ const m=String(Math.floor(seg/60)).padStart(2,'0'), s=String(seg%60).padStart(2,'0');
+ document.getElementById('timer').textContent=m+':'+s;
+ if(seg<=0){finalizar();return;} seg--;
+}
+function finalizar(){
+ if(fin)return; fin=true; clearInterval(timer);
+ document.getElementById('btnFin').disabled=true;
+ const cards=[...document.querySelectorAll('.q')]; let pts=0, rows='';
+ BANK.forEach((p,i)=>{
+  const r=cards[i].dataset.r===undefined?-1:parseInt(cards[i].dataset.r);
+  const ok=r===p.ok; if(ok)pts++;
+  [...cards[i].querySelectorAll('.opt')].forEach((b,j)=>{ if(j===p.ok)b.classList.add('ok'); else if(j===r)b.classList.add('bad'); b.disabled=true; });
+  rows+='<tr><td>'+(i+1)+'</td><td>'+p.ind+' — '+p.indName+'</td><td>'+(ok?'✓':'✗')+'</td><td>'+(ok?1:0)+'</td></tr>';
+ });
+ const pct=Math.round(pts/TOTAL*100), aporte=(pts/TOTAL*PESO).toFixed(1);
+ document.getElementById('resultado').style.display='block';
+ document.getElementById('resultado').innerHTML='<div class="res">'+pts+' / '+TOTAL+' ('+pct+'%)</div><p><small class="mut">Aporte a la nota final: '+aporte+' / '+PESO+'</small></p><table><tr><th>N°</th><th>Indicador</th><th>R</th><th>Pts</th></tr>'+rows+'</table>';
+ try{localStorage.setItem(STORE+sessionStorage.getItem('current_cedula'),JSON.stringify({pts,total:TOTAL,pct,fecha:new Date().toISOString()}));}catch(e){}
+ window.scrollTo(0,document.body.scrollHeight);
+}
+render(); timer=setInterval(tick,1000);
+</script>
+</body>
+</html>

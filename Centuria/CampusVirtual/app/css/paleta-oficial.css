@@ -3,6 +3,7 @@
    Colores: #2D2D2D | #E6F4EA | #00B140 | #007A33 | #81C784
    ============================================================ */
 
+
 :root {
     --c-primary: #007A33;
     --c-secondary: #00B140;
@@ -11,17 +12,40 @@
     --c-dark: #2D2D2D;
     --c-white: #ffffff;
     --c-gold: #C5A55A;
+    --c-bg: #E6F4EA;
+    --c-surface: #ffffff;
+    --c-text: #2D2D2D;
+    --c-border: rgba(0,0,0,0.1);
 }
 
-/* ── Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.dark-mode {
+    --c-primary: #00B140;
+    --c-secondary: #007A33;
+    --c-hover: #4CAF50;
+    --c-light: #1A1A1A;
+    --c-dark: #E6F4EA;
+    --c-white: #2D2D2D;
+    --c-gold: #E5C57A;
+    --c-bg: #121212;
+    --c-surface: #1E1E1E;
+    --c-text: #F3F4F6;
+    --c-border: rgba(255,255,255,0.1);
+}
 
 body {
     font-family: 'Montserrat', 'Segoe UI', sans-serif;
-    background-color: var(--c-light);
-    color: var(--c-dark);
+    background-color: var(--c-bg) !important;
+    color: var(--c-text) !important;
     line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
 }
+
+.glass-panel, .bg-white {
+    background-color: var(--c-surface) !important;
+    border-color: var(--c-border) !important;
+    color: var(--c-text) !important;
+}
+
 
 /* ── Header institucional ── */
 .header-centuria {

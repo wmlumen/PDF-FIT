@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planilla de Progreso - TIC Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,6 +29,11 @@
         .text-primary{ color:#007A33 !important; }
         .bg-primary{ background-color:#007A33 !important; }
         .border-primary{ border-color:#007A33 !important; }
+        /* Planilla compacta + solo lectura para el alumno */
+        .table-compact td, .table-compact th{ padding:.32rem .45rem !important; font-size:.78rem; }
+        #tabla-alumnos-real td, #tabla-alumnos-real th{ padding:.32rem .45rem !important; font-size:.78rem; }
+        #tabla-alumnos-real input[readonly]{ background:#f4f6f4; }
+        .mark-btn{ padding:1px 7px; font-size:.7rem; border-radius:6px; margin:0 1px; }
     </style>
     <link rel="stylesheet" href="../css/portal-layout.css">
     <script src="../js/portal-layout.js" defer></script>
@@ -39,10 +45,10 @@
 <div class="container-fluid">
     <div class="row portal-layout">
         <!-- Sidebar Verde Centuria -->
-                        <nav id="portal-menu" aria-label="NavegaciÃ³n del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
+                        <nav id="portal-menu" aria-label="Navegación del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
             <div class="p-2">
                 <a href="programa.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-file-earmark-text me-2"></i>Programa Oficial</a>
-                <a href="../glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario TÃ©cnico</a>
+                <a href="../academic/glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario Técnico</a>
                 <a href="../asistencia_presencial.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-person-raised-hand me-2"></i>Asistencia Presencial</a>
                 <a href="planilla.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-graph-up me-2"></i>Planilla de Progreso</a>
             </div>
@@ -64,40 +70,31 @@
         <!-- Main -->
         
             <main class="col-md-9 col-lg-10 content p-4" style="background:#f8f9fa; min-height:100vh;">
-                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menÃº</button>
-                        <!-- Header superior: Izq Logo+Instituto+Carrera+Asignatura | Der Nombre+CÃ©dula+Salir -->
-            <div id="top-user-bar" class="d-flex justify-content-between align-items-center gap-3 py-2 px-3 mb-3 bg-white rounded-3 shadow-sm border" style="position: sticky; top: 0; z-index: 10;">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="logo_centuria.png" alt="Centuria" style="height: 40px; width: auto;">
+                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menú</button>
+                        <!-- Header superior: Izq Logo+Instituto+Carrera+Asignatura | Der Nombre+Cédula+Salir -->
+            <div id="top-user-bar" class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3 mb-3 bg-white rounded-3 shadow-sm border" style="position: sticky; top: 0; z-index: 10;">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="logo_centuria.png" alt="Centuria" style="height: 38px; width: auto;">
                     <div>
-                        <div class="fw-bold" style="color: #007A33; font-size: 0.95rem; line-height: 1.1;">INSTITUTO SUPERIOR CENTURIA</div>
-                        <small class="text-muted" style="font-size: 0.75rem; line-height: 1.1;" id="top-carrera">Carrera: <span class="fw-bold">ADE18</span></small><br>
-                        <small class="text-muted" style="font-size: 0.75rem; line-height: 1.1;" id="top-asignatura">Asignatura: <span class="fw-bold">TIC - TecnologÃ­a de la InformaciÃ³n y ComunicaciÃ³n</span></small>
+                        <div class="fw-bold" style="color: #007A33; font-size: 0.88rem; line-height: 1.15;">INSTITUTO SUPERIOR CENTURIA <span class="fw-normal">· Panel de Evaluación y Progreso</span></div>
+                        <small class="text-muted" style="font-size: 0.72rem;" id="top-carrera">Carrera: <span class="fw-bold">ADE18</span></small>
+                        <small class="text-muted" style="font-size: 0.72rem;" id="top-asignatura"> · Asignatura: <span class="fw-bold">TIC</span></small>
+                        <small class="text-muted d-block" style="font-size: 0.66rem;">TIC • Plan ADE18 • 10% Trabajos + 40% Parciales + 50% Final</small>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
                     <div class="text-end">
                         <div id="sidebar-user-name" class="fw-bold small" style="color: #007A33; line-height: 1.1;"></div>
                         <small id="sidebar-user-id" class="text-muted" style="font-size: 0.75rem;"></small>
                     </div>
                     <div class="vr"></div>
-                    <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesiÃ³n"><i class="bi bi-box-arrow-right"></i> Salir</button>
-                </div>
-            </div>
-            <!-- Header con logo y toggle -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center bg-white rounded-3 shadow-sm p-2 px-3 mb-3 border-start border-4" style="border-color:#007A33 !important;">
-                <div class="d-flex align-items-center gap-3">
-                    <img src="logo_centuria.png" alt="Centuria" style="height:36px;" class="d-none d-md-block">
-                    <div>
-                        <h1 class="h4 fw-bold mb-0" style="color:#007A33; font-family:'Montserrat';">Panel de EvaluaciÃ³n y Progreso</h1>
-                        <small class="text-muted">TIC â€¢ Plan ADE18 â€¢ 10% Trabajos + 40% Parciales + 50% Final</small>
+                    <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesión"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                    <div class="btn-group shadow-sm" role="group">
+                        <input type="radio" class="btn-check" name="vistas" id="btn-alumno" autocomplete="off" checked onchange="toggleView('alumno')">
+                        <label class="btn btn-sm fw-bold" for="btn-alumno" style="border-color:#007A33; color:#007A33;"><i class="bi bi-person-badge me-1"></i> Mi Progreso</label>
+                        <input type="radio" class="btn-check" name="vistas" id="btn-docente" autocomplete="off" onchange="toggleView('docente')">
+                        <label class="btn btn-sm fw-bold" for="btn-docente" style="border-color:#007A33; color:#007A33;"><i class="bi bi-briefcase me-1"></i> Vista Docente</label>
                     </div>
-                </div>
-                <div class="btn-group shadow-sm mt-2 mt-md-0" role="group">
-                    <input type="radio" class="btn-check" name="vistas" id="btn-alumno" autocomplete="off" checked onchange="toggleView('alumno')">
-                    <label class="btn btn-sm fw-bold" for="btn-alumno" style="border-color:#007A33; color:#007A33;"><i class="bi bi-person-badge me-1"></i> Mi Progreso</label>
-                    <input type="radio" class="btn-check" name="vistas" id="btn-docente" autocomplete="off" onchange="toggleView('docente')">
-                    <label class="btn btn-sm fw-bold" for="btn-docente" style="border-color:#007A33; color:#007A33;"><i class="bi bi-briefcase me-1"></i> Vista Docente</label>
                 </div>
             </div>
 
@@ -105,9 +102,9 @@
             <div id="vista-alumno">
 <section class="card border-0 shadow-sm mb-4" aria-labelledby="titulo-asistencias">
  <div class="card-body">
-  <h2 id="titulo-asistencias" class="h5">Asistencia por dÃ­a de clase</h2>
-  <p class="small text-muted">Fechas registradas por el docente y dÃ­as con asistencia presencial de tu carrera y secciÃ³n. Las ausencias sin justificar se calculan al finalizar el dÃ­a.</p>
-  <p id="asistencia-resumen" role="status">Cargando asistenciasâ€¦</p>
+  <h2 id="titulo-asistencias" class="h5">Asistencia por día de clase</h2>
+  <p class="small text-muted">Fechas registradas por el docente y días con asistencia presencial de tu carrera y sección. Las ausencias sin justificar se calculan al finalizar el día.</p>
+  <p id="asistencia-resumen" role="status">Cargando asistencias…</p>
   <button type="button" id="asistencia-recargar" class="btn btn-sm btn-outline-primary">Actualizar asistencias</button>
   <div class="table-responsive"><table class="table"><thead><tr><th>Fecha</th><th>Estado</th><th>Origen de la fecha</th></tr></thead><tbody id="asistencia-detalle"></tbody></table></div>
  </div>
@@ -115,12 +112,12 @@
 
                 <div class="alert d-flex align-items-center shadow-sm border-0 mb-4" style="background:#E6F4EA; border-left:4px solid #007A33 !important;">
                     <i class="bi bi-info-circle-fill fs-4 me-3" style="color:#007A33;"></i>
-                    <div><h6 class="fw-bold mb-1" style="color:#007A33;">Tus calificaciones oficiales</h6><p class="mb-0 small text-muted">Datos en tiempo real desde Google Sheets. <strong style="color:#007A33;">Asistencia mÃ­nima 80% (4/5 pts)</strong> para derecho a final.</p></div>
+                    <div><h6 class="fw-bold mb-1" style="color:#007A33;">Tus calificaciones oficiales</h6><p class="mb-0 small text-muted">Datos en tiempo real del sistema. <strong style="color:#007A33;">Asistencia mínima 80% (4/5 pts)</strong> para derecho a final.</p></div>
                 </div>
 
                 <!-- 3 tarjetas resumen -->
                 <div class="row g-3 mb-4">
-                    <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #007A33 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">TRABAJOS / ASISTENCIA</small><h3 class="fw-bold mb-0" style="color:#007A33;">5 <small class="text-muted fs-6">/ 5 pts</small></h3><small class="text-muted">10% nota final</small></div><div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-calendar-check fs-4" style="color:#007A33;"></i></div></div><span class="badge mt-2" style="background:#007A33;">Al DÃ­a</span></div></div></div>
+                    <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #007A33 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">TRABAJOS / ASISTENCIA</small><h3 class="fw-bold mb-0" style="color:#007A33;">5 <small class="text-muted fs-6">/ 5 pts</small></h3><small class="text-muted">10% nota final</small></div><div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-calendar-check fs-4" style="color:#007A33;"></i></div></div><span class="badge mt-2" style="background:#007A33;">Al Día</span></div></div></div>
                     <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #ffc107 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">PARCIALES</small><h3 class="fw-bold mb-0">17 <small class="text-muted fs-6">/ 20 pts</small></h3><small class="text-muted">40% nota final</small></div><div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-pencil-square fs-4 text-warning"></i></div></div></div></div></div>
                     <div class="col-md-4"><div class="card h-100 border-0 shadow-sm" style="border-left:4px solid #198754 !important;"><div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><small class="text-muted fw-bold">EXAMEN FINAL</small><h3 class="fw-bold mb-0">22 <small class="text-muted fs-6">/ 25 pts</small></h3><small class="text-muted">50% nota final</small></div><div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;"><i class="bi bi-award fs-4 text-success"></i></div></div></div></div></div>
                 </div>
@@ -186,7 +183,7 @@
                             <div class="progress mt-4" style="height:30px;"><div id="bar-total" class="progress-bar progress-bar-striped progress-bar-animated" style="width:88%; background:#007A33;">88%</div></div>
                         </div>
                         <div class="col-md-4 text-white d-flex flex-column justify-content-center align-items-center p-4 text-center" style="background:#007A33;">
-                            <small class="text-white-50 text-uppercase fw-bold" style="letter-spacing:1px;">CalificaciÃ³n Final</small>
+                            <small class="text-white-50 text-uppercase fw-bold" style="letter-spacing:1px;">Calificación Final</small>
                             <div id="out-nota" class="display-1 fw-bold my-2">4</div>
                             <h5 id="out-estado" class="fw-bold">Distinguido</h5>
                             <p id="out-pts" class="mb-0 small opacity-75">44 / 50 pts (88%)</p>
@@ -200,17 +197,13 @@
             <div id="vista-docente" style="display:none;">
 <section class="card border-0 shadow-sm mb-4"><div class="card-body">
 <h2 class="h5">Fechas de clase y justificaciones</h2>
-<p class="small text-muted">Registrar una fecha establece un dÃ­a de clase; cada alumno debe tener su asistencia registrada para figurar presente.</p>
-<label for="asistencia-clave" class="form-label">Clave de gestiÃ³n docente</label>
-<input id="asistencia-clave" type="password" class="form-control mb-3" autocomplete="off">
+<p class="small text-muted">Registrar una fecha establece un día de clase; cada alumno debe tener su asistencia registrada para figurar presente.</p>
 <form id="form-clase" class="row g-2 mb-4">
-<div class="col-md-4"><label for="clase-fecha">Fecha de clase</label><input id="clase-fecha" type="date" class="form-control" required></div>
-<div class="col-md-4"><label for="clase-carrera">Carrera (igual a RegistroAlumnos)</label><input id="clase-carrera" class="form-control" required maxlength="300"></div>
-<div class="col-md-4"><label for="clase-seccion">SecciÃ³n (igual a RegistroAlumnos)</label><input id="clase-seccion" class="form-control" required maxlength="300"></div>
-<div class="col-12"><button class="btn btn-success" type="submit">Registrar fecha de clase</button></div>
+<div class="col-md-6"><label for="clase-fecha">Fecha de trabajo (del sistema)</label><input id="clase-fecha" type="date" class="form-control" required></div>
+<div class="col-md-6 d-flex align-items-end"><button class="btn btn-success w-100" type="submit">Fijar fecha y recargar</button></div>
 </form>
 <form id="form-justificar" class="row g-2">
-<div class="col-md-4"><label for="justificar-cedula">CÃ©dula del alumno</label><input id="justificar-cedula" class="form-control" required></div>
+<div class="col-md-4"><label for="justificar-cedula">Cédula del alumno</label><input id="justificar-cedula" class="form-control" required></div>
 <div class="col-md-4"><label for="justificar-fecha">Fecha de ausencia</label><input id="justificar-fecha" type="date" class="form-control" required></div>
 <div class="col-md-4"><label for="justificar-motivo">Motivo aprobado por el docente</label><input id="justificar-motivo" class="form-control" required maxlength="300"></div>
 <div class="col-12"><button class="btn btn-success" type="submit">Justificar ausencia</button></div>
@@ -221,21 +214,22 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <div>
                         <h3 class="fw-bold mb-1" style="color:#007A33; font-family:'Montserrat';"><i class="bi bi-people me-2"></i>Planilla General de Alumnos</h3>
-                        <p class="text-muted small mb-0">Monitoreo grupal â€¢ Alumnos en riesgo <span class="badge bg-danger">Asistencia &lt;4</span> â€¢ Exportar actas</p>
+                        <p class="text-muted small mb-0">Monitoreo grupal • Alumnos en riesgo <span class="badge bg-danger">Asistencia &lt;4</span> • Exportar actas</p>
                     </div>
-                    <span class="badge bg-light text-dark border"><span id="lbl-alumnos">0</span> alumnos â€¢ <span id="badge-rol">Rol: Docente</span></span>
+                    <span class="badge bg-light text-dark border"><span id="lbl-alumnos">0</span> alumnos • <span id="badge-rol">Rol: Docente</span></span>
                 </div>
                 <div class="alert border-0 shadow-sm d-flex align-items-center" style="background:#E6F4EA; border-left:4px solid #007A33 !important;" id="gsheet-error" style="display:none;">
-                    <i class="bi bi-exclamation-triangle-fill me-2" style="color:#007A33;"></i><span class="small">Error Sheets: Compartir â†’ <strong>Cualquier persona con el enlace</strong></span>
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="color:#007A33;"></i><span class="small">Sin conexión con el sistema. Verifique el servidor.</span>
                 </div>
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                        <div class="input-group" style="max-width:300px;"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input type="text" id="filtro-planilla" class="form-control form-control-sm" placeholder="Buscar por cÃ©dula o nombre..."></div>
+                        <div class="input-group" style="max-width:300px;"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span><input type="text" id="filtro-planilla" class="form-control form-control-sm" placeholder="Buscar por cédula o nombre..."></div>
+                        <input type="date" id="asis-fecha" class="form-control form-control-sm" style="max-width:150px;" onchange="loadSystemData()" title="Fecha de trabajo">
                         <button class="btn btn-sm text-white" style="background:#007A33;" onclick="exportarExcel()"><i class="bi bi-file-earmark-excel me-1"></i>Exportar Acta a Excel</button>
                     </div>
                     <div class="card-body p-0 table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead style="background:#007A33; color:white;"><tr><th>CÃ©dula</th><th>Nombre</th><th class="text-center">Asist.<br><small>10%</small></th><th class="text-center">P1<br><small>20%</small></th><th class="text-center">P2<br><small>20%</small></th><th class="text-center">Final<br><small>50%</small></th><th class="text-center">%</th><th class="text-center">Nota</th></tr></thead>
+                            <thead style="background:#007A33; color:white;"><tr><th>Cédula</th><th>Nombre</th><th class="text-center">Asist.<br><small>10%</small></th><th class="text-center">P1<br><small>20%</small></th><th class="text-center">P2<br><small>20%</small></th><th class="text-center">Final<br><small>50%</small></th><th class="text-center">%</th><th class="text-center">Nota</th><th class="text-center">Hoy<br><small id="hoy-label">—</small></th></tr></thead>
                             <tbody id="tabla-alumnos-real"></tbody>
                         </table>
                     </div>
@@ -277,39 +271,153 @@
         if(bar2) bar2.className=`progress-bar progress-bar-striped progress-bar-animated ${color}`;
     }
     inputs.forEach(i=>i.addEventListener('input',calcularNota));
-    const sheetId='1TRxrgXIojONTrszwF9cmgJn75qx-zUbacjRzwrT8xeo';
-    const gSheetUrl='https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
-    function loadGoogleSheetsData(){
-        fetch(gSheetUrl).then(r=>r.json()).then(data=>{
-            const tbody=document.getElementById('tabla-alumnos-real'); tbody.innerHTML='';
-            let c=0;
-            data.forEach(row=>{
-                let ced=row.cedula, nom=row.nombre, a=parseFloat(row.asistencia)||0, p1=parseFloat(row.parcial1)||0, p2=parseFloat(row.parcial2)||0, f=parseFloat(row.final)||0;
-                let tot=a+p1+p2+f, pct=Math.round(tot/50*100);
-                let nota=1, bg="bg-danger", abg="bg-danger";
-                if(a>=4) abg="bg-success";
-                if(pct>=94) nota=5,bg="bg-success"; else if(pct>=86) nota=4,bg="bg-success"; else if(pct>=78) nota=3,bg="bg-warning text-dark"; else if(pct>=70) nota=2,bg="bg-secondary";
-                if(a<4) nota=1;
-                let tr=document.createElement('tr'); if(a<4) tr.className="table-danger";
-                tr.innerHTML=`<td>${ced}</td><td class="fw-bold">${nom}</td><td class="text-center"><span class="badge ${abg}">${a}</span></td><td class="text-center">${p1}</td><td class="text-center">${p2}</td><td class="text-center">${f}</td><td class="text-center fw-bold ${nota===1?'text-danger':''}">${pct}%</td><td class="text-center"><span class="badge ${bg}">${nota}</span></td>`;
-                tbody.appendChild(tr); c++;
-                if(currentUser && ced===currentUser){
-                    document.getElementById('inp-asis').value=a; document.getElementById('inp-par1').value=p1; document.getElementById('inp-par2').value=p2; document.getElementById('inp-final').value=f; calcularNota();
-                }
-            });
-            document.getElementById('lbl-alumnos').innerText=c;
-        }).catch(e=>{ console.error(e); document.getElementById('gsheet-error').style.display='flex'; });
+    let CURSO_ID=null, CURSO_NOMBRE='TIC', DB={users:[],grades:[],att:[]};
+    function fechaHoy(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    async function initCurso(){
+        try{
+            const r=await CenturiaAPI.getCourses();
+            const list=(r&&r.courses)||[];
+            const tic=list.find(c=>String(c.shortname||'').toUpperCase()==='TIC')||list[0];
+            if(tic){ CURSO_ID=tic.id; CURSO_NOMBRE=tic.shortname||tic.name||'TIC'; }
+        }catch(e){}
+        if(!CURSO_ID) CURSO_ID=1;
     }
-    window.addEventListener('load',()=>{ if(!sessionStorage.getItem('current_cedula')) location.replace('../index.html'); loadGoogleSheetsData(); calcularNota(); });
-    function isDocente(){ const c=sessionStorage.getItem('current_cedula'); const r=sessionStorage.getItem('rol'); return c==='20262026' || r==='docente'; }
-    function actualizarBadgeRol(){ const b=document.getElementById('badge-rol'); if(b){ b.textContent=isDocente()?'Rol: Docente':'Rol: Alumno'; b.className=isDocente()?'badge bg-danger':'badge bg-success'; } const r=document.getElementById('btn-docente'); const l=document.querySelector('label[for="btn-docente"]'); if(!isDocente()&&r){ r.disabled=true; if(l){ l.classList.add('opacity-50'); l.title='Acceso docente restringido'; } } }
+    function bucketize(rows){
+        const m={};
+        (rows||[]).forEach(g=>{
+            const u=m[g.user_id]||(m[g.user_id]={p1:0,p2:0,fin:0,asis:0});
+            const c=String(g.component||'').toLowerCase();
+            const s=parseFloat(g.score)||0;
+            if(/parcial\s*1|primer.*parcial|\bp1\b/.test(c)) u.p1=Math.min(10,u.p1+s);
+            else if(/parcial\s*2|segundo.*parcial|\bp2\b/.test(c)) u.p2=Math.min(10,u.p2+s);
+            else if(/final/.test(c)) u.fin=Math.min(25,u.fin+s);
+            else if(/asis/.test(c)) u.asis=Math.min(5,u.asis+s);
+        });
+        return m;
+    }
+    function attByUser(){
+        const m={};
+        (DB.att||[]).forEach(a=>{
+            const u=m[a.user_id]||(m[a.user_id]={tot:0,pres:0,rows:[]});
+            u.tot++; if(a.status==='present')u.pres++; u.rows.push(a);
+        });
+        return m;
+    }
+    function filaAlumno(u,gmap,amap){
+        const g=gmap[u.id]||{p1:0,p2:0,fin:0,asis:0};
+        const a=amap[u.id];
+        let asis=g.asis;
+        if(a&&a.tot>0) asis=Math.round(a.pres/a.tot*5);
+        return {id:u.id,ced:u.cedula,nom:u.nombre,asis:asis,p1:Math.round(g.p1),p2:Math.round(g.p2),fin:Math.round(g.fin)};
+    }
+    function notaLetra(pct,asis){
+        let nota=1,bg="bg-danger";
+        if(pct>=94){nota=5;bg="bg-success";}else if(pct>=86){nota=4;bg="bg-success";}else if(pct>=78){nota=3;bg="bg-warning text-dark";}else if(pct>=70){nota=2;bg="bg-secondary";}
+        if(asis<4) nota=1;
+        return {nota,bg};
+    }
+    async function loadSystemData(){
+        const errBox=document.getElementById('gsheet-error');
+        try{
+            await initCurso();
+            const users=await CenturiaAPI.roster(CURSO_NOMBRE);
+            let grades=[],att=[];
+            try{ grades=await CenturiaAPI.listGrades(CURSO_ID); }catch(e){}
+            try{ att=await CenturiaAPI.listAttendance(CURSO_ID); }catch(e){}
+            DB={users:users||[],grades:grades||[],att:att||[]};
+            renderAll();
+            if(errBox) errBox.style.display='none';
+        }catch(e){
+            console.error(e);
+            if(errBox){ errBox.style.display='flex'; const sp=errBox.querySelector('span'); if(sp) sp.textContent='Sin conexión con el sistema. Verifique el servidor.'; }
+        }
+    }
+    function renderAll(){
+        const gmap=bucketize(DB.grades), amap=attByUser();
+        const rows=(DB.users||[]).map(u=>filaAlumno(u,gmap,amap));
+        const staff=isDocente();
+        const fec=document.getElementById('asis-fecha');
+        const fecha=fec&&fec.value?fec.value:fechaHoy();
+        const marks={};
+        (DB.att||[]).forEach(a=>{ if(a.date===fecha) marks[a.user_id]=a.status; });
+        const ES={present:'P',absent:'A',late:'T',excused:'J'};
+        const tbody=document.getElementById('tabla-alumnos-real'); tbody.innerHTML='';
+        rows.forEach(r=>{
+            const tot=r.asis+r.p1+r.p2+r.fin, pct=Math.round(tot/50*100);
+            const nl=notaLetra(pct,r.asis);
+            const abg=r.asis>=4?"bg-success":"bg-danger";
+            const tr=document.createElement('tr'); if(r.asis<4) tr.className="table-danger";
+            let hoy='—';
+            if(staff){
+                const m=marks[r.id];
+                hoy=`<span class="badge ${m?(m==='present'?'bg-success':m==='late'?'bg-warning text-dark':m==='excused'?'bg-info text-dark':'bg-danger'):'bg-secondary'}">${m?(ES[m]||m):'·'}</span><br>`
+                    +`<button class="btn btn-sm btn-success" title="Presente" onclick="markUno(${r.id},'present')">P</button> `
+                    +`<button class="btn btn-sm btn-warning" title="Tardanza" onclick="markUno(${r.id},'late')">T</button> `
+                    +`<button class="btn btn-sm btn-danger" title="Ausente" onclick="markUno(${r.id},'absent')">A</button>`;
+            }
+            tr.innerHTML=`<td>${r.ced}</td><td class="fw-bold">${r.nom}</td><td class="text-center"><span class="badge ${abg}">${r.asis}</span></td><td class="text-center">${r.p1}</td><td class="text-center">${r.p2}</td><td class="text-center">${r.fin}</td><td class="text-center fw-bold ${nl.nota===1?'text-danger':''}">${pct}%</td><td class="text-center"><span class="badge ${nl.bg}">${nl.nota}</span></td><td class="text-center">${hoy}</td>`;
+            tbody.appendChild(tr);
+            if(currentUser && r.ced===currentUser){
+                document.getElementById('inp-asis').value=r.asis; document.getElementById('inp-par1').value=r.p1; document.getElementById('inp-par2').value=r.p2; document.getElementById('inp-final').value=r.fin; calcularNota();
+            }
+        });
+        document.getElementById('lbl-alumnos').innerText=rows.length;
+        const hl=document.getElementById('hoy-label'); if(hl) hl.textContent=fecha.split('-').reverse().join('/');
+        renderAsistenciaPropia(amap);
+    }
+    function renderAsistenciaPropia(amap){
+        const det=document.getElementById('asistencia-detalle'), res=document.getElementById('asistencia-resumen');
+        det.innerHTML='';
+        const me=(DB.users||[]).find(u=>u.cedula===currentUser);
+        const rows=me&&amap[me.id]?amap[me.id].rows.slice().sort((x,y)=>x.date<y.date?-1:1):[];
+        const ES={present:['Presente',''],absent:['Ausente sin justificar','table-danger'],late:['Tardanza','table-warning'],excused:['Ausente justificado','table-warning']};
+        let cP=0,cA=0,cJ=0;
+        rows.forEach(r=>{
+            const e=ES[r.status]||[r.status,''];
+            if(r.status==='present')cP++; else if(r.status==='absent')cA++; else cJ++;
+            const tr=document.createElement('tr'); if(e[1]) tr.className=e[1];
+            const f=r.date.split('-').reverse().join('/');
+            tr.innerHTML=`<td>${f}</td><td>${e[0]}</td><td>Sistema</td>`;
+            det.appendChild(tr);
+        });
+        res.textContent=rows.length?`${CURSO_NOMBRE} — Presentes: ${cP}. Ausencias sin justificar: ${cA}. Justificadas/Tardanzas: ${cJ}.`:'Todavía no hay fechas de clase registradas en el sistema.';
+    }
+    async function markUno(userId,status){
+        const fec=document.getElementById('asis-fecha');
+        const fecha=fec&&fec.value?fec.value:fechaHoy();
+        try{
+            await CenturiaAPI.markAttendance(CURSO_ID,fecha,status,userId);
+            await loadSystemData();
+        }catch(e){ alert('No se pudo guardar: '+(e.message||e)); }
+    }
+    window.addEventListener('load',()=>{ if(!sessionStorage.getItem('current_cedula')) location.replace('../index.html'); loadSystemData(); calcularNota(); });
+    function isDocente(){ const r=(sessionStorage.getItem('rol')||'').toLowerCase(); return ['docente','teacher','admin','administrador','academico','academic'].includes(r); }
+    function rolEtiqueta(){ const r=(sessionStorage.getItem('rol')||'alumno').toLowerCase(); const m={alumno:'Alumno',student:'Alumno',docente:'Docente',teacher:'Docente',admin:'Admin',administrador:'Admin',academico:'Académico',academic:'Académico'}; return m[r]||'Alumno'; }
+    function actualizarBadgeRol(){ const b=document.getElementById('badge-rol'); if(b){ b.textContent='Rol: '+rolEtiqueta(); b.className=isDocente()?'badge bg-danger':'badge bg-success'; } const r=document.getElementById('btn-docente'); const l=document.querySelector('label[for="btn-docente"]'); if(!isDocente()&&r){ r.disabled=true; if(l){ l.style.display='none'; } } if(isDocente()){ document.getElementById('btn-docente').checked=true; toggleView('docente'); } }
     function exportarExcel(){ const t=document.getElementById('tabla-alumnos-real'); if(!t||t.rows.length===0){ alert('No hay datos para exportar.'); return; } let csv='Cedula,Nombre,Asistencia,Parcial1,Parcial2,Final,Porcentaje,Nota\n'; for(let row of t.rows){ csv+=[...row.cells].map(td=>'"'+td.innerText.replace(/"/g,'""')+'"').join(',')+'\n'; } const b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='Acta_TIC_'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); URL.revokeObjectURL(u); }
-    function toggleView(view){ if(view==='docente' && !isDocente()){ alert('Acceso docente restringido. Solo cÃ©dula 20262026 o rol docente.'); document.getElementById('btn-alumno').checked=true; return; } document.getElementById('vista-alumno').style.display=(view==='alumno'?'block':'none'); document.getElementById('vista-docente').style.display=(view==='docente'?'block':'none'); }
+    function toggleView(view){ if(view==='docente' && !isDocente()){ alert('Acceso docente restringido.'); document.getElementById('btn-alumno').checked=true; return; } document.getElementById('vista-alumno').style.display=(view==='alumno'?'block':'none'); document.getElementById('vista-docente').style.display=(view==='docente'?'block':'none'); }
     window.addEventListener('load', actualizarBadgeRol);
     // Filtro docente
     document.addEventListener('DOMContentLoaded',()=>{ const f=document.getElementById('filtro-planilla'); if(f){ f.addEventListener('input',()=>{ const q=f.value.toLowerCase(); document.querySelectorAll('#tabla-alumnos-real tr').forEach(tr=>{ tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none'; }); }); } });
+    // Formularios contra el sistema (reemplaza asistencia-planilla.js / Google Sheets)
+    document.getElementById('form-clase').addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const f=document.getElementById('clase-fecha');
+        const st=document.getElementById('asistencia-gestion-estado');
+        if(f&&f.value){ const d=document.getElementById('asis-fecha'); if(d) d.value=f.value; if(st) st.textContent='Fecha de trabajo: '+f.value.split('-').reverse().join('/'); loadSystemData(); }
+    });
+    document.getElementById('form-justificar').addEventListener('submit',async (e)=>{
+        e.preventDefault();
+        const ced=(document.getElementById('justificar-cedula').value||'').trim();
+        const fec=document.getElementById('justificar-fecha').value;
+        const st=document.getElementById('asistencia-gestion-estado');
+        const u=(DB.users||[]).find(x=>x.cedula===ced);
+        if(!u||!fec){ if(st) st.textContent='Indique cédula y fecha válidas.'; return; }
+        try{ await CenturiaAPI.markAttendance(CURSO_ID,fec,'excused',u.id); if(st) st.textContent='Ausencia justificada en el sistema.'; await loadSystemData(); }
+        catch(err){ if(st) st.textContent='No se pudo guardar en el sistema.'; }
+    });
 </script>
-<script src="../asistencia-planilla.js"></script>
+<script src="../js/api.js?v=3"></script>
 <script src="../js/accesibilidad.js"></script>
 <script src="../js/session-guard.js"></script>
 </body>

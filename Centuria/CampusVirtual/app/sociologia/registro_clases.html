@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Clases — Campus Virtual Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <style>
         @page { size: A4 portrait; margin: 20mm; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,21 +34,26 @@
         .footer .firma-area .firma { text-align: center; width: 250px; }
         .footer .firma-area .firma .line { border-top: 1px solid #000; margin-top: 50px; padding-top: 4px; }
 
-        /* Edit Panel */
-        .edit-panel { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #fff; padding: 14px; overflow-y: auto; z-index: 100; font-family: 'Segoe UI', sans-serif; font-size: 10px; }
-        .edit-panel h3 { font-size: 12px; margin-bottom: 10px; color: #81C784; }
-        .edit-panel label { display: block; font-size: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #aaa; margin: 6px 0 2px; }
-        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 5px 7px; border: 1px solid #333; border-radius: 4px; background: #16213e; color: #fff; font-size: 10px; }
-        .edit-panel .btn { display: block; width: 100%; padding: 7px; border: none; border-radius: 5px; font-weight: 700; cursor: pointer; margin-top: 6px; font-size: 10px; }
-        .edit-panel .btn-primary { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
-        .edit-panel .btn-print { background: #3498db; color: #fff; }
-        .edit-panel .btn-close { background: #e74c3c; color: #fff; }
-        .edit-panel .btn-add { background: #f39c12; color: #fff; }
-        .edit-panel .clase-row { background: #16213e; border: 1px solid #333; border-radius: 5px; padding: 6px; margin-bottom: 5px; }
-        .edit-panel .clase-row .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-        .edit-panel .clase-row .row-header span { font-weight: 700; color: #81C784; font-size: 9px; }
-        .edit-panel .clase-row .remove-btn { background: #e74c3c; color: #fff; border: none; border-radius: 3px; padding: 1px 5px; cursor: pointer; font-size: 8px; }
-        .page { margin-left: 290px; }
+        /* Edit Panel — institucional Centuria */
+        .edit-panel { position: fixed; top: 0; left: 0; width: 300px; height: 100vh; background: linear-gradient(180deg, #003d19, #005c26); color: #fff; padding: 16px; overflow-y: auto; z-index: 100; font-family: Montserrat, 'Segoe UI', sans-serif; font-size: 11px; border-right: 2px solid #C5A55A; }
+        .edit-panel h3 { font-size: 13px; margin-bottom: 4px; color: #fff; letter-spacing: 1px; }
+        .edit-panel .sub { font-size: 9px; color: #C5A55A; margin-bottom: 10px; letter-spacing: 1px; }
+        .edit-panel label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #C5A55A; margin: 8px 0 3px; }
+        .edit-panel input, .edit-panel textarea, .edit-panel select { width: 100%; padding: 7px 9px; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; background: rgba(255,255,255,.1); color: #fff; font-size: 11px; font-family: Montserrat, 'Segoe UI', sans-serif; }
+        .edit-panel input::placeholder, .edit-panel textarea::placeholder { color: rgba(255,255,255,.4); }
+        .edit-panel select option { background: #1a3d26; color: #fff; }
+        .edit-panel textarea { resize: vertical; min-height: 50px; }
+        .edit-panel .btn { display: block; width: 100%; padding: 9px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 8px; font-size: 11px; font-family: Montserrat, 'Segoe UI', sans-serif; }
+        .edit-panel .btn-save { background: linear-gradient(135deg, #00B140, #007A33); color: #fff; }
+        .edit-panel .btn-print { background: #fff; color: #007A33; }
+        .edit-panel .btn-close { background: transparent; border: 1px solid rgba(255,255,255,.3); color: rgba(255,255,255,.7); }
+        .edit-panel .btn-add { background: #C5A55A; color: #3d2f00; }
+        .edit-panel .clase-row { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 8px; margin-bottom: 6px; }
+        .edit-panel .clase-row .row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .edit-panel .clase-row .row-header span { font-weight: 700; color: #C5A55A; font-size: 10px; }
+        .edit-panel .clase-row .remove-btn { background: #c0392b; color: #fff; border: none; border-radius: 4px; padding: 1px 7px; cursor: pointer; font-size: 9px; }
+        .edit-panel .status { font-size: 10px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.08); color: #FFE9A8; }
+        .page { margin-left: 310px; }
 
         @media print {
             .edit-panel { display: none !important; }
@@ -55,12 +61,22 @@
             body { background: #fff; }
         }
     </style>
+    <script src="../js/api.js?v=3"></script>
 </head>
 <body>
 
 <!-- EDIT PANEL -->
 <div class="edit-panel" id="editPanel">
     <h3>📅 Registro de Clases</h3>
+    <div class="sub">CAMPUS VIRTUAL CENTURIA · DATOS DEL SISTEMA</div>
+
+    <div class="status" id="db-status">Conectando con el sistema…</div>
+
+    <label>Curso (de la base de datos)</label>
+    <select id="inp-curso-db" onchange="cambiarCurso()"></select>
+
+    <label>Periodo</label>
+    <input type="text" id="inp-periodo" value="2026" onchange="cargarSistema()">
 
     <label>Código</label>
     <input type="text" id="inp-codigo" value="" oninput="actualizar()">
@@ -88,14 +104,15 @@
     <label>Año</label>
     <input type="text" id="inp-ano" value="2026" oninput="actualizar()">
 
-    <hr style="border-color:#333;margin:8px 0;">
+    <hr style="border-color:rgba(255,255,255,.15);margin:10px 0;">
 
     <label>Clases registradas</label>
     <div id="clases-container"></div>
     <button class="btn btn-add" onclick="addClase()">+ Agregar Clase</button>
 
-    <hr style="border-color:#333;margin:8px 0;">
+    <hr style="border-color:rgba(255,255,255,.15);margin:10px 0;">
 
+    <button class="btn btn-save" onclick="guardarSistema()">💾 Guardar en el sistema</button>
     <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
     <button class="btn btn-close" onclick="window.close()">✕ Cerrar</button>
 </div>
@@ -152,13 +169,17 @@
 </div>
 
 <script>
-let clases = [
-    { dd:'01', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Presentación de la asignatura. Fundamentos teóricos de la Planificación Estratégica.', horas:2 },
-    { dd:'08', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'El Proceso General de la Planificación. Fases del diagnóstico y programación.', horas:2 },
-    { dd:'15', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Tareas inherentes al proceso de la Planificación Estratégica General.', horas:2 },
-    { dd:'22', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Las 4 etapas de la Planificación Estratégica. Etapa filosófica y analítica.', horas:2 },
-    { dd:'29', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'La Planificación Estratégica y el pueblo. Gestión de asuntos de interés público.', horas:2 },
+// Plantilla inicial (se usa solo si el sistema aún no tiene registro guardado)
+const PLANTILLA = [
+    { dd:'01', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Presentación de la asignatura. Fundamentos teóricos.', horas:2 },
+    { dd:'08', mm:'08', h_inicio:'18:00', h_final:'20:00', temas:'Proceso general: diagnóstico y programación.', horas:2 },
 ];
+let clases = JSON.parse(JSON.stringify(PLANTILLA));
+let CURSO = 'TIC';
+
+function setStatus(msg) {
+    document.getElementById('db-status').textContent = msg;
+}
 
 function renderClases() {
     const tbody = document.getElementById('registro-tbody');
@@ -174,7 +195,7 @@ function renderClases() {
             <td class="fecha">${c.mm}</td>
             <td class="hora">${c.h_inicio}</td>
             <td class="hora">${c.h_final}</td>
-            <td class="temas">${c.temas}</td>
+            <td class="temas">${String(c.temas||'').replace(/\n/g,'<br>')}</td>
             <td class="horas">${c.horas}</td>
             <td class="firma"></td>`;
         tbody.appendChild(tr);
@@ -196,7 +217,30 @@ function renderClases() {
 }
 
 function addClase() { clases.push({ dd:'', mm:'', h_inicio:'', h_final:'', temas:'', horas:2 }); renderClases(); }
-function removeClase(i) { clases.splice(i, 1); renderClases(); }
+function removeClase(i) { clases.splice(i,1); renderClases(); }
+
+function leerCabecera() {
+    return {
+        codigo: document.getElementById('inp-codigo').value,
+        asignatura: document.getElementById('inp-asignatura').value,
+        semestre: document.getElementById('inp-semestre').value,
+        carrera: document.getElementById('inp-carrera').value,
+        seccion: document.getElementById('inp-seccion').value,
+        docente: document.getElementById('inp-docente').value,
+        ano: document.getElementById('inp-ano').value
+    };
+}
+
+function escribirCabecera(h) {
+    h = h || {};
+    if (h.codigo !== undefined) document.getElementById('inp-codigo').value = h.codigo;
+    if (h.asignatura !== undefined) document.getElementById('inp-asignatura').value = h.asignatura;
+    if (h.semestre !== undefined) document.getElementById('inp-semestre').value = h.semestre;
+    if (h.carrera !== undefined) document.getElementById('inp-carrera').value = h.carrera;
+    if (h.seccion !== undefined) document.getElementById('inp-seccion').value = h.seccion;
+    if (h.docente !== undefined) document.getElementById('inp-docente').value = h.docente;
+    if (h.ano !== undefined) document.getElementById('inp-ano').value = h.ano;
+}
 
 function actualizar() {
     document.getElementById('doc-codigo').textContent = document.getElementById('inp-codigo').value || '……………';
@@ -209,14 +253,81 @@ function actualizar() {
     renderClases();
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    const profesor = sessionStorage.getItem('teacher_nombre');
+function periodo() { return document.getElementById('inp-periodo').value.trim() || '2026'; }
+
+async function cargarCursos() {
+    const sel = document.getElementById('inp-curso-db');
+    sel.innerHTML = '';
+    let cursos = [];
+    try {
+        const r = await CenturiaAPI.getCourses();
+        if (r && r.ok && r.courses) cursos = r.courses;
+    } catch (e) {}
+    if (!cursos.length) cursos = [{ id: 1, shortname: 'TIC', name: 'TIC' }];
+    cursos.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.shortname || c.name;
+        o.textContent = (c.shortname || c.name) + (c.name && c.shortname ? ' — ' + c.name : '');
+        o.dataset.id = c.id || '';
+        sel.appendChild(o);
+    });
+    CURSO = sel.value;
+}
+
+async function cargarSistema() {
+    CURSO = document.getElementById('inp-curso-db').value;
+    if (!CenturiaAPI.getToken()) {
+        setStatus('Sin sesión: inicie sesión en el portal para usar el sistema.');
+        renderClases();
+        return;
+    }
+    setStatus('Cargando registro del sistema…');
+    try {
+        const r = await CenturiaAPI.documentosGet('registro', CURSO, periodo());
+        if (r && r.found && r.documento && r.documento.datosObj) {
+            const d = r.documento.datosObj;
+            if (Array.isArray(d.clases) && d.clases.length) clases = d.clases;
+            if (d.cabecera) escribirCabecera(d.cabecera);
+            setStatus('Registro cargado del sistema (' + CURSO + ' · ' + periodo() + ').');
+        } else {
+            clases = JSON.parse(JSON.stringify(PLANTILLA));
+            setStatus('Sin registro guardado: plantilla inicial. Guárdelo en el sistema.');
+        }
+    } catch (e) {
+        setStatus('Sin conexión: trabajando con datos locales.');
+    }
+    actualizar();
+}
+
+async function guardarSistema() {
+    if (!CenturiaAPI.getToken()) {
+        setStatus('Sin sesión: inicie sesión en el portal.');
+        alert('Inicie sesión en el portal para guardar en el sistema.');
+        return;
+    }
+    setStatus('Guardando en el sistema…');
+    const r = await CenturiaAPI.documentosSave({
+        tipo: 'registro',
+        curso: CURSO,
+        periodo: periodo(),
+        docente: sessionStorage.getItem('current_nombre') || document.getElementById('inp-docente').value,
+        datos: { cabecera: leerCabecera(), clases: clases }
+    });
+    setStatus(r && r.ok ? 'Guardado en el sistema ✓' : ('Error: ' + ((r && r.message) || 'no se pudo guardar.')));
+}
+
+function cambiarCurso() { cargarSistema(); }
+
+window.addEventListener('DOMContentLoaded', async () => {
+    const profesor = sessionStorage.getItem('teacher_nombre') || sessionStorage.getItem('current_nombre');
     if (profesor) document.getElementById('inp-docente').value = profesor;
     const prog = sessionStorage.getItem('docente_programa');
     if (prog) {
         const sel = document.getElementById('inp-carrera');
         for (let o of sel.options) { if (o.value.toLowerCase().includes(prog)) { sel.value = o.value; break; } }
     }
+    await cargarCursos();
+    await cargarSistema();
     actualizar();
 });
 </script>

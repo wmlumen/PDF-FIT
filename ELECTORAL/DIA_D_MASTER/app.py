@@ -2603,7 +2603,11 @@ def api_get(request: Request, action: str = Query("status"), mesa: int = Query(N
                 total_dirigentes = 0
             else:
                 total_electores = contar_padron_completo(c)
-                total_mesas_padron = safe_count("SELECT COUNT(DISTINCT mesa) FROM padron2026_completo WHERE mesa>0")
+                # FIX: total_mesas_padron debe incluir las mesas de registros,
+                # no solo las del padrón parcial. Si no, el porcentaje supera 100%.
+                mesas_padron = safe_count("SELECT COUNT(DISTINCT mesa) FROM padron2026_completo WHERE mesa>0")
+                mesas_registros = safe_count("SELECT COUNT(DISTINCT mesa) FROM registros WHERE mesa>0")
+                total_mesas_padron = max(mesas_padron, mesas_registros)
                 total_dirigentes = safe_count("SELECT COUNT(*) FROM dirigentes WHERE activo=1")
 
             # Filtrar cada registro por el elector y su territorio, no solo por el
@@ -2658,6 +2662,13 @@ def api_get(request: Request, action: str = Query("status"), mesa: int = Query(N
                 top = [{"mesa": r[0], "total": r[1], "votos": r[2]} for r in top_mesas]
             except:
                 top = []
+            # Datos de jerarquía para efectividad real de dirigentes
+            try:
+                dirs_activos = safe_count("SELECT COUNT(*) FROM dirigentes WHERE activo=1")
+                posibles = safe_count("SELECT COUNT(*) FROM posible_votos")
+                confirmados = safe_count("SELECT COUNT(*) FROM posible_votos WHERE status='confirmado'")
+            except:
+                dirs_activos = posibles = confirmados = 0
             # Party historical summary
             try:
                 partidos_hist = c.execute("SELECT SUM(mesas), SUM(electores) FROM historial_partidos WHERE anio=2026").fetchone()
@@ -2666,6 +2677,7 @@ def api_get(request: Request, action: str = Query("status"), mesa: int = Query(N
             except:
                 hm = he = 0
             pct = f"{((total_votos/total_electores)*100):.1f}" if total_electores > 0 else "0.0"
+            efectividad_real = round(confirmados / dirs_activos, 2) if dirs_activos > 0 else 0
             return {
                 "total_electores": total_electores, "total_votos": total_votos,
                 "total_no_votos": total_no_votos, "total_ausentes": total_ausentes,
@@ -2673,6 +2685,8 @@ def api_get(request: Request, action: str = Query("status"), mesa: int = Query(N
                 "total_mesas_con_datos": total_mesas_con_datos, "total_mesas_padron": total_mesas_padron,
                 "total_usuarios": total_usuarios, "participacion": pct + "%",
                 "historial_mesas": hm, "historial_electores": he,
+                "posibles": posibles, "confirmados": confirmados,
+                "efectividad_real": efectividad_real,
                 "recientes": recientes, "top_mesas": top,
                 "filtro_activo": bool(filtro_geo)
             }

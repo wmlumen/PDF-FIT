@@ -1,0 +1,56 @@
+# === Dependencias ===
+node_modules/
+vendor/
+composer.lock
+
+# === SQLite ===
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# === PHP sessions ===
+*.log
+*.tmp
+
+# === Archivos de prueba/debug ===
+test_*.php
+test_*.js
+test_*.cjs
+test_*.sh
+install_*.ps1
+install_*.log
+minimal_test.php
+insert_students.php
+seed_cursos.php
+check_schema.php
+migrar_alumnos.php
+fix_*.php
+setup_admin.php
+docker-compose.yml
+
+# === Entorno ===
+.env
+.env.local
+.env.production
+.phpunit.result.cache
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# === IDE ===
+.vscode/
+.idea/
+*.sublime-*
+
+# === Moodle ===
+moodle/
+
+# === Documentos internos ===
+*.md.bak
+shared_state.json

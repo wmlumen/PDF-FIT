@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Virtual Centuria — Portal Académico Institucional</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -402,7 +403,7 @@
                 <div id="step-1-cedula">
                     <div class="card-greeting">
                         <h2><i class="bi bi-shield-lock me-2" style="color:var(--dorado);"></i>Acceso Seguro</h2>
-                        <p>Ingrese su cédula y contraseña para acceder</p>
+                        <p>Ingrese su cédula para verificar su registro</p>
                     </div>
 
                     <div id="login-error" style="background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);border-left:3px solid #ef5350;border-radius:10px;color:#ef9a9a;font-size:.78rem;padding:12px 14px;margin-bottom:16px;display:none;text-align:center;">
@@ -410,25 +411,37 @@
                         <span id="login-error-text">Cédula o contraseña incorrecta</span>
                     </div>
 
+                    <div id="login-success" style="background:rgba(0,177,64,.12);border:1px solid rgba(0,177,64,.3);border-left:3px solid #00B140;border-radius:10px;color:#81C784;font-size:.78rem;padding:12px 14px;margin-bottom:16px;display:none;text-align:center;">
+                        <i class="bi bi-check-circle me-1"></i>
+                        <span id="login-success-text"></span>
+                    </div>
+
                     <label class="premium-label">Cédula de Identidad</label>
                     <input type="text" class="premium-input text-center" id="inp-cedula"
-                           oninput="this.value=this.value.replace(/\./g, '')"
+                           oninput="this.value=this.value.replace(/\./g, ''); if(loginFase==='pass') resetLoginFase();"
                            placeholder="SIN PUNTOS" style="font-size:1.1rem; letter-spacing:3px;">
 
-                    <label class="premium-label" style="margin-top:14px;">Contraseña</label>
-                    <div style="position:relative;">
-                        <input type="password" class="premium-input" id="inp-password"
-                               placeholder="Tu contraseña" style="font-size:.85rem;letter-spacing:.5px;padding-right:44px;"
-                               onkeydown="if(event.key==='Enter') verificarCedula()">
-                        <button type="button" onclick="togglePassword()"
-                                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;"
-                                title="Mostrar/ocultar contraseña">
-                            <i id="pwd-icon" class="bi bi-eye"></i>
-                        </button>
+                    <div id="password-section" style="display:none;">
+                        <label class="premium-label" style="margin-top:14px;">Contraseña</label>
+                        <div style="position:relative;">
+                            <input type="password" class="premium-input" id="inp-password"
+                                   placeholder="Tu contraseña" style="font-size:.85rem;letter-spacing:.5px;padding-right:44px;"
+                                   onkeydown="if(event.key==='Enter') verificarCedula()">
+                            <button type="button" onclick="togglePassword()"
+                                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;cursor:pointer;"
+                                    title="Mostrar/ocultar contraseña">
+                                <i id="pwd-icon" class="bi bi-eye"></i>
+                            </button>
+                        </div>
+
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;">
+                            <input type="checkbox" id="chk-recordar" style="accent-color:#c9a84c;width:16px;height:16px;cursor:pointer;">
+                            <label for="chk-recordar" style="color:rgba(255,255,255,.55);font-size:.72rem;cursor:pointer;user-select:none;font-family:Montserrat;letter-spacing:.3px;">Guardar contraseña para acceso rápido</label>
+                        </div>
                     </div>
 
                     <button id="btn-buscar" class="premium-btn mt-4" onclick="verificarCedula()">
-                        <i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Portal
+                        <i class="bi bi-search me-2"></i><span id="btn-buscar-texto">Buscar mi registro</span>
                     </button>
 
                     <div style="display:flex;justify-content:center;gap:16px;margin-top:14px;">
@@ -456,39 +469,139 @@
                         Complete sus datos <strong>una única vez</strong> para acceder a la plataforma.
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
-                            <input type="text" class="premium-input" id="reg-cedula" placeholder="SIN PUNTOS" style="font-size:.9rem;letter-spacing:2px;text-align:center;" oninput="this.value=this.value.replace(/\./g,'')">
+                    <!-- PASO 2A: Datos Personales -->
+                    <div id="reg-paso-1">
+                        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;">
+                            <h6 style="color:var(--dorado);font-family:Montserrat;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">
+                                <span style="background:var(--dorado);color:#000;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-right:6px;">1</span>
+                                Datos Personales
+                            </h6>
+                            <div class="mb-3">
+                                <label class="premium-label">Cédula de Identidad <span style="color:#ef5350;">*</span></label>
+                                <input type="text" class="premium-input text-center" id="reg-cedula" placeholder="SIN PUNTOS" style="font-size:.95rem;letter-spacing:3px;" oninput="this.value=this.value.replace(/\./g,'')">
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="premium-label">Nombre <span style="color:#ef5350;">*</span></label>
+                                    <input type="text" class="premium-input" id="reg-nombre" placeholder="Ej: JUAN" style="text-transform:uppercase; font-size:.85rem;" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="premium-label">Apellido <span style="color:#ef5350;">*</span></label>
+                                    <input type="text" class="premium-input" id="reg-apellido" placeholder="Ej: PÉREZ" style="text-transform:uppercase; font-size:.85rem;" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="premium-label">Correo electrónico</label>
+                                <input type="email" class="premium-input" id="reg-email" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
+                            </div>
+                                <div class="mb-3">
+                                    <label class="premium-label">Teléfono</label>
+                                    <input type="text" class="premium-input" id="reg-telefono" placeholder="0981 123456" style="font-size:.85rem;">
+                                </div>
+                                <div class="mb-0">
+                                    <label class="premium-label">Foto del Alumno</label>
+                                    <div id="foto-container" style="position:relative;width:100%;text-align:center;">
+                                        <div id="foto-placeholder" style="width:100px;height:100px;border-radius:50%;border:2px dashed rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin:0 auto;cursor:pointer;transition:.3s;" onclick="abrirCamara()">
+                                            <i class="bi bi-camera" style="font-size:1.5rem;color:rgba(255,255,255,.3);"></i>
+                                        </div>
+                                        <img id="foto-preview" src="" alt="" style="display:none;width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--dorado);margin:0 auto;">
+                                        <video id="foto-video" style="display:none;width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--dorado);margin:0 auto;"></video>
+                                        <canvas id="foto-canvas" style="display:none;"></canvas>
+                                        <div class="d-flex justify-content-center gap-2 mt-2" id="foto-botones-camara">
+                                            <button type="button" id="btn-cambiar-camara" class="premium-btn-ghost" onclick="cambiarCamara()" style="display:none;font-size:.65rem;padding:4px 10px;">
+                                                <i class="bi bi-camera-rear me-1"></i>Cambiar
+                                            </button>
+                                            <button type="button" id="btn-tomar-foto" class="premium-btn-ghost" onclick="tomarFoto()" style="display:none;font-size:.65rem;padding:4px 10px;">
+                                                <i class="bi bi-camera me-1"></i>Capturar
+                                            </button>
+                                            <button type="button" id="btn-retomar-foto" class="premium-btn-ghost" onclick="retomarFoto()" style="display:none;font-size:.65rem;padding:4px 10px;">
+                                                <i class="bi bi-arrow-repeat me-1"></i>Retomar
+                                            </button>
+                                            <button type="button" id="btn-eliminar-foto" class="premium-btn-ghost" onclick="eliminarFoto()" style="display:none;font-size:.65rem;padding:4px 10px;color:#ef5350;">
+                                                <i class="bi bi-trash me-1"></i>Quitar
+                                            </button>
+                                        </div>
+                                        <input type="hidden" id="reg-foto" value="">
+                                        <input type="hidden" id="foto-facing" value="user">
+                                    </div>
+                                </div>
+                            <button type="button" class="premium-btn-ghost" onclick="mostrarQR()" style="font-size:.72rem; padding:8px 12px; width:100%;">
+                                <i class="bi bi-qr-code me-2"></i>Mostrar QR para acceder desde celular
+                            </button>
                         </div>
-                        <div class="col-6">
-                            <label class="premium-label">Nombre <span style="color:#ef5350;">*</span></label>
-                            <input type="text" class="premium-input" id="reg-nombre" placeholder="Ej: JUAN" style="text-transform:uppercase; font-size:.85rem;" required>
+                        <button class="premium-btn mt-3" onclick="regPaso2()">
+                            <i class="bi bi-arrow-right me-2"></i>Siguiente
+                        </button>
+                        <button class="premium-btn-ghost mt-2" onclick="volverPaso1()">
+                            <i class="bi bi-arrow-left me-1"></i>Volver
+                        </button>
+                    </div>
+
+                    <!-- PASO 2B: Datos Académicos -->
+                    <div id="reg-paso-2" style="display:none;">
+                        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;">
+                            <h6 style="color:var(--dorado);font-family:Montserrat;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">
+                                <span style="background:var(--dorado);color:#000;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-right:6px;">2</span>
+                                Datos Académicos
+                            </h6>
+                            <div class="mb-3">
+                                <label class="premium-label">Grado Académico</label>
+                                <select class="premium-input" id="reg-grado" onchange="cargarCarrerasPorGrado()" style="font-size:.85rem;">
+                                    <option value="" selected disabled>Seleccionar...</option>
+                                    <option value="Grado">Grado</option>
+                                    <option value="Especialización">Especialización</option>
+                                    <option value="Maestría">Maestría</option>
+                                    <option value="Doctorado">Doctorado</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="premium-label">Carrera / Programa</label>
+                                <select class="premium-input" id="reg-carrera" disabled style="font-size:.85rem;">
+                                    <option value="" selected disabled>Primero selecciona un grado...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="premium-label">Sección</label>
+                                <select class="premium-input" id="reg-seccion" style="font-size:.85rem;">
+                                    <option value="" selected disabled>Cargando secciones...</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <label class="premium-label">Apellido <span style="color:#ef5350;">*</span></label>
-                            <input type="text" class="premium-input" id="reg-apellido" placeholder="Ej: PÉREZ" style="text-transform:uppercase; font-size:.85rem;" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="premium-label">Correo electrónico</label>
-                            <input type="email" class="premium-input" id="reg-email" placeholder="ejemplo@gmail.com" style="font-size:.85rem;">
-                        </div>
-                        <div class="col-12">
-                            <label class="premium-label">Teléfono</label>
-                            <input type="text" class="premium-input" id="reg-telefono" placeholder="0981 123456" style="font-size:.85rem;">
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="premium-btn-ghost" onclick="regPaso1()" style="flex:1;">
+                                <i class="bi bi-arrow-left me-1"></i>Atrás
+                            </button>
+                            <button class="premium-btn" onclick="regPaso3()" style="flex:2;">
+                                <i class="bi bi-arrow-right me-2"></i>Revisar
+                            </button>
                         </div>
                     </div>
 
-                    <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:10px;color:var(--dorado-claro);font-size:.7rem;padding:10px 14px;margin:12px 0 16px;">
-                        <i class="bi bi-info-circle me-1"></i>
-                        El administrador asignará su <strong>rol</strong> y <strong>asignatura</strong> después del registro.
+                    <!-- PASO 2C: Confirmación -->
+                    <div id="reg-paso-3" style="display:none;">
+                        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;">
+                            <h6 style="color:var(--dorado);font-family:Montserrat;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">
+                                <span style="background:var(--dorado);color:#000;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin-right:6px;">3</span>
+                                Confirmar Registro
+                            </h6>
+                            <div id="reg-resumen" style="font-size:.78rem; color:rgba(255,255,255,.7); line-height:1.8;"></div>
+                            <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-left:3px solid var(--dorado);border-radius:8px;color:var(--dorado-claro);font-size:.65rem;padding:8px 12px;margin-top:12px;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Tu contraseña será: <strong>Primera letra Nombre + primera letra Apellido + cédula + *</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="premium-btn-ghost" onclick="regPaso2()" style="flex:1;">
+                                <i class="bi bi-arrow-left me-1"></i>Atrás
+                            </button>
+                            <button id="btn-registrar" class="premium-btn" onclick="registrarYAcceder()" style="flex:2;">
+                                <i class="bi bi-person-check me-2"></i>Guardar y Acceder
+                            </button>
+                        </div>
                     </div>
 
-                    <button id="btn-registrar" class="premium-btn mt-3" onclick="registrarYAcceder()">
-                        <i class="bi bi-person-check me-2"></i>Guardary Acceder
-                    </button>
-                    <button class="premium-btn-ghost mt-2" onclick="volverPaso1()">
-                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    <button class="premium-btn-ghost mt-2" onclick="volverPaso1()" id="reg-volver-login" style="display:none;">
+                        <i class="bi bi-arrow-left me-1"></i>Volver al Login
                     </button>
                 </div>
 
@@ -518,6 +631,7 @@
         </div>
     </div>
 
+    <script src="js/api.js?v=6"></script>
     <script>
         // ═══ CARRERAS POR GRADO ═══
         const carrerasPorGrado = {
@@ -545,7 +659,8 @@
         }
 
         // ═══ CONEXIÓN ═══
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+        // Google Apps Script reemplazado por CenturiaAPI (js/api.js)
+        // GAS_URL, gasCheckStudent, gasRegisterStudent ya están en api.js
         let cedulaActual = '';
         let rolesActuales = [];   // Todos los roles de la cédula
 
@@ -576,6 +691,24 @@
         function hideLoginError(){
             document.getElementById('login-error').style.display = 'none';
         }
+        function showLoginSuccess(){
+            document.getElementById('login-success').style.display = 'block';
+        }
+        function hideLoginSuccess(){
+            document.getElementById('login-success').style.display = 'none';
+        }
+        function resetLoginFase(){
+            loginFase = 'idle';
+            document.getElementById('password-section').style.display = 'none';
+            document.getElementById('inp-password').value = '';
+            document.getElementById('btn-buscar-texto').textContent = 'Buscar mi registro';
+            document.getElementById('btn-buscar').querySelector('i').className = 'bi bi-search me-2';
+            hideLoginSuccess();
+            hideLoginError();
+        }
+
+        // ═══ GOOGLE APPS SCRIPT (dual storage) ═══
+        // GAS_URL, gasCheckStudent y gasRegisterStudent definidos en api.js
 
         // ═══ BASE DE DATOS LOCAL ═══
         const USERS_KEY = 'centuria_users';
@@ -590,82 +723,386 @@
             saveUsersDB(db);
         }
 
-        // ═══ PASO 1: Verificar cédula + contraseña (LOCAL) ═══
-        function verificarCedula(){
+        // ═══ PASO 1: Verificar cédula + contraseña (API + fallback local) ═══
+        // Estado del login: 'idle' = solo cédula, 'pass' = contraseña visible
+        let loginFase = 'idle';
+
+        async function verificarCedula(){
             const cedula = document.getElementById('inp-cedula').value.trim();
-            const password = document.getElementById('inp-password').value;
             if(!cedula){ showLoginError("Debes ingresar tu cédula."); return; }
-            if(!password){ showLoginError("Debes ingresar tu contraseña."); return; }
             cedulaActual = cedula;
             hideLoginError();
+            hideLoginSuccess();
+
+            // ═══ FASE 1: Solo cédula — verificar si existe ═══
+            if(loginFase === 'idle'){
+                showLoading('btn-buscar');
+                try {
+                    // Buscar en API PHP
+                    const res = await fetch(CenturiaAPI.baseUrl + 'auth.php?action=find_user&cedula=' + encodeURIComponent(cedula));
+                    const data = await res.json();
+                    hideLoading('btn-buscar');
+
+                    if(data.found){
+                        // Existe → mostrar contraseña y datos del usuario
+                        const nombre = data.user.firstname || '';
+                        const apellido = data.user.lastname || '';
+                        document.getElementById('login-success-text').textContent = 
+                            'Bienvenido(a) ' + nombre + ' ' + apellido;
+                        showLoginSuccess();
+                        document.getElementById('password-section').style.display = 'block';
+                        document.getElementById('inp-password').focus();
+                        document.getElementById('btn-buscar-texto').textContent = 'Ingresar al Portal';
+                        document.getElementById('btn-buscar').querySelector('i').className = 'bi bi-arrow-right-circle me-2';
+                        loginFase = 'pass';
+                    } else {
+                        // No existe → ofrecer registro
+                        showLoginError('La cédula ' + cedula + ' no está registrada.');
+                        // Mostrar opción de registro después de un momento
+                        setTimeout(() => {
+                            const errorDiv = document.getElementById('login-error');
+                            if(errorDiv){
+                                errorDiv.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i> La cédula <b>' + cedula + '</b> no está registrada. '
+                                    + '<a href="#" onclick="mostrarRegistro();return false;" style="color:#81C784;text-decoration:underline;font-weight:600;">Registrarse ahora</a>';
+                                errorDiv.style.display = 'block';
+                            }
+                        }, 100);
+                    }
+                } catch(e) {
+                    hideLoading('btn-buscar');
+                    showLoginError('Error de conexión con el servidor.');
+                }
+                return;
+            }
+
+            // ═══ FASE 2: Tiene contraseña — hacer login ═══
+            const password = document.getElementById('inp-password').value.trim();
+            if(!password){ showLoginError("Debes ingresar tu contraseña."); return; }
             showLoading('btn-buscar');
 
-            // Buscar en base de datos local
-            const usuario = buscarUsuarioLocal(cedula);
+            try {
+                const result = await CenturiaAPI.login(cedula, password);
 
-            if(!usuario){
-                // No registrado → paso 2 (registro)
+                if(!result || !result.ok){
+                    hideLoading('btn-buscar');
+                    showLoginError(result ? result.message : "Error de conexión.");
+                    return;
+                }
+
+                // Login OK → guardar datos
+                const usuario = result.user;
+                sessionStorage.setItem('current_cedula', cedula);
+                sessionStorage.setItem('current_nombre', (usuario.nombre || usuario.firstname || '') + ' ' + (usuario.apellido || usuario.lastname || ''));
+                sessionStorage.setItem('current_nombre_separado', JSON.stringify({
+                    nombre: usuario.nombre || usuario.firstname || '',
+                    apellido: usuario.apellido || usuario.lastname || ''
+                }));
+
+                // Guardar credenciales si el checkbox está marcado
+                if(document.getElementById('chk-recordar') && document.getElementById('chk-recordar').checked){
+                    localStorage.setItem('centuria_remember', JSON.stringify({cedula: cedula, password: password}));
+                } else {
+                    localStorage.removeItem('centuria_remember');
+                }
+
+                // Obtener roles vía API
+                const rolesResult = await CenturiaAPI.getRoles(cedula);
                 hideLoading('btn-buscar');
-                document.getElementById('step-1-cedula').style.display = 'none';
-                document.getElementById('step-2-register').style.display = 'block';
-                return;
-            }
 
-            // Verificar contraseña
-            if(password !== usuario.password){
+                if(rolesResult && rolesResult.ok && rolesResult.roles && rolesResult.roles.length > 0){
+                    const rolesActivos = rolesResult.roles.filter(r => r.estado === 'activo');
+                    if(rolesActivos.length > 1){
+                        mostrarSelectorRoles(rolesActivos);
+                    } else if(rolesActivos.length === 1){
+                        seleccionarRol(rolesActivos[0]);
+                    } else {
+                        sessionStorage.setItem('rol', usuario.role || usuario.rol || 'alumno');
+                        mostrarCursos(null);
+                    }
+                } else {
+                    sessionStorage.setItem('rol', usuario.role || usuario.rol || 'alumno');
+                    mostrarCursos(null);
+                }
+            } catch (e) {
+                console.error('Login error:', e);
                 hideLoading('btn-buscar');
-                showLoginError("Contraseña incorrecta.");
-                return;
+                showLoginError('Error de conexión con el servidor.');
             }
-
-            // Contraseña correcta → guardar datos
-            sessionStorage.setItem('current_cedula', cedula);
-            sessionStorage.setItem('current_nombre', usuario.nombre + ' ' + usuario.apellido);
-            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:usuario.nombre,apellido:usuario.apellido}));
-            sessionStorage.setItem('rol', usuario.rol || 'alumno');
-
-            hideLoading('btn-buscar');
-            mostrarCursos(null);
         }
 
-        // ═══ PASO 2: Registro de usuario nuevo (LOCAL) ═══
-        function registrarYAcceder(){
-            const cedula = cedulaActual;
+        // PASO 2: Registro de usuario nuevo (API)
+        async function registrarYAcceder(){
+            const cedulaForm = document.getElementById('reg-cedula').value.trim().replace(/\./g, '');
+            const cedula = cedulaForm || (cedulaActual || '').replace(/\./g, '');
+            cedulaActual = cedula;
             const nombre = document.getElementById('reg-nombre').value.trim().toUpperCase();
             const apellido = document.getElementById('reg-apellido').value.trim().toUpperCase();
             const email = document.getElementById('reg-email').value.trim();
-            const telefono = document.getElementById('reg-telefono')?.value.trim() || '';
-            if(!cedula || !nombre || !apellido){ alert("Completa CÉDULA, NOMBRE y APELLIDO."); return; }
+            const telefono = document.getElementById('reg-telefono').value.trim();
+            const grado = document.getElementById('reg-grado').value || '';
+            const carrera = document.getElementById('reg-carrera').value || '';
+            const seccion = document.getElementById('reg-seccion').value.trim().toUpperCase();
+            const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula.replace(/\./g, '') + '*';
 
-            // Verificar si ya existe
-            const existente = buscarUsuarioLocal(cedula);
-            if(existente){
-                // Ya existe → cargar datos y entrar
+            if(!cedula || !nombre || !apellido){ alert('Completa CÉDULA, NOMBRE y APELLIDO.'); return; }
+
+            try {
+                const userData = {
+                    cedula,
+                    nombre,
+                    apellido,
+                    email,
+                    telefono,
+                    password,
+                    grado,
+                    carrera,
+                    seccion,
+                    foto: document.getElementById('reg-foto').value || '',
+                    rol: 'alumno'
+                };
+                const regResult = await window.CenturiaAPI.auth.register(userData);
+                if (!regResult || !regResult.ok) {
+                    throw new Error((regResult && regResult.message) || 'Error al registrar.');
+                }
+
+                // Login automático
+                const loginRes = await window.CenturiaAPI.auth.login(cedula, password);
+                if (!loginRes || !loginRes.ok) {
+                    throw new Error((loginRes && loginRes.message) || 'Registrado, pero no se pudo iniciar sesión.');
+                }
+
                 sessionStorage.setItem('current_cedula', cedula);
-                sessionStorage.setItem('current_nombre', existente.nombre + ' ' + existente.apellido);
-                sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre:existente.nombre,apellido:existente.apellido}));
-                sessionStorage.setItem('rol', existente.rol || 'alumno');
-                mostrarCursos(null);
-                return;
-            }
+                sessionStorage.setItem('current_nombre', nombre + ' ' + apellido);
+                sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre, apellido}));
+                sessionStorage.setItem('rol', 'alumno');
+                sessionStorage.setItem('token', loginRes.token);
 
-            // Registrar nuevo
-            registrarUsuarioLocal(cedula, nombre, apellido, email, telefono);
-            sessionStorage.setItem('current_cedula', cedula);
-            sessionStorage.setItem('current_nombre', nombre + ' ' + apellido);
-            sessionStorage.setItem('current_nombre_separado', JSON.stringify({nombre,apellido}));
-            sessionStorage.setItem('rol', 'alumno');
-            mostrarCursos(null);
+                mostrarCursos(null);
+            } catch (err) {
+                const msg = (err && err.message ? err.message : '').toLowerCase();
+                if(msg.includes('existe') || msg.includes('already') || msg.includes('registr') || msg.includes('409') || msg.includes('duplic')){
+                    const quiereRecuperar = confirm('Esta cédula ya está registrada. ¿Deseas recuperar tu contraseña?');
+                    if(quiereRecuperar){
+                        abrirRecuperarContrasena();
+                        document.getElementById('recuperar-cedula').value = cedula;
+                        return;
+                    }
+                    const otroRol = confirm('¿Deseas registrar otro rol para esta cédula? Se abrirá el panel del administrador.');
+                    if(otroRol){
+                        window.location.href = 'admin/admin_roles.html?cedula=' + encodeURIComponent(cedula);
+                    }
+                    return;
+                }
+                alert('Error al registrar: ' + err.message);
+            }
+        }
+
+        // ═══ CARGAR SECCIONES DESDE API ═══
+        async function cargarSecciones(){
+            const select = document.getElementById('reg-seccion');
+            try {
+                const r = await fetch(CenturiaAPI.baseUrl + 'secciones.php?action=list');
+                const data = await r.json();
+                select.innerHTML = '<option value="" selected disabled>Selecciona tu sección...</option>';
+                (data.secciones || []).forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.codigo;
+                    opt.textContent = s.codigo + (s.carrera ? ' — ' + s.carrera : '');
+                    select.appendChild(opt);
+                });
+                if(select.options.length <= 1){
+                    select.innerHTML = '<option value="" selected disabled>No hay secciones creadas aún</option>';
+                }
+            } catch(e){
+                select.innerHTML = '<option value="" selected disabled>Error al cargar secciones</option>';
+            }
+        }
+
+        // ═══ QR - MOSTRAR URL DE ACCESO ═══
+        function mostrarQR(){
+            const url = window.location.href.split('?')[0];
+            let modal = document.getElementById('qr-modal');
+            if(!modal){
+                modal = document.createElement('div');
+                modal.id = 'qr-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;" onclick="cerrarQR(event)">
+                        <div style="background:#1a1a2e;border-radius:16px;padding:20px;max-width:400px;width:90%;position:relative;text-align:center;" onclick="event.stopPropagation()">
+                            <button onclick="cerrarQR()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:white;font-size:1.2rem;cursor:pointer;">&times;</button>
+                            <h4 style="color:var(--dorado);font-family:Montserrat;margin-bottom:12px;">
+                                <i class="bi bi-qr-code me-2"></i>Accede desde tu celular
+                            </h4>
+                            <img id="qr-img" src="" alt="QR Code" style="width:220px;height:220px;border-radius:10px;margin:8px auto;display:block;" />
+                            <p style="color:rgba(255,255,255,.5);font-size:.7rem;margin-top:10px;">Escanea este código para abrir la página en tu celular</p>
+                            <p id="qr-url" style="color:var(--dorado);font-size:.6rem;word-break:break-all;margin-top:6px;"></p>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(url);
+            document.getElementById('qr-url').textContent = url;
+            modal.style.display = 'block';
+        }
+
+        function cerrarQR(e){
+            if(e && e.target !== e.currentTarget) return;
+            const modal = document.getElementById('qr-modal');
+            if(modal) modal.style.display = 'none';
+        }
+
+        // ═══ CÁMARA - FOTO DEL ALUMNO ═══
+        let cameraStream = null;
+        function abrirCamara(facing){
+            facing = facing || document.getElementById('foto-facing').value || 'user';
+            const constraints = { video: { facingMode: facing, width: { ideal: 300 }, height: { ideal: 300 } } };
+            // Par stream anterior
+            if(cameraStream){ cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    cameraStream = stream;
+                    const video = document.getElementById('foto-video');
+                    video.srcObject = stream;
+                    video.play();
+                    video.style.display = 'block';
+                    document.getElementById('foto-placeholder').style.display = 'none';
+                    document.getElementById('foto-preview').style.display = 'none';
+                    document.getElementById('btn-tomar-foto').style.display = 'inline-block';
+                    document.getElementById('btn-cambiar-camara').style.display = 'inline-block';
+                    document.getElementById('btn-retomar-foto').style.display = 'none';
+                    document.getElementById('btn-eliminar-foto').style.display = 'none';
+                    // Actualizar icono según cámara activa
+                    const icon = document.querySelector('#btn-cambiar-camara i');
+                    if(icon){
+                        icon.className = facing === 'user' ? 'bi bi-camera-rear me-1' : 'bi bi-camera-front me-1';
+                    }
+                })
+                .catch(err => {
+                    alert('No se pudo acceder a la cámara. Verifica los permisos.');
+                });
+        }
+
+        function cambiarCamara(){
+            const actual = document.getElementById('foto-facing').value;
+            const nueva = actual === 'user' ? 'environment' : 'user';
+            document.getElementById('foto-facing').value = nueva;
+            abrirCamara(nueva);
+        }
+
+        function tomarFoto(){
+            const video = document.getElementById('foto-video');
+            const canvas = document.getElementById('foto-canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            // Centrar recorte cuadrado
+            const min = Math.min(video.videoWidth, video.videoHeight);
+            const sx = (video.videoWidth - min) / 2;
+            const sy = (video.videoHeight - min) / 2;
+            ctx.drawImage(video, sx, sy, min, min, 0, 0, 200, 200);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            document.getElementById('reg-foto').value = dataUrl;
+            // Mostrar preview
+            const preview = document.getElementById('foto-preview');
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+            video.style.display = 'none';
+            document.getElementById('foto-placeholder').style.display = 'none';
+            document.getElementById('btn-tomar-foto').style.display = 'none';
+            document.getElementById('btn-cambiar-camara').style.display = 'none';
+            document.getElementById('btn-retomar-foto').style.display = 'inline-block';
+            document.getElementById('btn-eliminar-foto').style.display = 'inline-block';
+            // Apagar cámara
+            if(cameraStream){ cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+        }
+
+        function retomarFoto(){
+            document.getElementById('reg-foto').value = '';
+            document.getElementById('foto-preview').style.display = 'none';
+            document.getElementById('btn-retomar-foto').style.display = 'none';
+            document.getElementById('btn-eliminar-foto').style.display = 'none';
+            abrirCamara();
+        }
+
+        function eliminarFoto(){
+            document.getElementById('reg-foto').value = '';
+            document.getElementById('foto-preview').style.display = 'none';
+            document.getElementById('foto-placeholder').style.display = 'flex';
+            document.getElementById('btn-retomar-foto').style.display = 'none';
+            document.getElementById('btn-eliminar-foto').style.display = 'none';
+            document.getElementById('btn-cambiar-camara').style.display = 'none';
         }
 
         function volverPaso1(){
             document.getElementById('step-2-register').style.display = 'none';
             document.getElementById('step-1-cedula').style.display = 'block';
+            // Reset sub-pasos del registro
+            document.getElementById('reg-paso-1').style.display = 'block';
+            document.getElementById('reg-paso-2').style.display = 'none';
+            document.getElementById('reg-paso-3').style.display = 'none';
+            document.getElementById('reg-volver-login').style.display = 'none';
+            // Cerrar cámara si quedó abierta
+            if(cameraStream){ cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+            const video = document.getElementById('foto-video');
+            if(video) video.style.display = 'none';
         }
 
         function mostrarRegistro(){
             document.getElementById('step-1-cedula').style.display = 'none';
             document.getElementById('step-2-register').style.display = 'block';
+            regPaso1();
+            cargarSecciones();
+            // Cerrar cámara si quedó abierta
+            if(cameraStream){ cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+        }
+
+        // ═══ NAVEGACIÓN PASOS DE REGISTRO ═══
+        function regPaso1(){
+            document.getElementById('reg-paso-1').style.display = 'block';
+            document.getElementById('reg-paso-2').style.display = 'none';
+            document.getElementById('reg-paso-3').style.display = 'none';
+            document.getElementById('reg-volver-login').style.display = 'none';
+        }
+        function regPaso2(){
+            const ced = document.getElementById('reg-cedula').value.trim();
+            const nom = document.getElementById('reg-nombre').value.trim();
+            const ape = document.getElementById('reg-apellido').value.trim();
+            if(!ced || !nom || !ape){ alert('Completa CÉDULA, NOMBRE y APELLIDO.'); return; }
+            document.getElementById('reg-paso-1').style.display = 'none';
+            document.getElementById('reg-paso-2').style.display = 'block';
+            document.getElementById('reg-paso-3').style.display = 'none';
+            document.getElementById('reg-volver-login').style.display = 'none';
+        }
+        function regPaso3(){
+            document.getElementById('reg-paso-1').style.display = 'none';
+            document.getElementById('reg-paso-2').style.display = 'none';
+            document.getElementById('reg-paso-3').style.display = 'block';
+            document.getElementById('reg-volver-login').style.display = 'block';
+            // Resumen
+            const ced = document.getElementById('reg-cedula').value.trim();
+            const nom = document.getElementById('reg-nombre').value.trim().toUpperCase();
+            const ape = document.getElementById('reg-apellido').value.trim().toUpperCase();
+            const ema = document.getElementById('reg-email').value.trim();
+            const tel = document.getElementById('reg-telefono').value.trim();
+            const gri = document.getElementById('reg-grado').value;
+            const car = document.getElementById('reg-carrera').value;
+            const sec = document.getElementById('reg-seccion').value;
+            const pass = nom.charAt(0).toUpperCase() + ape.charAt(0).toLowerCase() + ced + '*';
+            let html = '<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;">';
+            html += '<b style="color:var(--dorado);">Cédula:</b><span>' + ced + '</span>';
+            html += '<b style="color:var(--dorado);">Nombre:</b><span>' + nom + '</span>';
+            html += '<b style="color:var(--dorado);">Apellido:</b><span>' + ape + '</span>';
+            if(ema) html += '<b style="color:var(--dorado);">Email:</b><span>' + ema + '</span>';
+            if(tel) html += '<b style="color:var(--dorado);">Teléfono:</b><span>' + tel + '</span>';
+            if(gri) html += '<b style="color:var(--dorado);">Grado:</b><span>' + gri + '</span>';
+            if(car) html += '<b style="color:var(--dorado);">Carrera:</b><span>' + car + '</span>';
+            if(sec) html += '<b style="color:var(--dorado);">Sección:</b><span>' + sec + '</span>';
+            html += '<b style="color:var(--dorado);">Contraseña:</b><span style="font-family:monospace;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;">' + pass + '</span>';
+            html += '</div>';
+            const foto = document.getElementById('reg-foto').value;
+            if(foto){
+                html = '<div style="text-align:center;margin-bottom:10px;"><img src="' + foto + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--dorado);"></div>' + html;
+            }
+            document.getElementById('reg-resumen').innerHTML = html;
         }
 
         // ═══ PASO 2.5: Selector de roles (cuando hay múltiples) ═══
@@ -746,9 +1183,9 @@
             const pasoRoles = document.getElementById('step-2-roles');
             if(pasoRoles) pasoRoles.style.display = 'none';
 
-            // Admin va al panel de gestión de roles
-            if(rol.rol === 'admin'){
-                window.location.href = 'admin_roles.html';
+            // Admin y Académico van al panel de administración central
+            if(rol.rol === 'admin' || rol.rol === 'academico'){
+                window.location.href = 'admin/index.html';
                 return;
             }
 
@@ -763,10 +1200,11 @@
             document.getElementById('step-1-cedula').style.display = 'block';
             document.getElementById('inp-cedula').value = '';
             rolesActuales = [];
+            resetLoginFase();
         }
 
-        // ═══ PASO 3: Selección de curso ═══
-        function mostrarCursos(cursosDirectos, rolFiltro, carreraFiltro){
+        // ═══ PASO 3: Selección de curso (API + fallback local) ═══
+        async function mostrarCursos(cursosDirectos, rolFiltro, carreraFiltro){
             document.getElementById('step-1-cedula').style.display = 'none';
             document.getElementById('step-2-register').style.display = 'none';
             const pasoRoles = document.getElementById('step-2-roles');
@@ -789,29 +1227,30 @@
             const lista = document.getElementById('lista-cursos');
             if(cursosDirectos && Array.isArray(cursosDirectos) && cursosDirectos.length>0){ renderCursos(cursosDirectos); return; }
 
-            const ced = sessionStorage.getItem('current_cedula');
-            fetch(SCRIPT_URL + '?action=listar_cursos&cedula=' + encodeURIComponent(ced) + '&rol=' + encodeURIComponent(rol) + '&carrera=' + encodeURIComponent(carreraFiltro||''))
-                .then(r=>r.json())
-                .then(data=>{
-                    if(data && Array.isArray(data.cursos) && data.cursos.length>0){
-                        // Agregar Sociología si no viene del API
-                        const tieneSociologia = data.cursos.some(c => (c.id||'').toLowerCase().includes('soc'));
-                        if(!tieneSociologia){
-                            data.cursos.push({id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol});
-                        }
-                        sessionStorage.setItem('cursos_disponibles', JSON.stringify(data.cursos));
-                        renderCursos(data.cursos);
-                    } else {
-                        renderCursos([
-                            {id:'TIC',nombre:'TIC - Tecnología de la Información y Comunicación',codigo:'ADE18',seccion:sessionStorage.getItem('current_seccion')||'',color:'#00B140',icono:'bi-laptop',rol:rol},
-                            {id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol}
-                        ]);
-                    }
-                })
-                .catch(()=>{ renderCursos([
-                    {id:'TIC',nombre:'TIC - Tecnología de la Información y Comunicación',codigo:'ADE18',seccion:sessionStorage.getItem('current_seccion')||'',color:'#00B140',icono:'bi-laptop',rol:rol},
-                    {id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:sessionStorage.getItem('current_seccion')||'',color:'#7C4DFF',icono:'bi-people',rol:rol}
-                ]); });
+            // Intentar obtener cursos de la API
+            const result = await CenturiaAPI.getCourses();
+            if(result && result.ok && result.courses && result.courses.length > 0){
+                // Agregar sección y rol del usuario a cada curso
+                const cursosConMeta = result.courses.map(c => ({
+                    ...c,
+                    seccion: seccion || c.seccion || '',
+                    rol: rol
+                }));
+                // Agregar Sociología si no viene
+                const tieneSociologia = cursosConMeta.some(c => (c.id||'').toLowerCase().includes('soc'));
+                if(!tieneSociologia){
+                    cursosConMeta.push({id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:seccion,color:'#7C4DFF',icono:'bi-people',rol:rol});
+                }
+                sessionStorage.setItem('cursos_disponibles', JSON.stringify(cursosConMeta));
+                renderCursos(cursosConMeta);
+            } else {
+                // Fallback: cursos hardcodeados
+                renderCursos([
+                    {id:'TIC',nombre:'TIC - Tecnología de la Información y Comunicación',codigo:'ADE18',seccion:seccion,color:'#00B140',icono:'bi-laptop',rol:rol},
+                    {id:'SOCIOLOGIA',nombre:'Sociología',codigo:'SOC01',seccion:seccion,color:'#7C4DFF',icono:'bi-people',rol:rol},
+                    {id:'MAESTRIA',nombre:'Maestría',codigo:'MAE01',seccion:seccion,color:'#C5A55A',icono:'bi-mortarboard',rol:rol}
+                ]);
+            }
         }
 
         function renderCursos(cursos){
@@ -841,14 +1280,13 @@
             sessionStorage.setItem('curso_nombre', curso.nombre);
             sessionStorage.setItem('curso_codigo', curso.codigo||'');
             if(curso.rol) sessionStorage.setItem('rol', curso.rol);
-            fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify({action:'registrar_acceso_curso',cedula:sessionStorage.getItem('current_cedula'),curso:curso.id,nombre_curso:curso.nombre,rol:sessionStorage.getItem('rol')})}).catch(()=>{});
 
             // Redirigir según el curso seleccionado
             const cursoId = (curso.id || '').toLowerCase();
             const rol = sessionStorage.getItem('rol') || 'alumno';
 
-            if(cursoId.includes('sociolog') || cursoId === 'sociologia'){
-                // Sociología → panel docente o student panel de Sociología
+            if(cursoId.includes('sociolog') || cursoId === 'sociologia' || cursoId.includes('mae')){
+                // Sociología / Maestría → panel docente o student panel
                 if(rol === 'docente' || rol === 'admin' || rol === 'academico'){
                     window.location.href = 'sociologia/teacher_panel.html';
                 } else {
@@ -866,6 +1304,7 @@
             document.getElementById('step-1-cedula').style.display='block';
             document.getElementById('inp-cedula').value='';
             rolesActuales = [];
+            resetLoginFase();
         }
 
         window.addEventListener('load', () => {
@@ -944,23 +1383,54 @@
         function cerrarRecuperar(){
             document.getElementById('modal-recuperar').style.display = 'none';
         }
-        function buscarContrasena(){
-            const cedula = document.getElementById('recuperar-cedula').value.trim();
+        async function buscarContrasena(){
+            const cedula = document.getElementById('recuperar-cedula').value.trim().replace(/\./g, '');
             if(!cedula){ alert('Ingresa tu cédula.'); return; }
 
-            // Buscar en base de datos local
-            const usuario = buscarUsuarioLocal(cedula);
-
-            if(usuario){
-                const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedula.replace(/\./g,'') + '*';
+            const mostrar = (nombre, apellido) => {
+                const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedula + '*';
                 document.getElementById('recuperar-password').textContent = password;
                 document.getElementById('recuperar-paso1').style.display = 'none';
                 document.getElementById('recuperar-paso2').style.display = 'block';
                 document.getElementById('recuperar-error').style.display = 'none';
-            } else {
+            };
+            const noEncontrado = () => {
                 document.getElementById('recuperar-error').style.display = 'block';
                 document.getElementById('recuperar-error-text').textContent = 'Cédula no encontrada. Regístrese primero.';
                 document.getElementById('recuperar-paso2').style.display = 'none';
+            };
+
+            // 1) Buscar en la base de datos del servidor (PHP API)
+            try {
+                const res = await fetch('../api/auth.php?action=find_user&cedula=' + encodeURIComponent(cedula));
+                const data = await res.json();
+                const u = data && (data.user || (data.data && data.data.user));
+                if (data && (data.found || (data.data && data.data.found)) && u) {
+                    const fn = (u.firstname || '').split(' ')[0] || '';
+                    const ln = (u.lastname || '').split(' ')[0] || '';
+                    if (fn && ln) { mostrar(fn, ln); return; }
+                } else if (data && (data.found || (data.data && data.data.found))) {
+                    noEncontrado(); return;
+                }
+            } catch (e) { /* sin conexión: probar Google Sheets */ }
+
+            // 2) Buscar en Google Sheets (dual storage)
+            try {
+                const gasResult = await gasCheckStudent(cedula);
+                if (gasResult.existe && gasResult.nombre) {
+                    const partes = gasResult.nombre.trim().split(/\s+/);
+                    const fn = partes[0] || '';
+                    const ln = partes.slice(1).join(' ') || '';
+                    if (fn) { mostrar(fn, ln); return; }
+                }
+            } catch (e) { /* sin conexión: probar local */ }
+
+            // 3) Fallback: base de datos local
+            const usuario = buscarUsuarioLocal(cedula);
+            if(usuario){
+                mostrar(usuario.nombre, usuario.apellido);
+            } else {
+                noEncontrado();
             }
         }
         function copiarContrasena(){
@@ -971,6 +1441,37 @@
         }
         // Cerrar modal con Escape
         document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarRecuperar(); });
+
+        // ═══ AUTO-LOGIN: si hay credenciales guardadas, acceder directo ═══
+        (function autoLogin(){
+            try {
+                const saved = JSON.parse(localStorage.getItem('centuria_remember'));
+                if(saved && saved.cedula && saved.password){
+                    document.getElementById('inp-cedula').value = saved.cedula;
+                    document.getElementById('inp-password').value = saved.password;
+                    document.getElementById('chk-recordar').checked = true;
+                    // Saltar a fase 2 (login directo)
+                    document.getElementById('password-section').style.display = 'block';
+                    document.getElementById('btn-buscar-texto').textContent = 'Ingresar al Portal';
+                    document.getElementById('btn-buscar').querySelector('i').className = 'bi bi-arrow-right-circle me-2';
+                    loginFase = 'pass';
+                    verificarCedula();
+                }
+            } catch(e){}
+        })();
     </script>
+
+    <!-- BOTON FLOTANTE: Volver al Admin (solo cuando view_as=admin) -->
+    <script>
+        (function(){
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('view_as') === 'admin') {
+                var btn = document.createElement('div');
+                btn.innerHTML = '<a href="admin/index.html" style="position:fixed;top:12px;right:12px;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:10px 18px;border-radius:12px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:8px;box-shadow:0 4px 15px rgba(245,158,11,0.4);transition:all .2s;" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 20px rgba(245,158,11,0.5)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'0 4px 15px rgba(245,158,11,0.4)\'"><i class="bi bi-arrow-left-circle"></i> Volver al Admin</a>';
+                document.body.appendChild(btn);
+            }
+        })();
+    </script>
+
 </body>
 </html>

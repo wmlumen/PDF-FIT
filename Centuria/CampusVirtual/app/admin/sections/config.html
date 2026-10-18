@@ -1,0 +1,89 @@
+<!-- SECCION: Configuracion — Fragmento HTML cargado dinámicamente -->
+<div class="space-y-6" x-data>
+
+    <h2 class="text-sm font-bold text-slate-800">
+        <i class="bi bi-gear-fill text-emerald-600 me-2"></i>Configuracion del Sistema
+    </h2>
+
+    <div class="grid grid-cols-2 gap-6">
+        <!-- INFO GENERAL -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-xs font-bold text-slate-700 mb-4 border-b pb-2">
+                <i class="bi bi-building me-2 text-emerald-600"></i>Informacion Institucional
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase">Nombre de la Institucion</label>
+                    <input type="text" value="Instituto Superior Centuria"
+                        class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-xs" readonly>
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase">URL del Sistema</label>
+                    <input type="text" value="http://127.0.0.1:8080"
+                        class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-xs" readonly>
+                </div>
+                <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase">Version</label>
+                    <input type="text" value="Sistema Academico Digital v2.0"
+                        class="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-xs" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMATO CONTRASENA -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-xs font-bold text-slate-700 mb-4 border-b pb-2">
+                <i class="bi bi-key-fill me-2 text-amber-600"></i>Formato de Contrasena
+            </h3>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-2">
+                <p><strong>Regla:</strong> Primera letra Nombre(MAYUS) + primera letra apellido(minus) + cedula(sin puntos) + *</p>
+                <div class="bg-white rounded-lg p-3 font-mono text-sm border border-amber-100">
+                    <span class="text-emerald-600 font-bold">J</span><span class="text-blue-600">p</span><span class="text-slate-600">12345678</span><span class="text-amber-500 font-bold">*</span>
+                </div>
+                <p class="text-[10px] text-amber-600">Ejemplo: Juan Perez, CI 12345678</p>
+            </div>
+        </div>
+
+        <!-- CONEXION API -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-xs font-bold text-slate-700 mb-4 border-b pb-2">
+                <i class="bi bi-hdd-network me-2 text-blue-600"></i>Conexion Backend
+            </h3>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
+                    <span class="text-[10px] text-slate-500">API PHP (SQLite)</span>
+                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">ACTIVA</span>
+                </div>
+                <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
+                    <span class="text-[10px] text-slate-500">Google Apps Script</span>
+                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">SYNC</span>
+                </div>
+                <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
+                    <span class="text-[10px] text-slate-500">Base de Datos</span>
+                    <span class="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">SQLite</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+            <h3 class="text-xs font-bold text-slate-700 mb-4 border-b pb-2">
+                <i class="bi bi-lightning-fill me-2 text-rose-600"></i>Acciones del Sistema
+            </h3>
+            <div class="space-y-2">
+                <button @click="window.location.reload()"
+                    class="w-full flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
+                    <i class="bi bi-arrow-clockwise text-slate-400"></i> Recargar Sistema
+                </button>
+                <button @click="if(confirm('¿Vacio cache del navegador?')) { localStorage.clear(); sessionStorage.clear(); location.reload(); }"
+                    class="w-full flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
+                    <i class="bi bi-trash text-slate-400"></i> Limpiar Cache Local
+                </button>
+                <button @click="window.open('../index.html','_blank')"
+                    class="w-full flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
+                    <i class="bi bi-box-arrow-up-right text-slate-400"></i> Abrir Portal Principal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

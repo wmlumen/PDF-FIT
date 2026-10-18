@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrega de Monografía — TIC (ADE18) | Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+<style>
+:root{--vosc:#007A33;--vmed:#00B140;--vcla:#E6F4EA;--dor:#C5A55A;--txt:#2D2D2D}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Montserrat,'Segoe UI',Arial,sans-serif;background:#f2f6f2;color:var(--txt);min-height:100vh;padding:18px}
+.wrap{max-width:960px;margin:0 auto}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
+.head{background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;padding:20px 24px}
+.head h1{font-size:1.15rem;letter-spacing:.5px}
+.head p{font-size:.78rem;opacity:.9;margin-top:4px}
+.body{padding:22px 24px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.badge{background:var(--vcla);color:var(--vosc);font-weight:700;font-size:.72rem;padding:6px 12px;border-radius:20px}
+.badge.gold{background:#f7efda;color:#8a6d2b}
+h2.sec{font-size:.95rem;color:var(--vosc);border-bottom:2px solid var(--vcla);padding-bottom:6px;margin:20px 0 10px}
+.tema{border:1px solid #e3e9e3;border-radius:12px;padding:14px 16px;margin:10px 0;cursor:pointer;transition:.2s}
+.tema:hover{border-color:var(--vmed);background:#f6fbf6}
+.tema.sel{border-color:var(--vmed);background:var(--vcla)}
+.tema h3{font-size:.88rem;color:var(--vosc)}
+.tema .tag{display:inline-block;font-size:.64rem;font-weight:700;background:#eef4ee;color:#3c6b4c;border-radius:12px;padding:2px 10px;margin:6px 6px 6px 0}
+.tema p{font-size:.8rem;margin-top:6px}
+.tema .preg{font-size:.76rem;color:#555;margin-top:6px;font-style:italic}
+table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:10px}
+th,td{border:1px solid #e0e0e0;padding:8px;text-align:left}
+th{background:var(--vosc);color:#fff}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--vmed),var(--vosc));color:#fff;border:none;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:12px}
+.btn:disabled{opacity:.5}
+ol.reglas{margin:8px 0 8px 20px;font-size:.82rem}
+ol.reglas li{margin:4px 0}
+small.mut{color:#777}
+.alert{background:#f4f8f4;border-left:4px solid var(--vosc);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.8rem}
+@media print{.noprint{display:none}body{padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card"><div class="head">
+<h1>Entrega de Monografía — TIC · ADE18</h1>
+<p>Instituto Superior Centuria · Trabajo Final de Investigación · Formato institucional (APA 6.ª ed.)</p>
+</div><div class="body">
+<div class="meta">
+<span class="badge">10 temas alternativos · elija 1</span>
+<span class="badge gold">Total: 25 puntos</span>
+<span class="badge">Mínimo 15 páginas</span>
+<span class="badge">Entrega: según calendario de cátedra</span>
+</div>
+<p><small class="mut">Alumno: <strong id="alumno">—</strong> · Seleccione un tema y confirme su elección. Luego desarrolle el trabajo según la estructura y rúbrica de esta página.</small></p>
+
+<h2 class="sec">1. Temas alternativos (elija uno)</h2>
+<div id="temas"></div>
+<button class="btn noprint" id="btnTema" onclick="confirmarTema()">Confirmar mi tema</button>
+<div id="temaOk" class="alert" style="display:none"></div>
+
+<h2 class="sec">2. Estructura obligatoria</h2>
+<ol class="reglas">
+<li><strong>Portada oficial</strong> (institución, asignatura, título, autor, cédula, docente, año).</li>
+<li><strong>Índice paginado</strong> (títulos idénticos al cuerpo).</li>
+<li><strong>Introducción:</strong> tema, contexto, problema, justificación, objetivo general y específicos, organización del trabajo.</li>
+<li><strong>Desarrollo</strong> en capítulos/subtemas con hilo lógico, información documentada y citas.</li>
+<li><strong>Conclusión:</strong> síntesis, respuesta a objetivos y recomendaciones factibles.</li>
+<li><strong>Fuentes de consulta</strong> en APA 6.ª edición.</li>
+</ol>
+
+<h2 class="sec">3. Formato (APA 6.ª ed.)</h2>
+<ol class="reglas">
+<li>Papel carta, márgenes 2,54 cm, interlineado doble, Times New Roman 12, numeración arriba a la derecha.</li>
+<li>Capítulos centrados en negrita; subtemas a la izquierda en negrita.</li>
+<li>Citas cortas entre comillas con autor, año y página; citas largas en bloque con sangría; paráfrasis con autor y año.</li>
+<li>Referencias al final, alfabéticas, con sangría francesa.</li>
+</ol>
+
+<h2 class="sec">4. Rúbrica de evaluación (25 puntos)</h2>
+<table>
+<tr><th>Dimensión</th><th>Indicador de logro</th><th>Máx</th></tr>
+<tr><td>Estructura</td><td>Secciones completas y ordenadas</td><td>3</td></tr>
+<tr><td>Introducción</td><td>Planteamiento, contexto, justificación y objetivos</td><td>5</td></tr>
+<tr><td>Desarrollo</td><td>Coherencia, información documentada y citas</td><td>7</td></tr>
+<tr><td>Conclusión</td><td>Síntesis y respuesta a los objetivos</td><td>5</td></tr>
+<tr><td>Fuentes</td><td>Bibliografía completa en APA 6.ª</td><td>3</td></tr>
+<tr><td>Presentación</td><td>Formato y entrega a tiempo</td><td>2</td></tr>
+<tr><td colspan="2" style="text-align:right"><strong>TOTAL</strong></td><td><strong>25</strong></td></tr>
+</table>
+<p style="margin-top:8px"><small class="mut">Formato y rúbrica tomados de Maestría: Guía APA 6 y Criterios de Evaluación de Monografía (25 pts).</small></p>
+</div></div>
+</div>
+<script>
+if(!sessionStorage.getItem('current_cedula')){location.replace('../index.html');}
+document.getElementById('alumno').textContent=(sessionStorage.getItem('current_nombre')||'')+' (CI: '+(sessionStorage.getItem('current_cedula')||'')+')';
+const TEMAS=[
+{n:1,t:'Sistemas de información en una PYME paraguaya: del cuaderno al TPS',u:'U1',ind:'U1-I1, U1-I2',d:'Diagnóstico de una microempresa real o simulada: qué datos registra, qué información le falta y qué TPS/MIS le convendría.',p:'¿Qué datos se pierden hoy? ¿Qué informes necesita el dueño?'},
+{n:2,t:'Ventaja competitiva con TI: análisis Porter + DESTEP de un rubro local',u:'U2',ind:'U2-I1, U2-I2',d:'Elegir un rubro (supermercados, farmacias, talleres) y aplicar las 5 fuerzas y la matriz DESTEP con propuesta estratégica.',p:'¿Qué fuerza presiona más? ¿Qué impulso estratégico propone?'},
+{n:3,t:'De archivos sueltos a base de datos: modelo ER normalizado',u:'U3',ind:'U3-I1, U3-I2',d:'Detectar redundancia en archivos/planillas de un caso, proponer el modelo ER, normalizar a 3FN y escribir 5 consultas SQL.',p:'¿Dónde está la redundancia? ¿Qué consultas necesita el negocio?'},
+{n:4,t:'¿Conviene un ERP? Análisis TCO y plan de implantación',u:'U4',ind:'U4-I1, U4-I2, U4-I3',d:'Para una empresa mediana: módulos necesarios, TCO a 5 años (on-premise vs. nube) y plan post-contrato por fases.',p:'¿Qué módulos son críticos? ¿Qué modelo conviene y por qué?'},
+{n:5,t:'SaaS vs. software propio: costos y licencias para una oficina',u:'U5',ind:'U5-I2, U5-I3',d:'Comparar equipar una oficina con licencias propietarias frente a alternativas libres y SaaS: costos, ventajas y riesgos.',p:'¿Cuánto se ahorra? ¿Qué se pierde?'},
+{n:6,t:'Red multisucursal: diseño LAN + Intranet + Extranet',u:'U6',ind:'U6-I1, U6-I2, U6-I3',d:'Diseñar la infraestructura de una empresa con 3 locales: equipos, direccionamiento, servicios, accesos y seguridad mínima.',p:'¿Qué conecta cada equipo? ¿Quién accede a qué?'},
+{n:7,t:'Decidir con datos: DSS con análisis what-if para un comercio',u:'U7',ind:'U7-I1, U7-I3',d:'Con datos simulados de ventas, construir escenarios (precios, publicidad, inventario) y recomendar una alternativa con números.',p:'¿Qué alternativa rinde más? ¿Con qué supuestos?'},
+{n:8,t:'Tablero ejecutivo: KPI y drill-down para la dirección',u:'U8',ind:'U8-I1, U8-I2',d:'Definir 6 KPI con metas, armar un tablero modelo y mostrar un drill-down ante una desviación.',p:'¿Qué indicador es crítico? ¿De dónde sale cada dato?'},
+{n:9,t:'Tienda online completa: plataforma, pagos y firma digital',u:'U9',ind:'U9-I1, U9-I2, U9-I3',d:'Diseñar el modelo B2B o B2C de un negocio: proceso, pasarela de pagos, logística, aspectos legales y firma digital.',p:'¿Cómo cobra? ¿Cómo entrega? ¿Cómo genera confianza?'},
+{n:10,t:'Prospectiva TIC: Big Data, IoT o Blockchain en un sector real',u:'U10',ind:'U10-I1, U10-I2, U10-I3',d:'Elegir un sector (agro, retail, salud, educación) y proyectar el impacto de una tendencia con cubos de datos y criterio de inversión.',p:'¿Qué problema resuelve? ¿Cuánto costaría la primera etapa?'}
+];
+let sel=-1;
+function render(){
+ const box=document.getElementById('temas'); box.innerHTML='';
+ TEMAS.forEach((t,i)=>{
+  const d=document.createElement('div'); d.className='tema'; d.id='tema'+i;
+  d.innerHTML='<h3>'+t.n+'. '+t.t+'</h3><span class="tag">'+t.u+'</span><span class="tag">'+t.ind+'</span><p>'+t.d+'</p><p class="preg">'+t.p+'</p>';
+  d.onclick=()=>{sel=i; [...box.children].forEach(x=>x.classList.remove('sel')); d.classList.add('sel');};
+  box.appendChild(d);
+ });
+ const prev=localStorage.getItem('monografia_Tema_'+sessionStorage.getItem('current_cedula'));
+ if(prev!==null&&TEMAS[+prev]){sel=+prev; box.children[sel].classList.add('sel');}
+}
+function confirmarTema(){
+ if(sel<0){alert('Seleccione un tema primero.');return;}
+ try{localStorage.setItem('monografia_Tema_'+sessionStorage.getItem('current_cedula'),String(sel));}catch(e){}
+ const el=document.getElementById('temaOk');
+ el.style.display='block';
+ el.innerHTML='<strong>Tema confirmado:</strong> '+TEMAS[sel].n+'. '+TEMAS[sel].t+' ('+TEMAS[sel].u+' · '+TEMAS[sel].ind+'). Desarrolle la monografía de mínimo 15 páginas según estructura y rúbrica.';
+ window.scrollTo(0,document.body.scrollHeight);
+}
+render();
+</script>
+</body>
+</html>

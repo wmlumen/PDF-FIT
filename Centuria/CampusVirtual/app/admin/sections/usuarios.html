@@ -1,0 +1,367 @@
+<!-- SECCION: Usuarios — Gestión completa: Pendientes, Usuarios, Roles -->
+<div class="space-y-3" x-data>
+
+    <!-- SUB-PESTANAS -->
+    <div class="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-slate-100">
+        <button @click="usuariosTab='pendientes'"
+            class="flex-1 py-2 px-3 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all flex items-center justify-center gap-1"
+            :class="usuariosTab==='pendientes' ? 'bg-amber-500 text-white shadow' : 'text-slate-500 hover:bg-slate-50'">
+            <i class="bi bi-hourglass-split"></i> Pendientes
+            <span x-show="pendientes.length > 0"
+                class="ml-1 bg-white/30 px-1.5 rounded text-[8px]" x-text="pendientes.length"></span>
+        </button>
+        <button @click="usuariosTab='todos'"
+            class="flex-1 py-2 px-3 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all flex items-center justify-center gap-1"
+            :class="usuariosTab==='todos' ? 'bg-emerald-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'">
+            <i class="bi bi-people-fill"></i> Todos
+            <span class="ml-1 bg-white/30 px-1.5 rounded text-[8px]" x-text="usuarios.length"></span>
+        </button>
+        <button @click="usuariosTab='roles'"
+            class="flex-1 py-2 px-3 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all flex items-center justify-center gap-1"
+            :class="usuariosTab==='roles' ? 'bg-purple-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'">
+            <i class="bi bi-shield-lock-fill"></i> Roles y Permisos
+        </button>
+    </div>
+
+    <!-- ═══ TAB: PENDIENTES DE APROBACIÓN ═══ -->
+    <div x-show="usuariosTab==='pendientes'" style="display:none;">
+
+        <!-- FORMULARIO REGISTRO RÁPIDO -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-3">
+            <h3 class="text-xs font-bold text-slate-700 mb-3">
+                <i class="bi bi-person-plus-fill text-emerald-600 me-1"></i>Registrar Nuevo Usuario
+            </h3>
+            <form @submit.prevent="registrarPendiente" class="grid grid-cols-4 gap-2">
+                <input type="text" x-model="formPendiente.cedula" placeholder="Cédula" required
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px]" @input="formPendiente.cedula=formPendiente.cedula.replace(/\./g,'')">
+                <input type="text" x-model="formPendiente.nombre" placeholder="Nombre" required
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px] uppercase">
+                <input type="text" x-model="formPendiente.apellido" placeholder="Apellido" required
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px] uppercase">
+                <input type="email" x-model="formPendiente.email" placeholder="Email"
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px]">
+                <select x-model="formPendiente.rol" class="px-3 py-2 border border-slate-200 rounded-lg text-[10px]">
+                    <option value="alumno">Alumno</option>
+                    <option value="docente">Docente</option>
+                    <option value="academico">Académico</option>
+                    <option value="admin">Administrador</option>
+                </select>
+                <input type="text" x-model="formPendiente.carrera" placeholder="Carrera"
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px]">
+                <input type="text" x-model="formPendiente.seccion" placeholder="Sección"
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-[10px]">
+                <button type="submit" class="btn-primary py-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1">
+                    <i class="bi bi-check-circle"></i> Registrar
+                </button>
+            </form>
+            <p class="text-[8px] text-slate-400 mt-1">Pass generada: 1ra letra Nombre(MAYÚS) + 1ra Apellido(minús) + CI + *</p>
+        </div>
+
+        <!-- LISTA PENDIENTES -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-3 border-b bg-amber-50 flex justify-between items-center">
+                <h3 class="text-xs font-bold text-amber-800">
+                    <i class="bi bi-hourglass-split me-1"></i>Usuarios Pendientes de Aprobación
+                    <span class="text-amber-500 font-normal" x-text="'(' + pendientes.length + ')'"></span>
+                </h3>
+                <button @click="cargarPendientes()" class="text-[9px] text-amber-600 hover:underline">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+                </button>
+            </div>
+            <div class="max-h-[400px] overflow-y-auto">
+                <template x-for="p in pendientes" :key="p.id">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[10px] font-bold"
+                                x-text="(p.nombre||'?')[0]"></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800" x-text="p.nombre + ' ' + p.apellido"></p>
+                                <p class="text-[9px] text-slate-400">
+                                    CI: <span x-text="p.cedula"></span>
+                                    <span x-show="p.carrera"> · <span x-text="p.carrera"></span></span>
+                                    <span x-show="p.seccion"> · <span x-text="p.seccion"></span></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <select x-model="p._rolAsignar" class="px-2 py-1 border border-slate-200 rounded text-[9px] w-24">
+                                <option value="alumno">Alumno</option>
+                                <option value="docente">Docente</option>
+                                <option value="academico">Académico</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            <button @click="aprobarPendiente(p)"
+                                class="px-2 py-1 bg-emerald-500 text-white rounded text-[9px] font-bold hover:bg-emerald-600 transition">
+                                <i class="bi bi-check-lg"></i> Aprobar
+                            </button>
+                            <button @click="rechazarPendiente(p)"
+                                class="px-2 py-1 bg-rose-500 text-white rounded text-[9px] font-bold hover:bg-rose-600 transition">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="pendientes.length === 0" class="py-8 text-center text-slate-400 text-xs">
+                    <i class="bi bi-check-circle text-2xl text-emerald-300 block mb-2"></i>
+                    No hay usuarios pendientes
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: TODOS LOS USUARIOS ═══ -->
+    <div x-show="usuariosTab==='todos'" style="display:none;">
+        <div class="flex gap-3">
+            <!-- TABLA USUARIOS -->
+            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                <div class="p-3 border-b bg-slate-50/50 flex gap-2 items-center">
+                    <input type="text" x-model="userSearch" placeholder="Buscar cédula o nombre..."
+                        class="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-[10px]">
+                    <select x-model="userFilterRol" class="px-2 py-1.5 border border-slate-200 rounded-lg text-[10px] w-28">
+                        <option value="">Todos</option>
+                        <option value="alumno">Alumno</option>
+                        <option value="docente">Docente</option>
+                        <option value="academico">Académico</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <select x-model="userFilterEstado" class="px-2 py-1.5 border border-slate-200 rounded-lg text-[10px] w-24">
+                        <option value="">Estado</option>
+                        <option value="activo">Activo</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                    <button @click="cargarUsuarios()" class="text-[9px] text-emerald-600 hover:underline"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto" style="max-height:calc(100vh - 260px);">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 text-[9px] uppercase text-slate-400 font-bold">
+                            <tr>
+                                <th class="py-2 px-3 border-b">Cédula</th>
+                                <th class="py-2 px-3 border-b">Nombre</th>
+                                <th class="py-2 px-3 border-b">Roles</th>
+                                <th class="py-2 px-3 border-b">Carrera</th>
+                                <th class="py-2 px-3 border-b">Estado</th>
+                                <th class="py-2 px-3 border-b text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs text-slate-600">
+                            <template x-for="u in filteredUsuarios" :key="u.id">
+                                <tr class="hover:bg-emerald-50/30 transition border-b border-slate-50 cursor-pointer"
+                                    :class="{'bg-amber-50/20': u.estado==='pendiente'}"
+                                    @click="seleccionarUsuario(u)">
+                                    <td class="py-2 px-3 font-medium text-[10px]" x-text="u.cedula"></td>
+                                    <td class="py-2 px-3 text-[10px]" x-text="u.nombre_completo"></td>
+                                    <td class="py-2 px-3">
+                                        <div class="flex flex-wrap gap-0.5">
+                                            <template x-for="r in u.roles" :key="r.id">
+                                                <span class="px-1 py-0.5 rounded text-[7px] font-bold"
+                                                    :class="{
+                                                        'bg-emerald-100 text-emerald-700': r.rol==='alumno',
+                                                        'bg-blue-100 text-blue-700': r.rol==='docente',
+                                                        'bg-purple-100 text-purple-700': r.rol==='academico',
+                                                        'bg-rose-100 text-rose-700': r.rol==='admin'
+                                                    }" x-text="r.rol.toUpperCase()"></span>
+                                            </template>
+                                            <span x-show="u.roles.length===0" class="text-[8px] text-slate-400">sin roles</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-2 px-3 text-[9px] text-slate-500" x-text="u.carrera || '—'"></td>
+                                    <td class="py-2 px-3">
+                                        <span class="px-1.5 py-0.5 rounded text-[7px] font-bold"
+                                            :class="{
+                                                'bg-emerald-100 text-emerald-700': u.estado==='activo',
+                                                'bg-amber-100 text-amber-700': u.estado==='pendiente',
+                                                'bg-slate-100 text-slate-500': u.estado==='inactivo'
+                                            }" x-text="(u.estado||'activo').toUpperCase()"></span>
+                                    </td>
+                                    <td class="py-2 px-3 text-right">
+                                        <button @click.stop="seleccionarUsuario(u)"
+                                            class="text-blue-400 hover:text-blue-600 p-1" title="Editar">
+                                            <i class="bi bi-pencil-fill text-[10px]"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredUsuarios.length === 0">
+                                <td colspan="6" class="py-8 text-center text-slate-400 text-xs">No hay usuarios registrados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL DETALLE USUARIO SELECCIONADO -->
+            <div x-show="selectedUser" class="w-80 space-y-3" style="display:none;">
+                <!-- PERFIL -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold text-slate-700">
+                            <i class="bi bi-person-badge text-blue-600 me-1"></i>Perfil
+                        </h3>
+                        <button @click="selectedUser=null" class="text-slate-400 hover:text-slate-600 text-[10px]"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="space-y-2" x-show="selectedUser">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold"
+                                x-text="selectedUser ? (selectedUser.firstname||'?')[0] : ''"></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800" x-text="selectedUser?.nombre_completo"></p>
+                                <p class="text-[9px] text-slate-400" x-text="'CI: ' + (selectedUser?.cedula||'')"></p>
+                            </div>
+                        </div>
+                        <form @submit.prevent="guardarUsuario()" class="space-y-1.5">
+                            <input type="text" x-model="formUsuario.firstname" placeholder="Nombre"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px] uppercase">
+                            <input type="text" x-model="formUsuario.lastname" placeholder="Apellido"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px] uppercase">
+                            <input type="email" x-model="formUsuario.email" placeholder="Email"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                            <input type="text" x-model="formUsuario.telefono" placeholder="Teléfono"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                            <div class="flex gap-1">
+                                <input type="text" x-model="formUsuario.grado" placeholder="Grado"
+                                    class="flex-1 px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                                <select x-model="formUsuario.estado" class="flex-1 px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                                    <option value="activo">Activo</option>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                            <input type="text" x-model="formUsuario.carrera" placeholder="Carrera"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                            <input type="text" x-model="formUsuario.seccion" placeholder="Sección"
+                                class="w-full px-2 py-1.5 border border-slate-200 rounded text-[10px]">
+                            <button type="submit" class="btn-primary w-full py-1.5 rounded text-[9px] font-bold">
+                                <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ROLES ASIGNADOS -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-700 mb-2">
+                        <i class="bi bi-shield-fill-check text-purple-600 me-1"></i>Roles Asignados
+                        <span class="text-slate-400 font-normal" x-text="'(' + (selectedUser?.roles?.length||0) + ')'"></span>
+                    </h3>
+                    <div class="space-y-1 max-h-32 overflow-y-auto mb-2">
+                        <template x-for="r in (selectedUser?.roles||[])" :key="r.id">
+                            <div class="flex items-center justify-between p-1.5 rounded bg-slate-50 text-[9px]">
+                                <div class="flex items-center gap-1">
+                                    <span class="px-1 py-0.5 rounded text-[7px] font-bold"
+                                        :class="{
+                                            'bg-emerald-100 text-emerald-700': r.rol==='alumno',
+                                            'bg-blue-100 text-blue-700': r.rol==='docente',
+                                            'bg-purple-100 text-purple-700': r.rol==='academico',
+                                            'bg-rose-100 text-rose-700': r.rol==='admin'
+                                        }" x-text="r.rol.toUpperCase()"></span>
+                                    <span class="text-slate-500" x-text="r.carrera||'General'"></span>
+                                </div>
+                                <button @click="quitarRol(r)" class="text-rose-400 hover:text-rose-600"><i class="bi bi-x-lg text-[7px]"></i></button>
+                            </div>
+                        </template>
+                    </div>
+                    <!-- AGREGAR ROL -->
+                    <form @submit.prevent="agregarRol()" class="flex gap-1">
+                        <select x-model="nuevoRol.rol" class="flex-1 px-2 py-1 border border-slate-200 rounded text-[9px]">
+                            <option value="alumno">Alumno</option>
+                            <option value="docente">Docente</option>
+                            <option value="academico">Académico</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <input type="text" x-model="nuevoRol.carrera" placeholder="Carrera"
+                            class="flex-1 px-2 py-1 border border-slate-200 rounded text-[9px]">
+                        <button type="submit" class="px-2 py-1 bg-purple-500 text-white rounded text-[9px] font-bold hover:bg-purple-600">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: ROLES Y PERMISOS ═══ -->
+    <div x-show="usuariosTab==='roles'" style="display:none;">
+        <div class="flex gap-4">
+            <!-- FORMULARIO CREAR ROL -->
+            <div class="w-80 bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h3 class="text-xs font-bold text-slate-700 mb-3">
+                    <i class="bi bi-shield-plus text-purple-600 me-1"></i>
+                    <span x-text="editRol ? 'Editar Rol' : 'Crear Rol'"></span>
+                </h3>
+                <form @submit.prevent="guardarRol()" class="space-y-2">
+                    <input type="text" x-model="formRol.nombre" placeholder="Nombre del rol" required
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <input type="text" x-model="formRol.descripcion" placeholder="Descripción"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <div class="flex gap-2">
+                        <input type="color" x-model="formRol.color" class="w-8 h-8 rounded cursor-pointer border-0">
+                        <input type="text" x-model="formRol.icono" placeholder="bi-person" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    </div>
+                    <!-- PERMISOS -->
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Permisos</p>
+                        <div class="grid grid-cols-2 gap-1">
+                            <template x-for="perm in permisosDisponibles" :key="perm.id">
+                                <label class="flex items-center gap-1 text-[9px] text-slate-600 cursor-pointer hover:bg-slate-50 p-1 rounded">
+                                    <input type="checkbox" :value="perm.id"
+                                        x-model="formRol.permisos"
+                                        class="rounded text-purple-600 w-3 h-3">
+                                    <span x-text="perm.label"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button type="submit" class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editRol ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editRol" type="button" @click="cancelarEditRol()"
+                            class="px-3 py-2 rounded-lg text-[10px] border border-slate-200 text-slate-500">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- LISTA ROLES -->
+            <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-3 border-b bg-purple-50">
+                    <h3 class="text-xs font-bold text-purple-800">
+                        <i class="bi bi-shield-fill-check me-1"></i>Roles del Sistema
+                        <span class="text-purple-500 font-normal" x-text="'(' + rolesConfig.length + ')'"></span>
+                    </h3>
+                </div>
+                <div class="max-h-[500px] overflow-y-auto">
+                    <template x-for="r in rolesConfig" :key="r.id">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs"
+                                    :style="'background:' + r.color">
+                                    <i class="bi" :class="r.icono || 'bi-person'"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800" x-text="r.nombre"></p>
+                                    <p class="text-[9px] text-slate-400" x-text="r.descripcion || 'Sin descripción'"></p>
+                                    <div class="flex flex-wrap gap-0.5 mt-0.5">
+                                        <template x-for="p in (r.permisos || [])" :key="p">
+                                            <span class="px-1 py-0.5 bg-purple-50 text-purple-600 rounded text-[7px]" x-text="p"></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button @click="editarRol(r)" class="text-blue-400 hover:text-blue-600 p-1" title="Editar">
+                                    <i class="bi bi-pencil-fill text-[10px]"></i>
+                                </button>
+                                <button @click="eliminarRol(r)" class="text-rose-400 hover:text-rose-600 p-1" title="Eliminar">
+                                    <i class="bi bi-trash-fill text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="rolesConfig.length === 0" class="py-8 text-center text-slate-400 text-xs">
+                        No hay roles configurados. Crea el primero.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

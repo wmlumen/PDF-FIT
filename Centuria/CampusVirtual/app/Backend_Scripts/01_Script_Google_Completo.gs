@@ -1,12 +1,16 @@
 /**
- * SCRIPT BACKEND CENTURIA - VERSIÓN 03
- * Sistema multi-rol: una cédula puede tener múltiples roles
- * (Alumno en una carrera, Docente en otra, Admin, Académico)
+ * SCRIPT BACKEND CENTURIA - VERSIÓN 04
+ * Sistema multi-rol + progreso automático + pagos por módulo
  * 
  * Hojas esperadas:
  * - RegistroAlumnos: [Cédula, Nombre, Apellido, Email, Grado, Carrera, Sección]
  * - Roles: [Cédula, Nombre, Rol, Carrera, Sección, Asignatura, Estado, FechaAsignación, AsignadoPor]
- * - Asistencias, ProgresoUnidades, Notas (las mismas de siempre)
+ * - Asistencias: [Fecha/Hora, Cédula, Unidad/Lugar, Observación]
+ * - ProgresoUnidades: [Fecha/Hora, Cédula, Unidad, Sección, Estado]
+ * - ProgresoDetalle: [Fecha/Hora, Cédula, Unidad, Sección, Leído, Página]
+ * - Notas: [Cédula, Nombre, Asistencia, Parcial1, Parcial2, Final]
+ * - Pagos: [Cédula, Nombre, Módulo, Monto, Fecha, Estado, Comprobante, RegistradoPor]
+ * - Accesos: [Fecha/Hora, Cédula, Página, Dispositivo, Tipo]
  */
 
 function doGet(e) {
@@ -59,6 +63,26 @@ function doGet(e) {
     var carrera = e.parameter.carrera || '';
     var cursos = obtenerCursosPorRol(ss, cedula, rol, carrera);
     return responderJSON({ cursos: cursos });
+  }
+
+  // ── Consultar pagos de un alumno ──
+  if (action === 'consultar_pagos') {
+    var cedula = e.parameter.cedula;
+    var pagos = obtenerPagos(ss, cedula);
+    return responderJSON({ pagos: pagos });
+  }
+
+  // ── Consultar progreso de un alumno ──
+  if (action === 'consultar_progreso') {
+    var cedula = e.parameter.cedula;
+    var progreso = obtenerProgreso(ss, cedula);
+    return responderJSON({ progreso: progreso });
+  }
+
+  // ── Resumen general (admin) ──
+  if (action === 'resumen_admin') {
+    var resumen = obtenerResumenAdmin(ss);
+    return responderJSON(resumen);
   }
   
   // ── Notas (fallback) ──
@@ -174,15 +198,15 @@ function doPost(e) {
     return responderJSON({status: "Éxito"});
   }
 
-  // ── 5. REGISTRAR PROGRESO ──
+  // ── 5. REGISTRAR PROGRESO (legacy - unidad completa) ──
   if (data.action === 'registrar_progreso') {
     var sheetProgreso = ss.getSheetByName('ProgresoUnidades');
     if(!sheetProgreso) {
       sheetProgreso = ss.insertSheet('ProgresoUnidades');
-      sheetProgreso.appendRow(['Fecha/Hora', 'Cédula', 'Unidad Terminada', 'Estado']);
+      sheetProgreso.appendRow(['Fecha/Hora', 'Cédula', 'Unidad', 'Sección', 'Estado']);
     }
     var ts4 = new Date().toLocaleString('es-ES', {timeZone: 'America/Asuncion'});
-    sheetProgreso.appendRow([ts4, data.cedula, data.unidad, "Completado"]);
+    sheetProgreso.appendRow([ts4, data.cedula, data.unidad || '', data.seccion || '', "Completado"]);
     return responderJSON({status: "Éxito"});
   }
 
@@ -210,6 +234,138 @@ function doPost(e) {
   // ── 7. REGISTRAR ACCESO A CURSO ──
   if (data.action === 'registrar_acceso_curso') {
     return responderJSON({status: "Acceso registrado"});
+  }
+
+  // ════ NUEVOS v04 ════
+
+  // ── 8. REGISTRAR PROGRESO DETALLADO (automático por sección) ──
+  if (data.action === 'registrar_progreso_detalle') {
+    var sheetPD = ss.getSheetByName('ProgresoDetalle');
+    if(!sheetPD) {
+      sheetPD = ss.insertSheet('ProgresoDetalle');
+      sheetPD.appendRow(['Fecha/Hora', 'Cédula', 'Unidad', 'Sección', 'Leído', 'Página']);
+    }
+    var ts5 = new Date().toLocaleString('es-ES', {timeZone: 'America/Asuncion'});
+    // Evitar duplicados: buscar si ya existe esa combinación
+    var pdData = sheetPD.getDataRange().getValues();
+    var encontrado = false;
+    for(var p = 1; p < pdData.length; p++) {
+      if(pdData[p][1].toString() === data.cedula.toString() &&
+         pdData[p][2] === (data.unidad || '') &&
+         pdData[p][3] === (data.seccion || '')) {
+        // Actualizar estado de leído
+        sheetPD.getRange(p + 1, 5).setValue(data.leido ? 'Sí' : 'No');
+        sheetPD.getRange(p + 1, 1).setValue(ts5);
+        encontrado = true;
+        break;
+      }
+    }
+    if(!encontrado) {
+      sheetPD.appendRow([
+        ts5, data.cedula, data.unidad || '', data.seccion || '',
+        data.leido ? 'Sí' : 'No', data.pagina || ''
+      ]);
+    }
+    return responderJSON({status: "Éxito", mensaje: "Progreso detallado registrado"});
+  }
+
+  // ── 9. REGISTRAR PAGO ──
+  if (data.action === 'registrar_pago') {
+    var sheetPagos = ss.getSheetByName('Pagos');
+    if(!sheetPagos) {
+      sheetPagos = ss.insertSheet('Pagos');
+      sheetPagos.appendRow(['Cédula', 'Nombre', 'Módulo', 'Monto', 'Fecha', 'Estado', 'Comprobante', 'RegistradoPor']);
+    }
+    var ts6 = new Date().toLocaleString('es-ES', {timeZone: 'America/Asuncion'});
+    sheetPagos.appendRow([
+      data.cedula || '',
+      data.nombre || '',
+      data.modulo || '',
+      data.monto || 0,
+      data.fecha || ts6,
+      data.estado || 'pendiente',
+      data.comprobante || '',
+      data.registrado_por || 'admin'
+    ]);
+    return responderJSON({status: "Éxito", mensaje: "Pago registrado correctamente"});
+  }
+
+  // ── 10. ACTUALIZAR ESTADO DE PAGO ──
+  if (data.action === 'actualizar_pago') {
+    var sheetPagos2 = ss.getSheetByName('Pagos');
+    if(sheetPagos2) {
+      var pagosData = sheetPagos2.getDataRange().getValues();
+      for(var q = 1; q < pagosData.length; q++) {
+        if(pagosData[q][0].toString() === data.cedula.toString() &&
+           pagosData[q][2] === (data.modulo || '')) {
+          if(data.estado) sheetPagos2.getRange(q + 1, 6).setValue(data.estado);
+          if(data.comprobante) sheetPagos2.getRange(q + 1, 7).setValue(data.comprobante);
+          return responderJSON({status: "Éxito", mensaje: "Pago actualizado"});
+        }
+      }
+    }
+    return responderJSON({status: "Error", mensaje: "Pago no encontrado"});
+  }
+
+  // ── 11. REGISTRAR ACCESO (login/page visit) ──
+  if (data.action === 'registrar_acceso') {
+    var sheetAccesos = ss.getSheetByName('Accesos');
+    if(!sheetAccesos) {
+      sheetAccesos = ss.insertSheet('Accesos');
+      sheetAccesos.appendRow(['Fecha/Hora', 'Cédula', 'Página', 'Dispositivo', 'Tipo']);
+    }
+    var ts7 = new Date().toLocaleString('es-ES', {timeZone: 'America/Asuncion'});
+    sheetAccesos.appendRow([
+      ts7,
+      data.cedula || '',
+      data.pagina || '',
+      data.dispositivo || '',
+      data.tipo || 'login'
+    ]);
+    return responderJSON({status: "Éxito"});
+  }
+
+  // ── 12. SYNC MASIVO DE PROGRESO (batch) ──
+  if (data.action === 'sync_progreso_batch') {
+    var sheetPD2 = ss.getSheetByName('ProgresoDetalle');
+    if(!sheetPD2) {
+      sheetPD2 = ss.insertSheet('ProgresoDetalle');
+      sheetPD2.appendRow(['Fecha/Hora', 'Cédula', 'Unidad', 'Sección', 'Leído', 'Página']);
+    }
+    var ts8 = new Date().toLocaleString('es-ES', {timeZone: 'America/Asuncion'});
+    var registros = data.registros || [];
+    var guardados = 0;
+    var pdData2 = sheetPD2.getDataRange().getValues();
+    
+    for(var b = 0; b < registros.length; b++) {
+      var reg = registros[b];
+      var duplicado = false;
+      // Buscar duplicado
+      for(var d = 1; d < pdData2.length; d++) {
+        if(pdData2[d][1].toString() === (reg.cedula || data.cedula || '').toString() &&
+           pdData2[d][2] === (reg.unidad || '') &&
+           pdData2[d][3] === (reg.seccion || '')) {
+          // Actualizar
+          sheetPD2.getRange(d + 1, 5).setValue(reg.leido ? 'Sí' : 'No');
+          sheetPD2.getRange(d + 1, 1).setValue(ts8);
+          duplicado = true;
+          guardados++;
+          break;
+        }
+      }
+      if(!duplicado) {
+        sheetPD2.appendRow([
+          ts8,
+          reg.cedula || data.cedula || '',
+          reg.unidad || '',
+          reg.seccion || '',
+          reg.leido ? 'Sí' : 'No',
+          reg.pagina || ''
+        ]);
+        guardados++;
+      }
+    }
+    return responderJSON({status: "Éxito", guardados: guardados, total: registros.length});
   }
 }
 
@@ -269,7 +425,6 @@ function obtenerRoles(ss, cedula) {
  */
 function obtenerCursosPorRol(ss, cedula, rol, carrera) {
   if (rol === 'admin' || rol === 'academico') {
-    // Admin/Académico ve TODAS las asignaturas
     return [
       { id: 'TIC', nombre: 'TIC - Tecnología de la Información y Comunicación', codigo: 'ADE18', seccion: '', color: '#007A33', icono: 'bi-laptop', rol: rol },
       { id: 'ADMIN', nombre: 'Panel de Administración', codigo: 'ADM', seccion: '', color: '#2D2D2D', icono: 'bi-gear', rol: 'admin' }
@@ -277,7 +432,6 @@ function obtenerCursosPorRol(ss, cedula, rol, carrera) {
   }
   
   if (rol === 'docente') {
-    // Docente ve las asignaturas que dicta
     var sheetRoles = ss.getSheetByName('Roles');
     var cursos = [];
     if(sheetRoles) {
@@ -305,7 +459,7 @@ function obtenerCursosPorRol(ss, cedula, rol, carrera) {
     return cursos;
   }
   
-  // Alumno: ver sus asignaturas
+  // Alumno
   var sheetRoles2 = ss.getSheetByName('Roles');
   var cursosAlumno = [];
   if(sheetRoles2) {
@@ -329,12 +483,120 @@ function obtenerCursosPorRol(ss, cedula, rol, carrera) {
     }
   }
   
-  // Fallback si no hay roles registrados
   if (cursosAlumno.length === 0) {
     cursosAlumno.push({ id: 'TIC', nombre: 'TIC - Tecnología de la Información y Comunicación', codigo: 'ADE18', seccion: '', color: '#007A33', icono: 'bi-laptop', rol: 'alumno' });
   }
   
   return cursosAlumno;
+}
+
+/**
+ * Obtener pagos de un alumno (v04)
+ */
+function obtenerPagos(ss, cedula) {
+  var sheetPagos = ss.getSheetByName('Pagos');
+  if(!sheetPagos) return [];
+  
+  var data = sheetPagos.getDataRange().getValues();
+  var pagos = [];
+  
+  for (var i = 1; i < data.length; i++) {
+    if (!cedula || data[i][0].toString() === cedula.toString()) {
+      pagos.push({
+        cedula: data[i][0].toString(),
+        nombre: data[i][1] || '',
+        modulo: data[i][2] || '',
+        monto: data[i][3] || 0,
+        fecha: data[i][4] || '',
+        estado: data[i][5] || 'pendiente',
+        comprobante: data[i][6] || '',
+        registrado_por: data[i][7] || ''
+      });
+    }
+  }
+  
+  return pagos;
+}
+
+/**
+ * Obtener progreso detallado de un alumno (v04)
+ */
+function obtenerProgreso(ss, cedula) {
+  var sheetPD = ss.getSheetByName('ProgresoDetalle');
+  if(!sheetPD) return [];
+  
+  var data = sheetPD.getDataRange().getValues();
+  var progreso = [];
+  
+  for (var i = 1; i < data.length; i++) {
+    if (!cedula || data[i][1].toString() === cedula.toString()) {
+      progreso.push({
+        cedula: data[i][1].toString(),
+        unidad: data[i][2] || '',
+        seccion: data[i][3] || '',
+        leido: data[i][4] || 'No',
+        pagina: data[i][5] || '',
+        fecha: data[i][0] || ''
+      });
+    }
+  }
+  
+  return progreso;
+}
+
+/**
+ * Resumen general para panel admin (v04)
+ */
+function obtenerResumenAdmin(ss) {
+  var resultado = {
+    totalAlumnos: 0,
+    totalDocentes: 0,
+    totalAdmins: 0,
+    totalPagos: 0,
+    montoTotal: 0,
+    pagosPendientes: 0,
+    progresoPromedio: 0
+  };
+
+  // Contar roles
+  var sheetRoles = ss.getSheetByName('Roles');
+  if(sheetRoles) {
+    var data = sheetRoles.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if(data[i][6] === 'activo') {
+        var rol = data[i][2];
+        if(rol === 'alumno') resultado.totalAlumnos++;
+        else if(rol === 'docente') resultado.totalDocentes++;
+        else if(rol === 'admin') resultado.totalAdmins++;
+      }
+    }
+  }
+
+  // Pagos
+  var sheetPagos = ss.getSheetByName('Pagos');
+  if(sheetPagos) {
+    var pData = sheetPagos.getDataRange().getValues();
+    for (var j = 1; j < pData.length; j++) {
+      resultado.totalPagos++;
+      resultado.montoTotal += parseFloat(pData[j][3]) || 0;
+      if(pData[j][5] === 'pendiente') resultado.pagosPendientes++;
+    }
+  }
+
+  // Progreso promedio (unidades completadas / total alumnos)
+  var sheetPD = ss.getSheetByName('ProgresoDetalle');
+  if(sheetPD && resultado.totalAlumnos > 0) {
+    var pdData = sheetPD.getDataRange().getValues();
+    var completadas = 0;
+    for (var k = 1; k < pdData.length; k++) {
+      if(pdData[k][4] === 'Sí') completadas++;
+    }
+    // Asumiendo 10 unidades * N secciones promedio
+    var totalPosible = resultado.totalAlumnos * 10;
+    resultado.progresoPromedio = totalPosible > 0 ? Math.round((completadas / totalPosible) * 100) : 0;
+  }
+
+  return resultado;
 }
 
 function responderJSON(objeto) {

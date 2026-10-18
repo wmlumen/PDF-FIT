@@ -8,13 +8,26 @@
   <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script src="party_theme.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    .stat-card { transition: all 0.2s; }
-    .stat-card:hover { transform: translateY(-2px); border-color: rgba(197, 160, 89, 0.4); }
-    .nav-card { transition: all 0.2s; cursor: pointer; }
-    .nav-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); border-color: rgba(197, 160, 89, 0.45); }
-    .fade-in { animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stat-card { transition: all 0.25s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden; }
+    .stat-card:hover { transform: translateY(-3px); border-color: rgba(197, 160, 89, 0.5); box-shadow: 0 8px 24px rgba(15,23,42,.08); }
+    .stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:2px 2px 0 0; }
+    .stat-card.accent-amber::after { background: linear-gradient(90deg, #c5a059, #dfc07b); }
+    .stat-card.accent-green::after { background: linear-gradient(90deg, #059669, #34d399); }
+    .stat-card.accent-blue::after { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .stat-card.accent-purple::after { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .stat-card.accent-rose::after { background: linear-gradient(90deg, #e11d48, #fb7185); }
+    .stat-card.accent-slate::after { background: linear-gradient(90deg, #475569, #94a3b8); }
+    .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .progress-track { height:6px; background:#e2e8f0; border-radius:99px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:99px; transition:width .8s cubic-bezier(.4,0,.2,1); }
+    .trend-up { color:#059669; } .trend-down { color:#e11d48; } .trend-flat { color:#64748b; }
+    .nav-card { transition: all 0.25s cubic-bezier(.4,0,.2,1); cursor: pointer; }
+    .nav-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1); border-color: rgba(197, 160, 89, 0.5); }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .badge-master { background: linear-gradient(135deg, #dfc07b, #c5a059); color: #09090b; font-weight: 800; border: 1px solid #997a3a; }
     .badge-nacional { background: #0f172a; color: #dfc07b; border: 1px solid rgba(197, 160, 89, 0.4); font-weight: 800; }
     .badge-departamental { background: #1e293b; color: #e2e8f0; font-weight: 700; }
@@ -25,6 +38,17 @@
     .access-input { min-height: 54px; transition: border-color .18s, box-shadow .18s, background .18s; }
     .access-input:focus { border-color: #c7a35c; box-shadow: 0 0 0 4px rgba(199,163,92,.12); background: #11151c; outline: none; }
     .access-card { box-shadow: 0 28px 90px rgba(0,0,0,.35); }
+    .donut-chart { position: relative; width: 120px; height: 120px; }
+    .donut-chart svg { transform: rotate(-90deg); }
+    .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .bar-label { min-width: 80px; font-size: 11px; font-weight: 700; color: #475569; text-align: right; }
+    .bar-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+    .bar-value { min-width: 50px; font-size: 11px; font-weight: 700; color: #1e293b; }
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
+    .module-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 99px; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
     @media print { .no-print { display: none !important; } }
   </style>
@@ -33,8 +57,8 @@
 <body class="min-h-screen bg-slate-100/70 text-slate-800">
   <div id="app"></div>
 
-  <script src="config.js"></script>
-    <script src="auth.js"></script>
+  <script src="config.js?v=2"></script>
+    <script src="auth.js?v=2"></script>
   <script>
     // ==================== CONFIG ====================
     const API_URL = '/api';
@@ -245,10 +269,10 @@
       window.location.href = 'acceso.html';
     }
 
-    // ==================== DASHBOARD DATA ====================
     async function cargarDashboard() {
       state.cargando = true;
       state.error = '';
+      state.errorSinBackend = false;
       render();
       try {
         const miCedula = getUser()?.cedula || '';
@@ -257,8 +281,15 @@
         if (fg.distrito) url += '&distrito_filtro=' + encodeURIComponent(fg.distrito);
         if (fg.seccional) url += '&sec_loc_filtro=' + encodeURIComponent(fg.seccional);
         if (fg.local) url += '&local_filtro=' + encodeURIComponent(fg.local);
-        const d = await fetchApi(url);
-        if (!d || d.success === false) throw new Error(d?.error || 'No se pudieron cargar las estadísticas');
+        let d = await fetchApi(url);
+        if (!d || d.success === false) {
+          // Fallback: pedir la primera elección activa y reintentar
+          if (d && d.elecciones && d.elecciones.length > 0) {
+            url += '&eleccion_id=' + d.elecciones[0].id;
+            d = await fetchApi(url);
+          }
+          if (!d || d.success === false) throw new Error(d?.error || 'No se pudieron cargar las estadísticas');
+        }
         state.dashboard = d;
         state.actualizado = new Date().toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' });
         state.cargando = false;
@@ -268,6 +299,14 @@
       } catch (e) {
         state.cargando = false;
         state.error = 'Error cargando datos: ' + e.message;
+        // FIX (auditoría): un 404/502 persistente significa que el backend no está
+        // alcanzable (p.ej. el sitio Firebase no tiene API). Reintentar en bucle no
+        // lo arregla: avisamos y ofrecemos volver al login en vez de dejar al
+        // usuario atrapado en el mismo error para siempre.
+        const msg = String(e.message || '');
+        if (msg.includes('HTTP 404') || msg.includes('HTTP 502') || msg.includes('HTTP 503') || msg.includes('HTTP 500')) {
+          state.errorSinBackend = true;
+        }
       }
       render();
     }
@@ -463,70 +502,71 @@
             </div>
           ` : state.error ? `
             <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 text-center text-white">
-              <i class="fas fa-exclamation-circle text-amber-400 text-3xl mb-2"></i>
+              <i class="fas ${state.errorSinBackend ? 'fa-plug-circle-xmark' : 'fa-exclamation-circle'} text-amber-400 text-3xl mb-2"></i>
               <p class="text-slate-300 font-bold">${state.error}</p>
-              <button onclick="cargarDashboard()" class="mt-3 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl text-sm">
-                Reintentar
-              </button>
+              ${state.errorSinBackend ? `
+                <p class="text-slate-400 text-sm mt-2 max-w-md mx-auto">
+                  El servicio de datos no está disponible en este momento. No es un problema de tus credenciales:
+                  reintentar no lo resolverá hasta que el servicio vuelva.
+                </p>
+                <div class="mt-4 flex items-center justify-center gap-3 flex-wrap">
+                  <button onclick="cargarDashboard()" class="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl text-sm">
+                    Reintentar
+                  </button>
+                  <button onclick="logout()" class="px-6 py-2 bg-slate-800 border border-slate-600 text-slate-200 font-bold rounded-xl text-sm hover:bg-slate-700">
+                    Volver al inicio de sesión
+                  </button>
+                </div>
+              ` : `
+                <button onclick="cargarDashboard()" class="mt-3 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black rounded-xl text-sm">
+                  Reintentar
+                </button>
+              `}
             </div>
           ` : d ? `
           ${['master', 'nacional'].includes(getNivel()) ? renderFiltroGeo() : ''}
           <!-- STATS ROW -->
           <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 fade-in">
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-users text-slate-800"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Electores</p>
-                  <p class="text-xl font-black text-slate-900">${(d.total_electores || 0).toLocaleString('es-PY')}</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-slate">
+              <div class="stat-icon bg-slate-100 border border-slate-200 text-slate-700 mb-3"><i class="fas fa-users"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Electores</p>
+              <p class="text-xl font-black text-slate-900 mt-1">${(d.total_electores || 0).toLocaleString('es-PY')}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-slate-500" style="width:100%"></div></div>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200"><i class="fas fa-check-circle text-amber-600"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Votaron</p>
-                  <p class="text-xl font-black text-amber-700">${(d.total_votos || 0).toLocaleString('es-PY')}</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-green">
+              <div class="stat-icon bg-emerald-50 border border-emerald-200 text-emerald-600 mb-3"><i class="fas fa-check-circle"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Votaron</p>
+              <p class="text-xl font-black text-emerald-700 mt-1">${(d.total_votos || 0).toLocaleString('es-PY')}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-emerald-500" style="width:${Math.min(100, ((Number(d.total_votos)||0)/(Number(d.total_electores)||1))*100)}%"></div></div>
+              <p class="text-[9px] text-slate-400 mt-1">${(((Number(d.total_votos)||0)/(Number(d.total_electores)||1))*100).toFixed(1)}% del padrón</p>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-user-slash text-slate-600"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Sin voto registrado</p>
-                  <p class="text-xl font-black text-slate-700">${Math.max(0, (Number(d.total_electores) || 0) - (Number(d.total_votos) || 0)).toLocaleString('es-PY')}</p>
-                  <p class="mt-1 text-[9px] leading-tight text-slate-500">${(Number(d.total_no_votos) || 0).toLocaleString('es-PY')} reportes de no-voto</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-rose">
+              <div class="stat-icon bg-rose-50 border border-rose-200 text-rose-500 mb-3"><i class="fas fa-user-slash"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Sin voto</p>
+              <p class="text-xl font-black text-rose-600 mt-1">${Math.max(0, (Number(d.total_electores) || 0) - (Number(d.total_votos) || 0)).toLocaleString('es-PY')}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-rose-400" style="width:${Math.min(100, ((Number(d.total_electores)-Number(d.total_votos))/(Number(d.total_electores)||1))*100)}%"></div></div>
+              <p class="text-[9px] text-slate-400 mt-1">${(Number(d.total_no_votos) || 0).toLocaleString('es-PY')} reportes no-voto</p>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800"><i class="fas fa-chart-line text-amber-400"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Participación</p>
-                  <p class="text-xl font-black text-slate-900">${d.participacion || '0.0%'}</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-amber">
+              <div class="stat-icon bg-amber-50 border border-amber-200 text-amber-600 mb-3"><i class="fas fa-chart-line"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Participación</p>
+              <p class="text-xl font-black text-slate-900 mt-1">${d.participacion || '0.0%'}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-gradient-to-r from-amber-500 to-yellow-500" style="width:${parseFloat(d.participacion)||0}%"></div></div>
+              <p class="text-[9px] text-slate-400 mt-1"> ${(Number(d.total_votos)||0).toLocaleString('es-PY')} de ${(Number(d.total_electores)||0).toLocaleString('es-PY')}</p>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200"><i class="fas fa-table text-slate-800"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Mesas</p>
-                  <p class="text-xl font-black text-slate-900">${d.total_mesas_con_datos || 0} / ${d.total_mesas_padron || 0}</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-blue">
+              <div class="stat-icon bg-blue-50 border border-blue-200 text-blue-600 mb-3"><i class="fas fa-table"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Mesas</p>
+              <p class="text-xl font-black text-slate-900 mt-1">${d.total_mesas_con_datos || 0} / ${d.total_mesas_padron || 0}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-blue-500" style="width:${Math.min(100, ((Number(d.total_mesas_con_datos)||0)/(Number(d.total_mesas_padron)||1))*100)}%"></div></div>
+              <p class="text-[9px] text-slate-400 mt-1">${Math.min(999,(((Number(d.total_mesas_con_datos)||0)/(Number(d.total_mesas_padron)||1))*100)).toFixed(0)}% escrutadas</p>
             </div>
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card">
-              <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200"><i class="fas fa-user-tie text-amber-700"></i></div>
-                <div>
-                  <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Dirigentes</p>
-                  <p class="text-xl font-black text-slate-900">${(d.total_dirigentes || 0).toLocaleString('es-PY')}</p>
-                </div>
-              </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 stat-card accent-purple">
+              <div class="stat-icon bg-violet-50 border border-violet-200 text-violet-600 mb-3"><i class="fas fa-user-tie"></i></div>
+              <p class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Dirigentes</p>
+              <p class="text-xl font-black text-slate-900 mt-1">${(d.total_dirigentes || 0).toLocaleString('es-PY')}</p>
+              <div class="progress-track mt-2"><div class="progress-fill bg-violet-500" style="width:${Math.min(100, ((Number(d.total_dirigentes)||0)/50)*100)}%"></div></div>
+              <p class="text-[9px] text-slate-400 mt-1">en campo</p>
             </div>
           </div>
 
@@ -541,30 +581,145 @@
             </div>
           ` : ''}
 
-          <!-- MODULOS DE NAVEGACION (oculto por defecto: lo primero que se ve son las estadísticas) -->
+          <!-- GRÁFICOS -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 fade-in">
+            <!-- Donut: Participación -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-4 tracking-tight">
+                <i class="fas fa-chart-pie text-amber-500 mr-2"></i>Participación Electoral
+              </h3>
+              <div class="flex items-center justify-center">
+                <div class="donut-chart">
+                  <svg width="120" height="120" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="url(#donutGrad)" stroke-width="14"
+                      stroke-linecap="round"
+                      stroke-dasharray="${(Math.PI*2*50)*(parseFloat(d.participacion)||0)/100} ${Math.PI*2*50}"
+                      class="transition-all duration-1000"/>
+                    <defs>
+                      <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#f59e0b"/>
+                        <stop offset="100%" stop-color="#fbbf24"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="donut-center">
+                    <span class="text-2xl font-black text-slate-900">${d.participacion || '0.0%'}</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">participación</span>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 mt-4">
+                <div class="text-center p-2 bg-emerald-50 rounded-xl">
+                  <p class="text-lg font-black text-emerald-700">${(d.total_votos||0).toLocaleString('es-PY')}</p>
+                  <p class="text-[9px] font-bold text-emerald-600 uppercase">votaron</p>
+                </div>
+                <div class="text-center p-2 bg-rose-50 rounded-xl">
+                  <p class="text-lg font-black text-rose-600">${(Math.max(0,(Number(d.total_electores)||0)-(Number(d.total_votos)||0))).toLocaleString('es-PY')}</p>
+                  <p class="text-[9px] font-bold text-rose-500 uppercase">falta votar</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Barras: Estado de mesas -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-4 tracking-tight">
+                <i class="fas fa-clipboard-check text-blue-500 mr-2"></i>Estado de Mesas
+              </h3>
+              <div class="space-y-3">
+                <div class="bar-row">
+                  <span class="bar-label">Escrutadas</span>
+                  <div class="bar-track"><div class="bar-fill bg-emerald-500" style="width:${Math.min(100,((Number(d.total_mesas_con_datos)||0)/(Number(d.total_mesas_padron)||1))*100)}%"></div></div>
+                  <span class="bar-value">${d.total_mesas_con_datos||0}</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Pendientes</span>
+                  <div class="bar-track"><div class="bar-fill bg-amber-400" style="width:${Math.min(100,(((Number(d.total_mesas_padron)||0)-(Number(d.total_mesas_con_datos)||0))/(Number(d.total_mesas_padron)||1))*100)}%"></div></div>
+                  <span class="bar-value">${Math.max(0,(Number(d.total_mesas_padron)||0)-(Number(d.total_mesas_con_datos)||0))}</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Controversias</span>
+                  <div class="bar-track"><div class="bar-fill bg-rose-500" style="width:${Math.min(100,((Number(d.total_controversias)||0)/(Number(d.total_mesas_padron)||1))*100)}%"></div></div>
+                  <span class="bar-value">${d.total_controversias||0}</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">No-voto</span>
+                  <div class="bar-track"><div class="bar-fill bg-slate-400" style="width:${Math.min(100,((Number(d.total_no_votos)||0)/(Number(d.total_electores)||1))*100)}%"></div></div>
+                  <span class="bar-value">${(d.total_no_votos||0).toLocaleString('es-PY')}</span>
+                </div>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-100">
+                Total mesas padrón: <strong class="text-slate-600">${d.total_mesas_padron||0}</strong>
+              </p>
+            </div>
+
+            <!-- Barras: Dirigentes en campo -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-4 tracking-tight">
+                <i class="fas fa-user-check text-violet-500 mr-2"></i>Dirigentes en Campo
+              </h3>
+              <div class="space-y-3">
+                <div class="bar-row">
+                  <span class="bar-label">Activos</span>
+                  <div class="bar-track"><div class="bar-fill bg-violet-500" style="width:${Math.min(100,((Number(d.total_dirigentes)||0)/50)*100)}%"></div></div>
+                  <span class="bar-value">${(d.total_dirigentes||0).toLocaleString('es-PY')}</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Votos seguros</span>
+                  <div class="bar-track"><div class="bar-fill bg-emerald-500" style="width:${Math.min(100,((Number(d.total_votos)||0)/50)*100)}%"></div></div>
+                  <span class="bar-value">${(d.total_votos||0).toLocaleString('es-PY')}</span>
+                </div>
+                <div class="bar-row">
+                  <span class="bar-label">Electores</span>
+                  <div class="bar-track"><div class="bar-fill bg-blue-500" style="width:100%"></div></div>
+                  <span class="bar-value">${(d.total_electores||0).toLocaleString('es-PY')}</span>
+                </div>
+              </div>
+              <div class="mt-3 p-3 bg-violet-50 rounded-xl">
+                <p class="text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1">Efectividad real</p>
+                <p class="text-lg font-black text-violet-800">
+                  ${d.efectividad_real || ((Number(d.confirmados)||0)/Math.max(1,(Number(d.total_dirigentes)||1))).toFixed(1)}
+                  <span class="text-xs font-bold text-violet-500">votos confirmados / dirigente</span>
+                </p>
+                <p class="text-[10px] text-violet-500 mt-1">
+                  ${d.confirmados||0} confirmados · ${d.posibles||0} posibles · ${d.total_dirigentes||0} dirigentes
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODULOS DE NAVEGACION -->
           <div class="fade-in">
             <button onclick="state.mostrarModulos=!state.mostrarModulos; render();"
-              class="w-full flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hover:border-amber-300 transition-all">
-              <h3 class="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2 m-0">
-                <i class="fas fa-th-large text-amber-500"></i> Módulos del Sistema
+              class="w-full flex items-center justify-between bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 shadow-md border border-slate-700 hover:border-amber-500/40 transition-all">
+              <h3 class="text-lg font-black text-white tracking-tight flex items-center gap-3 m-0">
+                <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 flex items-center justify-center">
+                  <i class="fas fa-th-large text-amber-400"></i>
+                </span>
+                Módulos del Sistema
+                <span class="text-xs font-bold text-slate-400 bg-slate-800 px-2 py-1 rounded-lg">${modulos.length} disponibles</span>
               </h3>
-              <i class="fas fa-chevron-${state.mostrarModulos ? 'up' : 'down'} text-slate-400"></i>
+              <i class="fas fa-chevron-${state.mostrarModulos ? 'up' : 'down'} text-amber-400 text-lg"></i>
             </button>
             ${state.mostrarModulos ? `
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mt-3">
               ${modulos.map(m => `
-                <a href="${m.href}" class="nav-card bg-white rounded-2xl p-4 shadow-sm border border-slate-200 block" ${m.id === 'historial' ? `onclick="mostrarHistorial(); return false;"` : ''}>
+                <a href="${m.href}" class="nav-card bg-white rounded-2xl p-4 shadow-sm border border-slate-200 block relative overflow-hidden group" ${m.id === 'historial' ? `onclick="mostrarHistorial(); return false;"` : ''}>
+                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${m.color}"></div>
                   <div class="flex items-start gap-3">
-                    <div class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center shadow-md border border-white/10">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center shadow-md border border-white/10 group-hover:scale-110 transition-transform">
                       <i class="fas ${m.icon} ${m.text || 'text-white'} text-lg"></i>
                     </div>
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center justify-between gap-2">
                         <p class="text-sm font-black text-slate-900 tracking-tight">${m.label}</p>
-                        <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-600 border border-slate-200">${m.nivel}</span>
                       </div>
-                      <p class="mt-1 text-xs leading-relaxed text-slate-500">${m.desc}</p>
+                      <span class="module-badge inline-block mt-1 bg-slate-100 text-slate-500 border border-slate-200">${m.nivel}</span>
+                      <p class="mt-2 text-xs leading-relaxed text-slate-500">${m.desc}</p>
                     </div>
+                  </div>
+                  <div class="absolute right-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fas fa-arrow-right text-amber-500 text-sm"></i>
                   </div>
                 </a>
               `).join('')}
@@ -574,60 +729,75 @@
           <!-- ACTIVIDAD RECIENTE Y TOP MESAS -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 fade-in">
             <!-- Actividad Reciente -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-              <h3 class="text-sm font-black text-slate-900 mb-3 tracking-tight flex items-center justify-between gap-2">
-                <span class="flex items-center gap-2"><i class="fas fa-clock text-amber-500"></i> Actividad reciente</span>
-                <span class="text-[10px] font-medium text-slate-400">Actualizado ${escapeHtml(state.actualizado || '—')}</span>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-4 tracking-tight flex items-center justify-between gap-2">
+                <span class="flex items-center gap-2"><span class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center"><i class="fas fa-clock text-amber-500 text-sm"></i></span>Actividad reciente</span>
+                <span class="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">Actualizado ${escapeHtml(state.actualizado || '—')}</span>
               </h3>
               ${d.recientes && d.recientes.length > 0 ? `
-                <div class="space-y-2 max-h-80 overflow-y-auto">
+                <div class="space-y-1 max-h-96 overflow-y-auto pr-1">
                   ${d.recientes.map(r => {
                     const estado = estadoActividad(r.estado);
                     return `
-                    <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-all">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white
-                        ${estado.color}">
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100">
+                      <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0 ${estado.color}">
                         <i class="fas ${estado.icon}" aria-hidden="true"></i>
                       </div>
                       <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-slate-800 truncate">${escapeHtml(r.nombre || 'Elector sin nombre')}</p>
                         <p class="text-[10px] text-slate-400">Mesa ${Number(r.mesa) || '—'} · Orden ${Number(r.orden) || '—'} · ${escapeHtml(estado.label)}${cedulaReducida(r.cedula) ? ` · ${cedulaReducida(r.cedula)}` : ''}</p>
                       </div>
-                      <span class="text-[10px] text-slate-400 whitespace-nowrap">${escapeHtml(r.timestamp ? r.timestamp.split(' ')[1] || '' : '')}</span>
-                    </div>
-                  `}).join('')}
+                      <span class="text-[10px] text-slate-400 whitespace-nowrap font-mono">${escapeHtml(r.timestamp ? r.timestamp.split(' ')[1] || '' : '')}</span>
+                    </div>`;
+                  }).join('')}
                 </div>
-              ` : '<p class="text-sm text-slate-400 text-center py-4">Sin actividad registrada</p>'}
+              ` : `
+                <div class="text-center py-8">
+                  <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-inbox text-slate-400 text-xl"></i>
+                  </div>
+                  <p class="text-sm font-bold text-slate-500">Sin actividad registrada</p>
+                  <p class="text-xs text-slate-400 mt-1">Los votos registrados aparecerán aquí</p>
+                </div>`}
             </div>
 
             <!-- Top Mesas -->
-            <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100">
-              <h3 class="text-sm font-black text-slate-900 mb-3 tracking-tighter">
-                <i class="fas fa-trophy mr-2 text-amber-500"></i>Mesas con Mayor Actividad
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+              <h3 class="text-sm font-black text-slate-900 mb-4 tracking-tight flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center"><i class="fas fa-trophy text-amber-500 text-sm"></i></span>
+                Mesas con Mayor Actividad
               </h3>
               ${d.top_mesas && d.top_mesas.length > 0 ? `
-                <div class="space-y-2">
-                  ${d.top_mesas.map((m, i) => {
+                <div class="space-y-2.5">
+                  ${d.top_mesas.slice(0, 10).map((m, i) => {
                     const maxTotal = Math.max(1, ...d.top_mesas.map(x => Number(x.total) || 0));
                     const barW = Math.min(100, ((Number(m.total) || 0) / maxTotal) * 100);
+                    const medal = i < 3 ? ['🥇','🥈','🥉'][i] : `<span class="text-xs font-black text-slate-400">${i+1}</span>`;
                     return `
-                      <div class="flex items-center gap-3">
-                        <span class="w-5 text-center text-xs font-black text-slate-400">${i + 1}</span>
-                        <div class="flex-1">
-                          <div class="flex justify-between text-xs mb-1">
-                            <span class="font-bold text-slate-700">Mesa ${Number(m.mesa) || '—'}</span>
-                            <span class="text-slate-500">${Number(m.total) || 0} registros · ${Number(m.votos) || 0} votos</span>
-                          </div>
-                          <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-600 rounded-full" style="width: ${barW}%"></div>
-                          </div>
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 text-center">${medal}</span>
+                      <div class="flex-1">
+                        <div class="flex justify-between text-xs mb-1">
+                          <span class="font-bold text-slate-700">Mesa ${Number(m.mesa) || '—'}</span>
+                          <span class="text-slate-500">${Number(m.total) || 0} registros · ${Number(m.votos) || 0} votos</span>
+                        </div>
+                        <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-700 ${i===0?'bg-gradient-to-r from-amber-500 to-yellow-500':i===1?'bg-gradient-to-r from-slate-400 to-slate-500':i===2?'bg-gradient-to-r from-amber-700 to-amber-800':'bg-gradient-to-r from-slate-300 to-slate-400'}" style="width: ${barW}%"></div>
                         </div>
                       </div>
-                    `;
+                    </div>`;
                   }).join('')}
                 </div>
-              ` : '<p class="text-sm text-slate-400 text-center py-4">Sin datos de mesas</p>'}
+              ` : `
+                <div class="text-center py-8">
+                  <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-chart-bar text-slate-400 text-xl"></i>
+                  </div>
+                  <p class="text-sm font-bold text-slate-500">Sin datos de mesas</p>
+                  <p class="text-xs text-slate-400 mt-1">Las mesas con actividad aparecerán aquí</p>
+                </div>`}
             </div>
+          </div>
           </div>
 
           <!-- PANEL POLÍTICO (datos vivos) -->
@@ -721,36 +891,76 @@
           if (panel) panel.innerHTML = state.panelPoliticoHTML;
           return;
         }
-        // Calcular totales globales
-        let totalDirigentes = 0, totalPosibles = 0, totalConfirmados = 0;
+        // Agrupar por lista
+        const listas = {};
+        let totalDirigentes = 0, totalPosibles = 0, totalConfirmados = 0, totalConcejales = 0, totalPCs = 0;
         d.arbol.forEach(intendente => {
+          const ln = intendente.lista_nombre || 'Sin lista';
+          if (!listas[ln]) listas[ln] = { color: intendente.lista_color || '#6b7280', intendentes: 0, concejales: 0, grupos: 0, dirigentes: 0, posibles: 0, confirmados: 0 };
+          listas[ln].intendentes++;
+          listas[ln].concejales += intendente.total_concejales || intendente.concejales?.length || 0;
+          listas[ln].grupos += intendente.total_grupos || 0;
+          listas[ln].dirigentes += intendente.total_dirigentes || 0;
+          listas[ln].posibles += intendente.total_posibles || 0;
+          listas[ln].confirmados += intendente.total_confirmados || 0;
           totalDirigentes += intendente.total_dirigentes || 0;
           totalPosibles += intendente.total_posibles || 0;
           totalConfirmados += intendente.total_confirmados || 0;
+          totalConcejales += intendente.concejales?.length || 0;
+          totalPCs += intendente.total_grupos || 0;
         });
         const pct = totalPosibles > 0 ? Math.round((totalConfirmados / totalPosibles) * 100) : 0;
-
+        const listaEntries = Object.entries(listas).sort((a, b) => b[1].intendentes - a[1].intendentes);
         state.panelPoliticoHTML = `
-          <div class="col-span-1 bg-gradient-to-br from-slate-900 to-black border border-amber-500/30 rounded-xl p-4 text-white">
-            <p class="text-[10px] font-black uppercase tracking-wide mb-1 text-slate-400">Listas / Intendentes</p>
-            <p class="text-3xl font-black text-amber-400">${Number(d.total_intendentes) || 0}</p>
-            <p class="text-xs text-slate-400">${d.arbol.map(i => escapeHtml(i.lista_nombre || ('Lista ' + i.lista_nro))).join(', ') || 'Sin listas cargadas'}</p>
+          <div class="col-span-2 md:col-span-4 bg-gradient-to-br from-slate-900 to-black border border-amber-500/30 rounded-2xl p-5 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-sm font-black uppercase tracking-wider text-slate-300"><i class="fas fa-flag mr-2 text-amber-400"></i>Estructura por Lista</h4>
+              <span class="text-[10px] font-bold text-slate-400">${d.total_intendentes||0} intendentes · ${totalConcejales} concejales · ${totalPCs} PCs</span>
+            </div>
+            <div class="space-y-3">
+              ${listaEntries.map(([nombre, L]) => {
+                const pctL = L.posibles > 0 ? Math.round((L.confirmados / L.posibles) * 100) : 0;
+                const maxInt = Math.max(...listaEntries.map(([,x]) => x.intendentes));
+                const barW = Math.min(100, (L.intendentes / maxInt) * 100);
+                return `
+                <div class="flex items-center gap-3">
+                  <span class="w-28 shrink-0 text-xs font-bold truncate" title="${escapeHtml(nombre)}">${escapeHtml(nombre)}</span>
+                  <div class="flex-1">
+                    <div class="flex justify-between text-[10px] font-bold mb-1">
+                      <span class="text-slate-300">${L.intendentes} int. · ${L.concejales} conc. · ${L.grupos} PCs</span>
+                      <span style="color:${L.color}">${pctL}% conf.</span>
+                    </div>
+                    <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-700" style="width:${barW}%; background: linear-gradient(90deg, ${L.color}, ${L.color}dd);"></div>
+                    </div>
+                  </div>
+                  <span class="w-10 text-right text-xs font-black" style="color:${L.color}">${L.confirmados}/${L.posibles}</span>
+                </div>`;
+              }).join('')}
+            </div>
           </div>
-          <div class="col-span-1 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+          <div class="col-span-2 md:col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white">
             <p class="text-[10px] font-black uppercase tracking-wide mb-1">Dirigentes en campo</p>
             <p class="text-3xl font-black">${totalDirigentes}</p>
-            <p class="text-xs opacity-80">${d.arbol.reduce((a,b)=>a+(b.total_concejales||0),0)} Concejales · ${d.arbol.reduce((a,b)=>a+(b.total_grupos||0),0)} PCs</p>
+            <p class="text-xs opacity-80">${totalConcejales} concejales · ${totalPCs} PCs</p>
           </div>
-          <div class="col-span-1 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
+          <div class="col-span-2 md:col-span-2 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-4 text-white">
             <p class="text-[10px] font-black uppercase tracking-wide mb-1">Votantes comprometidos</p>
             <p class="text-3xl font-black">${totalPosibles.toLocaleString('es-PY')}</p>
             <p class="text-xs opacity-80">${totalConfirmados} confirmados (${pct}%)</p>
           </div>
-          <div class="col-span-1 bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white">
-            <p class="text-[10px] font-black uppercase tracking-wide mb-1">Cumplimiento global</p>
-            <p class="text-3xl font-black">${pct}%</p>
-            <div class="w-full h-2 bg-white/30 rounded-full mt-2 overflow-hidden">
-              <div class="h-full bg-white rounded-full" style="width:${pct}%"></div>
+          <div class="col-span-2 md:col-span-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 text-white">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-wide mb-1">Cumplimiento global</p>
+                <p class="text-3xl font-black">${pct}%</p>
+              </div>
+              <div class="flex-1 ml-4">
+                <div class="w-full h-3 bg-white/30 rounded-full overflow-hidden">
+                  <div class="h-full bg-white rounded-full transition-all duration-700" style="width:${pct}%"></div>
+                </div>
+                <p class="text-xs opacity-80 mt-1 text-right">${totalConfirmados} de ${totalPosibles} votantes confirmados</p>
+              </div>
             </div>
           </div>
         `;

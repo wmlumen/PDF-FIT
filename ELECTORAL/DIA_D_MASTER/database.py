@@ -5,7 +5,7 @@ import json
 import threading
 from typing import Optional, List, Dict, Any, Tuple
 
-DB_PATH = "/home/hp_250_g10/demo_electoral.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database', 'ddia.db')
 SOURCE_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'DDIA', 'database', 'ddia.db'))
 
 # Alcance de datos de la peticion actual (lo fija el middleware de app.py segun el plan del cliente).

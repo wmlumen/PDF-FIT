@@ -1,0 +1,7 @@
+# Dependencias del microservicio público del votante.
+# A propósito MÍNIMAS: no trae el backend completo (ni PIL obligatoria).
+# El comprobante PNG se genera con Pillow si está; si no, ese endpoint da 503
+# y el resto del servicio sigue funcionando.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.18

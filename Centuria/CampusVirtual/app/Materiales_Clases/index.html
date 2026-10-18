@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programa ADE18 - TIC Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../css/estilos.css">
@@ -24,17 +25,17 @@
             </ul>
             
             <div id="form-login">
-                <input type="text" id="login-cedula" class="form-control form-control-lg mb-3" placeholder="NÃºmero de CÃ©dula">
+                <input type="text" id="login-cedula" class="form-control form-control-lg mb-3" placeholder="Número de Cédula">
                 <button id="btn-login" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">Ingresar a Clases</button>
-                <p id="login-error" class="text-danger mt-3 text-center fs-5" style="display:none; font-weight:bold;">CÃ©dula no registrada.</p>
+                <p id="login-error" class="text-danger mt-3 text-center fs-5" style="display:none; font-weight:bold;">Cédula no registrada.</p>
             </div>
             
             <div id="form-register" style="display:none;">
                 <input type="text" id="reg-nombre" class="form-control mb-2" placeholder="Nombre">
                 <input type="text" id="reg-apellido" class="form-control mb-2" placeholder="Apellido">
-                <input type="text" id="reg-cedula" class="form-control mb-2" placeholder="CÃ©dula de Identidad">
-                <input type="text" id="reg-telefono" class="form-control mb-2" placeholder="TelÃ©fono">
-                <input type="email" id="reg-email" class="form-control mb-4" placeholder="Correo ElectrÃ³nico">
+                <input type="text" id="reg-cedula" class="form-control mb-2" placeholder="Cédula de Identidad">
+                <input type="text" id="reg-telefono" class="form-control mb-2" placeholder="Teléfono">
+                <input type="email" id="reg-email" class="form-control mb-4" placeholder="Correo Electrónico">
                 <button id="btn-register" class="btn btn-success w-100 fw-bold shadow-sm">Completar Registro</button>
                 <p id="reg-msg" class="text-center mt-3 fs-5 fw-bold"></p>
             </div>
@@ -43,10 +44,10 @@
     
     <div class="container-fluid">
         <div class="row portal-layout">
-                    <nav id="portal-menu" aria-label="NavegaciÃ³n del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
+                    <nav id="portal-menu" aria-label="Navegación del curso" class="col-md-3 col-lg-2 sidebar px-0" style="position:sticky; top:0; height:100vh; overflow-y:auto; background:#007A33;">
             <div class="p-2">
                 <a href="programa.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-file-earmark-text me-2"></i>Programa Oficial</a>
-                <a href="../glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario TÃ©cnico</a>
+                <a href="../academic/glosario.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-journal-text me-2"></i>Glosario Técnico</a>
                 <a href="../asistencia_presencial.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-person-raised-hand me-2"></i>Asistencia Presencial</a>
                 <a href="planilla.html" class="d-block text-white text-decoration-none p-2 rounded"><i class="bi bi-graph-up me-2"></i>Planilla de Progreso</a>
             </div>
@@ -65,30 +66,30 @@
             </div>
         </nav>
             
-            <!-- Header superior derecho - Nombre, cÃ©dula y Salir (no molesta) -->
+            <!-- Header superior derecho - Nombre, cédula y Salir (no molesta) -->
             <main class="col-md-9 col-lg-10 content">
-                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menÃº</button>
+                <button type="button" class="portal-menu-toggle" aria-controls="portal-menu" aria-expanded="true">Ocultar menú</button>
 <div id="top-user-bar" class="d-flex justify-content-end align-items-center gap-3 py-2 px-3 mb-3 bg-white rounded-3 shadow-sm border" style="position: sticky; top: 0; z-index: 10;">
                 <div class="text-end">
                     <div id="sidebar-user-name" class="fw-bold small" style="color: #007A33; line-height: 1.1;"></div>
                     <small id="sidebar-user-id" class="text-muted" style="font-size: 0.75rem;"></small>
                 </div>
                 <div class="vr"></div>
-                <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesiÃ³n"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                <button id="btn-logout" class="btn btn-sm btn-outline-secondary" title="Cerrar sesión"><i class="bi bi-box-arrow-right"></i> Salir</button>
             </div>
             
                 
-<h1 class="page-title text-center">TecnologÃ­a de la InformaciÃ³n y la ComunicaciÃ³n (ADE18)</h1>
-<div class="alert alert-dark text-center fs-5 mb-5"><strong>Instituto Superior Centuria</strong> | 2do AÃ±o - 3er Semestre | Carga Horaria: 120hs</div>
+<h1 class="page-title text-center">Tecnología de la Información y la Comunicación (ADE18)</h1>
+<div class="alert alert-dark text-center fs-5 mb-5"><strong>Instituto Superior Centuria</strong> | 2do Año - 3er Semestre | Carga Horaria: 120hs</div>
 <div class="section-card border-def shadow-sm">
-    <div class="section-title text-def"><i class="bi bi-bullseye"></i> FundamentaciÃ³n y Objetivos AcadÃ©micos</div>
-    <p>Este documento presenta el programa acadÃ©mico de la asignatura TecnologÃ­as de la InformaciÃ³n y la ComunicaciÃ³n, diseÃ±ada para estudiantes de segundo aÃ±o de administraciÃ³n. El curso se fundamenta en la relevancia de las herramientas digitales como motores de competitividad y Ã©xito dentro del entorno empresarial contemporÃ¡neo. A travÃ©s de diez unidades, el plan de estudios abarca desde la gestiÃ³n de bases de datos y sistemas integrados hasta las nuevas tendencias del comercio electrÃ³nico y la inteligencia artificial. La metodologÃ­a de enseÃ±anza combina la teorÃ­a con la prÃ¡ctica en laboratorios y visitas tÃ©cnicas para asegurar un aprendizaje integral.</p>
+    <div class="section-title text-def"><i class="bi bi-bullseye"></i> Fundamentación y Objetivos Académicos</div>
+    <p>Este documento presenta el programa académico de la asignatura Tecnologías de la Información y la Comunicación, diseñada para estudiantes de segundo año de administración. El curso se fundamenta en la relevancia de las herramientas digitales como motores de competitividad y éxito dentro del entorno empresarial contemporáneo. A través de diez unidades, el plan de estudios abarca desde la gestión de bases de datos y sistemas integrados hasta las nuevas tendencias del comercio electrónico y la inteligencia artificial. La metodología de enseñanza combina la teoría con la práctica en laboratorios y visitas técnicas para asegurar un aprendizaje integral.</p>
 </div>
 <div class="section-card border-casos shadow-sm">
-    <div class="section-title text-casos"><i class="bi bi-bar-chart-steps"></i> MetodologÃ­a de EvaluaciÃ³n Oficial</div>
+    <div class="section-title text-casos"><i class="bi bi-bar-chart-steps"></i> Metodología de Evaluación Oficial</div>
     <ul class="list-group list-group-flush fs-5">
-        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-journal-text text-primary"></i> <strong>2 ExÃ¡menes Parciales</strong></span> <span class="badge bg-primary rounded-pill">40%</span></li>
-        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-person-check text-success"></i> <strong>ParticipaciÃ³n en Clase (Asistencia)</strong></span> <span class="badge bg-success rounded-pill">10%</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-journal-text text-primary"></i> <strong>2 Exámenes Parciales</strong></span> <span class="badge bg-primary rounded-pill">40%</span></li>
+        <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-person-check text-success"></i> <strong>Participación en Clase (Asistencia)</strong></span> <span class="badge bg-success rounded-pill">10%</span></li>
         <li class="list-group-item d-flex justify-content-between"><span><i class="bi bi-award text-danger"></i> <strong>Examen Final Integrador</strong></span> <span class="badge bg-danger rounded-pill">50%</span></li>
     </ul>
 </div>
@@ -119,7 +120,7 @@
                 let tel = document.getElementById('reg-telefono').value.trim();
                 let ema = document.getElementById('reg-email').value.trim();
                 
-                if(!nom || !ape || !ced) return alert("Nombre, Apellido y CÃ©dula son obligatorios.");
+                if(!nom || !ape || !ced) return alert("Nombre, Apellido y Cédula son obligatorios.");
                 
                 let users = loadUsers();
                 users[ced] = { nombre: nom, apellido: ape, cedula: ced, telefono: tel, email: ema };
@@ -127,7 +128,7 @@
                 
                 let msg = document.getElementById('reg-msg');
                 msg.className = "text-success text-center mt-2 fw-bold";
-                msg.innerText = "Â¡Registro exitoso! Ya puedes ingresar.";
+                msg.innerText = "¡Registro exitoso! Ya puedes ingresar.";
                 setTimeout(() => { document.getElementById('tab-login').click(); document.getElementById('login-cedula').value = ced; }, 1500);
             };
             
@@ -230,7 +231,7 @@
                         if (title) {
                             let btn = document.createElement('button');
                             btn.className = 'btn btn-sm btn-outline-warning ms-auto marcador-btn float-end';
-                            btn.innerHTML = '<i class="bi bi-bookmark"></i> Marcar hasta aquÃ­';
+                            btn.innerHTML = '<i class="bi bi-bookmark"></i> Marcar hasta aquí';
                             btn.onclick = function() {
                                 localStorage.setItem(pKey, secId);
                                 location.reload();
@@ -244,13 +245,13 @@
                 if (savedState === 'finished') {
                     let badge = document.createElement('div');
                     badge.className = 'alert alert-success text-center fw-bold shadow border-success p-4 mb-4';
-                    badge.innerHTML = '<i class="bi bi-trophy-fill fs-1 text-warning d-block mb-2"></i><h4 class="mb-0">Â¡Felicidades, ' + sessionStorage.getItem('current_nombre') + '!</h4><p class="mb-0 mt-2 fs-5">Ya has completado totalmente el desarrollo de esta lecciÃ³n.</p>';
+                    badge.innerHTML = '<i class="bi bi-trophy-fill fs-1 text-warning d-block mb-2"></i><h4 class="mb-0">¡Felicidades, ' + sessionStorage.getItem('current_nombre') + '!</h4><p class="mb-0 mt-2 fs-5">Ya has completado totalmente el desarrollo de esta lección.</p>';
                     mainContent.appendChild(badge.cloneNode(true)); // Add to bottom
                     mainContent.insertBefore(badge, mainContent.firstChild); // Add to top
                 } else {
                     let finishBtn = document.createElement('button');
                     finishBtn.className = 'btn btn-success btn-lg mt-5 mb-5 w-100 shadow fw-bold p-3';
-                    finishBtn.innerHTML = '<i class="bi bi-check-all fs-3 me-2"></i> Confirmar LecciÃ³n como Completada';
+                    finishBtn.innerHTML = '<i class="bi bi-check-all fs-3 me-2"></i> Confirmar Lección como Completada';
                     finishBtn.onclick = function() {
                         localStorage.setItem(pKey, 'finished');
                         location.reload();
@@ -266,7 +267,7 @@
                         target.style.backgroundColor = '#fffdf7';
                         let markAlert = document.createElement('div');
                         markAlert.className = 'alert alert-warning mb-4 fw-bold fs-5 text-center shadow-sm';
-                        markAlert.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Marcador activo: Retomaste desde aquÃ­.';
+                        markAlert.innerHTML = '<i class="bi bi-bookmark-fill me-2"></i> Marcador activo: Retomaste desde aquí.';
                         target.insertBefore(markAlert, target.firstChild);
                         setTimeout(() => {
                             target.scrollIntoView({ behavior: 'smooth', block: 'center' });

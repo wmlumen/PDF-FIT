@@ -538,7 +538,7 @@
         (ubicacion ? '\n' + ubicacion : '') +
         '\n' +
         '\nConsulta tu mesa:' +
-        '\nhttps://localhost:8000/consulta_mesa.html';
+        '\n' + window.location.origin + '/consulta_mesa.html';
       const url = 'https://wa.me/?text=' + encodeURIComponent(txt);
       window.open(url, '_blank');
     }

@@ -1,0 +1,212 @@
+<!-- SECCION: Catalogos CRUD — Fragmento HTML cargado dinámicamente -->
+<div class="space-y-4" x-data>
+
+    <!-- SUB-PESTANAS -->
+    <div class="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-slate-100">
+        <template x-for="t in catalogTabs" :key="t.id">
+            <button @click="switchCatalogTab(t.id)"
+                class="flex-1 py-2 px-3 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all"
+                :class="catalogTab===t.id ? 'bg-emerald-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'">
+                <i class="bi me-1" :class="t.icon"></i><span x-text="t.label"></span>
+            </button>
+        </template>
+    </div>
+
+    <div class="flex gap-4">
+        <!-- PANEL FORMULARIO -->
+        <div class="w-80 space-y-3">
+
+            <!-- SECCIONES -->
+            <div x-show="catalogTab==='secciones'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <h3 class="text-xs font-bold text-slate-700 mb-3"
+                    x-text="editItem && editItem._tipo==='secciones' ? 'Editar Seccion' : 'Crear Seccion'"></h3>
+                <div class="space-y-2">
+                    <input type="text" x-model="form.codigo" placeholder="Codigo (ej: S026)"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs uppercase font-bold" maxlength="10">
+                    <input type="text" x-model="form.nombre" placeholder="Nombre"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <select x-model="form.carrera" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                        <option value="">Carrera...</option>
+                        <template x-for="c in catalogData.carreras" :key="c.id">
+                            <option :value="c.nombre" x-text="c.nombre"></option>
+                        </template>
+                    </select>
+                    <select x-model="form.grado" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                        <option value="">Grado...</option>
+                        <template x-for="g in catalogData.grados" :key="g.id">
+                            <option :value="g.nombre" x-text="g.nombre"></option>
+                        </template>
+                    </select>
+                    <input type="number" x-model.number="form.capacidad" placeholder="Capacidad"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs" min="1">
+                    <div class="flex gap-2">
+                        <button @click="guardarCatalogo('secciones')"
+                            class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editItem && editItem._tipo==='secciones' ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editItem" @click="cancelarEdicion()"
+                            class="px-3 py-2 rounded-lg text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARRERAS -->
+            <div x-show="catalogTab==='carreras'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <h3 class="text-xs font-bold text-slate-700 mb-3"
+                    x-text="editItem && editItem._tipo==='carreras' ? 'Editar Carrera' : 'Crear Carrera'"></h3>
+                <div class="space-y-2">
+                    <input type="text" x-model="form.nombre" placeholder="Nombre de la carrera"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <input type="text" x-model="form.codigo" placeholder="Codigo (ej: ADE)"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs uppercase font-bold" maxlength="10">
+                    <select x-model="form.grado" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                        <option value="">Grado academico...</option>
+                        <template x-for="g in catalogData.grados" :key="g.id">
+                            <option :value="g.nombre" x-text="g.nombre"></option>
+                        </template>
+                    </select>
+                    <div class="flex gap-2">
+                        <button @click="guardarCatalogo('carreras')"
+                            class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editItem && editItem._tipo==='carreras' ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editItem" @click="cancelarEdicion()"
+                            class="px-3 py-2 rounded-lg text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRADOS -->
+            <div x-show="catalogTab==='grados'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <h3 class="text-xs font-bold text-slate-700 mb-3"
+                    x-text="editItem && editItem._tipo==='grados' ? 'Editar Grado' : 'Crear Grado'"></h3>
+                <div class="space-y-2">
+                    <input type="text" x-model="form.nombre" placeholder="Nombre (ej: Maestria)"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <div class="flex gap-2">
+                        <button @click="guardarCatalogo('grados')"
+                            class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editItem && editItem._tipo==='grados' ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editItem" @click="cancelarEdicion()"
+                            class="px-3 py-2 rounded-lg text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROGRAMAS -->
+            <div x-show="catalogTab==='programas'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <h3 class="text-xs font-bold text-slate-700 mb-3"
+                    x-text="editItem && editItem._tipo==='programas' ? 'Editar Programa' : 'Crear Programa'"></h3>
+                <div class="space-y-2">
+                    <input type="text" x-model="form.nombre" placeholder="Nombre (ej: Seminarios)"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <select x-model="form.tipo_prog" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                        <option value="">Tipo...</option>
+                        <option value="Seminario">Seminario</option>
+                        <option value="Capacitacion">Capacitacion</option>
+                        <option value="Extension Universitaria">Extension Universitaria</option>
+                        <option value="Taller">Taller</option>
+                        <option value="Curso">Curso</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button @click="guardarCatalogo('programas')"
+                            class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editItem && editItem._tipo==='programas' ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editItem" @click="cancelarEdicion()"
+                            class="px-3 py-2 rounded-lg text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODALIDADES -->
+            <div x-show="catalogTab==='modalidades'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+                <h3 class="text-xs font-bold text-slate-700 mb-3"
+                    x-text="editItem && editItem._tipo==='modalidades' ? 'Editar Modalidad' : 'Crear Modalidad'"></h3>
+                <div class="space-y-2">
+                    <input type="text" x-model="form.nombre" placeholder="Nombre (ej: Regular)"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                    <div class="flex gap-2">
+                        <button @click="guardarCatalogo('modalidades')"
+                            class="btn-primary flex-1 py-2 rounded-lg text-[10px] font-bold"
+                            x-text="editItem && editItem._tipo==='modalidades' ? 'Actualizar' : 'Crear'"></button>
+                        <button x-show="editItem" @click="cancelarEdicion()"
+                            class="px-3 py-2 rounded-lg text-[10px] font-bold border border-slate-200 text-slate-500 hover:bg-slate-50">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL LISTA -->
+        <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col"
+            style="max-height:calc(100vh - 220px);">
+            <div class="p-3 border-b bg-slate-50/50 flex justify-between items-center">
+                <h3 class="text-xs font-bold text-slate-700">
+                    <i class="bi me-1" :class="catalogTabs.find(t=>t.id===catalogTab)?.icon"></i>
+                    <span x-text="catalogTabs.find(t=>t.id===catalogTab)?.label || ''"></span>
+                    <span class="text-slate-400 font-normal" x-text="'(' + catalogItems.length + ')'"></span>
+                </h3>
+                <input type="text" x-model="catalogSearch" placeholder="Buscar..."
+                    class="px-3 py-1.5 border border-slate-200 rounded-lg text-[10px] w-48">
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 sticky top-0 text-[9px] uppercase text-slate-400 font-bold">
+                        <tr>
+                            <th class="py-2 px-4 border-b">Nombre</th>
+                            <th class="py-2 px-4 border-b">Codigo</th>
+                            <th x-show="catalogTab==='secciones' || catalogTab==='carreras'" class="py-2 px-4 border-b">Grado</th>
+                            <th x-show="catalogTab==='secciones'" class="py-2 px-4 border-b">Carrera</th>
+                            <th x-show="catalogTab==='secciones'" class="py-2 px-4 border-b">Cap.</th>
+                            <th x-show="catalogTab==='programas'" class="py-2 px-4 border-b">Tipo</th>
+                            <th class="py-2 px-4 border-b text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-slate-600">
+                        <template x-for="item in catalogItems" :key="item.id">
+                            <tr class="hover:bg-emerald-50/30 transition border-b border-slate-50 cursor-pointer"
+                                @click="editarItem(item)">
+                                <td class="py-2 px-4 font-medium" x-text="item.nombre"></td>
+                                <td class="py-2 px-4">
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600"
+                                        x-text="item.codigo || '---'"></span>
+                                </td>
+                                <td x-show="catalogTab==='secciones' || catalogTab==='carreras'" class="py-2 px-4 text-[10px]"
+                                    x-text="item.grado || '---'"></td>
+                                <td x-show="catalogTab==='secciones'" class="py-2 px-4 text-[10px]"
+                                    x-text="item.carrera || '---'"></td>
+                                <td x-show="catalogTab==='secciones'" class="py-2 px-4 text-[10px]"
+                                    x-text="item.capacidad || 40"></td>
+                                <td x-show="catalogTab==='programas'" class="py-2 px-4 text-[10px]"
+                                    x-text="item.tipo || '---'"></td>
+                                <td class="py-2 px-4 text-right">
+                                    <button @click.stop="editarItem(item)"
+                                        class="text-blue-400 hover:text-blue-600 transition p-1" title="Editar">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button @click.stop="eliminarCatalogo(item)"
+                                        class="text-rose-400 hover:text-rose-600 transition p-1" title="Eliminar">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="catalogItems.length === 0">
+                            <td :colspan="catalogTab==='secciones' ? 6 : (catalogTab==='carreras' ? 4 : 3)"
+                                class="py-8 text-center text-slate-400">
+                                No hay registros
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

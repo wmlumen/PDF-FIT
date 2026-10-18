@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Docente — Sociología | Campus Virtual Centuria</title>
+    <title>Panel Docente | Campus Virtual Centuria</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="../js/api.js?v=3"></script>
     <style>
         :root {
             --verde-oscuro: #007A33;
@@ -42,7 +44,7 @@
         .login-wrapper { width: 100%; max-width: 520px; padding: 20px; animation: fadeInUp .8s cubic-bezier(.16,1,.3,1); }
         @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         .login-hero { text-align: center; margin-bottom: 32px; }
-        .login-hero img { height: 130px; margin-bottom: 20px; filter: drop-shadow(0 4px 20px rgba(0,0,0,.4)); animation: logoFloat 4s ease-in-out infinite; }
+        .login-hero img { height: 130px; margin-bottom: 20px; filter: drop-shadow(0 4px 20px rgba(0,0,0,.4)); animation: logoFloat 4s ease-in-out infinite; display: block; margin-left: auto; margin-right: auto; }
         @keyframes logoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
         .login-hero h1 { font-weight:200; letter-spacing:6px; font-size:1.6rem; text-transform:uppercase; text-shadow:0 2px 12px rgba(0,0,0,.3); color:#fff; }
         .login-hero .subtitle { font-weight:400; font-size:.78rem; letter-spacing:2px; text-transform:uppercase; color:var(--dorado); margin-top:4px; }
@@ -107,8 +109,9 @@
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @media(max-width:880px) { .w-72{width:15rem;} .md\:pl-72{padding-left:0!important;} }
     </style>
+    <script src="../js/centuria-plugins.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen:true, activeTab:'perfil' }">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen:true, activeTab:'perfil' }" x-data="centuriaTheme">
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- LOGIN OVERLAY — MISMO DISEÑO QUE INDEX.HTML               -->
@@ -118,7 +121,7 @@
         <div class="login-hero">
             <img src="../images/logo_centuria_blanco_1.png" alt="Instituto Superior Centuria">
             <h1>Campus Virtual</h1>
-            <div class="subtitle">Sociología — Panel Docente/Académico</div>
+            <div class="subtitle">Panel Docente/Académico</div>
         </div>
 
         <div class="login-divider">
@@ -210,7 +213,7 @@
                     <div style="background:rgba(197,165,90,.08);border:1px solid rgba(197,165,90,.2);border-radius:10px;padding:10px 14px;margin:16px 0 12px;">
                         <p style="color:rgba(255,255,255,.6);font-size:.68rem;text-align:center;">
                             <i class="bi bi-info-circle me-1"></i>
-                            El administrador asignará su <strong style="color:var(--dorado);">rol</strong> y <strong style="color:var(--dorado);">asignatura</strong> después del registro.
+                            El administrador asignará su <strong style="color:var(--dorado);">rol</strong> y <strong style="color:var(--dorado);">curso</strong> después del registro.
                         </p>
                     </div>
 
@@ -239,11 +242,12 @@
             </button>
             <div>
                 <h1 class="text-sm font-bold text-slate-800">Panel Docente/Académico</h1>
-                <p class="text-[10px] text-slate-400 font-medium">Sociología — Instituto Superior Centuria</p>
+                <p class="text-[10px] text-slate-400 font-medium">Instituto Superior Centuria</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
             <span id="docente-badge" class="text-[10px] bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold">Cargando...</span>
+            <select id="curso-actual" class="text-[10px] font-semibold px-2 py-1 rounded-full border border-emerald-200 text-emerald-800 bg-white" title="Curso actual" onchange="cambiarCursoActual(this.value)"></select>
             <button onclick="cerrarSesion()" class="p-2 rounded-xl hover:bg-rose-50 text-rose-500 transition" title="Cerrar sesión">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
@@ -320,7 +324,7 @@
                         </div>
                     </div>
                     <div class="space-y-3">
-                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Asignatura</span><span class="font-semibold text-sm" id="profile-asignatura">Sin asignar</span></div>
+                        <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Curso</span><span class="font-semibold text-sm" id="profile-asignatura">Sin asignar</span></div>
                         <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Carrera</span><span class="font-semibold text-sm" id="profile-carrera">Sin asignar</span></div>
                         <div class="bg-slate-50 rounded-xl p-4"><span class="text-[10px] text-slate-400 block">Estado</span><span class="font-semibold text-sm text-emerald-600">Activo</span></div>
                     </div>
@@ -377,8 +381,94 @@
                 </div>
             </div>
 
+                        <!-- ===== ASISTENCIA ===== -->
+            <div x-show="activeTab==='attendance'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade" style="display:none;" x-data="{
+                fecha: new Date().toISOString().split('T')[0],
+                alumnos: [],
+                asistencias: {},
+                guardando: false,
+                async cargar() {
+                    const curso = sessionStorage.getItem('current_carrera') || sessionStorage.getItem('curso_nombre');
+                    const allRoles = await window.CenturiaAPI.admin.getRoles();
+                    if(allRoles && allRoles.roles) {
+                        this.alumnos = allRoles.roles.filter(r => r.rol === 'alumno' && (r.carrera === curso || !r.carrera));
+                    }
+                    this.cargarAsistenciaDia();
+                },
+                async cargarAsistenciaDia() {
+                    if(!this.fecha) return;
+                    const courseId = sessionStorage.getItem('curso_nombre');
+                    try {
+                        const res = await window.CenturiaAPI.attendance.getByCourseAndDate(courseId, this.fecha);
+                        this.asistencias = {};
+                        if(res && res.attendance) {
+                            res.attendance.forEach(a => {
+                                this.asistencias[a.user_id] = a.status;
+                            });
+                        }
+                    } catch(e) {}
+                },
+                async marcar(cedula, estado) {
+                    this.asistencias[cedula] = estado;
+                },
+                async guardar() {
+                    this.guardando = true;
+                    const courseId = sessionStorage.getItem('curso_nombre');
+                    // We'll mark them one by one for now
+                    for(const [userId, status] of Object.entries(this.asistencias)) {
+                        try {
+                            await window.CenturiaAPI.attendance.markAttendance({
+                                user_id: userId,
+                                course_id: courseId,
+                                date: this.fecha,
+                                status: status
+                            });
+                        } catch(e) {}
+                    }
+                    this.guardando = false;
+                    alert('Asistencia guardada exitosamente.');
+                }
+            }" x-init="cargar()">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                    <h3 class="font-bold text-sm text-slate-900"><i class="bi bi-clipboard-check text-emerald-600 me-2"></i>Control de Asistencia</h3>
+                    <input type="date" x-model="fecha" @change="cargarAsistenciaDia()" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs">
+                </div>
+                
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 font-bold">
+                        <tr>
+                            <th class="py-2 px-4 border-b">Cédula</th>
+                            <th class="py-2 px-4 border-b">Alumno</th>
+                            <th class="py-2 px-4 border-b text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-slate-600">
+                        <template x-for="a in alumnos" :key="a.cedula">
+                            <tr class="hover:bg-slate-50 border-b border-slate-50">
+                                <td class="py-2 px-4" x-text="a.cedula"></td>
+                                <td class="py-2 px-4 font-medium" x-text="a.nombre"></td>
+                                <td class="py-2 px-4 flex justify-center gap-2">
+                                    <button @click="marcar(a.id || a.cedula, 'presente')" class="px-3 py-1 rounded-md transition" :class="asistencias[a.id || a.cedula] === 'presente' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-emerald-100'">P</button>
+                                    <button @click="marcar(a.id || a.cedula, 'tardanza')" class="px-3 py-1 rounded-md transition" :class="asistencias[a.id || a.cedula] === 'tardanza' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-amber-100'">T</button>
+                                    <button @click="marcar(a.id || a.cedula, 'ausente')" class="px-3 py-1 rounded-md transition" :class="asistencias[a.id || a.cedula] === 'ausente' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-rose-100'">A</button>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="alumnos.length === 0">
+                            <td colspan="3" class="py-4 text-center text-slate-400">No hay alumnos inscritos en este curso.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-4 flex justify-end">
+                    <button @click="guardar()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition" :disabled="guardando">
+                        <span x-show="!guardando"><i class="bi bi-save me-1"></i>Guardar Asistencia</span>
+                        <span x-show="guardando">Guardando...</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- ===== MONITOREO (tabs anteriores) ===== -->
-            <div x-show="activeTab==='live'||activeTab==='analytics'||activeTab==='attendance'||activeTab==='progress'||activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade text-center py-12 text-slate-400">
+            <div x-show="activeTab==='live'||activeTab==='analytics'||activeTab==='progress'||activeTab==='calendar'" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 animate-fade text-center py-12 text-slate-400">
                 <i class="bi bi-inbox text-3xl text-slate-300 mb-3 block"></i>
                 <p class="text-sm font-medium">Módulo en desarrollo</p>
                 <p class="text-[10px] mt-1">Próximamente disponible</p>
@@ -470,8 +560,24 @@ async function loginDocente() {
     if (!cedula || !password) { errorText.textContent = 'Debes ingresar cédula y contraseña.'; errorDiv.classList.add('show'); return; }
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...'; btn.disabled = true; errorDiv.classList.remove('show');
     try {
+        // PRIMERO: Intentar login vía API PHP
+        const result = await window.CenturiaAPI.login(cedula, password);
+        if (result && result.ok && result.user) {
+            // Login exitoso vía API
+            sessionStorage.setItem('teacher_cedula', cedula);
+            sessionStorage.setItem('teacher_nombre', result.user.firstname + ' ' + result.user.lastname);
+            sessionStorage.setItem('teacher_session_active', '1');
+            sessionStorage.setItem('userRole', result.user.role || 'docente');
+            sessionStorage.setItem('current_cedula', cedula);
+            sessionStorage.setItem('current_nombre', result.user.firstname + ' ' + result.user.lastname);
+            document.getElementById('docente-badge').textContent = result.user.firstname + ' ' + result.user.lastname + ' (CI: ' + cedula + ')';
+            document.getElementById('login-overlay').classList.add('hidden');
+            cargarPerfilAPI(cedula);
+            return;
+        }
+        // SI FALLA LA API: Fallback a localStorage (usuarios ya registrados anteriormente)
         const usuario = buscarUsuario(cedula);
-        if (!usuario) { errorText.textContent = 'Cédula no registrada. Regístrese primero.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
+        if (!usuario) { errorText.textContent = 'Cédula no registrada. Regístrese primero usando el formulario de registro.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
         if (password !== usuario.password) { errorText.textContent = 'Contraseña incorrecta.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; return; }
         const nombreCompleto = usuario.nombre + ' ' + usuario.apellido;
         sessionStorage.setItem('teacher_cedula', cedula);
@@ -483,7 +589,9 @@ async function loginDocente() {
         document.getElementById('docente-badge').textContent = nombreCompleto + ' (CI: ' + cedula + ')';
         document.getElementById('login-overlay').classList.add('hidden');
         cargarPerfil(cedula);
-    } catch (e) { console.error(e); errorText.textContent = 'Error inesperado.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; }
+    } catch (e) {
+        console.error(e);
+        errorText.textContent = 'Error de conexión con el backend.'; errorDiv.classList.add('show'); btn.innerHTML = '<i class="bi bi-arrow-right-circle me-2"></i>Ingresar al Panel'; btn.disabled = false; }
 }
 
 // === REGISTRO ===
@@ -532,16 +640,45 @@ function registrarUsuario() {
 // === RECUPERAR CONTRASEÑA ===
 function abrirRecuperar() { document.getElementById('modal-recuperar').classList.add('show'); document.getElementById('recuperar-cedula').value = ''; document.getElementById('recuperar-paso2').style.display = 'none'; document.getElementById('recuperar-error').style.display = 'none'; }
 function cerrarRecuperar() { document.getElementById('modal-recuperar').classList.remove('show'); }
-function buscarContrasena() {
+async function buscarContrasena() {
     const cedula = document.getElementById('recuperar-cedula').value.trim();
     if (!cedula) { alert('Ingresa tu cédula.'); return; }
-    const usuario = buscarUsuario(cedula);
-    if (usuario) {
-        const cedulaLimpia = cedula.replace(/\./g, '');
-        const password = usuario.nombre.charAt(0).toUpperCase() + usuario.apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
+    const cedulaLimpia = cedula.replace(/\./g, '');
+
+    const mostrar = (nombre, apellido) => {
+        const password = nombre.charAt(0).toUpperCase() + apellido.charAt(0).toLowerCase() + cedulaLimpia + '*';
         document.getElementById('recuperar-password').textContent = password;
         document.getElementById('recuperar-paso2').style.display = 'block';
         document.getElementById('recuperar-error').style.display = 'none';
+    };
+
+    // 1) Buscar en PHP API
+    try {
+        const res = await fetch('../api/auth.php?action=find_user&cedula=' + encodeURIComponent(cedulaLimpia));
+        const data = await res.json();
+        const u = data && (data.user || (data.data && data.data.user));
+        if (data && (data.found || (data.data && data.data.found)) && u) {
+            const fn = (u.firstname || '').split(' ')[0] || '';
+            const ln = (u.lastname || '').split(' ')[0] || '';
+            if (fn && ln) { mostrar(fn, ln); return; }
+        }
+    } catch (e) {}
+
+    // 2) Buscar en Google Sheets
+    try {
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyhfPTAVGGFsry6ueNVGQGZD0dGVbPu8zwJWnQkg6iOBcHx0FVUiAk5y8RJ1ggkIvTC2g/exec';
+        const gasResult = await fetch(GAS_URL + '?action=verificar_alumno&cedula=' + encodeURIComponent(cedulaLimpia)).then(r => r.json()).catch(() => ({existe:false}));
+        if (gasResult.existe && gasResult.nombre) {
+            const partes = gasResult.nombre.trim().split(/\s+/);
+            mostrar(partes[0] || '', partes.slice(1).join(' ') || '');
+            return;
+        }
+    } catch (e) {}
+
+    // 3) Fallback: local
+    const usuario = buscarUsuario(cedula);
+    if (usuario) {
+        mostrar(usuario.nombre, usuario.apellido);
     } else {
         document.getElementById('recuperar-error').style.display = 'block';
         document.getElementById('recuperar-paso2').style.display = 'none';
@@ -560,7 +697,7 @@ function cargarPerfil(cedula) {
     document.getElementById('profile-name').textContent = usuario.nombre + ' ' + usuario.apellido;
     document.getElementById('profile-cedula').textContent = 'CI: ' + cedula;
     document.getElementById('profile-rol-badge').textContent = usuario.rol === 'sin_asignar' ? 'Sin asignar' : usuario.rol;
-    document.getElementById('profile-asignatura').textContent = usuario.asignatura || 'Sin asignar';
+    document.getElementById('profile-asignatura').textContent = usuario.asignatura || sessionStorage.getItem('curso_nombre') || sessionStorage.getItem('current_carrera') || 'Sin asignar';
     document.getElementById('profile-carrera').textContent = usuario.carrera || 'Sin asignar';
     document.getElementById('datos-nombre').value = usuario.nombre + ' ' + usuario.apellido;
     document.getElementById('datos-cedula').value = cedula;
@@ -614,6 +751,90 @@ function toggleAutoRefresh() {
     if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
     if (on) autoRefreshInterval = setInterval(() => {}, 5000);
 }
+
+window.addEventListener('load', () => {
+    const cedula = sessionStorage.getItem('current_cedula');
+    if(cedula) {
+        document.getElementById('login-overlay').classList.add('hidden');
+        document.getElementById('docente-badge').textContent = (sessionStorage.getItem('current_nombre') || 'Usuario') + ' (CI: ' + cedula + ')';
+        cargarPerfil(cedula);
+    }
+    
+    // Títulos según el curso actual (TIC, Sociología, Maestría, ...) o genérico
+    aplicarCursoActual();
+    cargarCursosPanel();
+});
+
+function aplicarCursoActual() {
+    const cursoNombre = sessionStorage.getItem('curso_nombre') || sessionStorage.getItem('current_carrera') || '';
+    if (cursoNombre) {
+        document.title = 'Panel Docente — ' + cursoNombre + ' | Campus Virtual Centuria';
+        const subtitle = document.querySelector('.login-hero .subtitle');
+        if(subtitle) subtitle.textContent = cursoNombre + ' — Panel Docente/Académico';
+        const headerText = document.querySelector('header p.text-slate-400');
+        if(headerText) headerText.textContent = cursoNombre + ' — Instituto Superior Centuria';
+        const prof = document.getElementById('profile-asignatura');
+        if(prof && (prof.textContent === 'Sin asignar')) prof.textContent = cursoNombre;
+    }
+    const sel = document.getElementById('curso-actual');
+    if (sel && cursoNombre) sel.value = cursoNombre;
+}
+
+async function cargarCursosPanel() {
+    const sel = document.getElementById('curso-actual');
+    if (!sel) return;
+    let cursos = [];
+    try {
+        if (window.CenturiaAPI && CenturiaAPI.getCourses) {
+            const r = await CenturiaAPI.getCourses();
+            if (r && r.ok && r.courses) cursos = r.courses;
+        }
+    } catch (e) {}
+    if (!cursos.length) {
+        cursos = [
+            { shortname: 'TIC', name: 'TIC - Tecnología de la Información y Comunicación' },
+            { shortname: 'SOCIOLOGIA', name: 'Sociología' },
+            { shortname: 'MAESTRIA', name: 'Maestría' }
+        ];
+    }
+    sel.innerHTML = '';
+    cursos.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.shortname || c.name;
+        o.textContent = c.shortname || c.name;
+        sel.appendChild(o);
+    });
+    const actual = sessionStorage.getItem('curso_nombre') || sessionStorage.getItem('current_carrera') || sel.value;
+    sel.value = actual;
+    if (!sessionStorage.getItem('curso_nombre')) sessionStorage.setItem('curso_nombre', actual);
+    aplicarCursoActual();
+}
+
+function cambiarCursoActual(valor) {
+    if (!valor) return;
+    sessionStorage.setItem('curso_nombre', valor);
+    sessionStorage.setItem('current_carrera', valor);
+    aplicarCursoActual();
+    window.location.reload();
+}
 </script>
+
+        <!-- Theme Toggle Plugin -->
+        <button @click="toggleTheme()" class="fixed bottom-4 right-4 z-50 bg-slate-900 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition">
+            <i class="bi" :class="darkMode ? 'bi-sun-fill text-yellow-300' : 'bi-moon-stars-fill'"></i>
+        </button>
+
+        <!-- BOTON FLOTANTE: Volver al Admin (solo cuando view_as=admin) -->
+        <script>
+            (function(){
+                var params = new URLSearchParams(window.location.search);
+                if (params.get('view_as') === 'admin') {
+                    var btn = document.createElement('div');
+                    btn.innerHTML = '<a href="../admin/index.html" style="position:fixed;top:12px;right:12px;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:10px 18px;border-radius:12px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:8px;box-shadow:0 4px 15px rgba(245,158,11,0.4);transition:all .2s;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'"><i class="bi bi-arrow-left-circle"></i> Volver al Admin</a>';
+                    document.body.appendChild(btn);
+                }
+            })();
+        </script>
+        
 </body>
 </html>
