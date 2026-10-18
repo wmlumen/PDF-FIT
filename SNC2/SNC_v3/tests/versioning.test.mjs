@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { compareVersions, createProjectVersion, transitionVersion } from '../js/versioning.js';
+const base = { type: 'FeatureCollection', features: [{ type: 'Feature', properties: { A: 1 }, geometry: { type: 'Point', coordinates: [0,0] } }] };
+const v1 = createProjectVersion({ geojson: base, excelData: [{ A: 1 }], user: { id: 'u1', name: 'Autor' } }); v1.number = 1;
+assert.equal(v1.status, 'DRAFT'); assert.equal(v1.authorId, 'u1');
+const pending = transitionVersion(v1, 'PENDING', { id: 'u1' }); assert.equal(pending.status, 'PENDING');
+const approved = transitionVersion(pending, 'APPROVED', { id: 'admin', name: 'Admin' }); assert.equal(approved.status, 'APPROVED'); assert.equal(approved.reviewerId, 'admin');
+assert.throws(() => transitionVersion(approved, 'PENDING', {}));
+const changedGeo = structuredClone(base); changedGeo.features[0].geometry.coordinates = [1,1]; changedGeo.features[0].properties.A = 2;
+const v2 = createProjectVersion({ geojson: changedGeo, excelData: [{ A: 2 }, { A: 3 }], user: {} });
+const diff = compareVersions(v1, v2); assert.equal(diff.geometryChanged, 1); assert.equal(diff.attributesChanged, 1); assert.equal(diff.rowsAfter, 2);
+assert.equal(base.features[0].geometry.coordinates[0], 0, 'La versión conserva instantáneas independientes');
+console.log('✅ VERSIONING TESTS: 9/9 pasaron');

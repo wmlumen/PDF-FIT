@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test funcional dictamen municipal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/shpjs@latest/dist/shp.js" defer></script>
+    <script src="js/runtimeCompat.js" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=20261018-test" />
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div id="map" style="height:400px"></div>
+    <div id="loading"><div class="spinner"></div></div>
+    <div id="system-toast"><span id="toast-msg"></span></div>
+    <div id="validationModal" class="hidden"><div id="modalBody"></div><div id="modalTitle"></div><button id="modalConfirmBtn">ok</button></div>
+    <div id="plansModal" class="hidden"><div id="plansBody"></div></div>
+    <div id="authModal" class="hidden"></div>
+    <div id="municipal-results"></div>
+    <div id="balance-content"></div>
+    <div id="session-user"></div>
+    <div id="session-actions"></div>
+    <div id="geoserverStatus"></div>
+    <input id="sncReferenceLayerToggle" type="checkbox">
+    <div id="utmCoords"></div><div id="utmZoneName"></div><div id="utmZoneWarning"></div>
+    <div id="coord-e"></div><div id="coord-n"></div>
+    <div id="geographic-location-panel"></div>
+    <button id="btn-toggle-geographic-location"></button>
+    <div id="audit-results"></div>
+    <div id="data-table-head"></div><div id="table-body"></div>
+    <div id="parcel-inspector-area"></div><div id="parcel-inspector-count"></div>
+    <div id="parcel-inspector-perimeter"></div><div id="parcel-inspector-vertices"></div>
+    <div id="selected-parcel-summary"></div><div id="dataPanel"></div>
+    <div id="requiredFieldsStatus"></div><div id="tabAuditCount"></div>
+    <div id="active-file-name"></div><div id="geoFileName"></div><div id="dataFileName"></div>
+    <div id="info"></div><div id="version-info"></div>
+    <select id="map-base-selector"></select>
+    <div id="map-tool-edit-vertices"></div><div id="map-tool-number-parcels"></div>
+    <div id="map-tool-undo"></div><div id="map-tool-redo"></div>
+    <div id="map-edit-settings"></div><div id="map-edit-commit"></div><div id="map-edit-cancel"></div>
+    <div id="map-snap-tolerance"></div>
+    <div id="pinBtn"></div><div id="validateBtn"></div><div id="exportBtn"></div>
+    <div id="btn-login"></div><div id="btn-logout"></div><div id="btn-profile"></div>
+    <div id="btn-sync"></div><div id="btn-temp-project"></div><div id="btnShowLogin"></div>
+    <div id="buy-form-wrap"></div><div id="buyer-name"></div><div id="buyer-doc"></div>
+    <div id="buyer-email"></div><div id="buyer-provider"></div>
+    <div id="buy-cancel"></div><div id="buy-confirm"></div>
+
+    <script type="module">
+    import { State } from './js/state.js';
+    import { ValidadorMunicipal } from './js/municipal.js';
+    import { initMunicipalClient } from './js/municipalClient.js';
+
+    window.__TEST__ = {};
+
+    // GeoJSON de prueba: fraccionamiento con 3 lotes, 1 calle, 1 plaza
+    const geojson = {
+      type: 'FeatureCollection',
+      features: [
+        { type:'Feature', properties:{ CODIGO:'L-001', USO_SUELO:'LOTE', AREA_M2:450, FRENTE_M:15 }, geometry:{ type:'Polygon', coordinates:[[[570000,7550000],[570025,7550000],[570025,7550020],[570000,7550020],[570000,7550000]]] } },
+        { type:'Feature', properties:{ CODIGO:'L-002', USO_SUELO:'LOTE', AREA_M2:300, FRENTE_M:10 }, geometry:{ type:'Polygon', coordinates:[[[570030,7550000],[570055,7550000],[570055,7550020],[570030,7550020],[570030,7550000]]] } },
+        { type:'Feature', properties:{ CODIGO:'L-003', USO_SUELO:'LOTE', AREA_M2:500, FRENTE_M:18 }, geometry:{ type:'Polygon', coordinates:[[[570060,7550000],[570085,7550000],[570085,7550020],[570060,7550020],[570060,7550000]]] } },
+        { type:'Feature', properties:{ CODIGO:'C-001', USO_SUELO:'CALLE', AREA_M2:600 }, geometry:{ type:'Polygon', coordinates:[[[570000,7550025],[570085,7550025],[570085,7550030],[570000,7550030],[570000,7550025]]] } },
+        { type:'Feature', properties:{ CODIGO:'P-001', USO_SUELO:'PLAZA', AREA_M2:250 }, geometry:{ type:'Polygon', coordinates:[[[570000,7550035],[570020,7550035],[570020,7550045],[570000,7550045],[570000,7550035]]] } }
+      ]
+    };
+
+    State.set('geojson', geojson);
+    State.set('currentDisplayProjection', 'EPSG:32721');
+
+    const reporte = await (async () => {
+        const v = new ValidadorMunicipal();
+        const r = v.generarReporteMunicipal();
+        return r;
+    })();
+
+    window.__TEST__.reporte = reporte;
+    window.__TEST__.clasificacion = {
+        lotes: geojson.features.filter(f => (f.properties.USO_SUELO||'').toUpperCase() === 'LOTE').length,
+        vias: geojson.features.filter(f => (f.properties.USO_SUELO||'').toUpperCase() === 'CALLE').length,
+        verdes: geojson.features.filter(f => (f.properties.USO_SUELO||'').toUpperCase() === 'PLAZA').length,
+    };
+
+    // Render en el DOM para inspección
+    document.getElementById('municipal-results').innerHTML =
+        '<pre id="test-out" style="white-space:pre-wrap;font-size:11px">' +
+        JSON.stringify({ resumen: reporte.resumen, lotesEvaluados: reporte.lotesEvaluados,
+            lotesConErrores: reporte.lotesConErrores, errores: reporte.erroresPorLote?.length,
+            alertas: reporte.alertasPorLote?.length,
+            balance: reporte.balanceLoteamiento ? {
+                valido: reporte.balanceLoteamiento.valido,
+                vial: reporte.balanceLoteamiento.detalles?.cesionCalles,
+                verdes: reporte.balanceLoteamiento.detalles?.cesionPlazas
+            } : null,
+            clasificacion: window.__TEST__.clasificacion
+        }, null, 2) + '</pre>';
+
+    document.title = 'TEST_OK';
+    </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+{
+  "improvements": [
+    {
+      "id": "imp_20261018_security_secrets",
+      "skill": "security",
+      "agent": "audit-agent",
+      "description": "Rotar secrets críticos y prevenir exposición en repo",
+      "codeChange": "# .gitignore additions\n.env\nserviceAccountKey.json\n*.pem\n*.key\n\n# .env.example template (commit this instead)\nJWT_SECRET=your_secure_random_string_here\nSMTP_PASS=your_smtp_password\nFIREBASE_SERVICE_ACCOUNT_PATH=./serviceAccountKey.json\n\n# Generate new secrets:\n# node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+      "testsPassed": true,
+      "triggeredBy": "error_resolved",
+      "status": "completed",
+      "resolvedError": "err_20261018_secret_exposure",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "completedAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "NUNCA committear secrets reales. Usar .env.example como template. Rotar inmediatamente si se filtra."
+    },
+    {
+      "id": "imp_20261018_repo_hygiene",
+      "skill": "repo_hygiene",
+      "agent": "audit-agent",
+      "description": "Eliminar artefactos y archivos temporales del repo",
+      "codeChange": "# .gitignore additions\nbackup/\ntemp_*.cjs\ntemp_*.mjs\ntemp_*.js\n*.log\nserver.stdout.log\nserver.stderr.log\ngraph.html\nfluxograma.html\nnode_modules/\n.env\n*.sqlite\n*.sqlite-*\n\n# Remover del historial si ya committeado:\n# git rm -r --cached backup/\n# git rm --cached temp_*.cjs graph.html",
+      "testsPassed": true,
+      "triggeredBy": "error_resolved",
+      "status": "completed",
+      "resolvedError": "err_20261018_artifact_in_repo",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "completedAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "NUNCA committear build artifacts, temp files, logs, o archivos generados. Configurar .gitignore ANTES del primer commit."
+    },
+    {
+      "id": "imp_20261018_code_quality_tooling",
+      "skill": "code_quality",
+      "agent": "audit-agent",
+      "description": "Configurar ESLint + Prettier + TypeScript + Husky pre-commit",
+      "codeChange": "# package.json additions\n\"devDependencies\": {\n  \"eslint\": \"^8.56.0\",\n  \"prettier\": \"^3.2.5\",\n  \"@typescript-eslint/eslint-plugin\": \"^6.19.0\",\n  \"@typescript-eslint/parser\": \"^6.19.0\",\n  \"husky\": \"^9.0.11\",\n  \"lint-staged\": \"^15.2.0\"\n},\n\"scripts\": {\n  \"lint\": \"eslint . --ext .js,.mjs,.cjs\",\n  \"lint:fix\": \"eslint . --ext .js,.mjs,.cjs --fix\",\n  \"format\": \"prettier --write .\",\n  \"typecheck\": \"tsc --noEmit\",\n  \"prepare\": \"husky install\"\n},\n\"lint-staged\": {\n  \"*.{js,mjs,cjs}\": [\"eslint --fix\", \"prettier --write\"]\n}",
+      "testsPassed": false,
+      "triggeredBy": "pattern_detected",
+      "status": "pending",
+      "resolvedError": "err_20261018_no_lint_types",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "Configurar tooling ANTES de escribir código. Husky pre-commit evita commits rotos. TypeScript catcha bugs en dev."
+    },
+    {
+      "id": "imp_20261018_architecture_split",
+      "skill": "architecture",
+      "agent": "audit-agent",
+      "description": "Dividir archivos monolíticos > 1000 líneas en módulos",
+      "codeChange": "# app.js split proposal\njs/app/\n  index.js          # Orquestador principal (200 lines)\n  ui/\n    tabs.js         # Navegación tabs\n    modals.js       # Modales\n    notifications.js # Toasts\n  features/\n    import.js       # Carga archivos\n    validate.js     # Validación SNC\n    export.js       # Exportación\n    municipal.js    # Validación municipal\n    cogo.js         # COGO\n    map.js          # Leaflet wrapper\n  core/\n    state.js        # Estado global\n    events.js       # Event bus\n\n# server-api.js split\nserver/\n  index.js          # Express setup (100 lines)\n  routes/\n    auth.js         # /api/auth/*\n    projects.js     # /api/projects/*\n    expedientes.js  # /api/expedientes/*\n    payments.js     # /api/payments/*\n    validation.js   # /api/validation/*\n    admin.js        # /api/admin/*\n  middleware/\n    auth.js         # JWT + Firebase\n    rateLimit.js    # Rate limiting\n    sanitize.js     # Input sanitization\n  db/\n    sqlite.js       # SQLite wrapper\n    firestore.js    # Firestore wrapper",
+      "testsPassed": false,
+      "triggeredBy": "pattern_detected",
+      "status": "pending",
+      "resolvedError": "err_20261018_monolithic_files",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "Regla: max 500 líneas por archivo. Single Responsibility. Feature-based folder structure. Barrel exports."
+    },
+    {
+      "id": "imp_20261018_bundler_setup",
+      "skill": "performance",
+      "agent": "audit-agent",
+      "description": "Configurar Vite para bundling, tree-shaking y producción",
+      "codeChange": "# vite.config.js\nimport { defineConfig } from 'vite';\nimport { resolve } from 'path';\n\nexport default defineConfig({\n  root: '.',\n  base: './',\n  build: {\n    outDir: 'dist',\n    rollupOptions: {\n      input: {\n        main: resolve(__dirname, 'index.html'),\n        municipal: resolve(__dirname, 'index-municipal.html')\n      }\n    },\n    minify: 'terser',\n    terserOptions: { compress: { drop_console: true, drop_debugger: true } }\n  },\n  optimizeDeps: {\n    include: ['@turf/turf', 'proj4', 'xlsx', 'jspdf', 'docx', 'leaflet']\n  },\n  server: { port: 5556, proxy: { '/api': 'http://localhost:5556' } }\n});\n\n# index.html - reemplazar scripts CDN por:\n# <script type=\"module\" src=\"/js/app.js\"></script>\n# <link rel=\"stylesheet\" href=\"/css/styles.css\">",
+      "testsPassed": false,
+      "triggeredBy": "pattern_detected",
+      "status": "pending",
+      "resolvedError": "err_20261018_no_bundler",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "CDN en producción = SPOF, lentitud, CSP issues. Bundler = tree-shaking, code-splitting, cache busting, CSP compliant."
+    },
+    {
+      "id": "imp_20261018_municipal_postgis",
+      "skill": "municipal_compliance",
+      "agent": "audit-agent",
+      "description": "Integrar PostGIS real para validación municipal completa",
+      "codeChange": "# docker-compose.yml para PostGIS\nservices:\n  postgis:\n    image: postgis/postgis:16-3.4\n    environment:\n      POSTGRES_DB: snc_municipal\n      POSTGRES_USER: snc\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\n    volumes:\n      - postgis_data:/var/lib/postgresql/data\n      - ./sql/init:/docker-entrypoint-initdb.d\n    ports:\n      - \"5432:5432\"\n\n# sql/init/01_schema.sql\nCREATE EXTENSION postgis;\nCREATE TABLE parcelas_oficiales (\n  id UUID PRIMARY KEY,\n  padron VARCHAR(20),\n  geom GEOMETRY(Polygon, 32721),\n  INDEX idx_geom USING GIST (geom)\n);\nCREATE TABLE hidrografia_mades (\n  id UUID PRIMARY KEY,\n  nombre VARCHAR(100),\n  tipo VARCHAR(20),\n  geom GEOMETRY(MultiLineString, 32721),\n  INDEX idx_geom USING GIST (geom)\n);\n\n# server-api.js - habilitar PostGIS\nconst { Pool } = require('pg');\nconst pgPool = new Pool({ connectionString: process.env.DATABASE_URL });\nexport const postgis = { query: (sql, params) => pgPool.query(sql, params) };",
+      "testsPassed": false,
+      "triggeredBy": "error_resolved",
+      "status": "pending",
+      "resolvedError": "err_20261018_missing_postgis_integration",
+      "createdAt": "2026-10-18T20:15:00.000Z",
+      "lesson": "Stubs no sustituyen motor espacial real. PostGIS = índices GiST, ST_Intersects, ST_DWithin, ST_Buffer nativos. Es requisito legal para validación municipal."
+    }
+  ],
+  "patterns": [
+    {
+      "id": "pat_20261018_security_secrets",
+      "pattern": "Secrets (JWT, SMTP, Firebase keys) committeados al repo",
+      "regex": ".env|serviceAccountKey.json",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.418Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        ".env, serviceAccountKey.json"
+      ],
+      "prevention": "Add to .gitignore: .env, serviceAccountKey.json. Use .env.example template. Rotate immediately if leaked."
+    },
+    {
+      "id": "pat_20261018_repo_artifacts",
+      "pattern": "Archivos de backup y temporales committeados al repo",
+      "regex": "backup/|temp_.*\\.cjs",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.416Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        "backup/ (3796 files), temp_admin_setup.cjs"
+      ],
+      "prevention": "Add to .gitignore: backup/, temp_*.cjs, *.log, graph.html. Configure .gitignore BEFORE first commit."
+    },
+    {
+      "id": "pat_20261018_monolithic",
+      "pattern": "Archivos monolíticos > 1000 líneas",
+      "regex": "app.js|server-api.js|export.js",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.419Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        "app.js (1567), server-api.js (1686), export.js (1614)"
+      ],
+      "prevention": "ESLint rule max-lines: 500. Split into feature modules. Single Responsibility Principle."
+    },
+    {
+      "id": "pat_20261018_no_bundler",
+      "pattern": "Sin bundler en producción - scripts CDN en HTML",
+      "regex": "cdn.tailwindcss|cdn.jsdelivr|unpkg.com",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.422Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        "23 script tags CDN en index.html"
+      ],
+      "prevention": "Add Vite/Webpack. Build para producción. Self-host deps críticas. Tree-shaking + code-splitting."
+    },
+    {
+      "id": "pat_20261018_no_lint",
+      "pattern": "Sin linting ni type checking en CI",
+      "regex": "eslint|prettier|typescript",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.423Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        "No .eslintrc, no tsconfig, no pre-commit hooks"
+      ],
+      "prevention": "Add ESLint + Prettier + TypeScript + Husky pre-commit. CI gate: lint + typecheck + test."
+    },
+    {
+      "id": "pat_20261018_vuln_deps",
+      "pattern": "Dependencias con vulnerabilidades conocidas",
+      "regex": "npm audit",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T19:58:48.424Z",
+      "lastSeen": "2026-10-18T20:15:00.000Z",
+      "agents": [
+        "audit-agent"
+      ],
+      "examples": [
+        "3 vulnerabilities (2 moderate, 1 high)"
+      ],
+      "prevention": "npm audit fix en CI. Dependency review en PRs. Dependabot alerts. pin versions."
+    },
+    {
+      "id": "pat_1792354467092_1hb9w2i6",
+      "pattern": "test pattern",
+      "regex": "boom",
+      "frequency": 1,
+      "firstSeen": "2026-10-18T20:14:27.092Z",
+      "lastSeen": "2026-10-18T20:14:27.092Z",
+      "agents": [
+        "test-agent"
+      ],
+      "examples": [
+        "boom"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "site": "snc511",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "data/**",
+      "serviceAccountKey.json",
+      ".env",
+      "*.sqlite",
+      "*.db"
+    ],
+    "rewrites": [
+      { "source": "/api/**", "function": "api" },
+      { "source": "**", "destination": "/index.html" }
+    ]
+  },
+  "functions": {
+    "source": "."
+  }
+}

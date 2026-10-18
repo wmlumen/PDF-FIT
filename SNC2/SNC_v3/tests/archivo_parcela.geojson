@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "CODIGO": "TEST_001",
+        "PROPIETARI": "Juan Perez",
+        "USO_TIERRA": "URBANO",
+        "SUP_TITULO": 5000,
+        "DEPARTAMEN": "CENTRAL",
+        "DISTRITO": "ASUNCION"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.575, -25.285],
+          [-57.565, -25.285],
+          [-57.565, -25.275],
+          [-57.575, -25.275],
+          [-57.575, -25.285]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "CODIGO": "TEST_002",
+        "PROPIETARI": "Maria Gonzalez",
+        "USO_TIERRA": "RURAL",
+        "SUP_TITULO": 10000,
+        "DEPARTAMEN": "CENTRAL",
+        "DISTRITO": "LUQUE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.630, -25.260],
+          [-57.610, -25.260],
+          [-57.610, -25.240],
+          [-57.630, -25.240],
+          [-57.630, -25.260]
+        ]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catastro PY Pro v5.0 - SNC 551/2023</title>
+  <meta name="description" content="Sistema de validación catastral según Resolución SNC N° 551/2023">
+  <meta name="theme-color" content="#1e293b">
+  
+  <!-- Preconnect para recursos críticos -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  
+  <!-- Preload crítico: CSS y entry point -->
+  <link rel="preload" as="style" href="/css/styles.css">
+  <link rel="modulepreload" href="/js/app.js">
+  
+  <!-- Tailwind via Vite (se inyecta en build) -->
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+
+<body class="bg-slate-950 text-slate-200 h-screen overflow-hidden">
+
+  <!-- LOADING SCREEN -->
+  <div id="loading" role="status" aria-label="Cargando aplicación">
+    <div class="spinner"></div>
+    <div class="text-xl font-bold">Catastro PY Pro</div>
+    <div class="text-sm text-slate-400 uppercase tracking-widest">SNC 551/2023</div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="system-toast" role="alert" aria-live="polite" hidden>
+    <i class="fas fa-info-circle text-blue-500"></i>
+    <span id="toast-msg">Mensaje del sistema</span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="fixed top-0 left-0 right-0 h-16 glass-panel z-[2000] flex items-center justify-between gap-3 px-5 border-b border-slate-800">
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
+        <i class="fas fa-landmark text-white text-lg"></i>
+      </div>
+      <div class="header-brand shrink-0">
+        <h1 class="text-sm font-bold text-white">Catastro PY <span class="text-blue-500">Pro</span></h1>
+        <div class="flex items-center gap-2">
+          <span class="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          <p class="text-[10px] text-slate-400 font-mono uppercase tracking-widest">SNC Res. 551/2023</p>
+        </div>
+        <p id="active-project-name" class="max-w-48 truncate text-[9px] font-mono text-slate-500" title="Proyecto sin nombre">Proyecto sin nombre</p>
+        <span id="temp-project-badge" class="hidden text-[9px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">TEMPORAL</span>
+      </div>
+      <div class="header-context" aria-label="Contexto del expediente">
+        <div class="header-context-item header-user-context">
+          <i class="fas fa-user-shield header-context-icon" aria-hidden="true"></i>
+          <div class="header-context-copy">
+            <span class="header-context-label">Usuario</span>
+            <span id="session-user" class="header-context-value">Sin sesión</span>
+          </div>
+          <div id="session-actions" class="header-session-actions"></div>
+        </div>
+        <div class="header-context-item header-file-context">
+          <i class="fas fa-file-lines header-context-icon" aria-hidden="true"></i>
+          <div class="header-context-copy">
+            <span class="header-context-label">Archivo activo</span>
+            <span id="active-file-name" class="header-context-value truncate" title="Sin archivo cargado">Sin archivo cargado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV TABS -->
+    <nav id="header-navigation" class="flex items-center gap-1" role="tablist" aria-label="Navegación principal">
+      <button class="header-tab header-icon-btn active" id="tab-map" role="tab" aria-selected="true" aria-controls="view-map" onclick="window.Workspace?.switchTab('map')" data-tooltip="Mapa" aria-label="Mapa"><i class="fas fa-map"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-import" role="tab" aria-selected="false" aria-controls="view-import" onclick="window.Workspace?.switchTab('import')" data-tooltip="Importar archivos" aria-label="Importar archivos"><i class="fas fa-file-import"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-data" role="tab" aria-selected="false" aria-controls="view-data" onclick="window.Workspace?.switchTab('data')" data-tooltip="Datos Excel" aria-label="Datos Excel"><i class="fas fa-table"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-audit" role="tab" aria-selected="false" aria-controls="view-audit" onclick="window.Workspace?.switchTab('audit')" data-tooltip="Resultados aprobados" aria-label="Resultados aprobados"><i class="fas fa-clipboard-check"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-lineage" role="tab" aria-selected="false" aria-controls="view-lineage" onclick="window.Workspace?.switchTab('lineage')" data-tooltip="Historial parcelario" aria-label="Historial parcelario"><i class="fas fa-code-branch"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-versions" role="tab" aria-selected="false" aria-controls="view-versions" onclick="window.Workspace?.switchTab('versions')" data-tooltip="Control de versiones" aria-label="Control de versiones"><i class="fas fa-code-compare"></i></button>
+    </nav>
+
+    <div id="header-actions" class="flex items-center gap-1.5">
+      <input id="input-project-open" type="file" hidden accept=".chr,.json" onchange="window.LocalActions?.openProjectFile(event.target.files[0])">
+      <button id="btn-project-new" onclick="window.App?.clear()" class="btn-tool header-icon-btn" data-tooltip="Nuevo expediente" aria-label="Nuevo expediente"><i class="fas fa-file-circle-plus"></i></button>
+      <button id="btn-project-open" onclick="document.getElementById('input-project-open')?.click()" class="btn-tool header-icon-btn" data-tooltip="Abrir proyecto guardado" aria-label="Abrir proyecto guardado"><i class="fas fa-folder-open"></i></button>
+      <button id="btn-project-save" data-requires-work onclick="window.LocalActions?.saveAll()" class="btn-tool header-icon-btn" data-tooltip="Guardar proyecto" aria-label="Guardar proyecto"><i class="fas fa-floppy-disk"></i></button>
+      <button id="btn-project-rename" data-requires-work onclick="window.LocalActions?.renameProject()" class="btn-tool header-icon-btn" data-tooltip="Renombrar proyecto" aria-label="Renombrar proyecto"><i class="fas fa-pen-to-square"></i></button>
+      <button id="btn-project-delete" data-requires-work onclick="window.LocalActions?.deleteProject()" class="btn-tool header-icon-btn" data-tooltip="Eliminar proyecto" aria-label="Eliminar proyecto"><i class="fas fa-trash"></i></button>
+      <span id="separator-validation-project" class="header-action-separator" aria-hidden="true"></span>
+      <button id="btn-project-validate" data-requires-work onclick="window.App?.validate()" class="btn-tool header-icon-btn" data-tooltip="Validar expediente" aria-label="Validar expediente"><i class="fas fa-check-circle"></i></button>
+      <button id="btn-project-audit" data-requires-work onclick="window.App?.certify()" class="btn-tool header-icon-btn" data-tooltip="Generar auditoría" aria-label="Generar auditoría"><i class="fas fa-clipboard-check"></i></button>
+      <span id="separator-project-export" class="header-action-separator" aria-hidden="true"></span>
+      <button id="exportBtn" data-requires-work onclick="window.App?.exportSHP()" class="btn-tool header-icon-btn" data-tooltip="Exportar expediente SHP ZIP" aria-label="Exportar expediente SHP ZIP"><i class="fas fa-file-zipper"></i></button>
+      <button id="exportGeoJSONBtn" data-requires-work onclick="window.App?.exportGeoJSON()" class="btn-tool header-icon-btn" data-tooltip="Exportar GeoJSON" aria-label="Exportar GeoJSON"><i class="fas fa-code"></i></button>
+      <button id="exportKMLBtn" data-requires-work onclick="window.App?.exportKML()" class="btn-tool header-icon-btn" data-tooltip="Exportar KML" aria-label="Exportar KML"><i class="fas fa-earth-americas"></i></button>
+      <button id="exportProfessionalBtn" data-requires-work onclick="window.App?.exportProfessionalReport()" class="btn-tool header-icon-btn" style="background: linear-gradient(135deg, #059669, #047857);" data-tooltip="Certificado Preventivo de Aptitud (PDF + DOCX)" aria-label="Generar Certificado Preventivo de Aptitud y Diagnóstico Integral"><i class="fas fa-certificate"></i></button>
+      <span id="separator-export-utilities" class="header-action-separator" aria-hidden="true"></span>
+      <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
+      <a href="mailto:wmlumen@gmail.com" class="btn-tool header-icon-btn" data-tooltip="Contacto: wmlumen@gmail.com" aria-label="Contactar por correo a wmlumen@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a>
+      <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
+    </div>
+  </header>
+
+  <div class="fixed top-16 left-0 right-0 bottom-0 flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-80 glass-panel border-r border-slate-800 flex flex-col shrink-0" role="complementary" aria-label="Panel lateral">
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+
+        <!-- DASHBOARD STATS -->
+        <section id="project-status-section" class="operational-section" aria-labelledby="stats-title">
+          <h3 id="stats-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
+            <i class="fas fa-chart-pie mr-2"></i> Estado del Proyecto
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+              <p class="text-[9px] text-slate-500 uppercase">Superficie</p>
+              <p class="leading-tight font-bold text-white" id="stat-area"><span class="block text-sm">0.00 m²</span><span class="text-[10px] text-slate-500">0.0000 ha</span></p>
+            </div>
+            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+              <p class="text-[9px] text-slate-500 uppercase">Parcelas</p>
+              <p class="text-lg font-bold text-white" id="stat-count">0</p>
+            </div>
+            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+              <p class="text-[9px] text-slate-500 uppercase">Integridad</p>
+              <div id="stat-alerts" class="inline-block px-2 py-0.5 mt-1 text-[10px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Pendiente</div>
+            </div>
+            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+              <p class="text-[9px] text-slate-500 uppercase">Zona UTM</p>
+              <p class="text-xs font-bold text-slate-200" id="stat-zone">21S / WGS84</p>
+            </div>
+            <div class="col-span-2 grid grid-cols-2 gap-3 rounded-xl border border-blue-500/20 bg-blue-950/20 p-3">
+              <div class="min-w-0 border-r border-slate-800 pr-3">
+                <p class="text-[9px] uppercase text-slate-500">Departamento</p>
+                <p id="stat-dpto-map" class="mt-1 truncate text-xs font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              </div>
+              <div class="min-w-0">
+                <p class="text-[9px] uppercase text-slate-500">Distrito</p>
+                <p id="stat-dist-map" class="mt-1 truncate text-xs font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LAYERS -->
+        <section id="reference-layers-section" class="operational-section" aria-labelledby="layers-title">
+          <h3 id="layers-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+            <span><i class="fas fa-layer-group mr-2"></i> Capas de Referencia</span>
+          </h3>
+          <div class="space-y-2" id="geoserverLayersContainer">
+            <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 hover:border-blue-500/50">
+              <input id="sncReferenceLayerToggle" type="checkbox" class="mt-0.5 accent-blue-500" aria-describedby="sncReferenceLayerNotice">
+              <span>
+                <span class="block text-[10px] font-bold text-slate-200">Referencia catastral SNC</span>
+                <span class="block text-[9px] text-slate-400">Capa visual opcional del visor oficial.</span>
+                <span id="sncLayerStatus" class="block text-[9px] text-slate-500 font-semibold mt-1 px-1.5 py-0.5 rounded bg-slate-800 w-fit">Capa remota: desactivada</span>
+              </span>
+            </label>
+            <p id="sncReferenceLayerNotice" class="pl-1 text-[8px] leading-relaxed text-slate-500">Habilitar solo en la versión paga.</p>
+          </div>
+          <p class="mt-1 pl-1 text-[8px] leading-relaxed text-slate-500">
+            Solo referencia visual. No descarga ni consulta atributos; no se usa para cálculo, validación, certificación o exportación.
+            <a class="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-md border border-slate-700 transition" href="https://www.catastro.gov.py/visor/?snc=geo" target="_blank" rel="noopener noreferrer" title="Abre el visor oficial en una nueva pestaña">
+              <i class="fas fa-external-link-alt"></i> Abrir visor oficial
+            </a>
+          </p>
+          <div class="text-[9px] font-bold text-slate-500 mt-2 pl-1 flex items-center gap-1" id="geoserverStatus">
+            <span id="snc-layer-status">Capa remota: desactivada</span>
+          </div>
+        </section>
+
+        <!-- COORDINATES -->
+        <div id="geographic-location-section" class="operational-section p-4 bg-gradient-to-br from-slate-900 to-slate-950 border border-blue-500/20 rounded-xl relative group" aria-labelledby="coords-title">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-[9px] font-bold text-blue-500 uppercase" id="coords-title">Coordenadas UTM</span>
+            <div class="flex gap-2">
+              <button id="btn-copy-coordinates" data-requires-geometry onclick="window.LocalActions?.copyCoordinates()" class="text-[10px] text-slate-400 hover:text-white" title="Copiar coordenadas" aria-label="Copiar coordenadas">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button id="btn-center-coordinates" data-requires-geometry onclick="window.LocalActions?.centerMapOnCoordinates()" class="text-[10px] text-slate-400 hover:text-blue-400" title="Centrar mapa en estas coordenadas" aria-label="Centrar mapa en estas coordenadas">
+                <i class="fas fa-crosshairs"></i>
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-1 font-mono text-xs">
+            <div class="flex justify-between"><span class="text-slate-500">Este (X):</span> <span id="coord-e" class="text-blue-400">0.00</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Norte (Y):</span> <span id="coord-n" class="text-blue-400">0.00</span></div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <section class="space-y-3" aria-labelledby="actions-title">
+          <h3 id="actions-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
+            <i class="fas fa-bolt mr-2"></i> Acciones Rápidas
+          </h3>
+          <button onclick="window.Workspace?.switchTab('import')" class="w-full p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all" title="Ir a la pantalla de Importación">
+            <i class="fas fa-file-import text-lg"></i> Importar Archivos
+          </button>
+        </section>
+
+      </div>
+
+      <div class="p-4 bg-slate-950 border-t border-slate-800 flex justify-between items-center">
+        <span class="text-[10px] text-slate-500 font-mono">SNC ENGINE v5.0</span>
+        <button onclick="window.showReadme?.()" class="text-slate-500 hover:text-white" aria-label="Ver manual"><i class="fas fa-question-circle"></i></button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col overflow-hidden relative" role="main">
+
+      <!-- MAP VIEW -->
+      <div class="main-view active" id="view-map" role="tabpanel" aria-labelledby="tab-map">
+        <div id="map" role="application" aria-label="Mapa catastral"></div>
+
+        <!-- INSPECTOR LATERAL -->
+        <aside id="parcel-inspector" class="hidden absolute top-20 right-16 bottom-4 z-[1100] w-80 max-w-[calc(100%-5rem)] overflow-hidden rounded-xl border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur" aria-label="Inspector de parcela">
+          <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Parcela seleccionada</p>
+              <h3 id="parcel-inspector-title" class="mt-1 truncate text-sm font-bold text-white">Sin selección</h3>
+            </div>
+            <button onclick="this.closest('aside').classList.add('hidden'); window.MapEngine?.closeParcelInspector?.()" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-red-500/50 bg-red-950/60 text-red-300" title="Cerrar parcela seleccionada" aria-label="Cerrar parcela seleccionada">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="h-[calc(100%-73px)] overflow-y-auto p-2.5 text-xs">
+            <div id="lote-inspector-content" class="space-y-3">
+              <div class="p-2 bg-slate-900 rounded-lg">
+                <p class="text-[9px] text-slate-500 uppercase">Superficie</p>
+                <p id="lote-area" class="text-sm font-bold text-white">— m²</p>
+                <p id="lote-area-status" class="text-[10px] font-bold"></p>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg">
+                <p class="text-[9px] text-slate-500 uppercase">Frente estimado</p>
+                <p id="lote-frente" class="text-sm font-bold text-white">— m</p>
+                <p id="lote-frente-status" class="text-[10px] font-bold"></p>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg">
+                <p class="text-[9px] text-slate-500 uppercase">Uso / Destino</p>
+                <p id="lote-uso" class="text-sm font-bold text-white">—</p>
+              </div>
+              <div class="p-2 bg-slate-900 rounded-lg">
+                <p class="text-[9px] text-slate-500 uppercase">Cumplimiento</p>
+                <p id="lote-cumplimiento" class="text-sm font-bold">—</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- SELECTOR DE MAPA BASE -->
+        <div id="map-base-selector" class="map-selector-box absolute left-3 top-56 z-[1000]" role="radiogroup" aria-label="Mapa base">
+          <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite ESRI" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('cartodb')" class="map-selector-btn" data-layer="cartodb" title="CartoDB Voyager" role="radio" aria-checked="false" aria-label="Mapa CartoDB Voyager"><i class="fas fa-palette"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM" role="radio" aria-checked="false" aria-label="Mapa Humanitarian OSM"><i class="fas fa-hand-holding-heart"></i></button>
+        </div>
+
+        <!-- MAP TOOLS -->
+        <div id="map-tools" class="operational-section absolute right-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
+          <div class="hidden">
+            <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap"><i class="fas fa-map"></i></button>
+            <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite ESRI"><i class="fas fa-satellite"></i></button>
+            <button onclick="window.MapEngine?.setBaseLayer('cartodb')" class="map-selector-btn" data-layer="cartodb" title="CartoDB Voyager"><i class="fas fa-palette"></i></button>
+            <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM"><i class="fas fa-hand-holding-heart"></i></button>
+          </div>
+          <div class="hidden w-full h-px bg-slate-700/60"></div>
+          <button id="map-tool-edit-vertices" data-requires-geometry onclick="window.MapEngine?.toggleVertexEdit()" class="map-selector-btn bg-emerald-700 border border-emerald-600 shadow hover:bg-emerald-600 text-white" title="Editar vértices con ajuste topológico" aria-label="Editar vértices"><i class="fas fa-bezier-curve"></i></button>
+          <button id="map-edit-commit" onclick="window.MapEngine?.commitVertexEdit()" class="map-selector-btn hidden bg-green-600 border border-green-500 shadow hover:bg-green-500 text-white" title="Confirmar edición" aria-label="Confirmar edición"><i class="fas fa-check"></i></button>
+          <button id="map-edit-cancel" onclick="window.MapEngine?.cancelVertexEdit()" class="map-selector-btn hidden bg-red-700 border border-red-600 shadow hover:bg-red-600 text-white" title="Cancelar edición" aria-label="Cancelar edición"><i class="fas fa-xmark"></i></button>
+          <div id="map-edit-settings" class="hidden map-edit-settings">
+            <label for="map-snap-tolerance">Snapping (m)</label>
+            <input id="map-snap-tolerance" type="number" min="0.01" max="100" step="0.01" value="0.50">
+            <div class="grid grid-cols-3 gap-1">
+              <button id="map-edit-mode-move" type="button" onclick="window.MapEngine?.setVertexEditMode('move')" class="active" title="Mover vértices"><i class="fas fa-up-down-left-right"></i></button>
+              <button id="map-edit-mode-add" type="button" onclick="window.MapEngine?.setVertexEditMode('add')" title="Agregar vértice sobre un segmento"><i class="fas fa-plus"></i></button>
+              <button id="map-edit-mode-delete" type="button" onclick="window.MapEngine?.setVertexEditMode('delete')" title="Eliminar vértice"><i class="fas fa-minus"></i></button>
+            </div>
+          </div>
+          <button id="map-tool-undo" data-requires-geometry onclick="window.MapEngine?.undoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Deshacer edición (Ctrl+Z)" aria-label="Deshacer edición" disabled><i class="fas fa-rotate-left"></i></button>
+          <button id="map-tool-redo" data-requires-geometry onclick="window.MapEngine?.redoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Rehacer edición (Ctrl+Y)" aria-label="Rehacer edición" disabled><i class="fas fa-rotate-right"></i></button>
+          <button onclick="window.CogoUI?.open()" class="map-selector-btn bg-cyan-700 border border-cyan-600 shadow hover:bg-cyan-600 text-white" title="Construcción COGO" aria-label="Construcción COGO"><i class="fas fa-compass-drafting"></i></button>
+          <button data-requires-geometry onclick="window.TopologyRepairUI?.open()" class="map-selector-btn bg-amber-700 border border-amber-600 shadow hover:bg-amber-600 text-white" title="Corrección topológica asistida" aria-label="Corrección topológica asistida"><i class="fas fa-wand-magic-sparkles"></i></button>
+          <button data-requires-geometry onclick="window.GeoprocessingUI?.open()" class="map-selector-btn bg-violet-700 border border-violet-600 shadow hover:bg-violet-600 text-white" title="Geoprocesamiento" aria-label="Geoprocesamiento"><i class="fas fa-diagram-project"></i></button>
+          <button id="map-tool-split" data-requires-geometry onclick="window.MapEngine?.toggleSplitMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Subdividir polígono (Corte)"><i class="fas fa-cut"></i></button>
+          <button id="map-tool-measure" data-requires-geometry onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Medir distancia"><i class="fas fa-ruler"></i></button>
+          <button id="map-tool-convert" data-requires-geometry onclick="window.MapEngine?.convertPointsToPolygon()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Convertir puntos a polígono"><i class="fas fa-draw-polygon"></i></button>
+          <button id="map-tool-number-parcels" data-requires-geometry onclick="window.MapEngine?.toggleParcelNumberAssignment()" class="map-selector-btn hidden bg-yellow-400 border border-yellow-300 shadow text-slate-950" title="Asignar orden de parcelas" aria-label="Asignar orden de parcelas"><span class="text-lg font-black">#</span></button>
+          <button onclick="document.getElementById('input-geo-import')?.click()" class="map-selector-btn bg-blue-600 border border-blue-500 shadow hover:bg-blue-500 text-white" title="Alzar archivo" aria-label="Alzar archivo"><i class="fas fa-upload"></i></button>
+          <button id="map-tool-environment" data-requires-geometry onclick="window.MapEngine?.downloadEnvironmentCache()" class="map-selector-btn bg-indigo-600 border border-indigo-500 shadow hover:bg-indigo-500 text-white" title="Descargar Parcelas Vecinas (1000m)"><i class="fas fa-cloud-download-alt"></i></button>
+        </div>
+
+        <!-- LAYERS OVERLAY -->
+        <div class="absolute bottom-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur p-3 rounded-xl border border-slate-700" style="min-width:180px;">
+          <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">📍 Capas Activas</div>
+          <div id="active-layers-list" class="space-y-1 text-[10px] text-slate-300">
+            <div>• Mapa base: Satélite</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- IMPORT VIEW -->
+      <div class="main-view" id="view-import" role="tabpanel" aria-labelledby="tab-import" hidden>
+        <div class="flex-1 overflow-auto p-8 bg-slate-900">
+          <h2 class="text-xl font-bold mb-6 text-white flex items-center">
+            <i class="fas fa-file-import mr-3 text-blue-500"></i> Importar Archivos
+          </h2>
+
+          <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+              <h3 class="text-sm font-bold text-slate-300 mb-4 flex items-center">
+                <i class="fas fa-drafting-compass mr-2 text-purple-500"></i> Geometría
+              </h3>
+              <div id="dropzone-geo-import"
+                   class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-emerald-500 hover:bg-emerald-500/10 cursor-pointer transition min-h-[150px] flex flex-col justify-center"
+                   ondragover="event.preventDefault(); this.style.borderColor='#10b981'; this.style.background='rgba(16,185,129,0.06)'"
+                   ondragleave="this.style.borderColor=''; this.style.background=''"
+                   ondrop="event.preventDefault(); window.App?.handleFiles?.(event.dataTransfer.files, 'geo')"
+                   onclick="document.getElementById('input-geo-import')?.click()">
+                <input type="file" id="input-geo-import" hidden multiple accept=".shp,.dxf,.kml,.kmz,.geojson,.json,.zip,.csv,.txt" onchange="window.App?.handleFiles?.(event.target.files, 'geo'); event.target.value=''">
+                <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-3"></i>
+                <p class="text-sm font-semibold text-slate-400 mb-2">Arrastra archivo de geometría</p>
+                <p class="text-xs text-slate-500">SHP, DXF, KML, KMZ, GeoJSON, ZIP, CSV (coordenadas)</p>
+                <p id="geo-file-name-import" class="text-xs text-emerald-400 mt-3 font-bold">Ningún archivo cargado</p>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+              <h3 class="text-sm font-bold text-slate-300 mb-4 flex items-center">
+                <i class="fas fa-file-excel mr-2 text-green-500"></i> Datos
+              </h3>
+              <div class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-green-500 hover:bg-green-500/10 cursor-pointer transition min-h-[150px] flex flex-col justify-center"
+                   onclick="document.getElementById('input-data-import').click()">
+                <input type="file" id="input-data-import" hidden accept=".xlsx,.xls,.csv" onchange="window.App?.handleFile?.(event.target.files[0], 'data')">
+                <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-3"></i>
+                <p class="text-sm font-semibold text-slate-400 mb-2">Arrastra planilla de datos</p>
+                <p class="text-xs text-slate-500">XLSX, CSV (15 campos del Anexo SNC 551/2023)</p>
+                <p id="data-file-name-import" class="text-xs text-blue-400 mt-3 font-bold">Ningún archivo cargado</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/30 rounded-xl p-4 border border-slate-700">
+            <p class="text-xs text-slate-500 uppercase mb-3">📁 Archivos de prueba disponibles</p>
+            <div class="flex gap-4 flex-wrap">
+              <button onclick="window.App?.loadSample?.('points')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 flex items-center gap-2" title="Cargar puntos de prueba">
+                <i class="fas fa-map-marker-alt text-purple-500"></i> puntos_cordenadas.csv
+              </button>
+              <button onclick="window.App?.loadSample?.('polygons')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 flex items-center gap-2" title="Cargar polígonos de prueba">
+                <i class="fas fa-draw-polygon text-blue-500"></i> poligonos_z20.csv
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DATA VIEW -->
+      <div class="main-view" id="view-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+        <div class="flex-1 overflow-auto p-6 bg-slate-900">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Listado de Parcelas</h2>
+            <div class="flex items-center gap-2">
+              <button onclick="window.DataTable?.undoAttributeEdit()" class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700" title="Deshacer cambio de datos"><i class="fas fa-rotate-left"></i></button>
+              <button onclick="window.DataTable?.redoAttributeEdit()" class="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700" title="Rehacer cambio de datos"><i class="fas fa-rotate-right"></i></button>
+              <button onclick="window.DataTable?.autoCompleteWithSNC()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg transition">
+                <i class="fas fa-robot"></i> Autocompletar con SNC
+              </button>
+            </div>
+          </div>
+          <section id="selected-parcel-summary" class="hidden mb-4 rounded-xl border border-yellow-400/40 bg-slate-950/60 p-4" aria-live="polite"></section>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead id="data-table-head" class="bg-slate-800 sticky top-0">
+                <tr>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Padrón</th>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Propietario</th>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Superficie</th>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Distrito</th>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="table-body" class="divide-y divide-slate-800">
+                <tr><td colspan="5" class="p-8 text-center text-slate-500">Cargue archivos para ver datos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIT VIEW -->
+      <div class="main-view" id="view-audit" role="tabpanel" aria-labelledby="tab-audit" hidden>
+        <div class="flex-1 overflow-auto p-6 bg-slate-900">
+          <h2 class="text-xl font-bold mb-4">Resultados aprobados de validación</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="audit-results">
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 border-l-4 border-l-slate-500">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-bold text-slate-200">Estado General</h4>
+                <span class="bg-slate-700 text-slate-400 text-[10px] px-2 py-1 rounded-full font-bold">PENDIENTE</span>
+              </div>
+              <p class="text-xs text-slate-500">Ejecute la validación para ver el resultado</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-view" id="view-lineage" role="tabpanel" aria-labelledby="tab-lineage" hidden>
+        <div class="flex-1 overflow-auto bg-slate-900 p-6">
+          <div class="mb-5"><h2 class="text-xl font-bold text-white">Historial y linaje parcelario</h2><p class="text-xs text-slate-400">Actos que crean, transforman o retiran parcelas del expediente</p></div>
+          <div id="lineage-empty" class="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">Aún no existen actos parcelarios registrados.</div>
+          <div class="overflow-hidden rounded-xl border border-slate-800">
+            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">Operación</th><th class="p-3">Origen</th><th class="p-3">Resultado</th><th class="p-3">Documento</th><th class="p-3">Usuario</th><th class="p-3">Fecha</th></tr></thead><tbody id="lineage-table-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-view" id="view-versions" role="tabpanel" aria-labelledby="tab-versions" hidden>
+        <div class="flex-1 overflow-auto bg-slate-900 p-6">
+          <div class="mb-5"><h2 class="text-xl font-bold text-white">Control de versiones</h2><p class="text-xs text-slate-400">Capturas transaccionales, revisión y aprobación de cambios del expediente</p></div>
+          <div class="mb-5 flex flex-wrap gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <input id="version-message" class="min-w-[280px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" maxlength="240" placeholder="Descripción del cambio">
+            <button onclick="window.VersioningUI?.create()" class="rounded-lg bg-cyan-700 px-4 py-2 text-xs font-bold text-white hover:bg-cyan-600"><i class="fas fa-camera mr-2"></i>Crear versión</button>
+            <button onclick="window.VersioningUI?.compareLatest()" class="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-white hover:bg-slate-600"><i class="fas fa-code-compare mr-2"></i>Comparar últimas</button>
+          </div>
+          <div id="version-comparison" class="mb-4 rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">Seleccione comparar cuando existan al menos dos versiones.</div>
+          <div class="overflow-hidden rounded-xl border border-slate-800">
+            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">Versión</th><th class="p-3">Descripción</th><th class="p-3">Autor</th><th class="p-3">Estado</th><th class="p-3">Fecha</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="versions-table-body"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- README MODAL -->
+  <div id="readmeModal" class="fixed inset-0 bg-black/70 z-[3000] hidden items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="readmeTitle">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-[600px] max-h-[80vh] overflow-hidden">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 id="readmeTitle" class="text-lg font-bold">📖 Manual - Res. SNC N° 551/2023</h2>
+        <button onclick="closeReadme()" class="text-slate-500 hover:text-white text-xl" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[60vh]">
+        <h3 class="text-emerald-500 font-bold mb-2">🚀 Guía Paso a Paso</h3>
+        <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300 mb-4">
+          <li>Prepare sus archivos: DXF/KML (geometría) y Excel (atributos)</li>
+          <li>Cargue la geometría en el panel lateral</li>
+          <li>Cargue los datos en formato Excel</li>
+          <li>Presione "VALIDAR" para revisar errores y advertencias</li>
+          <li>Presione "AUDITAR" para generar el PDF y el expediente ZIP</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALIDATION MODAL -->
+  <div id="validationModal" class="fixed inset-0 z-[4000] items-center justify-center bg-black/70 p-4" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+        <h2 id="modalTitle" class="text-lg font-bold text-white">Resultado de validación</h2>
+        <button onclick="window.App?.closeModal()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modalBody" class="overflow-y-auto p-5 text-slate-700"></div>
+      <div class="flex justify-end gap-3 border-t border-slate-800 px-5 py-4">
+        <button onclick="window.App?.closeModal()" class="rounded-lg bg-slate-800 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700">Cerrar</button>
+        <button id="modalConfirmBtn" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANS MODAL -->
+  <div id="plansModal" class="fixed inset-0 z-[4000] hidden items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="plansTitle">
+    <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+        <h2 id="plansTitle" class="text-lg font-bold text-white">Planes</h2>
+        <button onclick="window.App?.closePlans()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="plansBody" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 text-slate-700"></div>
+      <div class="flex justify-end gap-3 border-t border-slate-800 px-5 py-4">
+        <button onclick="window.App?.closePlans()" class="rounded-lg bg-slate-800 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div id="profileModal" class="fixed inset-0 z-[4100] hidden items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <div class="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4"><h2 id="profileTitle" class="text-lg font-bold text-white">Mi perfil y plan</h2><button onclick="window.App?.closeProfile()" class="rounded p-2 text-slate-400 hover:bg-slate-800"><i class="fas fa-times"></i></button></div>
+      <div class="space-y-4 p-5"><div class="grid grid-cols-2 gap-3"><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Plan actual</span><strong id="profile-plan" class="mt-1 block text-white">—</strong></div><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Estado</span><strong id="profile-status" class="mt-1 block text-emerald-400">—</strong></div></div><label class="block text-xs text-slate-400">Nombre<input id="profile-name" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white"></label><div><h3 class="mb-2 text-xs font-bold uppercase text-slate-400">Pagos recientes</h3><div id="profile-payments" class="max-h-40 space-y-2 overflow-y-auto text-xs text-slate-300">Sin pagos registrados.</div></div></div>
+      <div class="flex flex-wrap justify-end gap-2 border-t border-slate-800 px-5 py-4"><button onclick="window.App?.openPlans()" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white">Renovar o ampliar plan</button><button onclick="window.App?.saveProfile()" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white">Guardar perfil</button></div>
+    </div>
+  </div>
+
+  <!-- CERTIFICATION MODAL -->
+  <div id="certificationModal" class="fixed inset-0 z-[4000] hidden items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="certificationTitle">
+    <div class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+        <div>
+          <h2 id="certificationTitle" class="text-lg font-bold text-white">Auditoría de Cumplimiento</h2>
+          <p id="certificationMeta" class="text-[11px] text-slate-400 mt-1"></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.App?.printCertification()" class="rounded bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700">🖨️ Imprimir</button>
+          <button onclick="window.App?.closeCertification()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div id="certificationBody" class="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+        <div class="p-4">
+          <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Plano de Auditoría</div>
+          <div class="relative h-[420px] w-full rounded-xl border border-slate-700 bg-slate-950 overflow-hidden">
+            <canvas id="certCanvas" class="h-full w-full"></canvas>
+            <div class="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-black/60 px-2 py-1 text-[10px] font-mono text-slate-300">Fondo parcelario + polígono certificado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 24px;border-top:1px solid #1e293b;color:#64748b;font-size:11px;">
+    <span>SNC v3 · Catastro PY Pro</span>
+    <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
+    <span style="display:flex;gap:14px;">
+      <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
+      <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
+    </span>
+  </footer>
+
+  <!-- ENTRY POINT - Vite injecta automáticamente en dev, en build inyecta script/modulepreload -->
+  <script type="module" src="/js/app.js"></script>
+  
+  <!-- showReadme/closeReadme global -->
+  <script>
+  function showReadme() {
+    const modal = document.getElementById('readmeModal');
+    if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  }
+  function closeReadme() {
+    const modal = document.getElementById('readmeModal');
+    if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+  }
+  window.showReadme = showReadme;
+  window.closeReadme = closeReadme;
+  </script>
+
+</body>
+</html>
