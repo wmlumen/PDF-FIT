@@ -8,6 +8,20 @@ import { logger } from './logger.js';
 
 const EXPEDIENTE_STORAGE_KEY = 'snc_v3_expediente_activo';
 
+// Polyfill localStorage para entorno Node.js (tests)
+const isNode = typeof window === 'undefined' || typeof window?.location?.origin === 'undefined';
+let localStoragePolyfill = {};
+if (isNode) {
+    global.localStorage = {
+        getItem: (key) => localStoragePolyfill[key] || null,
+        setItem: (key, value) => { localStoragePolyfill[key] = value; },
+        removeItem: (key) => { delete localStoragePolyfill[key]; },
+        get length() { return Object.keys(localStoragePolyfill).length; },
+        key: (index) => Object.keys(localStoragePolyfill)[index] || null,
+        clear: () => { localStoragePolyfill = {}; }
+    };
+}
+
 function loadPersistedExpediente() {
     try {
         const saved = localStorage.getItem(EXPEDIENTE_STORAGE_KEY);
@@ -34,29 +48,34 @@ class StateManager {
      */
     constructor() {
         const saved = loadPersistedExpediente();
+        
+        // Detectar entorno de test (Node.js sin window o sin window.location.origin)
+        const isNode = typeof window === 'undefined' || typeof window?.location?.origin === 'undefined';
+        const baseUrl = isNode ? 'http://localhost:5556' : window.location.origin;
+        
         this._state = {
             projection: saved.projection || 'EPSG:32721',
             currentDisplayProjection: saved.currentDisplayProjection || 'EPSG:32721',
             lastMouseCoords: [0, 0],
-            geojson: saved.geojson || null,           // FeatureCollection de parcelas
-            excelData: Array.isArray(saved.excelData) ? saved.excelData : [], // Array de objetos con datos tabulares
-            validationResults: null, // Resultados de validación
+            geojson: saved.geojson || null,
+            excelData: Array.isArray(saved.excelData) ? saved.excelData : [],
+            validationResults: null,
             sourceGeoFileName: saved.sourceGeoFileName || '',
             sourceDataFileName: saved.sourceDataFileName || '',
             parcelLineage: Array.isArray(saved.parcelLineage) ? saved.parcelLineage : [],
             projectVersions: Array.isArray(saved.projectVersions) ? saved.projectVersions : [],
-            pendingCallback: null,    // Para operaciones asíncronas
+            pendingCallback: null,
             measureMode: false,
             splitModeActive: false
         };
         
-        this._subscribers = new Map(); // event -> Set of callbacks
+        this._subscribers = new Map();
         this.backend = {
-            baseUrl: '',
-            token: localStorage.getItem('snc_api_token') || '',
-            user: JSON.parse(localStorage.getItem('snc_api_user') || 'null'),
-            currentProjectId: localStorage.getItem('snc_project_id') || '',
-            currentExpedienteId: localStorage.getItem('snc_expediente_id') || ''
+            baseUrl: baseUrl,
+            token: (isNode ? '' : localStorage.getItem('snc_api_token') || ''),
+            user: (isNode ? null : JSON.parse(localStorage.getItem('snc_api_user') || 'null')),
+            currentProjectId: (isNode ? '' : localStorage.getItem('snc_project_id') || ''),
+            currentExpedienteId: (isNode ? '' : localStorage.getItem('snc_expediente_id') || '')
         };
     }
 

@@ -22,10 +22,18 @@
   
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-</head>
-
-<body class="bg-slate-950 text-slate-200 h-screen overflow-hidden">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  </head>
+  <script type="importmap">
+  {
+    "imports": {
+      "@coordination/": "/.opencode/coordination/",
+      "@coordination/coordinator.mjs": "/.opencode/coordination/coordinator.mjs",
+      "@coordination/graphClient.mjs": "/.opencode/coordination/graphClient.mjs"
+    }
+  }
+  </script>
+  <body class="bg-slate-950 text-slate-200 h-screen overflow-hidden">
 
   <!-- LOADING SCREEN -->
   <div id="loading" role="status" aria-label="Cargando aplicación municipal">
