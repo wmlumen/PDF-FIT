@@ -32,10 +32,10 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 3. **No "arreglar" deshabilitando.** Prohibido comentar tests, relajar `adminMiddleware`, ampliar `CORS_ORIGIN` a `*` o desactivar la CSP para que algo pase.
 4. **Secretos fuera del repo, siempre.** Nada de credenciales en código, scripts, docs ni tests. Si una tarea necesita una, se inyecta por variable de entorno.
 5. **Respetar el protocolo multi-IA** de [`AGENTS.md`](../AGENTS.md): `route → check → lock → cambio + test → pass|fail`.
-6. **No editar artefactos generados.** `dist/`, `data/*.sqlite*` y `graphify-out/` se regeneran; el grafo se actualiza con `graphify update .`, nunca a mano.
-7. **Mantener el grafo al día** cuando el cambio sea estructural: ejecutar `graphify update .` y verificar que `graph.json.built_at_commit` coincida con `git rev-parse HEAD`.
+6. **No editar artefactos generados.** `dist/`, `data/*.sqlite*` y `graphify-out/` se regeneran; el grafo se actualiza con `npm run graph:refresh`, nunca a mano.
+7. **Mantener el grafo al día** cuando el cambio sea estructural: ejecutar `npm run graph:refresh` y verificar que `graph.json.built_at_commit` coincida con el último commit indexado.
 8. **Mantener el espejo de auditoría:** tras editar el informe o este plan, ejecutar `npm run audit:sync` (y `npm run audit:sync -- --check` en CI). `graphify-out/auditoria/` no se edita a mano.
-9. **Mantener indexada la auditoría:** los hallazgos viven como nodos de `graph.json`. Tras un `graphify update .` (que descarta docs) ejecutar `npm run audit:graph`, o directamente `npm run graph:refresh`.
+9. **Mantener el grafo completo:** `npm run audit:graph` indexa todo el corpus indexable (133 archivos) y purga nodos de archivos borrados o sensibles. Tras un `graphify update .` (que descarta docs) ejecutar `npm run graph:refresh`.
 
 ---
 
@@ -79,7 +79,7 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 | **A2-5** | Escapar HTML del checkout y sanitizar reportes con DOMPurify | `server-api.js` (905-944, 1208-1250) | Payloads `<svg onload>`, `javas&#99;ript:` neutralizados; tests de regresión |
 | **A2-6** | Logs sin PII + rotación + escritura asíncrona | `db.cjs` (19-26, 211-239), `cacheDb.js` (31-59) | `db.log` no contiene emails/hashes/geometrías; rotación activa |
 | **A2-7** | Consolidar capa de datos, borrar huérfanos y deduplicar `public/` | `db.js`, `js/payment.js`, `js/firebase-client.js`, `public/css/css`, `public/img/img` | `depcheck` sin huérfanos; un solo `css/styles.css` |
-| **A2-8** | Mantener `graphify-out/` actualizado (código y docs) y fuera del deploy público | `graphify-out/*`, `scripts/graphify_index_docs.py` | `npm run audit:graph` deja los hallazgos como nodos de `graph.json`; `built_at_commit` coincide con el último commit indexado; el grafo no se descarga desde el sitio (C-03) |
+| **A2-8** | Mantener `graphify-out/` actualizado con el corpus completo y fuera del deploy público | `graphify-out/*`, `scripts/graphify_index_docs.py` | `npm run audit:graph` deja 0 archivos indexables fuera del grafo y sin credenciales; `built_at_commit` coincide con el último commit indexado; el grafo no se descarga desde el sitio (C-03) |
 
 ---
 

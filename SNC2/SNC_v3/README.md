@@ -54,7 +54,7 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 
 | Artefacto | Contenido |
 |---|---|
-| [`graph.json`](graphify-out/graph.json) | Grafo AST de código + documentación: **821 nodos y 1.461 aristas** (incluye la auditoría y el plan) |
+| [`graph.json`](graphify-out/graph.json) | **Grafo completo: 1.385 nodos y 2.152 aristas** — 133 archivos (código, tests, docs, HTML y configuración) en 130 comunidades |
 | [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: 139 nodos y 801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
 | [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) | Reporte arquitectónico: hubs, comunidades y preguntas sugeridas |
 | [`graph.html`](graphify-out/graph.html) | Visor interactivo (abrir en navegador) |
@@ -63,18 +63,20 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 ```bash
 node .opencode/coordination/cli.mjs route "descripcion de la tarea"   # ruteo sobre el grafo
 graphify query "como funciona el flujo de expedientes"                # BFS/DFS sobre graph.json
-npm run graph:refresh                                                 # graphify update + reindexar docs (recomendado)
-npm run audit:graph                                                   # solo reindexar auditoría + plan (sin LLM)
+npm run graph:refresh                                                 # graphify update + reindexar todo (recomendado)
+npm run audit:graph                                                   # indexar todo el corpus (sin LLM)
 npm run audit:sync                                                    # regenerar el espejo de auditoría
 npm run audit:sync -- --check                                         # verificar que esté al día (CI)
 ```
 
 > ⚠️ `graphify update .` reconstruye el grafo solo con código y **descarta los nodos de documentación**.
-> Por eso existe `npm run graph:refresh`, que actualiza el código y vuelve a indexar la auditoría y el plan.
+> Por eso existe `npm run graph:refresh`, que actualiza el código y vuelve a indexar todo el corpus.
+> Quedan fuera por seguridad: `data/`, `ejercicio/`, `serviceAccountKey.json`, `_update_user.cjs`,
+> `probar_members.cjs`, `.env`, logs y binarios (`node_modules/`, `dist/`).
 
-Estado al 2026-10-18: grafo construido en el commit `6977dc0`, con la auditoría (35 nodos) y el plan
-(10 nodos) indexados en las comunidades «Auditoría 2026-10-18» y «Plan de remediación». El grafo
-**se regenera, no se edita a mano**, y no debe publicarse en el sitio (ver C-03).
+Estado al 2026-10-18: grafo construido en el commit `6977dc0`; 133 archivos y 130 comunidades. Incluye la
+auditoría y el plan, los 11 tests, las 13 páginas HTML (como nodo de archivo), `.opencode/` y la
+configuración. El grafo **se regenera, no se edita a mano**, y no debe publicarse en el sitio (ver C-03).
 
 ---
 

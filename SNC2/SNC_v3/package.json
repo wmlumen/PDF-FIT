@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "audit:sync": "node scripts/sync-auditoria.mjs",
-    "audit:graph": "python scripts/graphify_index_docs.py docs/AUDITORIA_SNC_v3_2026-10-18.md docs/PLAN_REMEDIACION_AUDITORIA.md",
+    "audit:graph": "python scripts/graphify_index_docs.py --all",
     "graph:refresh": "graphify update . && npm run audit:graph",
     "predeploy": "bash scripts/promotion_gate.sh && npm test",
     "deploy": "firebase deploy --only hosting,functions",
