@@ -44,8 +44,30 @@ Reglas adicionales mientras la auditoría esté abierta:
 - Un hallazgo por cambio; no mezclar con refactors.
 - No cerrar un hallazgo sin un test o una verificación reproducible.
 - No "arreglar" deshabilitando tests, relajando auth/CORS/CSP o ampliando permisos.
-- Nunca commitear secretos, bases, logs ni artefactos generados.
+- Nunca commitear secretos, bases ni logs; `dist/` tampoco. `graphify-out/` **sí** se versiona: es el grafo del repo.
 - Registrar el resultado con `pass`/`fail` antes de terminar la tarea.
+
+### 🧠 Grafo del repositorio (`graphify-out/`)
+
+La estructura viva y las relaciones del proyecto están indexadas en [`graphify-out/`](graphify-out/), que se
+versiona y es la **fuente de verdad** para el ruteo de tareas:
+
+| Artefacto | Contenido |
+|---|---|
+| [`graph.json`](graphify-out/graph.json) | Grafo AST de código: ~743 nodos y ~1.373 aristas (funciones, clases, imports) |
+| [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: ~139 nodos y ~801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
+| [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) | Reporte arquitectónico: hubs, comunidades y preguntas sugeridas |
+| [`graph.html`](graphify-out/graph.html) | Visor interactivo (abrir en navegador) |
+
+```bash
+node .opencode/coordination/cli.mjs route "descripcion de la tarea"   # ruteo sobre el grafo
+graphify query "como funciona el flujo de expedientes"                # BFS/DFS sobre graph.json
+graphify update .                                                     # re-indexar tras cambios
+```
+
+Estado al 2026-10-18: grafo construido en el commit `259c361`; hay cambios posteriores sin re-indexar y el
+nombrado de comunidades quedó pendiente (`.graphify_labels.pending.json`, requiere backend LLM). El grafo
+**se regenera, no se edita a mano**, y no debe publicarse en el sitio (ver C-03).
 
 ---
 
@@ -91,6 +113,7 @@ Notas:
 | `db.cjs`, `js/firestore-db.cjs`, `cacheDb.js` | Persistencia (SQLite / Firestore / caché catastral) |
 | `tests/` | 11 suites `node:test` |
 | `docs/` | Documentación, auditoría y plan de remediación |
+| `graphify-out/` | Grafo del repositorio (AST + dominio), reporte y visor. Versionado; **no** público |
 | `scripts/` | Backup/restore SQLite, gate de promoción, utilidades |
 | `.opencode/coordination/` | Coordinación multi-IA (locks, errores, skills) — **solo CLI, nunca desde el navegador** |
 | `data/` | Datos locales y capas SIG (no versionar ni publicar) |
@@ -114,6 +137,7 @@ Notas:
 
 - [Auditoría técnica 2026-10-18](docs/AUDITORIA_SNC_v3_2026-10-18.md)
 - [Plan de remediación](docs/PLAN_REMEDIACION_AUDITORIA.md)
+- [Grafo del repositorio (reporte)](graphify-out/GRAPH_REPORT.md)
 - [Protocolo multi-IA](AGENTS.md)
 - [Estructura y reglas de seguridad](docs/PROJECT_STRUCTURE.md)
 - [Deploy](DEPLOY.md) · [Deploy en Windows](DEPLOY_WINDOWS.md)

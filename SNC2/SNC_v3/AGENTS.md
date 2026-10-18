@@ -40,6 +40,22 @@ Antes de la primera acción en este repositorio, leer en este orden:
 
 ---
 
+## 1.1 Fuente de la Verdad: `graphify-out/`
+
+La estructura viva del repositorio y sus relaciones están indexadas en `graphify-out/`:
+* **`graphify-out/graph.json`**: Grafo AST de código (funciones, clases, imports y dependencias).
+* **`graphify-out/grafo_dominio.json`**: Grafo de dominio (tablas SQLite, schemas, endpoints de API REST).
+* **`graphify-out/GRAPH_REPORT.md`**: Reporte arquitectónico, hubs de navegación y comunidades de código.
+* **`graphify-out/graph.html`**: Visor gráfico interactivo (abrir en navegador para inspección visual).
+
+La CLI de coordinación (`node .opencode/coordination/cli.mjs route`) consulta automáticamente ambos grafos en `graphify-out/` para darte la ruta exacta en milisegundos con 0 costo de tokens.
+Al completar cambios estructurales grandes, actualiza el grafo con:
+```bash
+graphify update .
+```
+
+---
+
 ## 2. Ciclo de Vida Obligatorio para Cada Tarea
 
 Antes de tocar cualquier archivo, cada agente debe ejecutar este flujo estandarizado usando la CLI de coordinación:

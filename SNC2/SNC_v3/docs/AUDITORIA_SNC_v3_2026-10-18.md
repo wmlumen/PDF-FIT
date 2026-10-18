@@ -52,7 +52,7 @@ Componentes principales:
 | Frontend core | `js/export.js` (2.298), `js/mapEngine.js` (1.884), `js/parser.js` (852), `js/validator.js` (657) | GIS, validación normativa, exportación |
 | Entradas HTML | `index.html`, `index-municipal.html`, `admin.html`, `fluxograma.html` + 9 secundarias | Sin framework; scripts inline y módulos ESM |
 | Configuración | `vite.config.js`, `firebase.json`, `firebase.scripts.json`, `.eslintrc.cjs`, `tsconfig.json` | Build, hosting y calidad |
-| Artefactos de agentes | `graphify-out/` (≈600 KB), `.opencode/coordination/` (≈1.400 líneas) | Versionados, no forman parte del producto |
+| Artefactos de agentes | `graphify-out/` (grafo AST + dominio, ≈1,2 MB) y `.opencode/coordination/` (≈1.400 líneas) | Versionados a propósito: `graphify-out/` es la fuente de verdad del repo; ninguno forma parte del runtime ni debe publicarse |
 
 ---
 
@@ -282,7 +282,7 @@ Los 11 tests cubren lógica pura (`validator`, `export`, `parser`, `cogo`, `geop
 | B-01 | Ruido de repositorio | `Nodos error (rojo punteado）` (archivo vacío con caracteres inválidos), `cacheDb.db` (0 bytes), `docs/frontend-p2-improvements.diff`, `members_api_block.js` (fragmento suelto), `firebase.scripts.json` (config alternativa), `.opencode/coordination/` (~1.400 líneas de meta-herramientas), `probar_members.cjs`, `fix_members_auth.mjs`, `register-errors.mjs` |
 | B-02 | Encoding: un solo caso real (el resto era falso positivo) | Solo `js/mapEngine.js:1852` tiene doble codificación UTF-8 (`cartogrÃ¡ficas`, `certificaciÃ³n`). El resto de los archivos —incluidos `login-directo.html`, `js/app.js`, `DEPLOY.md`, `js/topology.worker.js`— es UTF-8 válido; el "mojibake" observado era un artefacto de la consola de Windows. Corregir la línea y añadir `.editorconfig` + check de encoding en CI |
 | B-03 | Rutas y credenciales hardcodeadas | `deploy-windows.ps1:36-37` rutas absolutas de la máquina del autor; `probar_members.cjs:30` credenciales `santo.palo@gmail.com` / `123*`. Ese correo corresponde a una cuenta **admin** en la base local; verificado que `123*` no coincide con el hash almacenado, pero el correo y el patrón de contraseña quedan expuestos |
-| B-04 | Artefactos de agentes versionados | `graphify-out/graph.json` (483 KB), `graph.html` (567 KB), `.graphify_analysis.json`, `cache/ast/**`; no están en `.gitignore` |
+| B-04 | Grafo del repo versionado (decisión del proyecto) | `graphify-out/` (`graph.json`, `grafo_dominio.json`, `GRAPH_REPORT.md`, `graph.html`, `cache/`) se versiona a propósito como fuente de verdad. Riesgo real: se publica por C-03 y está desactualizado (`built_at_commit: 259c361`). Mantenerlo con `graphify update .` y excluirlo del deploy; nunca editarlo a mano |
 | B-05 | Archivos WAL/SHM versionados | `data/catastro_cache.db-shm`, `data/catastro_cache.db-wal` (binarios que cambian en cada ejecución) |
 | B-06 | Configuración TypeScript/ESLint histórica | `tsconfig.json` con `server/**/*` inexistente y claves duplicadas; `.eslintrc.cjs` incompatible con ESLint 10; sin `.editorconfig` |
 | B-07 | Rendimiento del caché catastral | `cacheDb.js:135-140` guarda features con `await` secuencial (N+1) y ejecuta `pruneCache()` (COUNT + DELETE) en **cada** lote; con 20.000 filas es O(n) por request |
