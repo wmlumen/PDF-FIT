@@ -146,13 +146,15 @@ ${critical}
 ## Cómo consumirlo
 
 \`\`\`bash
-node scripts/sync-auditoria.mjs --check     # verifica que el espejo esté al día
+npm run audit:graph                          # reindexa auditoría + plan en graph.json (sin LLM)
+npm run audit:sync -- --check                # verifica que el espejo esté al día
 node .opencode/coordination/cli.mjs route "arreglar autorizacion de expedientes"
 jq '.findings[] | select(.severity=="critico")' graphify-out/auditoria/auditoria.json
 \`\`\`
 
-> El grafo \`graph.json\` todavía **no indexa** estos documentos (solo código y 4 docs previos).
-> Para que \`route\`/graphify query los encuentren hay que correr el pipeline semántico de graphify.
+> El grafo \`graph.json\` **indexa** este informe y el plan como nodos (comunidades «Auditoría 2026-10-18»
+> y «Plan de remediación»), así que \`route\` y \`graphify query\` los encuentran. Para reindexar tras editar
+> los documentos: \`npm run audit:graph\`.
 `;
 }
 

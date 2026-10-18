@@ -63,69 +63,58 @@
       "js_mapengine_updateutmcoordsdisplay",
       "js_mapengine_updatevertexcoordinate",
       "js_mapengine_validateeditedgeojson",
-      "js_segmentlengths",
-      "js_segmentlengths_calculateringsegments",
-      "js_segmentlengths_formatmeters",
       "js_utils_calcularcentroide",
       "js_utils_calcularmetricasplanasutm",
       "js_utils_formatnumber",
       "js_utils_showtoast"
     ],
     "1": [
-      "js_config",
-      "js_config_campos_rurales",
-      "js_config_campos_urbanos",
-      "js_config_config_municipal",
-      "js_config_epsg_32720",
-      "js_config_epsg_32721",
-      "js_config_especificacion_campos_snc",
-      "js_config_map_config",
-      "js_config_max_vertices_before_simplify",
-      "js_config_mensajes",
-      "js_config_metadatos_geodesicos",
-      "js_config_proj_32720",
-      "js_config_proj_32721",
-      "js_config_simplify_threshold",
-      "js_config_tolerancias",
-      "js_config_usos_tierra",
-      "js_config_utm_zone_ranges",
-      "js_config_wkt_32721",
-      "js_municipal",
-      "js_municipal_runmunicipalvalidation",
-      "js_municipal_validadormunicipal",
-      "js_municipal_validadormunicipal_constructor",
-      "js_municipal_validadormunicipal_estimarfrente",
-      "js_municipal_validadormunicipal_generarreportemunicipal",
-      "js_municipal_validadormunicipal_validarbalanceloteamiento",
-      "js_municipal_validadormunicipal_validarloteurbano",
-      "js_municipal_validadormunicipal_validarretiros",
-      "js_municipal_validadormunicipaldefault",
-      "js_parser_getparsinglogs",
-      "js_utils",
-      "js_utils_delay",
-      "js_utils_isnumeric",
-      "js_utils_simplifygeometryifneeded",
-      "js_validator",
-      "js_validator_closemodal",
-      "js_validator_dobboxesoverlap",
-      "js_validator_formatcoordinate",
-      "js_validator_normalizarnombreterritorial",
-      "js_validator_obtenercodigo",
-      "js_validator_runexportvalidation",
-      "js_validator_runvalidation",
-      "js_validator_validararchivospresentes",
-      "js_validator_validarcamposobligatorios",
-      "js_validator_validarcierreanillos",
-      "js_validator_validarcoincidenciageografica",
-      "js_validator_validarconectividadlinea",
-      "js_validator_validargeometria",
-      "js_validator_validarproyeccion",
-      "js_validator_validarregistroshuerfanos",
-      "js_validator_validarrelacionpoligonostabla",
-      "js_validator_validarsuptitulo",
-      "js_validator_validartoleranciaarea",
-      "js_validator_validartopologiasolapamientos",
-      "js_validator_validarzonasutm"
+      "cachedb",
+      "cachedb_cachelog",
+      "cachedb_db",
+      "cachedb_dbdir",
+      "cachedb_dbpath",
+      "cachedb_getfeaturecontainingpoint",
+      "cachedb_getfeaturesbybbox",
+      "cachedb_log_path",
+      "cachedb_max_cache_rows",
+      "cachedb_promisify",
+      "cachedb_promisifyrun",
+      "cachedb_prunecache",
+      "cachedb_retention_days",
+      "cachedb_savefeature",
+      "cachedb_savefeaturesbatch",
+      "package",
+      "package_name",
+      "package_private",
+      "package_type",
+      "package_version",
+      "ref_docx",
+      "ref_dxf_parser",
+      "ref_eslint",
+      "ref_fs",
+      "ref_graphify",
+      "ref_husky",
+      "ref_jsonwebtoken",
+      "ref_jszip",
+      "ref_lint_staged",
+      "ref_node_cache",
+      "ref_nodemailer",
+      "ref_path",
+      "ref_prettier",
+      "ref_proj4",
+      "ref_shp_write",
+      "ref_shpjs",
+      "ref_sqlite3",
+      "ref_terser",
+      "ref_turf_turf",
+      "ref_typescript",
+      "ref_typescript_eslint_eslint_plugin",
+      "ref_typescript_eslint_parser",
+      "ref_vite",
+      "ref_vitejs_plugin_legacy",
+      "ref_xlsx",
+      "vite_config"
     ],
     "2": [
       "js_admin_diagnostic",
@@ -172,6 +161,50 @@
       "ref_express"
     ],
     "3": [
+      "js_cogo",
+      "js_cogo_buildcogoring",
+      "js_cogo_normalizeazimuth",
+      "js_cogo_parsebearing",
+      "js_cogo_parsecogocourses",
+      "js_cogo_todegrees",
+      "js_cogo_toradians",
+      "js_cogo_validatecourse",
+      "js_cogoui",
+      "js_cogoui_close",
+      "js_cogoui_cogoui",
+      "js_cogoui_createparcel",
+      "js_cogoui_open",
+      "js_cogoui_preview",
+      "js_cogoui_shoelacearea",
+      "js_geoprocessing",
+      "js_geoprocessing_booleanresult",
+      "js_geoprocessing_ensurefeature",
+      "js_geoprocessing_executegeoprocessing",
+      "js_geoprocessingui",
+      "js_geoprocessingui_close",
+      "js_geoprocessingui_featurelabel",
+      "js_geoprocessingui_modal",
+      "js_geoprocessingui_open",
+      "js_geoprocessingui_run",
+      "js_lineage",
+      "js_lineage_applylineageevent",
+      "js_lineage_clone",
+      "js_lineage_createlineageevent",
+      "js_lineage_getparcelid",
+      "js_lineage_technicalid",
+      "js_topologyrepair",
+      "js_topologyrepair_buildtopologyrepairpreview",
+      "js_topologyrepair_cleangeometry",
+      "js_topologyrepair_cleanring",
+      "js_topologyrepair_clone",
+      "js_topologyrepair_same",
+      "js_topologyrepairui",
+      "js_topologyrepairui_apply",
+      "js_topologyrepairui_clearlayer",
+      "js_topologyrepairui_close",
+      "js_topologyrepairui_open"
+    ],
+    "4": [
       "tsconfig",
       "tsconfig_compileroptions",
       "tsconfig_compileroptions_allowjs",
@@ -214,8 +247,7 @@
       "tsconfig_include",
       "tsconfig_paths_server"
     ],
-    "4": [
-      "docx",
+    "5": [
       "js_export",
       "js_export_buildresolutionchecklist",
       "js_export_calculartoleranciasnc",
@@ -249,13 +281,14 @@
       "js_exportformats_selectofficialproperties",
       "js_exportformats_xml_escape",
       "js_parser_downloadparsinglog",
+      "js_segmentlengths",
+      "js_segmentlengths_calculateringsegments",
+      "js_segmentlengths_formatmeters",
       "js_utils_downloadfile",
       "js_utils_formatrumbo",
-      "js_utils_generarderrotero",
-      "ref_docx"
+      "js_utils_generarderrotero"
     ],
-    "5": [
-      "js_config_campos_requeridos",
+    "6": [
       "js_datatable",
       "js_datatable_addrow",
       "js_datatable_attributehistory",
@@ -291,7 +324,7 @@
       "js_geometryhistory_geometryhistory_syncexternal",
       "js_geometryhistory_geometryhistory_undo"
     ],
-    "6": [
+    "7": [
       "js_geofeatures",
       "js_geofeatures_explodepolygonfeatures",
       "js_parser",
@@ -327,11 +360,10 @@
       "js_utils_sanitizestring",
       "js_utils_showloading"
     ],
-    "7": [
+    "8": [
       "ref_node_module",
       "ref_pg",
       "server_api",
-      "server_api_adminmiddleware",
       "server_api_app",
       "server_api_authmiddleware",
       "server_api_countexportstoday",
@@ -358,43 +390,43 @@
       "server_api_tempprojects",
       "server_api_user_roles",
       "server_api_user_statuses",
-      "server_api_verifypassword"
-    ],
-    "8": [
-      "js_geoprocessing",
-      "js_geoprocessing_booleanresult",
-      "js_geoprocessing_ensurefeature",
-      "js_geoprocessing_executegeoprocessing",
-      "js_geoprocessingui",
-      "js_geoprocessingui_close",
-      "js_geoprocessingui_featurelabel",
-      "js_geoprocessingui_modal",
-      "js_geoprocessingui_open",
-      "js_geoprocessingui_run",
-      "js_lineage",
-      "js_lineage_applylineageevent",
-      "js_lineage_clone",
-      "js_lineage_createlineageevent",
-      "js_lineage_getparcelid",
-      "js_lineage_technicalid",
-      "js_topologyrepair",
-      "js_topologyrepair_buildtopologyrepairpreview",
-      "js_topologyrepair_cleangeometry",
-      "js_topologyrepair_cleanring",
-      "js_topologyrepair_clone",
-      "js_topologyrepair_same",
-      "js_topologyrepairui",
-      "js_topologyrepairui_apply",
-      "js_topologyrepairui_clearlayer",
-      "js_topologyrepairui_close",
-      "js_topologyrepairui_open"
+      "server_api_verifypassword",
+      "start_server",
+      "start_server_sh__entry"
     ],
     "9": [
-      "js_state_loadpersistedexpediente",
+      "argparse",
+      "collections",
+      "datetime",
+      "graphify_analyze",
+      "graphify_build",
+      "graphify_cluster",
+      "graphify_export",
+      "graphify_extract",
+      "graphify_report",
+      "json",
+      "path",
+      "pathlib",
+      "scripts_graphify_index_docs",
+      "scripts_graphify_index_docs_backup",
+      "scripts_graphify_index_docs_base_extraction",
+      "scripts_graphify_index_docs_fail",
+      "scripts_graphify_index_docs_hub_label",
+      "scripts_graphify_index_docs_load_json",
+      "scripts_graphify_index_docs_main",
+      "scripts_graphify_index_docs_merge",
+      "scripts_graphify_index_docs_rationale_2",
+      "scripts_graphify_index_docs_rationale_67",
+      "scripts_graphify_index_docs_rationale_95",
+      "scripts_graphify_index_docs_reuse_labels",
+      "scripts_graphify_index_docs_reuse_labels_doc_kind",
+      "shutil",
+      "sys"
+    ],
+    "10": [
       "js_state_statemanager",
       "js_state_statemanager_assignparcelnumber",
       "js_state_statemanager_clear",
-      "js_state_statemanager_constructor",
       "js_state_statemanager_get",
       "js_state_statemanager_getbackendexpediente",
       "js_state_statemanager_getbackendproject",
@@ -417,33 +449,6 @@
       "js_state_statemanager_syncgeometrytoparcelrows",
       "js_state_statemanager_synctobackend"
     ],
-    "10": [
-      "js_lineageui",
-      "js_lineageui_escapehtml",
-      "js_lineageui_renderlineage",
-      "js_municipalclient",
-      "js_municipalclient_municipalclient",
-      "js_municipalclient_renderbalancemunicipal",
-      "js_municipalclient_rendermunicipalaudit",
-      "js_state",
-      "js_state_state",
-      "js_versioning",
-      "js_versioning_clone",
-      "js_versioning_compareversions",
-      "js_versioning_createprojectversion",
-      "js_versioning_transitionversion",
-      "js_versioningui",
-      "js_versioningui_comparelatest",
-      "js_versioningui_create",
-      "js_versioningui_persistversions",
-      "js_versioningui_render",
-      "js_versioningui_transition",
-      "logger",
-      "ref_logger_js",
-      "ref_utils_js",
-      "state",
-      "utils"
-    ],
     "11": [
       "db_bcrypt",
       "db_cjs_db",
@@ -464,37 +469,84 @@
       "db_promisifyrun",
       "db_public_reports",
       "db_recovery",
+      "db_safejson",
       "db_sqlite3",
       "db_usage",
-      "db_users",
-      "ref_bcrypt"
+      "db_users"
     ],
     "12": [
-      "package",
-      "package_name",
-      "package_private",
-      "package_type",
-      "package_version",
-      "ref_dxf_parser",
-      "ref_eslint",
-      "ref_graphify",
-      "ref_husky",
-      "ref_jsonwebtoken",
-      "ref_jszip",
-      "ref_lint_staged",
-      "ref_node_cache",
-      "ref_nodemailer",
-      "ref_prettier",
-      "ref_proj4",
-      "ref_shp_write",
-      "ref_shpjs",
-      "ref_terser",
-      "ref_typescript",
-      "ref_typescript_eslint_eslint_plugin",
-      "ref_typescript_eslint_parser",
-      "ref_xlsx"
+      "js_config",
+      "js_config_campos_rurales",
+      "js_config_campos_urbanos",
+      "js_config_config_municipal",
+      "js_config_epsg_32720",
+      "js_config_epsg_32721",
+      "js_config_especificacion_campos_snc",
+      "js_config_map_config",
+      "js_config_max_vertices_before_simplify",
+      "js_config_mensajes",
+      "js_config_metadatos_geodesicos",
+      "js_config_proj_32720",
+      "js_config_proj_32721",
+      "js_config_simplify_threshold",
+      "js_config_tolerancias",
+      "js_config_usos_tierra",
+      "js_config_utm_zone_ranges",
+      "js_config_wkt_32721",
+      "js_municipal",
+      "js_municipal_validadormunicipaldefault",
+      "js_utils",
+      "js_utils_delay",
+      "js_utils_simplifygeometryifneeded"
     ],
     "13": [
+      "js_parser_getparsinglogs",
+      "js_utils_isnumeric",
+      "js_validator",
+      "js_validator_closemodal",
+      "js_validator_dobboxesoverlap",
+      "js_validator_formatcoordinate",
+      "js_validator_normalizarnombreterritorial",
+      "js_validator_obtenercodigo",
+      "js_validator_runexportvalidation",
+      "js_validator_runvalidation",
+      "js_validator_validararchivospresentes",
+      "js_validator_validarcamposobligatorios",
+      "js_validator_validarcierreanillos",
+      "js_validator_validarcoincidenciageografica",
+      "js_validator_validarconectividadlinea",
+      "js_validator_validargeometria",
+      "js_validator_validarproyeccion",
+      "js_validator_validarregistroshuerfanos",
+      "js_validator_validarrelacionpoligonostabla",
+      "js_validator_validarsuptitulo",
+      "js_validator_validartoleranciaarea",
+      "js_validator_validartopologiasolapamientos",
+      "js_validator_validarzonasutm"
+    ],
+    "14": [
+      "js_lineageui",
+      "js_lineageui_escapehtml",
+      "js_lineageui_renderlineage",
+      "js_state",
+      "js_state_length",
+      "js_state_loadpersistedexpediente",
+      "js_state_localstoragepolyfill",
+      "js_state_state",
+      "js_state_statemanager_constructor",
+      "js_versioning",
+      "js_versioning_clone",
+      "js_versioning_compareversions",
+      "js_versioning_createprojectversion",
+      "js_versioning_transitionversion",
+      "js_versioningui",
+      "js_versioningui_comparelatest",
+      "js_versioningui_create",
+      "js_versioningui_persistversions",
+      "js_versioningui_render",
+      "js_versioningui_transition"
+    ],
+    "15": [
       "js_firestore_db",
       "js_firestore_db_admin",
       "js_firestore_db_db",
@@ -515,7 +567,7 @@
       "js_firestore_db_usage",
       "js_firestore_db_users"
     ],
-    "14": [
+    "16": [
       "package_devdependencies",
       "package_devdependencies_dxf_parser",
       "package_devdependencies_eslint",
@@ -535,45 +587,10 @@
       "package_devdependencies_vitejs_plugin_legacy",
       "package_devdependencies_xlsx"
     ],
-    "15": [
-      "cachedb",
-      "cachedb_cachelog",
-      "cachedb_db",
-      "cachedb_dbdir",
-      "cachedb_dbpath",
-      "cachedb_getfeaturecontainingpoint",
-      "cachedb_getfeaturesbybbox",
-      "cachedb_log_path",
-      "cachedb_max_cache_rows",
-      "cachedb_promisify",
-      "cachedb_promisifyrun",
-      "cachedb_prunecache",
-      "cachedb_retention_days",
-      "cachedb_savefeature",
-      "cachedb_savefeaturesbatch",
-      "ref_sqlite3",
-      "ref_turf_turf"
-    ],
-    "16": [
-      "js_app",
-      "js_app_index",
-      "js_app_index_app",
-      "js_app_index_graphcoordinator",
-      "js_app_index_initializeagentswarm",
-      "js_app_index_updateprogressstep",
-      "js_utils_actualizarestadoproyecto",
-      "opencode_coordination_coordinator",
-      "opencode_coordination_coordinator_graphcoordinator",
-      "ref_cogoui_js",
-      "ref_geoprocessingui_js",
-      "ref_lineageui_js",
-      "ref_topologyrepairui_js",
-      "ref_versioningui_js",
-      "register_errors",
-      "register_errors_gc"
-    ],
     "17": [
       "package_scripts",
+      "package_scripts_audit_graph",
+      "package_scripts_audit_sync",
       "package_scripts_backup_db",
       "package_scripts_build",
       "package_scripts_deploy",
@@ -591,21 +608,23 @@
       "package_scripts_typecheck"
     ],
     "18": [
-      "js_cogo",
-      "js_cogo_buildcogoring",
-      "js_cogo_normalizeazimuth",
-      "js_cogo_parsebearing",
-      "js_cogo_parsecogocourses",
-      "js_cogo_todegrees",
-      "js_cogo_toradians",
-      "js_cogo_validatecourse",
-      "js_cogoui",
-      "js_cogoui_close",
-      "js_cogoui_cogoui",
-      "js_cogoui_createparcel",
-      "js_cogoui_open",
-      "js_cogoui_preview",
-      "js_cogoui_shoelacearea"
+      "ref_node_url",
+      "scripts_sync_auditoria",
+      "scripts_sync_auditoria_buildjson",
+      "scripts_sync_auditoria_buildreadme",
+      "scripts_sync_auditoria_check",
+      "scripts_sync_auditoria_clean",
+      "scripts_sync_auditoria_main",
+      "scripts_sync_auditoria_out_dir",
+      "scripts_sync_auditoria_parsefindings",
+      "scripts_sync_auditoria_phase",
+      "scripts_sync_auditoria_readnormalized",
+      "scripts_sync_auditoria_root",
+      "scripts_sync_auditoria_severity",
+      "scripts_sync_auditoria_severity_label",
+      "scripts_sync_auditoria_severity_order",
+      "scripts_sync_auditoria_sha256",
+      "scripts_sync_auditoria_sources"
     ],
     "19": [
       "config_env",
@@ -624,6 +643,20 @@
       "ref_dotenv"
     ],
     "20": [
+      "agents",
+      "agents_0_contexto_obligatorio_auditoría_abierta_2026_10_18",
+      "agents_1_1_fuente_de_la_verdad_graphify_out",
+      "agents_1_regla_inviolable_aislamiento_de_entornos",
+      "agents_3_matriz_rápida_de_dominios_y_archivos_responsables",
+      "agents_4_consulta_rápida_de_estado",
+      "agents_protocolo_de_trabajo_y_coordinación_multi_ia_snc_551_2023",
+      "agents_reglas_adicionales_mientras_la_auditoría_esté_abierta",
+      "deploy",
+      "deploy_windows_md_deploy_windows",
+      "readme",
+      "server_api_adminmiddleware"
+    ],
+    "21": [
       "db_data_dir",
       "db_js_db",
       "db_js_db_db",
@@ -637,7 +670,21 @@
       "ref_node_fs",
       "ref_node_path"
     ],
-    "21": [
+    "22": [
+      "deploy_windows_1_login_y_proyecto_windows",
+      "deploy_windows_2_gate_pre_promoción_tests_wsl",
+      "deploy_windows_3_preview_windows",
+      "deploy_windows_4_deploy_a_producción_windows",
+      "deploy_windows_5_verificación_post_deploy",
+      "deploy_windows_6_rollback",
+      "deploy_windows_deploy_windows_wsl_snc_v3",
+      "deploy_windows_flujo_ejecutivo",
+      "deploy_windows_limpiar_canal_preview",
+      "deploy_windows_notas_importantes",
+      "deploy_windows_opción_a_firebase_console",
+      "deploy_windows_opción_b_re_deploy_desde_commit_anterior"
+    ],
+    "23": [
       "js_plans",
       "js_plans_cancreateexpediente",
       "js_plans_cancreateproject",
@@ -651,7 +698,7 @@
       "js_plans_role_capabilities",
       "server_api_activatepayment"
     ],
-    "22": [
+    "24": [
       "package_dependencies",
       "package_dependencies_bcrypt",
       "package_dependencies_better_sqlite3",
@@ -665,7 +712,31 @@
       "package_dependencies_nodemailer",
       "package_dependencies_sqlite3"
     ],
-    "23": [
+    "25": [
+      "deploy_10_notas_importantes",
+      "deploy_1_requisitos_previos",
+      "deploy_3_inicio_de_sesión_y_proyecto",
+      "deploy_4_verificar_configuración",
+      "deploy_5_prueba_local_preview",
+      "deploy_6_deploy_a_preview",
+      "deploy_7_deploy_a_producción",
+      "deploy_8_verificar_post_deploy",
+      "deploy_9_rollback",
+      "deploy_deploy_snc_v3_firebase_hosting"
+    ],
+    "26": [
+      "grafos",
+      "grafos_1_grafo_tree_sitter_graphify",
+      "grafos_2_grafo_de_dominio",
+      "grafos_aristas",
+      "grafos_comunidades_del_grafo_tree_sitter_etiquetadas",
+      "grafos_consulta_rápida_python",
+      "grafos_estado",
+      "grafos_god_nodes_más_conectados",
+      "grafos_grafos_de_snc_v3",
+      "grafos_nodos"
+    ],
+    "27": [
       "js_redticket_api",
       "js_redticket_api_authheader",
       "js_redticket_api_createcharge",
@@ -677,7 +748,62 @@
       "js_redticket_api_verifywebhook",
       "ref_node_crypto"
     ],
-    "24": [
+    "28": [
+      "readme_arranque_rápido",
+      "readme_bloqueantes_conocidos_leer_antes_de_desplegar",
+      "readme_documentación",
+      "readme_estructura",
+      "readme_grafo_del_repositorio_graphify_out",
+      "readme_para_agentes_de_ia",
+      "readme_scripts",
+      "readme_snc_v3_catastro_py_res_snc_n_551_2023",
+      "readme_verificaciones_de_referencia_2026_10_18"
+    ],
+    "29": [
+      "js_app",
+      "js_app_index",
+      "js_app_index_app",
+      "js_app_index_updateprogressstep",
+      "js_config_campos_requeridos",
+      "js_utils_actualizarestadoproyecto",
+      "js_workspace",
+      "js_workspace_workspace"
+    ],
+    "30": [
+      "js_municipal_runmunicipalvalidation",
+      "js_municipal_validadormunicipal",
+      "js_municipal_validadormunicipal_constructor",
+      "js_municipal_validadormunicipal_estimarfrente",
+      "js_municipal_validadormunicipal_generarreportemunicipal",
+      "js_municipal_validadormunicipal_validarbalanceloteamiento",
+      "js_municipal_validadormunicipal_validarloteurbano",
+      "js_municipal_validadormunicipal_validarretiros"
+    ],
+    "31": [
+      "agents_2_ciclo_de_vida_obligatorio_para_cada_tarea",
+      "agents_paso_1_identificar_la_ruta_dónde_tocar",
+      "agents_paso_2_verificar_bloqueos_y_malos_aprendizajes_previos",
+      "agents_paso_3_adquirir_el_lock",
+      "agents_paso_4_realizar_el_cambio_y_verificar",
+      "agents_paso_5_registrar_el_aprendizaje_feedback_loop"
+    ],
+    "32": [
+      "deploy_2_checklist_pre_deploy",
+      "deploy_backend_y_entorno",
+      "deploy_configuración_y_secretos",
+      "deploy_código_y_calidad",
+      "deploy_datos_y_hosting",
+      "deploy_seguridad_fase_2_verificada"
+    ],
+    "33": [
+      "js_app_municipal",
+      "js_municipalclient",
+      "js_municipalclient_municipalclient",
+      "js_municipalclient_renderbalancemunicipal",
+      "js_municipalclient_rendermunicipalaudit",
+      "ref"
+    ],
+    "34": [
       "js_firebase_client",
       "js_firebase_client_app",
       "js_firebase_client_auth",
@@ -685,7 +811,7 @@
       "js_firebase_client_firebaseconfig",
       "ref_firebase"
     ],
-    "25": [
+    "35": [
       "js_redticket_payments",
       "js_redticket_payments_buildchargepayload",
       "js_redticket_payments_parsewebhookbody",
@@ -693,7 +819,7 @@
       "js_redticket_payments_verifyredticketsignature",
       "js_redticket_payments_verifywebhook"
     ],
-    "26": [
+    "36": [
       "ref_node_http",
       "scripts_localhost_proxy",
       "scripts_localhost_proxy_http",
@@ -701,153 +827,161 @@
       "scripts_localhost_proxy_server",
       "scripts_localhost_proxy_targetport"
     ],
-    "27": [
+    "37": [
+      "db_dbapi",
+      "ref_bcrypt",
+      "update_user",
+      "update_user_bcrypt",
+      "update_user_dbapi"
+    ],
+    "38": [
       "fix_members_auth",
       "fix_members_auth_block",
       "fix_members_auth_end",
       "fix_members_auth_start",
       "fix_members_auth_text"
     ],
-    "28": [
+    "39": [
       "js_firebase_admin",
       "js_firebase_admin_getfirebaseauth",
       "js_firebase_admin_getfirestoredb",
       "js_firebase_admin_initfirebaseadmin",
       "ref_firebase_admin"
     ],
-    "29": [
-      "ref_fs",
-      "ref_path",
-      "ref_vite",
-      "ref_vitejs_plugin_legacy",
-      "vite_config"
+    "40": [
+      "deploy_11_estado_del_proyecto_2026_10_18",
+      "deploy_archivos_eliminados",
+      "deploy_completado",
+      "deploy_pendiente_de_verificación_manual"
     ],
-    "30": [
-      "deploy_windows",
+    "41": [
       "deploy_windows_confirm_continue",
+      "deploy_windows_ps1_deploy_windows",
       "deploy_windows_write_status",
       "deploy_windows_write_step"
     ],
-    "31": [
+    "42": [
       "probar_members",
       "probar_members_http",
       "probar_members_request",
       "ref_http"
     ],
-    "32": [
-      "js_app_municipal",
-      "ref"
+    "43": [
+      "ref_coordination_coordinator_mjs",
+      "register_errors",
+      "register_errors_gc"
     ],
-    "33": [
+    "44": [
       "js_topology_worker",
       "js_topology_worker_dobboxesoverlap"
     ],
-    "34": [
-      "js_workspace",
-      "js_workspace_workspace"
-    ],
-    "35": [
+    "45": [
       "members_api_block",
       "members_api_block_api"
     ],
-    "36": [
+    "46": [
       "probe_free_models",
       "probe_free_models_sh__entry"
     ],
-    "37": [
+    "47": [
       "scripts_backup_sqlite",
       "scripts_backup_sqlite_sh__entry"
     ],
-    "38": [
+    "48": [
       "scripts_promotion_gate",
       "scripts_promotion_gate_sh__entry"
     ],
-    "39": [
+    "49": [
       "scripts_restore_sqlite",
       "scripts_restore_sqlite_sh__entry"
     ],
-    "40": [
+    "50": [
       "scripts_rotate_legacy_hashes",
       "scripts_rotate_legacy_hashes_sh__entry"
     ],
-    "41": [
-      "start_server",
-      "start_server_sh__entry"
-    ],
-    "42": [
+    "51": [
       "db_load"
     ],
-    "43": [
+    "52": [
       "eslintrc"
     ],
-    "44": [
+    "53": [
       "js_runtimecompat"
     ],
-    "45": [
+    "54": [
       "run_server"
     ],
-    "46": [
+    "55": [
       "scripts_backup_secure"
     ],
-    "47": [
+    "56": [
       "scripts_restore_secure_secret"
     ]
   },
   "cohesion": {
-    "0": 0.0792838874680307,
-    "1": 0.07058001397624039,
+    "0": 0.08344988344988345,
+    "1": 0.057971014492753624,
     "2": 0.056910569105691054,
-    "3": 0.04878048780487805,
-    "4": 0.10384068278805121,
-    "5": 0.1092436974789916,
-    "6": 0.1319073083778966,
-    "7": 0.07311827956989247,
-    "8": 0.15954415954415954,
-    "9": 0.15384615384615385,
-    "10": 0.13333333333333333,
+    "3": 0.09988385598141696,
+    "4": 0.04878048780487805,
+    "5": 0.10526315789473684,
+    "6": 0.1140819964349376,
+    "7": 0.1319073083778966,
+    "8": 0.07056451612903226,
+    "9": 0.11396011396011396,
+    "10": 0.17391304347826086,
     "11": 0.09881422924901186,
-    "12": 0.08695652173913043,
-    "13": 0.10526315789473684,
-    "14": 0.1111111111111111,
-    "15": 0.19852941176470587,
-    "16": 0.15,
-    "17": 0.125,
-    "18": 0.2571428571428571,
+    "12": 0.11857707509881422,
+    "13": 0.16996047430830039,
+    "14": 0.17894736842105263,
+    "15": 0.10526315789473684,
+    "16": 0.1111111111111111,
+    "17": 0.1111111111111111,
+    "18": 0.16176470588235295,
     "19": 0.3076923076923077,
-    "20": 0.22727272727272727,
-    "21": 0.25757575757575757,
+    "20": 0.16666666666666666,
+    "21": 0.22727272727272727,
     "22": 0.16666666666666666,
-    "23": 0.26666666666666666,
-    "24": 0.3333333333333333,
-    "25": 0.4666666666666667,
-    "26": 0.3333333333333333,
-    "27": 0.4,
-    "28": 0.6,
-    "29": 0.4,
-    "30": 0.5,
-    "31": 0.5,
-    "32": 1.0,
-    "33": 1.0,
-    "34": 1.0,
-    "35": 1.0,
-    "36": 1.0,
-    "37": 1.0,
-    "38": 1.0,
-    "39": 1.0,
-    "40": 1.0,
-    "41": 1.0,
-    "42": 1.0,
-    "43": 1.0,
+    "23": 0.25757575757575757,
+    "24": 0.16666666666666666,
+    "25": 0.2,
+    "26": 0.2,
+    "27": 0.26666666666666666,
+    "28": 0.2222222222222222,
+    "29": 0.2857142857142857,
+    "30": 0.42857142857142855,
+    "31": 0.3333333333333333,
+    "32": 0.3333333333333333,
+    "33": 0.3333333333333333,
+    "34": 0.3333333333333333,
+    "35": 0.4666666666666667,
+    "36": 0.3333333333333333,
+    "37": 0.4,
+    "38": 0.4,
+    "39": 0.6,
+    "40": 0.5,
+    "41": 0.5,
+    "42": 0.5,
+    "43": 0.6666666666666666,
     "44": 1.0,
     "45": 1.0,
     "46": 1.0,
-    "47": 1.0
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0
   },
   "gods": [
     {
       "id": "js_utils_showtoast",
       "label": "showToast()",
-      "degree": 68
+      "degree": 69
     },
     {
       "id": "tsconfig_compileroptions",
@@ -857,12 +991,22 @@
     {
       "id": "js_state_statemanager",
       "label": "StateManager",
-      "degree": 25
+      "degree": 26
     },
     {
       "id": "js_validator_runvalidation",
       "label": "runValidation()",
-      "degree": 19
+      "degree": 21
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 18
+    },
+    {
+      "id": "js_parser_handlegeofile",
+      "label": "handleGeoFile()",
+      "degree": 17
     },
     {
       "id": "js_logger_logger",
@@ -872,16 +1016,6 @@
     {
       "id": "js_utils_calcularmetricasplanasutm",
       "label": "calcularMetricasPlanasUTM()",
-      "degree": 16
-    },
-    {
-      "id": "js_parser_handlegeofile",
-      "label": "handleGeoFile()",
-      "degree": 16
-    },
-    {
-      "id": "package_scripts",
-      "label": "scripts",
       "degree": 16
     },
     {
@@ -897,95 +1031,95 @@
   ],
   "surprises": [
     {
-      "source": "activatePayment()",
-      "target": "sendAdminAlert()",
+      "source": "God Nodes (más conectados)",
+      "target": "StateManager",
       "source_files": [
-        "server-api.js",
-        "js/mailer.js"
+        "GRAFOS.md",
+        "js/state.js"
       ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "connects across different repos/directories; bridges separate communities"
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     },
     {
-      "source": "loadTemplateFromLink()",
+      "source": "Nodos",
+      "target": "ValidadorMunicipal",
+      "source_files": [
+        "GRAFOS.md",
+        "js/municipal.js"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "God Nodes (más conectados)",
       "target": "showToast()",
       "source_files": [
-        "js/dataTable.js",
+        "GRAFOS.md",
         "js/utils.js"
       ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities; peripheral node `loadTemplateFromLink()` unexpectedly reaches hub `showToast()`"
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     },
     {
-      "source": "saveToExcel()",
-      "target": "showToast()",
+      "source": "God Nodes (más conectados)",
+      "target": "runValidation()",
       "source_files": [
-        "js/dataTable.js",
-        "js/utils.js"
+        "GRAFOS.md",
+        "js/validator.js"
       ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "bridges separate communities; peripheral node `saveToExcel()` unexpectedly reaches hub `showToast()`"
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     },
     {
-      "source": "activatePayment()",
-      "target": "resolvePlan()",
+      "source": "Nodos",
+      "target": "runValidation()",
       "source_files": [
-        "server-api.js",
-        "js/plans.js"
+        "GRAFOS.md",
+        "js/validator.js"
       ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "connects across different repos/directories"
-    },
-    {
-      "source": "clearTopologyErrors()",
-      "target": "showToast()",
-      "source_files": [
-        "js/mapEngine.js",
-        "js/utils.js"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "peripheral node `clearTopologyErrors()` unexpectedly reaches hub `showToast()`"
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities"
     }
   ],
   "questions": [
     {
       "type": "bridge_node",
-      "question": "Why does `logger` connect `Community 2` to `Community 0`, `Community 1`, `Community 4`, `Community 5`, `Community 6`, `Community 7`, `Community 10`, `Community 16`, `Community 19`, `Community 28`?",
-      "why": "High betweenness centrality (0.175) - this node is a cross-community bridge."
+      "question": "Why does `logger` connect `logger.js` to `mapEngine.js`, `export.js`, `dataTable.js`, `firebase-admin.js`, `parser.js`, `server-api.js`, `utils.js`, `validator.js`, `state.js`, `Email y Notificaciones`, `index.js`?",
+      "why": "High betweenness centrality (0.171) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 2 inferred relationships involving `runValidation()` (e.g. with `God Nodes (más conectados)` and `Nodos`) actually correct?",
+      "why": "`runValidation()` has 2 INFERRED edges - model-reasoned connections that need verification."
     },
     {
       "type": "isolated_nodes",
-      "question": "What connects `../logger.js`, `../state.js`, `../utils.js` to the rest of the system?",
-      "why": "19 weakly-connected nodes found - possible documentation gaps or missing edges."
+      "question": "What connects `dxf-parser`, `eslint`, `graphify` to the rest of the system?",
+      "why": "16 weakly-connected nodes found - possible documentation gaps or missing edges."
     },
     {
       "type": "low_cohesion",
-      "question": "Should `Community 0` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.0792838874680307 - nodes in this community are weakly interconnected."
+      "question": "Should `mapEngine.js` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.08344988344988345 - nodes in this community are weakly interconnected."
     },
     {
       "type": "bridge_node",
-      "question": "Why does `showToast()` connect `Community 0` to `Community 1`, `Community 4`, `Community 5`, `Community 6`, `Community 8`, `Community 10`, `Community 16`, `Community 18`?",
-      "why": "High betweenness centrality (0.073) - this node is a cross-community bridge."
+      "question": "Why does `adminMiddleware()` connect `PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)` to `server-api.js`?",
+      "why": "High betweenness centrality (0.113) - this node is a cross-community bridge."
     },
     {
       "type": "low_cohesion",
-      "question": "Should `Community 1` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.07058001397624039 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "bridge_node",
-      "question": "Why does `StateManager` connect `Community 9` to `Community 10`?",
-      "why": "High betweenness centrality (0.052) - this node is a cross-community bridge."
+      "question": "Should `package.json` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.057971014492753624 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",
-      "question": "Should `Community 2` be split into smaller, more focused modules?",
+      "question": "Should `logger.js` be split into smaller, more focused modules?",
       "why": "Cohesion score 0.056910569105691054 - nodes in this community are weakly interconnected."
     }
   ]

@@ -54,8 +54,8 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 
 | Artefacto | Contenido |
 |---|---|
-| [`graph.json`](graphify-out/graph.json) | Grafo AST de código: ~743 nodos y ~1.373 aristas (funciones, clases, imports) |
-| [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: ~139 nodos y ~801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
+| [`graph.json`](graphify-out/graph.json) | Grafo AST de código + documentación: **821 nodos y 1.461 aristas** (incluye la auditoría y el plan) |
+| [`grafo_dominio.json`](graphify-out/grafo_dominio.json) | Grafo de dominio: 139 nodos y 801 aristas (9 tablas SQLite, 55 endpoints, 13 páginas, roles, fixes) |
 | [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) | Reporte arquitectónico: hubs, comunidades y preguntas sugeridas |
 | [`graph.html`](graphify-out/graph.html) | Visor interactivo (abrir en navegador) |
 | [`graphify-out/auditoria/`](graphify-out/auditoria/README.md) | Espejo legible por agentes del informe y del plan + `auditoria.json` con los 38 hallazgos |
@@ -63,13 +63,14 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 ```bash
 node .opencode/coordination/cli.mjs route "descripcion de la tarea"   # ruteo sobre el grafo
 graphify query "como funciona el flujo de expedientes"                # BFS/DFS sobre graph.json
-graphify update .                                                     # re-indexar tras cambios
+graphify update .                                                     # re-indexar código tras cambios
+npm run audit:graph                                                   # re-indexar auditoría + plan (sin LLM)
 npm run audit:sync                                                    # regenerar el espejo de auditoría
 npm run audit:sync -- --check                                         # verificar que esté al día (CI)
 ```
 
-Estado al 2026-10-18: grafo construido en el commit `259c361`; hay cambios posteriores sin re-indexar y el
-nombrado de comunidades quedó pendiente (`.graphify_labels.pending.json`, requiere backend LLM). El grafo
+Estado al 2026-10-18: grafo construido en el commit `6977dc0`, con la auditoría (35 nodos) y el plan
+(10 nodos) indexados en las comunidades «Auditoría 2026-10-18» y «Plan de remediación». El grafo
 **se regenera, no se edita a mano**, y no debe publicarse en el sitio (ver C-03).
 
 ---

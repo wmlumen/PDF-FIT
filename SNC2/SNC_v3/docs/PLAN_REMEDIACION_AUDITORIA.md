@@ -35,6 +35,7 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 6. **No editar artefactos generados.** `dist/`, `data/*.sqlite*` y `graphify-out/` se regeneran; el grafo se actualiza con `graphify update .`, nunca a mano.
 7. **Mantener el grafo al día** cuando el cambio sea estructural: ejecutar `graphify update .` y verificar que `graph.json.built_at_commit` coincida con `git rev-parse HEAD`.
 8. **Mantener el espejo de auditoría:** tras editar el informe o este plan, ejecutar `npm run audit:sync` (y `npm run audit:sync -- --check` en CI). `graphify-out/auditoria/` no se edita a mano.
+9. **Mantener indexada la auditoría:** tras editar el informe o este plan, ejecutar `npm run audit:graph` para que los hallazgos sigan siendo nodos consultables de `graph.json`.
 
 ---
 
@@ -78,7 +79,7 @@ aprendizaje con `node .opencode/coordination/cli.mjs pass …` (ver `AGENTS.md` 
 | **A2-5** | Escapar HTML del checkout y sanitizar reportes con DOMPurify | `server-api.js` (905-944, 1208-1250) | Payloads `<svg onload>`, `javas&#99;ript:` neutralizados; tests de regresión |
 | **A2-6** | Logs sin PII + rotación + escritura asíncrona | `db.cjs` (19-26, 211-239), `cacheDb.js` (31-59) | `db.log` no contiene emails/hashes/geometrías; rotación activa |
 | **A2-7** | Consolidar capa de datos, borrar huérfanos y deduplicar `public/` | `db.js`, `js/payment.js`, `js/firebase-client.js`, `public/css/css`, `public/img/img` | `depcheck` sin huérfanos; un solo `css/styles.css` |
-| **A2-8** | Mantener `graphify-out/` actualizado y fuera del deploy público | `graphify-out/*` | `graph.json.built_at_commit` == `git rev-parse HEAD`; el grafo no se descarga desde el sitio (C-03) |
+| **A2-8** | Mantener `graphify-out/` actualizado (código y docs) y fuera del deploy público | `graphify-out/*`, `scripts/graphify_index_docs.py` | `npm run audit:graph` deja los hallazgos como nodos de `graph.json`; `built_at_commit` coincide con el último commit indexado; el grafo no se descarga desde el sitio (C-03) |
 
 ---
 
