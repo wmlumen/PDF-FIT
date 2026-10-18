@@ -2,7 +2,20 @@
 
 > Validador oficial de Expedientes Catastrales para Paraguay
 > Conforme a la **Resolución SNC N° 551/2023**
-> **Estado:** Production-ready / listo para promoción a producción
+> **Estado vigente:** 🔴 Auditoría abierta — **no apto para producción** (ver plan de remediación).
+
+> [!WARNING]
+> La auditoría técnica del **2026-10-18** encontró **8 hallazgos críticos abiertos**: credenciales reales
+> versionadas, IDOR multi-tenant, JWT forjables, backend Firestore roto con fallback silencioso, endpoints
+> de expedientes en 500 y webhook de pagos inoperante. La afirmación "Production-ready" que figuraba en
+> esta sección quedó invalidada.
+>
+> Antes de trabajar en el proyecto, leer en este orden:
+> 1. [Auditoría completa](AUDITORIA_SNC_v3_2026-10-18.md) — 38 hallazgos con evidencia `archivo:línea`.
+> 2. [Plan de remediación](PLAN_REMEDIACION_AUDITORIA.md) — tareas, criterios de cierre y zonas congeladas.
+> 3. [Protocolo multi-IA](../AGENTS.md) — ciclo `route → check → lock → test → pass|fail`.
+>
+> No desplegar hasta completar la Fase 0 del plan.
 
 ---
 
