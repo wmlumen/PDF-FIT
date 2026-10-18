@@ -63,11 +63,14 @@ versiona y es la **fuente de verdad** para el ruteo de tareas:
 ```bash
 node .opencode/coordination/cli.mjs route "descripcion de la tarea"   # ruteo sobre el grafo
 graphify query "como funciona el flujo de expedientes"                # BFS/DFS sobre graph.json
-graphify update .                                                     # re-indexar código tras cambios
-npm run audit:graph                                                   # re-indexar auditoría + plan (sin LLM)
+npm run graph:refresh                                                 # graphify update + reindexar docs (recomendado)
+npm run audit:graph                                                   # solo reindexar auditoría + plan (sin LLM)
 npm run audit:sync                                                    # regenerar el espejo de auditoría
 npm run audit:sync -- --check                                         # verificar que esté al día (CI)
 ```
+
+> ⚠️ `graphify update .` reconstruye el grafo solo con código y **descarta los nodos de documentación**.
+> Por eso existe `npm run graph:refresh`, que actualiza el código y vuelve a indexar la auditoría y el plan.
 
 Estado al 2026-10-18: grafo construido en el commit `6977dc0`, con la auditoría (35 nodos) y el plan
 (10 nodos) indexados en las comunidades «Auditoría 2026-10-18» y «Plan de remediación». El grafo

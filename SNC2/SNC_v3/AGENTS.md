@@ -54,8 +54,9 @@ La estructura viva del repositorio y sus relaciones están indexadas en `graphif
 La CLI de coordinación (`node .opencode/coordination/cli.mjs route`) consulta automáticamente ambos grafos en `graphify-out/` para darte la ruta exacta en milisegundos con 0 costo de tokens.
 Al completar cambios estructurales grandes, actualiza el grafo con:
 ```bash
-graphify update .
+npm run graph:refresh   # graphify update . + reindexado de auditoría/plan
 ```
+> `graphify update .` por sí solo descarta los nodos de documentación: usá `graph:refresh` o repetí `npm run audit:graph` después.
 
 ---
 
