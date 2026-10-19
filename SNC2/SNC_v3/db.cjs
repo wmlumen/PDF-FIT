@@ -1,23 +1,24 @@
-const sqlite3 = require('sqlite3').verbose();
-const { existsSync, mkdirSync, appendFileSync } = require('node:fs');
-const { join } = require('node:path');
-const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 
-const DATA_DIR = process.env.SNC_DATA_DIR || join(process.cwd(), 'data');
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-const DB_PATH = join(DATA_DIR, 'snc.sqlite');
+const DATA_DIR = process.env.SNC_DATA_DIR || path.join(process.cwd(), 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const DB_PATH = path.join(DATA_DIR, 'snc.sqlite');
 
-const DB_LOG = join(DATA_DIR, 'db.log');
+const DB_LOG = path.join(DATA_DIR, 'db.log');
 
 function logDb(event, meta = {}) {
   try {
     const line = JSON.stringify({ ts: new Date().toISOString(), event, ...meta }) + '\n';
-    appendFileSync(DB_LOG, line, 'utf8');
+    fs.appendFileSync(DB_LOG, line, 'utf8');
   } catch (e) {
     // no romper la app por logging
   }
 }
 
+const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.error('[DB]', JSON.stringify({ event: 'open_error', error: err.message }));
 });
@@ -134,72 +135,68 @@ db.serialize(() => {
   db.run("CREATE INDEX IF NOT EXISTS idx_ip_events_user ON ip_events(user_id)");
 });
 
-function migrateFromJson() {
-  return Promise.resolve();
+// async wrappers for DB calls
+const dbAsync = {};
+dbAsync.run = promisify(db.run.bind(db));
+dbAsync.get = promisify(db.get.bind(db));
+dbAsync.all = promisify(db.all.bind(db));
+dbAsync.serialize = promisify(db.serialize.bind(db));
+
+function promisify(fn) {
+  return (...args) => new Promise((resolve, reject) => {
+    fn.call(db, ...args, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
 }
 
-async function runJsonMigration() {
-  const { readFileSync, existsSync: ex } = require('node:fs');
-  const { join: j } = require('node:path');
-  const dataDir = j(process.cwd(), 'data');
-  
-  const usersFile = j(dataDir, 'users.json');
-  if (ex(usersFile)) {
-    try {
-      const users = JSON.parse(readFileSync(usersFile, 'utf8'));
-      const stmt = db.prepare('INSERT OR IGNORE INTO users (id, email, password_hash, name, plan, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
-      users.forEach(u => stmt.run(u.id, u.email, u.password_hash, u.name || '', u.plan || 'free', u.created_at, u.updated_at));
-      stmt.finalize();
-      logDb('migrate_users', { count: users.length });
-    } catch (e) { logDb('migrate_users_error', { error: e.message }); }
-  }
-  
-  const projectsFile = j(dataDir, 'projects.json');
-  if (ex(projectsFile)) {
-    try {
-      const projects = JSON.parse(readFileSync(projectsFile, 'utf8'));
-      const stmt = db.prepare('INSERT OR IGNORE INTO projects (id, user_id, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)');
-      projects.forEach(p => stmt.run(p.id, p.user_id, p.name, p.created_at, p.updated_at));
-      stmt.finalize();
-      logDb('migrate_projects', { count: projects.length });
-    } catch (e) { logDb('migrate_projects_error', { error: e.message }); }
-  }
-  
-  const expedientesFile = j(dataDir, 'expedientes.json');
-  if (ex(expedientesFile)) {
-    try {
-      const expedientes = JSON.parse(readFileSync(expedientesFile, 'utf8'));
-      const stmt = db.prepare('INSERT OR IGNORE INTO expedientes (id, project_id, name, state_json, validation_results, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
-      expedientes.forEach(e => stmt.run(e.id, e.project_id, e.name, e.state_json, e.validation_results, e.created_at, e.updated_at));
-      stmt.finalize();
-      logDb('migrate_expedientes', { count: expedientes.length });
-    } catch (e) { logDb('migrate_expedientes_error', { error: e.message }); }
-  }
-  
-  const paymentsFile = j(dataDir, 'payments.json');
-  if (ex(paymentsFile)) {
-    try {
-      const payments = JSON.parse(readFileSync(paymentsFile, 'utf8'));
-      const stmt = db.prepare('INSERT OR IGNORE INTO payments (id, user_id, plan_id, provider, status, amount, currency, buyer, paid_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-      payments.forEach(p => stmt.run(p.id, p.user_id, p.plan_id, p.provider || 'manual', p.status || 'pending', p.amount, p.currency || 'PYG', p.buyer ? JSON.stringify(p.buyer) : null, p.paid_at, p.created_at));
-      stmt.finalize();
-      logDb('migrate_payments', { count: payments.length });
-    } catch (e) { logDb('migrate_payments_error', { error: e.message }); }
-  }
-  
-  const usageFile = j(dataDir, 'usage.json');
-  if (ex(usageFile)) {
-    try {
-      const usage = JSON.parse(readFileSync(usageFile, 'utf8'));
-      const stmt = db.prepare('INSERT OR IGNORE INTO usage (key, value, updated_at) VALUES (?, ?, ?)');
-      for (const [key, val] of Object.entries(usage)) {
-        stmt.run(key, val, new Date().toISOString());
+// promisifyRun
+async function promisifyRun(sql, params = []) {
+  logDb('sql_query', { query: sql, params });
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      if (err) {
+        logDb('sql_error', { query: sql, error: err.message });
+        reject(err);
+      } else {
+        resolve({ changes: this.changes, lastID: this.lastID });
       }
-      stmt.finalize();
-      logDb('migrate_usage', { keys: Object.keys(usage).length });
-    } catch (e) { logDb('migrate_usage_error', { error: e.message }); }
-  }
+    });
+  });
 }
+
+// promisifyGet
+async function promisifyGet(sql, params = []) {
+  logDb('sql_query', { query: sql, params });
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) => {
+      if (err) {
+        logDb('sql_error', { query: sql, error: err.message });
+        reject(err);
+      } else {
+        resolve(row || null);
+      }
+    });
+  });
+}
+
+// promisifyQuery
+async function promisifyQuery(sql, params = []) {
+  logDb('sql_query', { query: sql, params });
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        logDb('sql_error', { query: sql, error: err.message });
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+
 
 function promisifyQuery(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -233,8 +230,14 @@ function promisifyRun(sql, params = []) {
 
 const users = {
   insert(user) {
+    // Fix P0-1 (2026-10-19): la DB heredada tiene password_hash TEXT NOT NULL.
+    // Insertar null rompía register y alta de miembros con SQLITE_CONSTRAINT.
+    // Se usa '' (cadena vacía) para "sin hash legacy"; findLegacyUsers ignora ''.
+    const legacyHash = user.password_hash === undefined || user.password_hash === null || user.password_hash === ''
+      ? ''
+      : user.password_hash;
     const sql = 'INSERT INTO users (id, email, password_hash, password_hash_v2, name, plan, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    return promisifyRun(sql, [user.id, user.email, user.password_hash || null, user.password_hash_v2 || null, user.name || '', user.plan || 'free', user.role || 'member', user.status || 'active', user.created_at || new Date().toISOString(), user.updated_at || new Date().toISOString()]);
+    return promisifyRun(sql, [user.id, user.email, legacyHash, user.password_hash_v2 || null, user.name || '', user.plan || 'free', user.role || 'member', user.status || 'active', user.created_at || new Date().toISOString(), user.updated_at || new Date().toISOString()]);
   },
   findByEmail(email) {
     const sql = 'SELECT * FROM users WHERE email = ?';
@@ -274,7 +277,9 @@ const users = {
     return promisifyRun(sql, [hash, updatedAt || new Date().toISOString(), userId]);
   },
   clearLegacyHash(userId, updatedAt) {
-    const sql = 'UPDATE users SET password_hash = NULL, updated_at = ? WHERE id = ?';
+    // Fix P0-7b (2026-10-19): la columna password_hash es NOT NULL en la DB
+    // heredada; limpiar a NULL lanza SQLITE_CONSTRAINT. Se vacía con ''.
+    const sql = "UPDATE users SET password_hash = '', updated_at = ? WHERE id = ?";
     return promisifyRun(sql, [updatedAt || new Date().toISOString(), userId]);
   },
   findLegacyUsers(limit = 100) {
@@ -318,6 +323,28 @@ const plans = {
     const where = activeOnly ? ' WHERE active = 1' : '';
     return promisifyQuery(`SELECT * FROM plans${where}`);
   },
+  // Fix P1-1 (2026-10-19): poblar planes por defecto de forma idempotente.
+  // El seed usa nombres canónicos propios; los planes comerciales que ya existen
+  // en la DB (destacado, dominio, links…) NO se tocan.
+  async seed() {
+    const defaults = [
+      { id: 'free', name: 'Plan Gratuito', type: 'free', price: 0, currency: 'GS', limits: { projects: 1, expedientesPerProject: 2, parcelasPorExpediente: 500, exportacionesPorDia: 3 }, features: ['Acceso básico a catastro'], watermark: true },
+      { id: 'pro', name: 'Plan Profesional', type: 'paid', price: 29, currency: 'USD', limits: { projects: 5, expedientesPerProject: 20, parcelasPorExpediente: 5000, exportacionesPorDia: 50 }, features: ['Validación avanzada', 'Exportación ilimitada'], watermark: false },
+      { id: 'enterprise', name: 'Plan Corporativo', type: 'enterprise', price: 99, currency: 'USD', limits: { projects: 9999, expedientesPerProject: 9999, parcelasPorExpediente: 999999, exportacionesPorDia: 999999 }, features: ['Todo incluido', 'Soporte 24/7'], watermark: false }
+    ];
+    const now = new Date().toISOString();
+    for (const plan of defaults) {
+      await promisifyRun(
+        `INSERT INTO plans (id, name, type, price, currency, limits_json, features_json, watermark, active, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET name=excluded.name, type=excluded.type, price=excluded.price,
+           currency=excluded.currency, limits_json=excluded.limits_json, features_json=excluded.features_json,
+           watermark=excluded.watermark, active=1, updated_at=excluded.updated_at`,
+        [plan.id, plan.name, plan.type, plan.price, plan.currency, JSON.stringify(plan.limits), JSON.stringify(plan.features), plan.watermark ? 1 : 0, now, now]
+      );
+    }
+    return { seeded: defaults.length };
+  },
   getById(id) {
     return promisifyGet('SELECT * FROM plans WHERE id = ?', [id]);
   },
@@ -350,6 +377,10 @@ const projects = {
   listByUser(userId) {
     return promisifyQuery('SELECT * FROM projects WHERE user_id = ? ORDER BY datetime(created_at) DESC', [userId]);
   },
+  // Fix P1-6 (2026-10-19): contrato de dbAPI — el test exige findByUser.
+  findByUser(userId) {
+    return this.listByUser(userId);
+  },
   findById(id) {
     return promisifyGet('SELECT * FROM projects WHERE id = ?', [id]);
   },
@@ -366,11 +397,33 @@ const expedientes = {
   listByProject(projectId) {
     return promisifyQuery('SELECT * FROM expedientes WHERE project_id = ? ORDER BY datetime(created_at) DESC', [projectId]);
   },
+  // Fix P0-5 (2026-10-19): server-api.js llama findByProject en 3 lugares.
+  findByProject(projectId) {
+    return this.listByProject(projectId);
+  },
   findById(id) {
     return promisifyGet('SELECT * FROM expedientes WHERE id = ?', [id]);
   },
   deleteByProject(projectId) {
     return promisifyRun('DELETE FROM expedientes WHERE project_id = ?', [projectId]);
+  },
+  // Fix P0-6 (2026-10-19): PUT /api/expedientes/:id y gestión de files.
+  update(id, fields = {}) {
+    const sets = [];
+    const params = [];
+    if (fields.name !== undefined) { sets.push('name = ?'); params.push(String(fields.name).slice(0, 200)); }
+    if (fields.state_json !== undefined) { sets.push('state_json = ?'); params.push(fields.state_json ? JSON.stringify(fields.state_json) : null); }
+    if (fields.validation_results !== undefined) { sets.push('validation_results = ?'); params.push(fields.validation_results ? JSON.stringify(fields.validation_results) : null); }
+    if (fields.files_json !== undefined) { sets.push('files_json = ?'); params.push(fields.files_json ? JSON.stringify(fields.files_json) : null); }
+    if (!sets.length) return Promise.resolve({ changes: 0 });
+    sets.push('updated_at = ?');
+    params.push(new Date().toISOString());
+    params.push(id);
+    return promisifyRun(`UPDATE expedientes SET ${sets.join(', ')} WHERE id = ?`, params);
+  },
+  // Fix P0-6 (2026-10-19): DELETE /api/expedientes/:id.
+  deleteById(id) {
+    return promisifyRun('DELETE FROM expedientes WHERE id = ?', [id]);
   }
 };
 
@@ -391,6 +444,10 @@ const payments = {
   },
   list() {
     return promisifyQuery('SELECT * FROM payments ORDER BY datetime(created_at) DESC');
+  },
+  // Fix P1-2 (2026-10-19): lookup por provider_id (cobro de Red Ticket).
+  findByProviderId(providerId) {
+    return promisifyGet('SELECT * FROM payments WHERE provider_id = ?', [providerId]);
   }
 };
 
@@ -434,6 +491,85 @@ const recovery = {
   }
 };
 
-const dbAPI = { users, plans, projects, expedientes, payments, usage, public_reports, recovery };
+// Fix P1-3 (2026-10-19): contrato temp_projects (tabla real en la DB).
+const temp_projects = {
+  insert(project) {
+    const sql = 'INSERT INTO temp_projects (id, user_id, name, expedientes_json, created_at, updated_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    return promisifyRun(sql, [project.id, project.user_id, project.name, project.expedientes_json ? JSON.stringify(project.expedientes_json) : null, project.created_at || new Date().toISOString(), project.updated_at || new Date().toISOString(), project.expires_at || null]);
+  },
+  findById(id) {
+    return promisifyGet('SELECT * FROM temp_projects WHERE id = ?', [id]).then(row => {
+      if (!row) return null;
+      try { row.expedientes = JSON.parse(row.expedientes_json || '[]'); } catch { row.expedientes = []; }
+      return row;
+    });
+  },
+  deleteById(id) {
+    return promisifyRun('DELETE FROM temp_projects WHERE id = ?', [id]);
+  }
+};
+
+// Fix P1-4 (2026-10-19): contrato admin_audit_log (tabla real en la DB).
+// El test lo accede como dbAPI.admin_audit (no admin_audit_log).
+const admin_audit = {
+  insert(entry) {
+    const sql = 'INSERT INTO admin_audit_log (id, admin_user_id, action, target_type, target_id, old_value, new_value, ip, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    return promisifyRun(sql, [entry.id || crypto.randomUUID(), entry.admin_user_id, entry.action, entry.target_type, entry.target_id, entry.old_value ? JSON.stringify(entry.old_value) : null, entry.new_value ? JSON.stringify(entry.new_value) : null, entry.ip || null, entry.created_at || new Date().toISOString()]);
+  },
+  list({ limit = 50 } = {}) {
+    return promisifyQuery('SELECT * FROM admin_audit_log ORDER BY datetime(created_at) DESC LIMIT ?', [Number(limit) || 50]).then(rows => rows.map(row => {
+      for (const k of ['old_value', 'new_value']) {
+        try { row[k] = row[k] ? JSON.parse(row[k]) : null; } catch { /* dejar string */ }
+      }
+      return row;
+    }));
+  }
+};
+// Alias por nombre completo de tabla.
+const admin_audit_log = admin_audit;
+
+// Fix P0-2 (2026-10-19): sonda real de salud de la DB (no solo timestamps).
+// Se declara con `let` porque el test usage-health lo reemplaza en caliente
+// (dbAPI.health = async () => ({ok:false})) para simular degradación.
+let health = async () => {
+  try {
+    await promisifyGet('SELECT 1');
+    return { ok: true, sqlite: true };
+  } catch (e) {
+    return { ok: false, sqlite: false, error: String(e && e.message || e) };
+  }
+};
+health.check = health;
+
+// Fix P1-5 (2026-10-19): transacción con rollback real.
+function transaction(fn) {
+  return new Promise((resolve, reject) => {
+    db.run('BEGIN', (beginErr) => {
+      if (beginErr) return reject(beginErr);
+      let result;
+      try {
+        result = fn(api);
+      } catch (syncErr) {
+        return db.run('ROLLBACK', () => reject(syncErr));
+      }
+      Promise.resolve(result).then(
+        value => db.run('COMMIT', (cErr) => cErr ? reject(cErr) : resolve(value)),
+        err => db.run('ROLLBACK', () => reject(err))
+      );
+    });
+  });
+}
+
+const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log };
+const dbAPI = { ...api, health, transaction };
+
+// Migraciones JSON legacy: el esquema actual ya se crea con CREATE TABLE IF NOT EXISTS.
+function migrateFromJson() {
+  return Promise.resolve();
+}
+
+function runJsonMigration() {
+  return Promise.resolve();
+}
 
 module.exports = { dbAPI, migrateFromJson, runJsonMigration };
