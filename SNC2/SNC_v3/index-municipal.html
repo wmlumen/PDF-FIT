@@ -685,6 +685,20 @@
   </script>
 
   <!-- ENTRY POINTS VITE - Entry point municipal dedicado -->
+  <!-- Dependencias del frontend (globales UMD) -->
+  <script src="https://unpkg.com/proj4@2.22.0/dist/proj4.js"></script>
+  <script src="https://unpkg.com/@turf/turf@7.4.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/shp-write@0.3.2/shpwrite.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.min.js"></script>
+  <script>window.dxfParser = new window.DxfParser();</script>
+  <script type="module">
+    import * as QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
+    window.QRCode = QRCode;
+  </script>
   <script type="module" src="/js/app-municipal.js"></script>
   <script type="module" src="/js/municipalClient.js"></script>
 
