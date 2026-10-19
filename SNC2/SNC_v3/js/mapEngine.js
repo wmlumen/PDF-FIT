@@ -769,13 +769,15 @@ function showParcelInspector(feature) {
     props.SUP_GEOM = metrics.areaM2;
     props.PERIMETRO_M = metrics.perimeterM;
 
-    document.getElementById('parcel-inspector-title').textContent = `Parcela Nº ${props.PARCELA_NUMERO || '—'} · ${props.PADRON || props.CODIGO || props.ID || 'S/D'}`;
-    document.getElementById('parcel-inspector-area').textContent = `${formatNumber(areaM2, 2)} m²`;
-    document.getElementById('parcel-inspector-perimeter').textContent = `${formatNumber(metrics.perimeterM, 2)} m`;
-    document.getElementById('parcel-inspector-count').textContent = String(vertices.length);
+    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setText('parcel-inspector-title', `Parcela Nº ${props.PARCELA_NUMERO || '—'} · ${props.PADRON || props.CODIGO || props.ID || 'S/D'}`);
+    setText('parcel-inspector-area', `${formatNumber(areaM2, 2)} m²`);
+    setText('parcel-inspector-perimeter', `${formatNumber(metrics.perimeterM, 2)} m`);
+    setText('parcel-inspector-count', String(vertices.length));
+    setText('lote-area', `${formatNumber(areaM2, 2)} m²`);
 
     const vertexList = document.getElementById('parcel-inspector-vertices');
-    vertexList.replaceChildren();
+    if (vertexList) vertexList.replaceChildren();
     if (vertices.length > 0) {
         selectedVerticesLayer = L.layerGroup().addTo(map);
         const primaryRing = feature.geometry.type === 'Polygon'
@@ -802,7 +804,7 @@ function showParcelInspector(feature) {
                     button.disabled = false;
                 }
             });
-            vertexList.appendChild(item);
+            vertexList?.appendChild(item);
 
             L.circleMarker([lat, lng], { radius: 8, color: '#bfdbfe', weight: 2, fillColor: '#1d4ed8', fillOpacity: 1 })
                 .bindTooltip(String(index + 1), { permanent: true, direction: 'center', className: 'vertex-number-label' })
@@ -823,7 +825,7 @@ function showParcelInspector(feature) {
                 })
             }).addTo(selectedVerticesLayer);
         });
-    } else {
+    } else if (vertexList) {
         const item = document.createElement('li');
         item.className = 'rounded bg-slate-900 px-2 py-1 text-slate-400';
         item.textContent = 'Seleccione un polígono para ver sus vértices.';
