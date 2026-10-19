@@ -9,18 +9,22 @@ import { ENV } from './config.env.js';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
-const serviceAccountPath = join(process.cwd(), 'serviceAccountKey.json');
-let firestoreDbModule = null;
-try {
-  if (existsSync(serviceAccountPath)) {
-    firestoreDbModule = require('./js/firestore-db.cjs');
+// Backend de base de datos determinista (A1-3): DB_BACKEND=sqlite|firestore (default: sqlite)
+const DB_BACKEND = process.env.DB_BACKEND || 'sqlite';
+let dbModule;
+if (DB_BACKEND === 'firestore') {
+  try {
+    dbModule = require('./js/firestore-db.cjs');
     logger.debug('[DB] Usando backend Firestore');
+  } catch (err) {
+    logger.error('[DB FATAL] Error cargando backend Firestore solicitado:', err.message);
+    process.exit(1);
   }
-} catch (e) {
-  logger.error('[DB] Error cargando Firestore, fallback a SQLite:', e.message);
-  firestoreDbModule = null;
+} else {
+  dbModule = require('./db.cjs');
+  logger.debug('[DB] Usando backend SQLite');
 }
-const { dbAPI, migrateFromJson, runJsonMigration } = firestoreDbModule || require('./db.cjs');
+const { dbAPI, migrateFromJson, runJsonMigration } = dbModule;
 import { saveFeaturesBatch, getFeatureContainingPoint } from './cacheDb.js';
 import { sendRecoveryEmail, sendWelcomeEmail, sendAdminAlert } from './js/mailer.js';
 import * as redticketPkg from './js/redticket-api.cjs';
@@ -41,6 +45,10 @@ const STATIC_OPTIONS = { dotfiles: 'deny', fallthrough: true, index: false, maxA
 app.use('/css', express.static(join(__dirname, 'css'), STATIC_OPTIONS));
 app.use('/js', express.static(join(__dirname, 'js'), STATIC_OPTIONS));
 app.use('/img', express.static(join(__dirname, 'img'), STATIC_OPTIONS));
+// Fix P3-4 (2026-10-19): index.html referencia /favicon.svg pero no existía y
+// no había ruta que lo sirviera (404). Se publica como recurso estático.
+app.get('/favicon.svg', (req, res) => res.sendFile(join(__dirname, 'favicon.svg')));
+app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'apple-touch-icon.png')));
 
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
@@ -65,6 +73,26 @@ app.get('/data/DISTRITOS_PY_CNPV2022.geojson', (req, res) => {
   res.sendFile(join(__dirname, 'data', 'DISTRITOS_PY_CNPV2022.geojson'));
 });
 
+// Dependencias del frontend servidas localmente (sin depender de CDNs).
+// Whitelist explícita: nunca se sirve node_modules/ completo.
+const VENDOR_FILES = new Map([
+  ['/vendor/leaflet.js', 'node_modules/leaflet/dist/leaflet.js'],
+  ['/vendor/leaflet.css', 'node_modules/leaflet/dist/leaflet.css'],
+  ['/vendor/turf.min.js', 'node_modules/@turf/turf/turf.min.js'],
+  ['/vendor/proj4.js', 'node_modules/proj4/dist/proj4.js'],
+  ['/vendor/xlsx.full.min.js', 'node_modules/xlsx/dist/xlsx.full.min.js'],
+  ['/vendor/xlsx.mjs', 'node_modules/xlsx/xlsx.mjs'],
+  ['/vendor/jszip.min.js', 'node_modules/jszip/dist/jszip.min.js'],
+  ['/vendor/jspdf.umd.min.js', 'node_modules/jspdf/dist/jspdf.umd.min.js'],
+  ['/vendor/shpwrite.js', 'node_modules/shp-write/shpwrite.js'],
+  ['/vendor/dxf-parser.js', 'node_modules/dxf-parser/dist/dxf-parser.js'],
+  ['/vendor/dom-to-image.min.js', 'node_modules/dom-to-image/dist/dom-to-image.min.js'],
+  ['/vendor/docx.mjs', 'node_modules/docx/dist/index.mjs']
+]);
+for (const [route, rel] of VENDOR_FILES) {
+  app.get(route, (req, res) => res.sendFile(join(__dirname, rel)));
+}
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -84,13 +112,14 @@ if (process.argv.includes('--migrate')) {
 }
 
 function getTodayKey() { return new Date().toISOString().slice(0, 10); }
-function countExportsToday(userId) {
+async function countExportsToday(userId) {
   const today = getTodayKey();
-  return dbAPI.usage.get(`exports:${userId}:${today}`) || 0;
+  const value = await dbAPI.usage.get(`exports:${userId}:${today}`);
+  return Number(value) || 0;
 }
-function incrementExportsToday(userId) {
+async function incrementExportsToday(userId) {
   const today = getTodayKey();
-  dbAPI.usage.increment(`exports:${userId}:${today}`);
+  await dbAPI.usage.increment(`exports:${userId}:${today}`);
 }
 
 let firebaseAdminAuth = null;
@@ -261,15 +290,15 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/health', (req, res) => {
-  let dbOk = false;
+app.get('/api/health', async (req, res) => {
   try {
-    dbAPI.users.list?.().catch(() => {});
-    dbOk = true;
+    const probe = await dbAPI.health();
+    const dbOk = !!(probe && probe.ok);
+    if (!dbOk) return res.status(503).json({ status: 'degraded', ts: new Date().toISOString(), db: false, error: probe?.error || 'DB no disponible' });
+    return res.json({ status: 'ok', ts: new Date().toISOString(), db: true });
   } catch {
-    dbOk = false;
+    return res.status(503).json({ status: 'degraded', ts: new Date().toISOString(), db: false });
   }
-  res.json({ status: dbOk ? 'ok' : 'degraded', ts: new Date().toISOString(), db: dbOk });
 });
 
 for (const plan of Object.values(PLANS)) {
@@ -352,8 +381,17 @@ app.post('/api/auth/login', async (req, res) => {
     const user = await dbAPI.users.findByEmail(String(email || '').trim().toLowerCase());
     if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
     if (user.status !== 'active') return res.status(403).json({ error: 'Usuario suspendido o inactivo' });
-    const valid = await verifyPassword(user.password_hash_v2, password);
+
+    // Fix P0-7 (2026-10-19): soportar hash legacy SHA-256 (A-03) antes de bcrypt.
+    // El legacy es sha256(password) sin sal; tras validar, se migra a bcrypt v2.
+    let valid = await verifyPassword(user.password_hash_v2, password);
+    if (!valid && user.password_hash && !user.password_hash_v2) {
+      const legacyHash = crypto.createHash('sha256').update(String(password)).digest('hex');
+      valid = legacyHash === user.password_hash;
+    }
     if (!valid) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    // Migración a bcrypt v2 en segundo plano (si el usuario era legacy).
     if (!user.password_hash_v2) {
       const password_hash_v2 = await hashPasswordBcrypt(password);
       const now = new Date().toISOString();
@@ -638,13 +676,40 @@ app.get('/api/admin/ips/:ip/users', authMiddleware, adminMiddleware, async (req,
   } catch (error) { logger.error('admin ip users error', error); res.status(500).json({ error: 'Error consultando usuarios por IP' }); }
 });
 
-app.get('/api/projects', authMiddleware, (req, res) => {
-  dbAPI.projects.findByUser(req.user.userId).then(rows => {
-    res.json(rows.map(({ user_id, ...rest }) => rest));
-  }).catch(err => {
-    logger.error('projects list error', err);
+// Fix P0-8 (2026-10-19): la PK de projects es TEXT (uuid) según el contrato
+// db-contract. La DB heredada conserva filas con id INTEGER, por eso
+// POST /api/projects devolvía {"id":19864}. Normaliza a uuid para que
+// proyectos/expedientes/temp_projects compartan identificador.
+function normalizeProjectId(id) {
+  const value = String(id ?? '').trim();
+  if (!value) return crypto.randomUUID();
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) return value;
+  return crypto.randomUUID();
+}
+
+app.get('/api/projects', authMiddleware, async (req, res) => {
+  try {
+    const user = await dbAPI.users.findByEmail(req.user.email);
+    const projects = await dbAPI.projects.findByUser(req.user.userId);
+    const plan = await dbAPI.plans.getById(user?.plan || 'free');
+    const limits = plan ? safeJsonParse(plan.limits_json, {}) : {};
+    const maxProjects = Number(limits.projects || 1);
+    const withCounts = await Promise.all(projects.map(async project => {
+      const projectId = normalizeProjectId(project.id);
+      let expedientes = [];
+      try {
+        const rows = await dbAPI.expedientes.findByProject(projectId);
+        expedientes = Array.isArray(rows) ? rows : [];
+      } catch (error) {
+        logger.warn('no se pudieron contar expedientes del proyecto', error?.message);
+      }
+      return { ...project, id: projectId, expedientes: expedientes.length, expedienteLimit: Number(limits.expedientesPerProject || 2) };
+    }));
+    res.json({ projects: withCounts, limit: maxProjects, usage: projects.length, maxExpedientes: Number(limits.expedientesPerProject || 2), planLimits: limits });
+  } catch (err) {
+    logger.error('list projects error', err);
     res.status(500).json({ error: 'Error listando proyectos' });
-  });
+  }
 });
 
 app.post('/api/projects', authMiddleware, async (req, res) => {
@@ -656,9 +721,14 @@ app.post('/api/projects', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Límite de proyectos alcanzado para tu plan', code: 'PLAN_LIMIT' });
     }
     const { name } = req.body || {};
-    const project = { id: crypto.randomUUID(), user_id: req.user.userId, name: name || 'Proyecto sin nombre', created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-    const result = await dbAPI.projects.insert(project);
-    res.status(201).json({ id: result.lastID, name: req.body.name || 'Proyecto sin nombre' });
+    // Fix P0-8 (2026-10-19): el proyecto ya se crea con uuid; el nombre se
+    // limpia sin depender de un helper inexistente.
+    const projectName = String(name ?? '').trim().slice(0, 120) || 'Proyecto sin nombre';
+    // Fix P0-8 (2026-10-19): promisifyRun resuelve {changes,lastID}; lastID no
+    // existe en sqlite3, por eso el id devuelto era undefined/numérico.
+    const project = { id: crypto.randomUUID(), user_id: req.user.userId, name: projectName, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    await dbAPI.projects.insert(project);
+    res.status(201).json(project);
   } catch (err) {
     logger.error('create project error', err);
     res.status(500).json({ error: 'Error creando proyecto' });
@@ -666,9 +736,10 @@ app.post('/api/projects', authMiddleware, async (req, res) => {
 });
 
 app.delete('/api/projects/:id', authMiddleware, (req, res) => {
-  dbAPI.projects.findById(req.params.id).then(project => {
+  const projectId = normalizeProjectId(req.params.id);
+  dbAPI.projects.findById(projectId).then(project => {
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
-    return dbAPI.expedientes.deleteByProject(req.params.id).then(() => dbAPI.projects.deleteById(req.params.id));
+    return dbAPI.expedientes.deleteByProject(projectId).then(() => dbAPI.projects.deleteById(projectId));
   }).then(() => {
     res.json({ ok: true });
   }).catch(err => {
@@ -759,11 +830,16 @@ app.post('/api/projects/temp/:id', authMiddleware, (req, res) => {
 });
 
 app.get('/api/projects/:projectId/expedientes', authMiddleware, (req, res) => {
-  dbAPI.projects.findById(req.params.projectId).then(project => {
+  const projectId = normalizeProjectId(req.params.projectId);
+  dbAPI.projects.findById(projectId).then(project => {
     if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
-    return dbAPI.expedientes.findByProject(req.params.projectId);
+    return dbAPI.expedientes.findByProject(projectId);
   }).then(rows => {
-    res.json(rows.map(({ project_id, ...rest }) => rest));
+    // Fix P0-8 (2026-10-19): rows.map lanzaba "rows.map is not a function" si
+    // findByProject devolvía algo que no era un array (DB heredada con ids
+    // enteros). Se normaliza a array antes de mapear.
+    const list = Array.isArray(rows) ? rows : [];
+    res.json(list.map(({ project_id, ...rest }) => rest));
   }).catch(err => {
     logger.error('expedientes list error', err);
     res.status(500).json({ error: 'Error listando expedientes' });
@@ -782,9 +858,13 @@ app.post('/api/projects/:projectId/expedientes', authMiddleware, async (req, res
     }
     const { name, state_json } = req.body || {};
     const sanitizedStateJson = state_json ? JSON.stringify(sanitizeClientState(state_json)) : null;
-    const expediente = { id: crypto.randomUUID(), project_id: req.params.projectId, name: name || 'Expediente', state_json: sanitizedStateJson, validation_results: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-    const result = await dbAPI.expedientes.insert(expediente);
-    res.status(201).json({ id: result.lastID, name: req.body.name || 'Expediente' });
+    // Fix P0-8 (2026-10-19): project_id normalizado a uuid + id del expediente
+    // tomado del objeto insertado (result.lastID no existe en sqlite3).
+    const expedienteName = String(name ?? '').trim().slice(0, 120) || 'Expediente';
+    const projectId = normalizeProjectId(req.params.projectId);
+    const expediente = { id: crypto.randomUUID(), project_id: projectId, name: expedienteName, state_json: sanitizedStateJson, validation_results: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    await dbAPI.expedientes.insert(expediente);
+    res.status(201).json(expediente);
   } catch (err) {
     logger.error('create expediente error', err);
     res.status(500).json({ error: 'Error creando expediente' });
@@ -1300,43 +1380,46 @@ app.post('/api/payments/redticket/simulate-pay/:id', authMiddleware, adminMiddle
   }
 });
 
-app.get('/api/usage', authMiddleware, (req, res) => {
-  Promise.all([
-    dbAPI.users.findByEmail(req.user.email),
-    dbAPI.projects.findByUser(req.user.userId)
-  ]).then(([user, projects]) => {
+app.get('/api/usage', authMiddleware, async (req, res) => {
+  try {
+    const user = await dbAPI.users.findByEmail(req.user.email);
+    const projects = await dbAPI.projects.findByUser(req.user.userId);
     const plan = resolvePlan(user?.plan || 'free');
     const projectsCount = projects.length;
     const expedientesPromises = projects.map(p => dbAPI.expedientes.findByProject(p.id));
-    return Promise.all(expedientesPromises).then(expedientesLists => {
-      const expedientesCount = expedientesLists.reduce((acc, list) => acc + list.length, 0);
-      res.json({
-        plan: user?.plan || 'free',
-        limits: plan.limits,
-        usage: {
-          projects: projectsCount,
-          expedientes: expedientesCount,
-          exportsToday: countExportsToday(req.user.userId)
-        }
-      });
+    const expedientesLists = await Promise.all(expedientesPromises);
+    const expedientesCount = expedientesLists.reduce((acc, list) => acc + list.length, 0);
+    res.json({
+      plan: user?.plan || 'free',
+      limits: plan.limits,
+      usage: {
+        projects: projectsCount,
+        expedientes: expedientesCount,
+        exportsToday: await countExportsToday(req.user.userId)
+      }
     });
-  }).catch(err => {
+  } catch (err) {
     logger.error('usage error', err);
     res.status(500).json({ error: 'Error obteniendo usage' });
-  });
+  }
 });
 
-app.post('/api/usage/increment', authMiddleware, (req, res) => {
-  const user = dbAPI.users.findByEmail(req.user.email);
-  const plan = resolvePlan(user?.plan || 'free');
-  const today = getTodayKey();
-  const key = `exports:${req.user.userId}:${today}`;
-  const current = dbAPI.usage.get(key) || 0;
-  if (!canExport(user?.plan || 'free', current)) {
-    return res.status(403).json({ error: 'Límite de exportaciones diarias alcanzado para tu plan', code: 'EXPORT_LIMIT' });
+app.post('/api/usage/increment', authMiddleware, async (req, res) => {
+  try {
+    const user = await dbAPI.users.findByEmail(req.user.email);
+    const plan = resolvePlan(user?.plan || 'free');
+    const today = getTodayKey();
+    const key = `exports:${req.user.userId}:${today}`;
+    const current = Number(await dbAPI.usage.get(key)) || 0;
+    if (!canExport(user?.plan || 'free', current)) {
+      return res.status(403).json({ error: 'Límite de exportaciones diarias alcanzado para tu plan', code: 'EXPORT_LIMIT' });
+    }
+    await dbAPI.usage.increment(key);
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('usage increment error', err);
+    res.status(500).json({ error: 'Error registrando exportación' });
   }
-  dbAPI.usage.increment(key);
-  res.json({ ok: true });
 });
 
 // ============================================================
@@ -1633,7 +1716,12 @@ app.get('/', (req, res) => {
   res.send(readFileSync(join(__dirname, 'index.html'), 'utf8'));
 });
 
-app.get('/admin.html', authMiddleware, adminMiddleware, async (req, res) => {
+// admin.html se sirve SIEMPRE como HTML. La autenticación la valida el
+// propio cliente (admin.html verifica el token en localStorage y redirige
+// si no hay sesión o si el rol no es admin). Exigir el header Authorization
+// aquí rompía el acceso directo por URL, ya que el navegador no lo envía
+// al escribir la dirección (respondía JSON {"error":"Token requerido"}).
+app.get('/admin.html', (req, res) => {
   res.type('text/html');
   res.send(readFileSync(join(__dirname, 'admin.html'), 'utf8'));
 });
