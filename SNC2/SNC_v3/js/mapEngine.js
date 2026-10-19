@@ -1679,6 +1679,7 @@ export function convertPointsToPolygon() {
         };
 
         State.set('geojson', newGeojson);
+        loadGeoJSON(newGeojson);
         showToast(`✅ Polígono creado: ${areaHas.toFixed(2)} m² (${(areaHas / 10000).toFixed(4)} has)`, 'success');
 
     } catch (err) {
