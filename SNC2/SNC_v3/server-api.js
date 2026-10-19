@@ -93,6 +93,9 @@ for (const [route, rel] of VENDOR_FILES) {
   app.get(route, (req, res) => res.sendFile(join(__dirname, rel)));
 }
 
+// Font Awesome (CSS + webfonts): se sirve el paquete completo (solo CSS/fuentes).
+app.use('/vendor/fontawesome', express.static(join(__dirname, 'node_modules', '@fortawesome', 'fontawesome-free')));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
