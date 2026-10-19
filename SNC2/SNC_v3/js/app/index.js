@@ -372,15 +372,16 @@ async init() {
     // State ya se inicializa como singleton al importar
     // State = new StateManager() en state.js línea 470
 
-    // Inicializar Graph Coordinator swarm
-    await initializeAgentSwarm();
+    // La coordinación multi-IA es solo Node.js (ver initializeNodeCoordination).
+    // En el navegador no se inicializa ningún swarm ni se importa .opencode/.
 
-    // Inicializar módulos
-    MapEngine.init();
-    Parser.init();
-    DataTable.init();
-    Validator.init();
-    Export.init();
+    // Inicializar módulos (solo los que exponen init; el resto es singleton al importar).
+    State.init?.();
+    MapEngine.init?.();
+    Parser.init?.();
+    DataTable.init?.();
+    Validator.init?.();
+    Export.init?.();
 
     // Configurar UI
     this.setupAuthUI();
