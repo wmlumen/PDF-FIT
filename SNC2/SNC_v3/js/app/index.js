@@ -18,57 +18,89 @@ import '../topologyRepairUI.js';
 import '../versioningUI.js';
 import '../geoprocessingUI.js';
 import { logger } from '../logger.js';
-import { GraphCoordinator, getGraphClient } from '../../.opencode/coordination/coordinator.mjs';
 
-/**
- * Graph Coordinator Instance - Colaboración multi-IA
- */
-const graphCoordinator = new GraphCoordinator('app-agent', {
-  defaultTtl: 300000,
-  maxRetries: 3
-});
+// Coordination modules (Node.js only - multi-IA development workflow)
+let GraphCoordinator = null;
+let getGraphClient = null;
+let createAgentSwarm = null;
+let DEFAULT_SWARM_CONFIG = null;
 
-// Graph Client - Grafo de conocimiento graphify
+if (typeof process !== 'undefined' && process.versions?.node) {
+  // Dynamic import for Node.js only (multi-IA development workflow)
+  import('../../.opencode/coordination/coordinator.mjs').then(mod => {
+    GraphCoordinator = mod.GraphCoordinator;
+    getGraphClient = mod.getGraphClient;
+    initializeNodeCoordination();
+  }).catch(() => {});
+  import('../../.opencode/coordination/orchestrator.mjs').then(mod => {
+    createAgentSwarm = mod.createAgentSwarm;
+    DEFAULT_SWARM_CONFIG = mod.DEFAULT_SWARM_CONFIG;
+  }).catch(() => {});
+}
+
+let graphCoordinator = null;
 let graphClient = null;
-async function initializeGraphClient() {
-  try {
-    const { getGraphClient } = await import('../../.opencode/coordination/coordinator.mjs');
-    const client = await getGraphClient();
-    window.GraphClient = client;
-    console.log('[App] Graph Client initialized:', client.getStats());
-  } catch (e) {
-    console.warn('[App] Graph Client init failed (non-critical):', e.message);
-  }
-}
-
-// Agent Orchestrator - Swarm management
 let agentOrchestrator = null;
-async function initializeAgentSwarm() {
-  try {
-    const { createAgentSwarm, DEFAULT_SWARM_CONFIG } = await import('../../.opencode/coordination/coordinator.mjs');
-    agentOrchestrator = await createAgentSwarm(graphCoordinator, DEFAULT_SWARM_CONFIG);
-    console.log('[App] Agent swarm initialized');
-    
-    window.AgentOrchestrator = agentOrchestrator;
-  } catch (e) {
-    console.warn('[App] Agent swarm init failed (non-critical):', e.message);
+
+function initializeNodeCoordination() {
+  if (!GraphCoordinator) return;
+  
+  /**
+   * Graph Coordinator Instance - Colaboración multi-IA
+   */
+  graphCoordinator = new GraphCoordinator('app-agent', {
+    defaultTtl: 300000,
+    maxRetries: 3
+  });
+
+  // Graph Client - Grafo de conocimiento graphify
+  let graphClient = null;
+  async function initializeGraphClient() {
+    try {
+      if (!getGraphClient) return;
+      const client = await getGraphClient();
+      graphClient = client;
+      window.GraphClient = client;
+      console.log('[App] Graph Client initialized:', client.getStats());
+    } catch (e) {
+      console.warn('[App] Graph Client init failed (non-critical):', e.message);
+    }
   }
+
+  // Agent Orchestrator - Swarm management
+  let agentOrchestrator = null;
+  async function initializeAgentSwarm() {
+    try {
+      if (!createAgentSwarm || !DEFAULT_SWARM_CONFIG || !graphCoordinator) return;
+      agentOrchestrator = await createAgentSwarm(graphCoordinator, DEFAULT_SWARM_CONFIG);
+      console.log('[App] Agent swarm initialized');
+      
+      window.AgentOrchestrator = agentOrchestrator;
+    } catch (e) {
+      console.warn('[App] Agent swarm init failed (non-critical):', e.message);
+    }
+  }
+
+  // Inicializar graph client después de que la app esté lista
+  initializeGraphClient();
+
+  // Inicializar swarm después de que la app esté lista
+  initializeAgentSwarm();
+
+  // Exponer globalmente
+  window.GraphCoordinator = graphCoordinator;
+
+  // Auto-release locks al cerrar
+  window.addEventListener('beforeunload', () => {
+    graphCoordinator.releaseAllMyLocks?.().catch(console.error);
+    if (agentOrchestrator) agentOrchestrator.shutdown?.().catch(console.error);
+  });
 }
 
-// Inicializar graph client después de que la app esté lista
-initializeGraphClient();
-
-// Inicializar swarm después de que la app esté lista
-initializeAgentSwarm();
-
-// Exponer globalmente
-window.GraphCoordinator = graphCoordinator;
-
-// Auto-release locks al cerrar
-window.addEventListener('beforeunload', () => {
-  graphCoordinator.releaseAllMyLocks?.().catch(console.error);
-  if (agentOrchestrator) agentOrchestrator.shutdown?.().catch(console.error);
-});
+// Inicializar coordinación Node.js si está disponible
+if (typeof process !== 'undefined' && process.versions?.node) {
+  initializeNodeCoordination();
+}
 
 /**
  * Actualiza los pasos del progreso - Sprint 3
@@ -227,165 +259,183 @@ const App = {
         return result;
       }
     } catch (error) {
-        logger.error('Error en validación:', error);
-        showToast(`Error en validación: ${error.message}`, 'error');
-        return null;
-      }
-    },
-
-    /** Genera certificado de cumplimiento SNC. */
-    async certify() {
-      const result = await this.validate();
-      if (!result) return false;
-      if (!result.valid) {
-        showToast('❌ No se puede auditar: el expediente tiene errores', 'error');
-        return false;
-      }
-
-      showToast('🛡️ Generando Auditoría de Cumplimiento...', 'info');
-      const generated = await Export.generateComplianceCertificate(result.results);
-      if (generated) {
-        try {
-          await Export.generateConsultaDescriptivaPDF(result.results);
-        } catch (e) {
-          logger.warn('No se pudo generar la Consulta Descriptiva desde certify():', e);
-        }
-        const packageGenerated = await Export.packAndDownload();
-        if (packageGenerated) {
-          showToast('✅ Auditoría, Consulta Descriptiva y expediente SHP (.shp, .shx, .dbf, .prj) generados', 'success');
-        }
-      } else {
-        showToast('❌ No se pudo generar la auditoría o el expediente SHP', 'error');
-      }
-
-      try {
-        await MapEngine.openCertificateMap(result.results);
-      } catch (e) {
-        logger.warn('No se pudo abrir la vista de plano de certificación:', e);
-      }
-
-      return true;
-    },
-
-    /** Exporta expediente completo (SHP + PDF + Excel). */
-    async exportSHP() {
-      try {
-        if (State.getBackendToken()) {
-          const allowed = await this._enforceExportLimit();
-          if (!allowed) return;
-        }
-        const success = await Export.packAndDownload();
-        if (success) {
-          updateProgressStep(5);
-          const auditTabCount = document.getElementById('tabAuditCount');
-          if (auditTabCount) auditTabCount.style.display = 'none';
-          if (State.getBackendToken()) {
-            State.backend._lastExportSuccess = true;
-            await this._incrementExportUsage();
-          }
-        }
-      } catch (error) {
-        logger.error('Error en exportación:', error);
-        showToast(`Error al exportar: ${error.message}`, 'error');
-      }
-    },
-
-    exportGeoJSON() {
-      try {
-        return Export.exportGeoJSON();
-      } catch (error) {
-        showToast(`No se pudo exportar GeoJSON: ${error.message}`, 'error');
-        return false;
-      }
-    },
-
-    exportKML() {
-      try {
-        return Export.exportKML();
-      } catch (error) {
-        showToast(`No se pudo exportar KML: ${error.message}`, 'error');
-        return false;
-      }
-    },
-
-    async exportProfessionalReport() {
-      try {
-        if (State.getBackendToken()) {
-          const allowed = await this._enforceExportLimit();
-          if (!allowed) return;
-        }
-        const result = await Export.generateProfessionalReport();
-        if (result) {
-          showToast(`✅ Certificado Preventivo generado: ${result.validationCode}`, 'success');
-        }
-      } catch (error) {
-        logger.error('Error generando certificado profesional:', error);
-        showToast(`Error: ${error.message}`, 'error');
-      }
-    },
-
-    /** Renderiza el panel de auditoría en la UI. */
-    renderValidationAudit(results) {
-    },
-
-    /** Cierra el modal de validación. */
-    closeModal() {
-      const modal = document.getElementById('validationModal');
-      if (modal) modal.style.display = 'none';
-    },
-
-    async init() {
-      logger.debug('[App] Iniciando Catastro PY Pro...');
-
-      // Inicializar estado
-      State.init();
-
-      // Inicializar Graph Coordinator swarm
-      await initializeAgentSwarm();
-
-      // Inicializar módulos
-      MapEngine.init();
-      Parser.init();
-      DataTable.init();
-      Validator.init();
-      Export.init();
-
-      // Configurar UI
-      this.setupAuthUI();
-      this.bindEvents();
-      this.restoreSession();
-
-      // Ocultar loading screen
-      hideLoading();
-      updateProgressStep(1);
-
-      logger.debug('[App] Inicialización completada');
-    },
-
-    setupAuthUI() {
-    },
-
-    bindEvents() {
-    },
-
-    restoreSession() {
-    },
-
-    _enforceExportLimit() {
-      return this._enforceExportLimit();
-    },
-
-    _incrementExportUsage() {
-      return this._incrementExportUsage();
+      logger.error('Error en validación:', error);
+      showToast(`Error en validación: ${error.message}`, 'error');
+      return null;
     }
+  },
+
+  /** Genera certificado de cumplimiento SNC. */
+  async certify() {
+    const result = await this.validate();
+    if (!result) return false;
+    if (!result.valid) {
+      showToast('❌ No se puede auditar: el expediente tiene errores', 'error');
+      return false;
+    }
+
+    showToast('🛡️ Generando Auditoría de Cumplimiento...', 'info');
+    const generated = await Export.generateComplianceCertificate(result.results);
+    if (generated) {
+      try {
+        await Export.generateConsultaDescriptivaPDF(result.results);
+      } catch (e) {
+        logger.warn('No se pudo generar la Consulta Descriptiva desde certify():', e);
+      }
+      const packageGenerated = await Export.packAndDownload();
+      if (packageGenerated) {
+        showToast('✅ Auditoría, Consulta Descriptiva y expediente SHP (.shp, .shx, .dbf, .prj) generados', 'success');
+      }
+    } else {
+      showToast('❌ No se pudo generar la auditoría o el expediente SHP', 'error');
+    }
+
+    try {
+      await MapEngine.openCertificateMap(result.results);
+    } catch (e) {
+      logger.warn('No se pudo abrir la vista de plano de certificación:', e);
+    }
+
+    return true;
+  },
+
+  /** Exporta expediente completo (SHP + PDF + Excel). */
+  async exportSHP() {
+    try {
+      if (State.getBackendToken()) {
+        const allowed = await this._enforceExportLimit();
+        if (!allowed) return;
+      }
+      const success = await Export.packAndDownload();
+      if (success) {
+        updateProgressStep(5);
+        const auditTabCount = document.getElementById('tabAuditCount');
+        if (auditTabCount) auditTabCount.style.display = 'none';
+        if (State.getBackendToken()) {
+          State.backend._lastExportSuccess = true;
+          await this._incrementExportUsage();
+        }
+      }
+    } catch (error) {
+      logger.error('Error en exportación:', error);
+      showToast(`Error al exportar: ${error.message}`, 'error');
+    }
+  },
+
+  exportGeoJSON() {
+    try {
+      return Export.exportGeoJSON();
+    } catch (error) {
+      showToast(`No se pudo exportar GeoJSON: ${error.message}`, 'error');
+      return false;
+    }
+  },
+
+  exportKML() {
+    try {
+      return Export.exportKML();
+    } catch (error) {
+      showToast(`No se pudo exportar KML: ${error.message}`, 'error');
+      return false;
+    }
+  },
+
+  async exportProfessionalReport() {
+    try {
+      if (State.getBackendToken()) {
+        const allowed = await this._enforceExportLimit();
+        if (!allowed) return;
+      }
+      const result = await Export.generateProfessionalReport();
+      if (result) {
+        showToast(`✅ Certificado Preventivo generado: ${result.validationCode}`, 'success');
+      }
+    } catch (error) {
+      logger.error('Error generando certificado profesional:', error);
+      showToast(`Error: ${error.message}`, 'error');
+    }
+  },
+
+  /** Renderiza el panel de auditoría en la UI. */
+  renderValidationAudit(results) {
+  },
+
+  /** Cierra el modal de validación. */
+  closeModal() {
+    const modal = document.getElementById('validationModal');
+    if (modal) modal.style.display = 'none';
+  },
+
+async init() {
+    logger.debug('[App] Iniciando Catastro PY Pro...');
+
+    // State ya se inicializa como singleton al importar
+    // State = new StateManager() en state.js línea 470
+
+    // Inicializar Graph Coordinator swarm
+    await initializeAgentSwarm();
+
+    // Inicializar módulos
+    MapEngine.init();
+    Parser.init();
+    DataTable.init();
+    Validator.init();
+    Export.init();
+
+    // Configurar UI
+    this.setupAuthUI();
+    this.bindEvents();
+    this.restoreSession();
+
+    // Ocultar loading screen
+    hideLoading();
+    updateProgressStep(1);
+
+    logger.debug('[App] Inicialización completada');
+  },
+
+  setupAuthUI() {
+  },
+
+  bindEvents() {
+  },
+
+  restoreSession() {
+  },
+
+  async _enforceExportLimit() {
+    const token = State.getBackendToken?.();
+    if (!token) return true;
+    try {
+      const response = await fetch('/api/usage', { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) return true; // sin backend disponible, no bloquear la exportación
+      const data = await response.json();
+      const used = Number(data?.usage?.exportsToday ?? 0);
+      const limit = Number(data?.limits?.exportacionesPorDia ?? Infinity);
+      if (Number.isFinite(limit) && used >= limit) {
+        showToast('Límite diario de exportaciones alcanzado para tu plan', 'error');
+        return false;
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  },
+
+  async _incrementExportUsage() {
+    const token = State.getBackendToken?.();
+    if (!token) return;
+    try {
+      await fetch('/api/usage/increment', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch {
+      // El contador es best-effort: nunca debe romper la exportación.
+    }
+  }
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await App.init();
-  } catch (error) {
-    console.error('[App] Error en inicialización:', error);
-  }
-});
-
+// La inicialización la dispara app.js (entry point) una sola vez.
+// No agregar otro listener DOMContentLoaded aquí: provocaría doble init.
 export { App };
