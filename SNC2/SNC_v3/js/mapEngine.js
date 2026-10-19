@@ -90,11 +90,11 @@ const TILE_LAYERS = {
         attribution: '© ESRI World Imagery',
         name: '🛰️ Satélite'
     },
-    // CartoDB Voyager - Moderno y bonito
-    cartodb: {
-        url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        attribution: '© CARTO | © OSM',
-        name: '🎨 CartoDB Voyager'
+    // Curvas de nivel topográficas (OpenTopoMap)
+    topo: {
+        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        attribution: '© OpenTopoMap (CC-BY-SA) | Datos: © OpenStreetMap contributors',
+        name: '⛰️ Curvas de nivel'
     },
     // Humanitarian - Bueno para zonas rurales
     humanitarian: {
@@ -150,8 +150,8 @@ export async function init() {
                     satellite: L.tileLayer(TILE_LAYERS.satellite.url, {
                         attribution: TILE_LAYERS.satellite.attribution, maxZoom: 19, id: 'base-satellite', crossOrigin: true
                     }),
-                    cartodb: L.tileLayer(TILE_LAYERS.cartodb.url, {
-                        attribution: TILE_LAYERS.cartodb.attribution, id: 'base-cartodb', crossOrigin: true
+                    topo: L.tileLayer(TILE_LAYERS.topo.url, {
+                        attribution: TILE_LAYERS.topo.attribution, id: 'base-topo', crossOrigin: true
                     }),
                     humanitarian: L.tileLayer(TILE_LAYERS.humanitarian.url, {
                         attribution: TILE_LAYERS.humanitarian.attribution, id: 'base-humanitarian', crossOrigin: true
@@ -171,7 +171,7 @@ export async function init() {
                 const baseMaps = {};
                 baseMaps[TILE_LAYERS.osm.name] = layers.osm;
                 baseMaps[TILE_LAYERS.satellite.name] = layers.satellite;
-                baseMaps[TILE_LAYERS.cartodb.name] = layers.cartodb;
+                baseMaps[TILE_LAYERS.topo.name] = layers.topo;
                 baseMaps[TILE_LAYERS.humanitarian.name] = layers.humanitarian;
 
                 const overlayMaps = {};
@@ -1762,7 +1762,7 @@ export function setBaseLayer(name) {
     });
     if (!map.hasLayer(layer)) layer.addTo(map);
     document.querySelectorAll('[data-layer]').forEach(btn => btn.classList.toggle('active', btn.dataset.layer === name));
-    const isLight = ['osm', 'cartodb'].includes(name);
+    const isLight = ['osm', 'topo'].includes(name);
     document.body.classList.toggle('map-base-light', isLight);
     document.body.classList.toggle('map-base-dark', !isLight);
     return true;
