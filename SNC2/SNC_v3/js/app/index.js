@@ -340,6 +340,32 @@ const App = {
     }
   },
 
+  // Carga de archivos (geometría y datos). Los inputs del HTML llaman
+  // window.App?.handleFile / handleFiles.
+  async handleFile(file, type) {
+    try {
+      const result = await Parser.handleFile(file, type);
+      if (type === 'geo' || (result && result.added > 0)) MapEngine.restoreStartupView?.();
+      return result;
+    } catch (error) {
+      showToast(`No se pudo cargar el archivo: ${error.message}`, 'error');
+      logger.error('handleFile error', error);
+      return null;
+    }
+  },
+
+  async handleFiles(fileList, type) {
+    try {
+      const result = await Parser.handleFiles(fileList, type);
+      if (type === 'geo') MapEngine.restoreStartupView?.();
+      return result;
+    } catch (error) {
+      showToast(`No se pudieron cargar los archivos: ${error.message}`, 'error');
+      logger.error('handleFiles error', error);
+      return null;
+    }
+  },
+
   async exportProfessionalReport() {
     try {
       if (State.getBackendToken()) {
