@@ -1182,6 +1182,13 @@ export function toggleSNCReferenceLayer(visible) {
         return false;
     }
 
+    const setSncStatus = (text) => {
+        const a = document.getElementById('sncLayerStatus');
+        const b = document.getElementById('snc-layer-status');
+        if (a) a.textContent = text;
+        if (b) b.textContent = text;
+    };
+
     if (visible) {
         if (!sncReferenceLayer) {
             // El servicio SNC publica esta capa en CRS:84, no en Web Mercator.
@@ -1206,13 +1213,16 @@ export function toggleSNCReferenceLayer(visible) {
                 updateInterval: 200 // Demora la petición de tiles para evitar spam al servidor
             });
             sncReferenceLayer.on('tileerror', () => {
+                setSncStatus('Capa remota: sin conexión');
                 showToast('No se pudo cargar la referencia SNC. Verifique conectividad y condiciones de acceso.', 'warning');
             });
         }
         sncReferenceLayer.addTo(map);
+        setSncStatus('Capa remota: activada');
         showToast('Referencia visual SNC activada', 'info');
     } else if (sncReferenceLayer) {
         map.removeLayer(sncReferenceLayer);
+        setSncStatus('Capa remota: desactivada');
         showToast('Referencia visual SNC desactivada', 'info');
     }
     return true;

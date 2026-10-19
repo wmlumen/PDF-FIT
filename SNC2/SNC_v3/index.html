@@ -167,7 +167,7 @@
           </h3>
           <div class="space-y-2" id="geoserverLayersContainer">
             <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 hover:border-blue-500/50">
-              <input id="sncReferenceLayerToggle" type="checkbox" class="mt-0.5 accent-blue-500" aria-describedby="sncReferenceLayerNotice">
+              <input id="sncReferenceLayerToggle" type="checkbox" class="mt-0.5 accent-blue-500" aria-describedby="sncReferenceLayerNotice" onchange="window.MapEngine?.toggleSNCReferenceLayer(this.checked)">
               <span>
                 <span class="block text-[10px] font-bold text-slate-200">Referencia catastral SNC</span>
                 <span class="block text-[9px] text-slate-400">Capa visual opcional del visor oficial.</span>
