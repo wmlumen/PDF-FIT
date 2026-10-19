@@ -96,6 +96,13 @@ const TILE_LAYERS = {
         attribution: '© OpenTopoMap (CC-BY-SA) | Datos: © OpenStreetMap contributors',
         name: '⛰️ Curvas de nivel'
     },
+    // Catastro oficial (WMS parcelas_activas) como capa base
+    catastro: {
+        url: 'https://www.catastro.gov.py/geoserver/ows',
+        layers: 'snc:parcelas_activas',
+        attribution: 'Referencia visual: Servicio Nacional de Catastro (SNC), Paraguay',
+        name: '🏛️ Catastro SNC'
+    },
     // Humanitarian - Bueno para zonas rurales
     humanitarian: {
         url: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
@@ -153,6 +160,17 @@ export async function init() {
                     topo: L.tileLayer(TILE_LAYERS.topo.url, {
                         attribution: TILE_LAYERS.topo.attribution, id: 'base-topo', crossOrigin: true
                     }),
+                    catastro: L.tileLayer.wms(TILE_LAYERS.catastro.url, {
+                        layers: TILE_LAYERS.catastro.layers,
+                        format: 'image/png8',
+                        transparent: false,
+                        tiled: true,
+                        version: '1.1.1',
+                        crs: L.extend({}, L.CRS.EPSG4326, { code: 'CRS:84' }),
+                        attribution: TILE_LAYERS.catastro.attribution,
+                        maxZoom: 21,
+                        crossOrigin: true
+                    }),
                     humanitarian: L.tileLayer(TILE_LAYERS.humanitarian.url, {
                         attribution: TILE_LAYERS.humanitarian.attribution, id: 'base-humanitarian', crossOrigin: true
                     })
@@ -172,6 +190,7 @@ export async function init() {
                 baseMaps[TILE_LAYERS.osm.name] = layers.osm;
                 baseMaps[TILE_LAYERS.satellite.name] = layers.satellite;
                 baseMaps[TILE_LAYERS.topo.name] = layers.topo;
+                baseMaps[TILE_LAYERS.catastro.name] = layers.catastro;
                 baseMaps[TILE_LAYERS.humanitarian.name] = layers.humanitarian;
 
                 const overlayMaps = {};
@@ -1772,7 +1791,7 @@ export function setBaseLayer(name) {
     });
     if (!map.hasLayer(layer)) layer.addTo(map);
     document.querySelectorAll('[data-layer]').forEach(btn => btn.classList.toggle('active', btn.dataset.layer === name));
-    const isLight = ['osm', 'topo'].includes(name);
+    const isLight = ['osm', 'topo', 'catastro'].includes(name);
     document.body.classList.toggle('map-base-light', isLight);
     document.body.classList.toggle('map-base-dark', !isLight);
     return true;
