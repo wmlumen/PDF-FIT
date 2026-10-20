@@ -115,6 +115,9 @@
       <span id="separator-export-utilities" class="header-action-separator" aria-hidden="true"></span>
       <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
       <a href="mailto:wmlumen@gmail.com" class="btn-tool header-icon-btn" data-tooltip="Contacto: wmlumen@gmail.com" aria-label="Contactar por correo a wmlumen@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a>
+      <button id="btn-open-catastro" onclick="window.openCatastro()" class="btn-tool header-icon-btn" data-tooltip="Catastro oficial" aria-label="Abrir catastro oficial del SNC" title="Abrir catastro oficial del SNC">
+        <i class="fas fa-map"></i>
+      </button>
       <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
     </div>
   </header>
@@ -161,9 +164,12 @@
         </section>
 
         <!-- LAYERS -->
-        <section id="reference-layers-section" class="operational-section" aria-labelledby="layers-title">
+        <section id="reference-layers-section" class="operational-section hidden" aria-labelledby="layers-title">
           <h3 id="layers-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
             <span><i class="fas fa-layer-group mr-2"></i> Capas de Referencia</span>
+            <button id="layers-toggle-btn" type="button" class="text-[9px] text-slate-400 hover:text-blue-400 shrink-0" aria-label="Mostrar/ocultar capas de referencia" onclick="toggleLayersSection()" title="Mostrar/ocultar capas de referencia">
+              <i class="fas fa-chevron-down mr-1"></i>
+            </button>
           </h3>
           <div class="space-y-2" id="geoserverLayersContainer">
             <label class="flex cursor-pointer items-start gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 hover:border-blue-500/50">
@@ -185,6 +191,34 @@
           <div class="text-[9px] font-bold text-slate-500 mt-2 pl-1 flex items-center gap-1" id="geoserverStatus">
             <span id="snc-layer-status">Capa remota: desactivada</span>
           </div>
+        </section>
+
+        <!-- PIRIBEBUY (capas locales) -->
+        <section id="piribebuy-layers-section" class="operational-section" aria-labelledby="piribebuy-title">
+          <h3 id="piribebuy-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
+            <span><i class="fas fa-map-location-dot mr-2"></i> Capas de Piribebuy</span>
+          </h3>
+
+          <!-- Proyección de exportación: fila compacta -->
+          <div class="mb-2 flex items-center gap-2">
+            <label for="piribebuy-export-crs" class="text-[9px] text-slate-400 shrink-0" title="Proyección con la que se exportan el shapefile y sus coordenadas">
+              <i class="fas fa-globe mr-0.5"></i> Exportar en
+            </label>
+            <select id="piribebuy-export-crs" class="flex-1 min-w-0 rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 text-[9px] text-slate-200 focus:border-blue-500 focus:outline-none">
+              <option value="EPSG:32721" selected>UTM 21S (EPSG:32721)</option>
+              <option value="EPSG:4326">WGS84 grados (EPSG:4326)</option>
+              <option value="EPSG:32720">UTM 20S (EPSG:32720)</option>
+            </select>
+            <button id="piribebuy-crs-refresh" class="text-[9px] text-slate-500 hover:text-blue-400 shrink-0" title="Re-evaluar proyecciones de las capas" aria-label="Re-evaluar proyecciones">
+              <i class="fas fa-rotate"></i>
+            </button>
+          </div>
+          <!-- Informe CRS: solo visible si alguna capa necesita atención -->
+          <div id="piribebuyCrsReport" class="mb-2 space-y-1"></div>
+
+          <!-- Tabla de contenido (LayerPanel): grupos, modos, leyenda, renombrar -->
+          <div id="content-panel-host"></div>
+          <p class="mt-1.5 pl-1 text-[8px] leading-relaxed text-slate-500">Doble clic en un nombre para renombrar. Clic derecho para más opciones.</p>
         </section>
 
         <!-- COORDINATES -->
@@ -310,13 +344,8 @@
           <button id="map-tool-environment" data-requires-geometry onclick="window.MapEngine?.downloadEnvironmentCache()" class="map-selector-btn bg-indigo-600 border border-indigo-500 shadow hover:bg-indigo-500 text-white" title="Descargar Parcelas Vecinas (1000m)"><i class="fas fa-cloud-download-alt"></i></button>
         </div>
 
-        <!-- LAYERS OVERLAY -->
-        <div class="absolute bottom-4 left-4 z-[1000] bg-slate-900/90 backdrop-blur p-3 rounded-xl border border-slate-700" style="min-width:180px;">
-          <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">📍 Capas Activas</div>
-          <div id="active-layers-list" class="space-y-1 text-[10px] text-slate-300">
-            <div>• Mapa base: Satélite</div>
-          </div>
-        </div>
+        <!-- La leyenda unificada ("Capas Activas" + "Leyenda") se monta dentro
+             del mapa, abajo a la izquierda, desde js/mapLegend.js -->
 
       </div>
 
@@ -582,6 +611,381 @@
   }
   window.showReadme = showReadme;
   window.closeReadme = closeReadme;
+
+  // Abrir catastro oficial en nueva pestaña
+  window.openCatastro = () => {
+    window.open('https://www.catastro.gov.py/visor/?snc=geo', '_blank', 'noopener,noreferrer');
+    window.showToast?.('Abriendo visor oficial del Catastro', 'info');
+  };
+
+  <!-- Panel CRS de Piribebuy: diagnostico por capa, correccion y encuadre -->
+  <script type="module">
+  import { CRS_LABELS, CRS_WKT } from '/js/crs.js';
+  import LayerManager from '/js/layerManager.js';
+  import LayerPanel from '/js/layerPanel.js';
+  import MapLegend from '/js/mapLegend.js';
+  import * as AttributeTableUI from '/js/attributeTableUI.js';
+  import { showToast } from '/js/utils.js';
+
+  const CRS_LABEL = (c) => CRS_LABELS[c] || c;
+
+  // Guarda la proyeccion de exportacion elegida para que la use el exportador.
+  function exportCrs() {
+    const v = document.getElementById('piribebuy-export-crs')?.value || 'EPSG:32721';
+    try { localStorage.setItem('snc_export_crs', v); } catch {}
+    return v;
+  }
+  window.PiribebuyCrs = { exportCrs, CRS_LABEL, CRS_WKT };
+
+  // Restaurar la proyeccion de exportacion guardada.
+  (function restoreExportCrs(){
+    try {
+      const saved = localStorage.getItem('snc_export_crs');
+      const sel = document.getElementById('piribebuy-export-crs');
+      if (saved && sel && [...sel.options].some(o => o.value === saved)) sel.value = saved;
+    } catch {}
+  })();
+
+  document.getElementById('piribebuy-export-crs')?.addEventListener('change', () => {
+    const v = exportCrs();
+    window.showToast?.(`Proyección de exportación: ${CRS_LABEL(v)}`, 'info');
+  });
+
+  /**
+   * Renderiza el informe CRS. Solo muestra capas que requieren ATENCIÓN
+   * (reproyectadas o no identificadas). Las correctas ya se ven como badge
+   * en el árbol, así que listarlas acá sería duplicar información y ocupar
+   * alto de pantalla sin aportar nada.
+   */
+  function renderCrsReport() {
+    const box = document.getElementById('piribebuyCrsReport');
+    if (!box) return;
+    const list = (window.MapEngine?.listPiribebuyCrs?.() || [])
+      .filter(i => i.corrected || !i.source || i.confidence < 0.9);
+    if (!list.length) { box.innerHTML = ''; box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = `<div class="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Proyección — requiere atención</div>` +
+      list.map(item => {
+        const conf = Math.round((item.confidence || 0) * 100);
+        const color = item.corrected ? 'text-emerald-400' : 'text-amber-400';
+        const icon = item.corrected ? 'fa-wand-magic-sparkles' : 'fa-triangle-exclamation';
+        const src = item.source ? CRS_LABEL(item.source) : 'no identificada';
+        return `<div class="flex items-start gap-1.5 rounded border border-slate-800 bg-slate-950/60 px-1.5 py-1">
+          <i class="fas ${icon} ${color} text-[9px] mt-0.5"></i>
+          <div class="min-w-0 flex-1">
+            <div class="text-[9px] font-bold text-slate-300 truncate">${item.name}</div>
+            <div class="text-[8px] ${color}">${src}${item.corrected ? ' · reproyectada' : ''} <span class="text-slate-600">(${conf}%)</span></div>
+          </div>
+        </div>`;
+      }).join('');
+  }
+  window.PiribebuyCrs.render = renderCrsReport;
+
+  // Refrescar el informe cuando cambie la visibilidad de una capa.
+  window.addEventListener('snc:layers-changed', () => {
+    setTimeout(renderCrsReport, 100);
+  });
+  document.getElementById('piribebuy-crs-refresh')?.addEventListener('click', () => {
+    renderCrsReport();
+    window.showToast?.('Diagnóstico de proyección actualizado', 'info');
+  });
+
+  // Informe inicial
+  setTimeout(renderCrsReport, 2500);
+
+  // ─── Alternar visibilidad de capas de referencia ────────────────────────────
+  function toggleLayersSection() {
+    const section = document.getElementById('reference-layers-section');
+    const btn = document.getElementById('layers-toggle-btn');
+    if (!section) return;
+    const isHidden = section.classList.contains('hidden');
+    if (isHidden) {
+      section.classList.remove('hidden');
+      btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i>';
+      btn.title = 'Ocultar capas de referencia';
+    } else {
+      section.classList.add('hidden');
+      btn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i>';
+      btn.title = 'Mostrar capas de referencia';
+    }
+  }
+
+  // ─── Tabla de contenido (LayerManager + LayerPanel) ─────────────────────────
+  // Registra las capas de Piribebuy y monta el panel tipo ArcGIS.
+  const PIRI_DEFS = {
+    barrios:        { title: 'Barrios',               group: 'g_base', geometryType: 'Polygon' },
+    vias:           { title: 'Vías generales',        group: 'g_base', geometryType: 'LineString' },
+    hidro:          { title: 'Hidrografía',           group: 'g_base', geometryType: 'LineString' },
+    vertedero:      { title: 'Vertedero',             group: 'g_vert', geometryType: 'Polygon' },
+    centro:         { title: 'Centro',                group: 'g_vert', geometryType: 'Point' },
+    vertedero_500:  { title: 'Buffer vertedero 500 m', group: 'g_vert', geometryType: 'Polygon' },
+    vertedero_1000: { title: 'Buffer vertedero 1000 m',group: 'g_vert', geometryType: 'Polygon' },
+    vuelo_casco:    { title: 'Vuelo casco histórico', group: 'g_casco', geometryType: 'Polygon' },
+    casco_historico:{ title: 'Casco Histórico',       group: 'g_casco', geometryType: 'Polygon' }
+  };
+
+  function buildLayerTree() {
+    LayerManager.reset();
+    // Capas base (para el modo "Origen" y para que la leyenda las excluya).
+    LayerManager.registerLayer({ id: 'basemap', title: 'Mapa base', sourceType: 'basemap', visible: true });
+    // El mapa base SÍ figura en la leyenda unificada del mapa (antes se
+    // ocultaba porque la leyenda vivía en el panel de contenido y solo
+    // listaba capas temáticas). Se puede quitar con la X o desde Propiedades.
+    LayerManager.get('basemap').legend.hideInLegend = false;
+
+    LayerManager.registerGroup({ id: 'g_piri', title: 'Piribebuy' });
+    LayerManager.registerGroup({ id: 'g_base', title: 'Base territorial', parentId: 'g_piri' });
+    LayerManager.registerGroup({ id: 'g_vert', title: 'Vertedero y entorno', parentId: 'g_piri' });
+    LayerManager.registerGroup({ id: 'g_casco', title: 'Casco histórico', parentId: 'g_piri' });
+
+    const STYLES = window.MapEngine?._piribebuyStyles || null;
+    for (const [id, def] of Object.entries(PIRI_DEFS)) {
+      LayerManager.registerLayer({
+        id,
+        title: def.title,
+        parentId: def.group,
+        geometryType: def.geometryType,
+        sourcePath: 'data/piribebuy',
+        sourceType: 'geojson',
+        style: STYLES?.[id] || null
+      });
+    }
+    LayerManager.registerLayer({
+      id: 'snc-ref', title: 'Referencia catastral SNC',
+      sourceType: 'servicio', sourcePath: 'catastro.gov.py',
+      geometryType: 'Polygon'
+    });
+    LayerManager.get('snc-ref').legend.hideInLegend = true;
+    // Por defecto la referencia NO se muestra: solo aparece si el usuario la
+    // activa. Y no figura en la leyenda salvo que se lo indique.
+    LayerManager.get('snc-ref').visible = false;
+    LayerManager.get('snc-ref').sncRef = {
+        visualEnabled: false, remotaEnabled: false,
+        remotaOpacity: 0.85, remotaInLegend: false
+    };
+    return true;
+  }
+
+  function mountContentPanel() {
+    const host = document.getElementById('content-panel-host');
+    if (!host) return false;
+    return LayerPanel.mount(host, {
+      onToggleLayer: async (id, visible) => {
+        // Solo las capas de Piribebuy tienen cargador propio.
+        if (PIRI_DEFS[id]) {
+          await window.MapEngine?.togglePiribebuyLayer(id, visible);
+        } else if (id === 'snc-ref') {
+          // El checkbox del arbol maneja la capa VISUAL (opcional). La capa
+          // REMOTA se controla aparte, desde Propiedades.
+          await window.MapEngine?.toggleSNCReferenceLayer(visible);
+        }
+      },
+      onZoomLayer: (id) => {
+        if (PIRI_DEFS[id]) window.MapEngine?.zoomToPiribebuyLayer(id);
+        else window.MapEngine?.focusWorkPolygon();
+      },
+      // Etiquetado por atributo: al cambiar la config en Propiedades, se
+      // redibujan las etiquetas de la capa sobre el mapa.
+      onLabelChange: (id, config) => {
+        if (PIRI_DEFS[id]) {
+          const n = window.MapEngine?.setLayerLabelConfig?.(id, config) || 0;
+          if (config?.enabled && !n && !(config.field || config.expression)) {
+            showToast('Elegí una columna para mostrar en la etiqueta', 'warning');
+          }
+        }
+      }
+    });
+  }
+
+  // Sincroniza la escala del visor para que los rangos minScale/maxScale funcionen.
+  function bindScaleSync() {
+    const map = window.MapEngine?.getMap?.();
+    if (!map) return;
+    const sync = () => {
+      LayerPanel.syncScaleFromMap(map);
+      // Las etiquetas pueden tener su propio rango de escala: al cambiar el
+      // zoom hay que reevaluar si corresponde mostrarlas.
+      if ((LayerManager.labelsActiveLayers?.()?.length || 0) > 0) {
+        window.MapEngine?.refreshAllLabels?.(LayerManager.currentScale ?? null);
+      }
+    };
+    map.on('zoomend', sync);
+    sync();
+  }
+
+  // Reconstruye el panel cuando se activa/desactiva una capa de Piribebuy,
+  // para que el árbol refleje el estado real.
+  window.addEventListener('snc:layers-changed', () => {
+    const map = window.MapEngine?.getMap?.();
+    if (map) LayerPanel.syncScaleFromMap(map);
+    LayerPanel.render();
+  });
+
+  /**
+   * Carga en el mapa las capas que el modelo marca como visibles.
+   *
+   * Bug que resuelve: los checkboxes del panel nacen marcados (el modelo
+   * registra `visible: true`), pero nadie dibujaba esas capas al arrancar.
+   * Resultado: el panel mostraba todo activo y la leyenda solo el mapa base,
+   * porque `getActiveLayersInfo()` lee lo que el MAPA tiene dibujado.
+   *
+   * Rendimiento: las capas se cargan EN PARALELO (son ~4.5 MB de GeoJSON y
+   * cada una hace su propio fetch) y con los avisos silenciados; el panel y
+   * la leyenda se refrescan una sola vez al terminar. En serie tardaba
+   * decenas de segundos y mostraba 9 avisos emergentes.
+   */
+  async function loadVisibleLayers() {
+    const visibles = Object.keys(PIRI_DEFS).filter(id => LayerManager.get(id)?.visible);
+    const t0 = performance.now();
+    const resultados = await Promise.all(visibles.map(async id => {
+      try {
+        await window.MapEngine?.togglePiribebuyLayer?.(id, true, { silent: true, deferRefresh: true });
+        return { id, ok: true };
+      } catch (e) {
+        console.warn(`No se pudo cargar la capa ${id}`, e);
+        return { id, ok: false, error: e.message };
+      }
+    }));
+    const fallidas = resultados.filter(r => !r.ok);
+    if (fallidas.length) {
+      console.warn('Capas que no cargaron:', fallidas.map(f => `${f.id}: ${f.error}`).join(' | '));
+    }
+
+    // La referencia SNC es un servicio externo: no debe bloquear el arranque.
+    if (LayerManager.get('snc-ref')?.visible) {
+      Promise.resolve(window.MapEngine?.toggleSNCReferenceLayer?.(true)).catch(() => {});
+    }
+
+    // Un solo refresco, ya con todas las capas dibujadas.
+    LayerPanel.render();
+    window.MapEngine?.refreshActiveLayersUI?.();
+    console.info(`Capas visibles cargadas en ${Math.round(performance.now() - t0)} ms`);
+  }
+
+  /**
+   * Espera a que el mapa esté realmente listo, en vez de dormir un tiempo fijo.
+   *
+   * Antes se usaba `setTimeout(..., 2600)`: si el mapa tardaba más, el panel
+   * se montaba sin mapa y las capas no cargaban; si tardaba menos, se perdían
+   * 2.6 s de arranque. Acá se sondea cada 100 ms y se arranca en cuanto hay
+   * mapa (con un tope de 15 s para no colgarse si algo falla).
+   */
+  function whenMapReady() {
+    return new Promise(resolve => {
+      const t0 = performance.now();
+      const tick = () => {
+        if (window.MapEngine?.getMap?.()) return resolve(true);
+        if (performance.now() - t0 > 15000) return resolve(false);
+        setTimeout(tick, 100);
+      };
+      tick();
+    });
+  }
+
+  whenMapReady().then(listo => {
+    if (!listo) {
+      console.warn('El mapa no quedó listo en 15 s; se monta el panel igual.');
+    }
+    buildLayerTree();
+    if (mountContentPanel()) {
+      bindScaleSync();
+      // Reflejar el estado inicial real de las capas visibles.
+      LayerPanel.render();
+    }
+    // Leyenda unificada DENTRO del mapa (abajo a la izquierda): fusiona el
+    // antiguo "📍 Capas Activas" con la sección "Leyenda" del panel.
+    MapLegend.mount(document.getElementById('view-map'), {
+      getActiveLayers: () => window.MapEngine?.getActiveLayersInfo?.() || [],
+      onZoomLayer: (id) => {
+        if (window.MapEngine?.getPiribebuyFeatures?.(id)?.length) {
+          window.MapEngine.zoomToPiribebuyLayer(id);
+        } else {
+          window.MapEngine?.focusWorkPolygon?.();
+        }
+      }
+    });
+    // Dibujar las capas que el panel muestra como activas.
+    loadVisibleLayers();
+  });
+
+  // ─── Tabla de atributos (spec §3) ───────────────────────────────────────────
+  // Se abre desde el menú contextual de una capa ("Abrir tabla de atributos").
+  // El evento lo emite js/layerPanel.js.
+  window.addEventListener('snc:open-attribute-table', async (e) => {
+    const layerId = e.detail?.layerId;
+    if (!layerId) return;
+
+    // Las capas de Piribebuy se leen del mapa; otras del estado del proyecto.
+    let features = window.MapEngine?.getPiribebuyFeatures?.(layerId) || [];
+    if (!features.length && layerId === 'parcelas') {
+      features = window.State?.get?.('geojson')?.features || [];
+    }
+    if (!features.length) {
+      // Si la capa no está activa, se activa y se reintenta una vez.
+      await window.MapEngine?.togglePiribebuyLayer?.(layerId, true);
+      await new Promise(r => setTimeout(r, 900));
+      features = window.MapEngine?.getPiribebuyFeatures?.(layerId) || [];
+    }
+    if (!features.length) {
+      showToast(`La capa "${layerId}" no tiene registros para mostrar`, 'warning');
+      return;
+    }
+
+    const node = LayerManager.get(layerId);
+    const info = window.MapEngine?.getPiribebuyCrsInfo?.(layerId);
+    const cfg = node?.tableConfig || {};
+
+    AttributeTableUI.open({
+      layerId,
+      features,
+      layerNode: node,
+      tableConfig: cfg,
+      hooks: {
+        getMap: () => window.MapEngine?.getMap?.(),
+        getLayerNode: () => LayerManager.get(AttributeTableUI.AttributeTable.layerId),
+        onSelectionChanged: () => { /* el resaltado lo maneja la UI */ },
+        onSortChanged: (field, order) => {
+          // Persistir el orden en la config de la capa.
+          if (node) LayerManager.setTableConfig(layerId, { sortField: field, sortOrder: order || 'ASC' });
+        },
+        onFilterChanged: () => {},
+        onPageSizeChanged: (n) => {
+          // Persistir las filas por página en la config de la capa.
+          if (node) LayerManager.setTableConfig(layerId, { pageSize: n });
+        },
+        onColumnsChanged: (hidden, order) => {
+          if (node) LayerManager.setTableConfig(layerId, { hiddenColumns: hidden, columnOrder: order });
+        },
+        onOpenRelated: (rowIndex, field) => {
+          // Relate 1:N: se buscan los hijos por coincidencia del campo.
+          const parentFeature = AttributeTableUI.AttributeTable.features[rowIndex];
+          const key = parentFeature?.properties?.[field];
+          // Buscar la capa hija entre las cargadas, por nombre del campo.
+          const childId = field.toLowerCase().includes('detalle') ? 'casco_hist'
+                        : field.toLowerCase().includes('vertedero') ? 'vertedero_integrado'
+                        : null;
+          if (!childId) {
+            showToast('Esta capa no tiene registros relacionados configurados', 'info');
+            return;
+          }
+          const childFeatures = window.MapEngine?.getPiribebuyFeatures?.(childId) || [];
+          if (!childFeatures.length) {
+            showToast('Los registros relacionados no están disponibles', 'warning');
+            return;
+          }
+          AttributeTableUI.openRelated({
+            childLayerId: childId,
+            childFeatures,
+            parentRowIndex: rowIndex,
+            field,
+            label: LayerManager.get(childId)?.title || childId
+          });
+        },
+        onRelatedClose: () => { showToast('Volvió a la tabla principal', 'info'); }
+      }
+    });
+    showToast(`Tabla de atributos: ${features.length} registro(s)`, 'info');
+  });
   </script>
 
   <!-- DIAGNÓSTICO TEMPORAL: muestra cualquier error JS en pantalla -->
@@ -606,6 +1010,110 @@
     });
   })();
   </script>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MODALES DE HERRAMIENTAS (COGO · TOPOLOGÍA · GEOPROCESAMIENTO)
+       Estos tres módulos estaban cableados en el toolbar pero su markup
+       no existía en el DOM: COGO fallaba en silencio (optional chaining)
+       y Topología/Geoprocesamiento lanzaban TypeError al abrir.
+       ══════════════════════════════════════════════════════════════ -->
+
+  <!-- ── COGO: construcción por rumbo y distancia ─────────────────── -->
+  <div id="cogo-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="cogo-title">
+    <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
+        <h3 id="cogo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <i class="fas fa-drafting-compass text-blue-400"></i> Construcción COGO
+        </h3>
+        <button type="button" onclick="CogoUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <label class="text-xs text-slate-400">Este (m)
+            <input id="cogo-east" type="number" step="0.001" value="0" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
+          </label>
+          <label class="text-xs text-slate-400">Norte (m)
+            <input id="cogo-north" type="number" step="0.001" value="0" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
+          </label>
+        </div>
+        <label class="block text-xs text-slate-400">Tramos (rumbo y distancia por línea — ej. "N 45°30'00\" E, 120.50")
+          <textarea id="cogo-courses" rows="4" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono text-slate-100 focus:border-blue-500 focus:outline-none" placeholder="N 45°30'00&quot; E, 120.50&#10;S 0°00'00&quot; E, 80.00&#10;S 45°30'00&quot; W, 120.50"></textarea>
+        </label>
+        <div class="grid grid-cols-2 gap-3 items-end">
+          <label class="text-xs text-slate-400">Tolerancia de cierre (m)
+            <input id="cogo-closure-tolerance" type="number" step="0.001" min="0" value="0.05" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
+          </label>
+          <div class="flex gap-2">
+            <button type="button" onclick="CogoUI.preview()" class="flex-1 rounded-md border border-slate-600 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800">Previsualizar</button>
+            <button type="button" onclick="CogoUI.createParcel()" class="flex-1 rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-500">Crear parcela</button>
+          </div>
+        </div>
+        <div id="cogo-report" class="rounded-md bg-slate-950/70 border border-slate-800 p-3 text-xs text-slate-300 font-mono min-h-[3rem]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Corrección topológica ────────────────────────────────────── -->
+  <div id="topology-repair-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="topo-title">
+    <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
+        <h3 id="topo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <i class="fas fa-wand-magic-sparkles text-amber-400"></i> Corrección topológica asistida
+        </h3>
+        <button type="button" onclick="TopologyRepairUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <p class="text-xs text-slate-400">Se analizan las geometrías del expediente y se proponen reparaciones deterministas (snap de vértices, cierre de anillos, eliminación de duplicados).</p>
+        <ul id="topology-repair-list" class="space-y-2 max-h-56 overflow-y-auto text-xs text-slate-300"></ul>
+        <p id="topology-repair-unresolved" class="text-xs text-amber-300"></p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="TopologyRepairUI.close()" class="rounded-md border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800">Cancelar</button>
+          <button type="button" onclick="TopologyRepairUI.apply()" class="rounded-md bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-500">Aplicar correcciones</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Geoprocesamiento ──────────────────────────────────────────── -->
+  <div id="geoprocessing-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="geo-title">
+    <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
+        <h3 id="geo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <i class="fas fa-diagram-project text-blue-400"></i> Geoprocesamiento
+        </h3>
+        <button type="button" onclick="GeoprocessingUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block text-xs text-slate-400">Operación
+            <select id="geoprocess-operation" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
+              <option value="intersect">Intersección</option>
+              <option value="union">Unión</option>
+              <option value="buffer">Buffer</option>
+              <option value="difference">Diferencia</option>
+              <option value="select-intersect">Seleccionar intersectantes</option>
+            </select>
+          </label>
+          <label class="block text-xs text-slate-400">Distancia (m)
+            <input id="geoprocess-distance" type="number" step="1" min="0" value="10" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block text-xs text-slate-400">Parcela principal
+            <select id="geoprocess-primary" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none"></select>
+          </label>
+          <label class="block text-xs text-slate-400">Parcela secundaria
+            <select id="geoprocess-secondary" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none"></select>
+          </label>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="GeoprocessingUI.close()" class="rounded-md border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-800">Cancelar</button>
+          <button type="button" onclick="GeoprocessingUI.run()" class="rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500">Ejecutar</button>
+        </div>
+        <div id="geoprocess-result" class="rounded-md bg-slate-950/70 border border-slate-800 p-3 text-xs text-slate-300 min-h-[3rem]"></div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
