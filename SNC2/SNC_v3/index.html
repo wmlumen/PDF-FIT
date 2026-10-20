@@ -163,6 +163,17 @@
           </div>
         </section>
 
+        <!-- Panel de control de capas estilo QGIS -->
+        <section id="qgis-layer-control" class="operational-section" aria-labelledby="layer-control-title">
+          <h3 id="layer-control-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+            <span><i class="fas fa-layer-group mr-2"></i> Capas del Proyecto</span>
+            <div class="text-[8px] text-slate-400">Capas activas: <span id="layer-control-count">0</span></div>
+          </h3>
+          <div id="layer-control-list" class="space-y-1 max-h-80 overflow-y-auto">
+            <!-- Capas cargadas se insertarán dinámicamente -->
+          </div>
+        </section>
+
         <!-- LAYERS -->
         <section id="reference-layers-section" class="operational-section hidden" aria-labelledby="layers-title">
           <h3 id="layers-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
@@ -853,13 +864,134 @@
 
     // La referencia SNC es un servicio externo: no debe bloquear el arranque.
     if (LayerManager.get('snc-ref')?.visible) {
-      Promise.resolve(window.MapEngine?.toggleSNCReferenceLayer?.(true)).catch(() => {});
+      Promise.resolve(window.MapEngine?.toggleSNCReferenceLayer?.(true)).catch(() -> {});
     }
 
     // Un solo refresco, ya con todas las capas dibujadas.
     LayerPanel.render();
     window.MapEngine?.refreshActiveLayersUI?.();
     console.info(`Capas visibles cargadas en ${Math.round(performance.now() - t0)} ms`);
+
+    // Actualizar panel de control de capas
+  function updateLayerControlPanel() {
+    const layerControlList = document.getElementById('layer-control-list');
+    const layerControlCount = document.getElementById('layer-control-count');
+    if (!layerControlList || !layerControlCount) return;
+    
+    // Obtener todas las capas registradas en LayerManager
+    const allLayers = [];
+    const visibleCount = [];
+    
+    // Agrupar por grupos definidos en PIRI_DEFS
+    const groups = {
+      g_piri: { title: 'Piribebuy', layers: [] },
+      g_base: { title: 'Base territorial', layers: [] },
+      g_vert: { title: 'Vertedero y entorno', layers: [] },
+      g_casco: { title: 'Casco histórico', layers: [] }
+    };
+    
+    // Iterar sobre PIRI_DEFS para obtener las capas y sus grupos
+    const piriDefs = window.PIRI_DEFS || {};
+    for (const [id, def] of Object.entries(piriDefs)) {
+      const layerNode = LayerManager.get(id);
+      if (!layerNode) continue;
+      
+      const title = layerNode.title || id;
+      const isVisible = layerNode.visible !== false; // visible por defecto es true
+      const group = def.group || 'g_piri'; // Grupo por defecto
+      
+      // Asegurar que el grupo existe
+      if (!groups[group]) {
+        groups[group] = { title: group, layers: [] };
+      }
+      
+      groups[group].layers.push({
+        id,
+        title,
+        visible: isVisible
+      });
+    }
+    
+    // También incluir la referencia SNC si está registrada
+    const sncRefNode = LayerManager.get('snc-ref');
+    if (sncRefNode) {
+      groups['g_base'] = groups['g_base'] || { title: 'Base territorial', layers: [] };
+      groups['g_base'].layers.push({
+        id: 'snc-ref',
+        title: 'Referencia catastral SNC',
+        visible: sncRefNode.visible !== false
+      });
+    }
+    
+    // Construir el HTML del panel
+    let html = '';
+    let totalVisible = 0;
+    
+    for (const [groupId, group] of Object.entries(groups)) {
+      if (group.layers.length === 0) continue;
+      
+      html += `<div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800 mb-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">${group.title}</span>
+                    <span class="text-[8px] text-slate-500">${group.layers.length} capas</span>
+                  </div>`;
+      
+      group.layers.forEach((layer, index) => {
+        const checked = layer.visible ? 'checked' : '';
+        const layerId = layer.id;
+        const layerTitle = layer.title;
+        
+        html += `<label class="flex items-start gap-2 cursor-pointer select-none">
+                    <input type="checkbox" ${checked} 
+                           class="mt-0.5 accent-blue-500 layer-checkbox" 
+                           data-layer-id="${layerId}"
+                           aria-label="Mostrar/ocultar ${layerTitle}">
+                    <div class="flex-1 min-w-0">
+                      <div class="text-[9px] font-bold text-slate-300 truncate">${layerTitle}</div>
+                      <div class="text-[8px] text-slate-400">${layerId}</div>
+                    </div>
+                    <span class="text-[8px] text-slate-500">${index + 1}</span>
+                  </label>`;
+        
+        if (layer.visible) totalVisible++;
+      });
+      
+      html += `</div>`);
+    }
+    
+    layerControlList.innerHTML = html;
+    layerControlCount.textContent = totalVisible;
+    
+    // Añadir event listeners a los checkboxs
+    document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const layerId = this.getAttribute('data-layer-id');
+        toggleLayerVisibility(layerId, this.checked);
+      });
+    });
+  }
+  
+  // Función para alternar visibilidad de una capa
+  function toggleLayerVisibility(layerId, visible) {
+    // Evitar toggles múltiples simultáneos
+    const layerNode = LayerManager.get(layerId);
+    if (!layerNode) return;
+    
+    // Actualizar visibilidad en LayerManager
+    layerNode.visible = visible;
+    
+    // Si es la referencia SNC, también actualizar el motor del mapa
+    if (layerId === 'snc-ref') {
+      window.MapEngine?.toggleSNCReferenceLayer?.(visible);
+    } else {
+      // Para capas de Piribebuy, recargar la capa
+      window.MapEngine?.togglePiribebuyLayer?.(layerId, visible, { silent: true });
+    }
+    
+    // Actualizar panel y leyenda
+    updateLayerControlPanel();
+    LayerPanel.render();
+    window.MapEngine?.refreshActiveLayersUI?.();
   }
 
   /**
