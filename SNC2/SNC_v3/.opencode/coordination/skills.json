@@ -79,6 +79,105 @@
       "resolvedError": "err_20261018_missing_postgis_integration",
       "createdAt": "2026-10-18T20:15:00.000Z",
       "lesson": "Stubs no sustituyen motor espacial real. PostGIS = índices GiST, ST_Intersects, ST_DWithin, ST_Buffer nativos. Es requisito legal para validación municipal."
+    },
+    {
+      "id": "imp_1792371229921_ewqxbh96",
+      "skill": "fix_municipal_data_import",
+      "agent": "agent-cli",
+      "description": "Parser delimiter fix, detection of municipal columns, update active file label",
+      "codeChange": "Fix en js/parser.js: Parser delimiter fix, detection of municipal columns, update active file label",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T00:53:49.921Z"
+    },
+    {
+      "id": "imp_1792371274624_iyf9gmeq",
+      "skill": "fix_municipal_data_import",
+      "agent": "agent-cli",
+      "description": "Parser delimiter fix, detection of municipal columns, update active file label",
+      "codeChange": "Fix en js/parser.js: Parser delimiter fix, detection of municipal columns, update active file label",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T00:54:34.624Z"
+    },
+    {
+      "id": "imp_1792371360286_3rpnrtsn",
+      "skill": "fix_municipal_data_import",
+      "agent": "agent-cli",
+      "description": "Parser delimiter fix, detection of municipal columns, update active file label",
+      "codeChange": "Fix en js/parser.js: Parser delimiter fix, detection of municipal columns, update active file label",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T00:56:00.286Z"
+    },
+    {
+      "id": "imp_1792377947349_4dkl78zv",
+      "skill": "fix_pagina_index",
+      "agent": "agent-cli",
+      "description": "Carga Leaflet/Turf/proj4, init defensivo y coordinacion solo Node",
+      "codeChange": "Fix en index.html: Carga Leaflet/Turf/proj4, init defensivo y coordinacion solo Node",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T02:45:47.349Z"
+    },
+    {
+      "id": "imp_1792377947519_uwg9d65h",
+      "skill": "fix_pagina_index",
+      "agent": "agent-cli",
+      "description": "Carga Leaflet/Turf/proj4, init defensivo y coordinacion solo Node",
+      "codeChange": "Fix en js/app/index.js: Carga Leaflet/Turf/proj4, init defensivo y coordinacion solo Node",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T02:45:47.519Z"
+    },
+    {
+      "id": "imp_1792378262665_zkod2h10",
+      "skill": "fix_fluxograma_bundle",
+      "agent": "agent-cli",
+      "description": "Quita script clasico a bundle.js inexistente (evita SyntaxError export en cache)",
+      "codeChange": "Fix en fluxograma.html: Quita script clasico a bundle.js inexistente (evita SyntaxError export en cache)",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T02:51:02.665Z"
+    },
+    {
+      "id": "imp_1792381717754_0trkdg9t",
+      "skill": "dedupe_ids_municipal",
+      "agent": "agent-cli",
+      "description": "Elimina stubs y modal duplicados: 0 ids repetidos en index-municipal.html",
+      "codeChange": "Fix en index-municipal.html: Elimina stubs y modal duplicados: 0 ids repetidos en index-municipal.html",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T03:48:37.754Z"
+    },
+    {
+      "id": "imp_1792381833285_kz2cwjk3",
+      "skill": "fix_db_cjs_merge",
+      "agent": "agent-cli",
+      "description": "Repara dbAPI duplicado, new Database, promisify-all, NOT NULL y stubs de migracion",
+      "codeChange": "Fix en db.cjs: Repara dbAPI duplicado, new Database, promisify-all, NOT NULL y stubs de migracion",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T03:50:33.285Z"
+    },
+    {
+      "id": "imp_1792389104633_jnsxlpl1",
+      "skill": "piribebuy_reproject_gis",
+      "agent": "agent-cli",
+      "description": "Reproyectadas capas de Piribebuy de UTM 21S a SIRGAS 2000 (EPSG:4326) para visualizacion unificada en Leaflet",
+      "codeChange": "Fix en js/mapEngine.js: Reproyectadas capas de Piribebuy de UTM 21S a SIRGAS 2000 (EPSG:4326) para visualizacion unificada en Leaflet",
+      "testsPassed": true,
+      "triggeredBy": "task_success",
+      "status": "pending_review",
+      "createdAt": "2026-10-19T05:51:44.633Z"
     }
   ],
   "patterns": [
