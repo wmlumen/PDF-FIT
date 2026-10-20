@@ -99,8 +99,8 @@
 
     <div id="header-actions" class="flex items-center gap-1.5">
       <input id="input-project-open" type="file" hidden accept=".chr,.json" onchange="window.LocalActions?.openProjectFile(event.target.files[0])">
-      <button id="btn-project-new" onclick="window.App?.clear()" class="btn-tool header-icon-btn draggable" data-tooltip="Nuevo expediente" aria-label="Nuevo expediente"><i class="fas fa-file-circle-plus"></i></button>
-      <button id="btn-project-open" onclick="document.getElementById('input-project-open')?.click()" class="btn-tool header-icon-btn draggable" data-tooltip="Abrir proyecto guardado" aria-label="Abrir proyecto guardado"><i class="fas fa-folder-open"></i></button>
+      <button id="btn-project-new" onclick="window.App?.clear()" class="btn-tool header-icon-btn" data-tooltip="Nuevo expediente" aria-label="Nuevo expediente"><i class="fas fa-file-circle-plus"></i></button>
+      <button id="btn-project-open" onclick="document.getElementById('input-project-open')?.click()" class="btn-tool header-icon-btn" data-tooltip="Abrir proyecto guardado" aria-label="Abrir proyecto guardado"><i class="fas fa-folder-open"></i></button>
       <button id="btn-project-save" data-requires-work onclick="window.LocalActions?.saveAll()" class="btn-tool header-icon-btn" data-tooltip="Guardar proyecto" aria-label="Guardar proyecto"><i class="fas fa-floppy-disk"></i></button>
       <button id="btn-project-rename" data-requires-work onclick="window.LocalActions?.renameProject()" class="btn-tool header-icon-btn" data-tooltip="Renombrar proyecto" aria-label="Renombrar proyecto"><i class="fas fa-pen-to-square"></i></button>
       <button id="btn-project-delete" data-requires-work onclick="window.LocalActions?.deleteProject()" class="btn-tool header-icon-btn" data-tooltip="Eliminar proyecto" aria-label="Eliminar proyecto"><i class="fas fa-trash"></i></button>
@@ -113,12 +113,12 @@
       <button id="exportKMLBtn" data-requires-work onclick="window.App?.exportKML()" class="btn-tool header-icon-btn" data-tooltip="Exportar KML" aria-label="Exportar KML"><i class="fas fa-earth-americas"></i></button>
       <button id="exportProfessionalBtn" data-requires-work onclick="window.App?.exportProfessionalReport()" class="btn-tool header-icon-btn" style="background: linear-gradient(135deg, #059669, #047857);" data-tooltip="Certificado Preventivo de Aptitud (PDF + DOCX)" aria-label="Generar Certificado Preventivo de Aptitud y Diagnóstico Integral"><i class="fas fa-certificate"></i></button>
       <span id="separator-export-utilities" class="header-action-separator" aria-hidden="true"></span>
-      <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn draggable" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
-      <a href="mailto:wmlumen@gmail.com" class="btn-tool header-icon-btn draggable" data-tooltip="Contacto: wmlumen@gmail.com" aria-label="Contactar por correo a wmlumen@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a>
-      <button id="btn-open-catastro" onclick="window.openCatastro()" class="btn-tool header-icon-btn draggable" data-tooltip="Catastro oficial" aria-label="Abrir catastro oficial del SNC" title="Abrir catastro oficial del SNC">
+      <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
+      <a href="mailto:wmlumen@gmail.com" class="btn-tool header-icon-btn" data-tooltip="Contacto: wmlumen@gmail.com" aria-label="Contactar por correo a wmlumen@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a>
+      <button id="btn-open-catastro" onclick="window.openCatastro()" class="btn-tool header-icon-btn" data-tooltip="Catastro oficial" aria-label="Abrir catastro oficial del SNC" title="Abrir catastro oficial del SNC">
         <i class="fas fa-map"></i>
       </button>
-      <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn draggable" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
+      <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
     </div>
   </header>
 
@@ -1115,159 +1115,5 @@
     </div>
 </div>
   </div>
-  
-  <!-- ══════════════════════════════════════════════════════════════
-     CONFIGURACIÓN MANUAL DE ICONOS - ARRANCAR SOLTAR (DRAG-AND-DROP)
-     Permite al usuario reordenar los botones de la cabecera mediante arrastrar.
-     La disposición se guarda en localStorage y persiste entre sesiones.
-     ══════════════════════════════════════════════════════════════ -->
-  
-  <script>
-  // Íconos por defecto si no hay configuración guardada
-  const DEFAULT_ICON_ORDER = [
-    'btn-project-new',
-    'btn-project-open', 
-    'btn-project-save',
-    'btn-project-validate',
-    'btn-project-audit',
-    'exportBtn',
-    'exportGeoJSONBtn',
-    'exportKMLBtn',
-    'exportProfessionalBtn',
-    'btn-open-catastro',
-    'theme-toggle',
-    'btn-open-plans'
-  ];
-  
-  // Cargar orden guardado o por defecto
-  function loadIconOrder() {
-    const saved = localStorage.getItem('snc_icon_order');
-    return saved ? JSON.parse(saved) : DEFAULT_ICON_ORDER;
-  }
-  
-  // Guardar orden actual
-  function saveIconOrder(order) {
-    localStorage.setItem('snc_icon_order', JSON.stringify(order));
-  }
-  
-  // Reordenar botones según el array de IDs
-  function reorderIcons(order) {
-    const headerActions = document.getElementById('header-actions');
-    if (!headerActions) return;
-    
-    // Que todos los botones draggable inicialmente
-    const draggableBtns = headerActions.querySelectorAll('.btn-tool.draggable');
-    const btnMap = new Map();
-    
-    draggableBtns.forEach(btn => {
-      btnMap.set(btn.id, btn);
-    });
-    
-    // Limpiar el contenedor
-    headerActions.innerHTML = '';
-    
-    // Añadir en el nuevo orden
-    order.forEach(id => {
-      const btn = btnMap.get(id);
-      if (btn) {
-        headerActions.appendChild(btn);
-        // Re-inicializar arrastre después de reordenar
-        initDraggable(btn);
-      }
-    });
-    
-    // Añadir cualquier botón que no esté en el order al final
-    draggableBtns.forEach(btn => {
-      if (!order.includes(btn.id)) {
-        headerActions.appendChild(btn);
-      }
-    });
-    
-    saveIconOrder(order);
-  }
-  
-  // Inicializar arrastre para un botón
-  function initDraggable(btn) {
-    btn.addEventListener('dragstart', function(e) {
-      e.dataTransfer.setData('text/plain', this.id);
-      this.classList.add('dragging');
-      // Efecto visual
-      setTimeout(() => this.classList.add('opacity-50'), 0);
-    });
-    
-    btn.addEventListener('dragend', function() {
-      this.classList.remove('dragging');
-      this.classList.remove('opacity-50');
-    });
-    
-    // Evitar que el texto sea seleccionado durante el arrastre
-    btn.addEventListener('selectstart', function(e) {
-      e.preventDefault();
-    });
-  }
-  
-  // Configurar drop zone para el contenedor
-  function initDropZone() {
-    const headerActions = document.getElementById('header-actions');
-    if (!headerActions) return;
-    
-    headerActions.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.classList.add('bg-slate-900/50');
-    });
-    
-    headerActions.addEventListener('dragleave', function() {
-      this.classList.remove('bg-slate-900/50');
-    });
-    
-    headerActions.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('bg-slate-900/50');
-      
-      const data = e.dataTransfer.getData('text/plain');
-      const draggedId = data;
-      const draggedBtn = document.getElementById(draggedId);
-      
-      if (!draggedBtn) return;
-      
-      // Determinar dónde soltar
-      const dropRect = this.getBoundingClientRect();
-      const mouseY = e.clientY - dropRect.top;
-      const btnHeight = 44; // altura aproximada de un botón
-      const insertAfter = mouseY > btnHeight / 2;
-      
-      // Mover el botón
-      const clone = draggedBtn.cloneNode(true);
-      this.removeChild(draggedBtn);
-      
-      if (insertAfter) {
-        this.appendChild(clone);
-      } else {
-        // Insertar antes del primer hijo o después del separador
-        const firstChild = this.firstElementChild;
-        if (firstChild && firstChild.classList.contains('header-action-separator')) {
-          this.insertBefore(clone, firstChild.nextSibling);
-        } else if (firstChild) {
-          this.insertBefore(clone, firstChild);
-        } else {
-          this.appendChild(clone);
-        }
-      }
-      
-      // Reconstruir el orden después de soltar
-      const btns = Array.from(this.querySelectorAll('.btn-tool.draggable')).map(b => b.id);
-      reorderIcons(btns);
-    });
-  }
-  
-  // Cargar disposición al iniciar
-  document.addEventListener('DOMContentLoaded', function() {
-    const savedOrder = loadIconOrder();
-    reorderIcons(savedOrder);
-    initDropZone();
-    
-    // Re-inicializar arrastre en todos los botones
-    const btns = document.querySelectorAll('.btn-tool.draggable');
-    btns.forEach(initDraggable);
-  });
-  </script>
+</body>
+</html>
