@@ -1,96 +1,118 @@
-# Secrets / local env
-.env
-.env.local
-.env.*.local
-serviceAccountKey.json
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
-backup/secure/
-*.dpapi
+# ============================================
+# Secrets / environment variables
+# .env
+# .env.local
+# .env.*.local
+# serviceAccountKey.json
+# *.pem
+# *.key
+# *.crt
+# *.p12
+# *.pfx
+# backup/secure/
+# *.dpapi
 
-# Local DB
-data/snc.sqlite
-data/*.sqlite
-data/*.db
-data/*.sqlite-*
+# ============================================
+# SQLite / local DBs (keep in repo)
+# data/snc.sqlite
+# data/*.sqlite
+# data/*.db
+# data/*.sqlite-*
 
+# ============================================
+# Logs (development)
+# *.log
+# server.stdout.log
+# server.stderr.log
+# npm-debug.log*
+# yarn-debug.log*
+# yarn-error.log*
+# pnpm-debug.log*
+# lerna-debug.log*
+
+# ============================================
+# Backup / compression / auxiliary (keep zip, shp, and other GIS data in repo)
+# *.rar
+# *.7z
+# *.tar.gz
+# *.zip
+# *.bak
+# *.old
+# *.tmp
+# *.tmp.*
+# log*.txt
+
+# ============================================
 # Build artifacts
-dist/
-build/
-*.min.js
-*.min.css
-*.map
+# dist/
+# build/
+# *.min.js
+# *.min.css
+# *.map
+# graph.html
+# fluxograma.html
 
-# Node
-node_modules/
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# ============================================
+# Node modules
+# node_modules/
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
+# ============================================
 # Temp / backup / generated files
-backup/
-temp_*.cjs
-temp_*.mjs
-temp_*.js
-temp_*.ts
-*.tmp
-*.bak
-*.swp
-*~
+# backup/
+# temp_*.cjs
+# temp_*.mjs
+# temp_*.js
+# temp_*.ts
+# *.tmp
+# *.swp
+# *~
 
-# Logs
-*.log
-server.stdout.log
-server.stderr.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
+# ============================================
 # IDE / Editor
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.vs/
-.project
-.settings/
+# .idea/
+# .vscode/
+# *.swp
+# *.swo
+# *~
+# .vs/
+# .project
+# .settings/
 
+# ============================================
 # OS
-Thumbs.db
-.DS_Store
-ehthumbs.db
-Desktop.ini
+# Thumbs.db
+# .DS_Store
+# ehthumbs.db
+# Desktop.ini
 
+# ============================================
 # Generated / build outputs
-graph.html
-fluxograma.html
-*.sqlite
-*.sqlite-*
-data/*.sqlite
-data/*.sqlite-*
+# *.sqlite
+# *.sqlite-*
 
+# ============================================
 # Firebase
-.firebase/
-.firebaserc
-firebase-debug.log*
-firestore-debug.log*
-functions/.runtimeconfig.json
+# .firebase/
+# .firebaserc
+# firebase-debug.log*
+# firestore-debug.log*
+# functions/.runtimeconfig.json
 
+# ============================================
 # Testing / Coverage
-coverage/
-.nyc_output/
-.nycrc
+# coverage/
+# .nyc_output/
+# .nycrc
 
+# ============================================
 # TypeScript
-*.tsbuildinfo
+# *.tsbuildinfo
 
+# ============================================
 # Optional: local development overrides
-.env.development.local
-.env.test.local
-.env.production.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
