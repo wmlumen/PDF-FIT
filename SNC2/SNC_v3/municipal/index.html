@@ -107,7 +107,7 @@
       <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color"><i class="fas fa-palette"></i></button>
       <a href="/" class="btn-tool header-icon-btn" data-tooltip="Volver a Catastro SNC" aria-label="Volver a Catastro SNC" title="Volver a Catastro SNC"><i class="fas fa-landmark text-blue-400"></i></a>
       <a href="/ciudadano" class="btn-tool header-icon-btn" data-tooltip="Portal Ciudadano" aria-label="Portal Ciudadano" title="Portal Ciudadano"><i class="fas fa-home text-indigo-400"></i></a>
-      <a href="/index-notarial.html" class="btn-tool header-icon-btn" data-tooltip="Portal Notarial y Escribanías" aria-label="Portal Notarial y Escribanías" title="Portal Notarial y Escribanías"><i class="fas fa-stamp text-purple-400"></i></a>
+      <a href="/notarial/" class="btn-tool header-icon-btn" data-tooltip="Portal Notarial y Escribanías" aria-label="Portal Notarial y Escribanías" title="Portal Notarial y Escribanías"><i class="fas fa-stamp text-purple-400"></i></a>
       <a href="/admin/" class="btn-tool header-icon-btn" data-tooltip="Super Administrador" aria-label="Super Administrador" title="Super Administrador"><i class="fas fa-shield-halved text-amber-400"></i></a>
       <button id="btn-expediente-data" onclick="window.ExpedienteModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Datos del Expediente y Profesional" aria-label="Datos del Expediente y Profesional" title="Datos del Expediente y Profesional">
         <i class="fas fa-file-signature text-amber-400"></i>
@@ -914,38 +914,79 @@
   </script>
   <script type="module" src="/js/app-municipal.js"></script>
 
-  <!-- Filtrado de secciones por dependencia municipal -->
+  <!-- Filtrado de secciones por dependencia municipal (múltiples + sub-dependencias) -->
   <script>
   (function() {
-    const DEP_SECCIONES = {
-      catastro:      ['municipal-status-section','fraccionamiento-section','qgis-layer-control','balance-sidebar-section','loteamiento-section','ambiental-section','symbology-section'],
-      ambiental:     ['municipal-status-section','qgis-layer-control','ambiental-section'],
-      planificacion: ['municipal-status-section','fraccionamiento-section','qgis-layer-control','balance-sidebar-section','loteamiento-section'],
-      obras:         ['municipal-status-section','qgis-layer-control','loteamiento-section'],
-      educacion:     ['municipal-status-section','qgis-layer-control'],
-      patrimonio:    ['municipal-status-section','qgis-layer-control'],
+    // Jerarquía: cada dependencia hereda las secciones de su padre.
+    const DEP_JERARQUIA = {
+      'junta_municipal': { parent: null,              secciones: ['municipal-status-section','qgis-layer-control'] },
+      'catastro':        { parent: 'junta_municipal', secciones: ['fraccionamiento-section','balance-sidebar-section','loteamiento-section','ambiental-section','symbology-section'] },
+      'ambiental':       { parent: 'junta_municipal', secciones: ['ambiental-section'] },
+      'planificacion':   { parent: 'junta_municipal', secciones: ['fraccionamiento-section','balance-sidebar-section','loteamiento-section'] },
+      'obras':           { parent: 'junta_municipal', secciones: ['loteamiento-section'] },
+      'educacion':       { parent: 'junta_municipal', secciones: [] },
+      'patrimonio':      { parent: 'junta_municipal', secciones: [] },
+      'super_admin':     { parent: null,              secciones: ['*'] },
+      'notarial':        { parent: null,              secciones: ['municipal-status-section','qgis-layer-control'] },
     };
+
+    function expandirSecciones(dep) {
+      const vistas = new Set();
+      let actual = dep;
+      while (actual && DEP_JERARQUIA[actual]) {
+        const cfg = DEP_JERARQUIA[actual];
+        if (cfg.secciones.includes('*')) return '*';
+        cfg.secciones.forEach(s => vistas.add(s));
+        actual = cfg.parent;
+      }
+      return vistas;
+    }
+
     const user = JSON.parse(localStorage.getItem('snc_api_user') || '{}');
-    const dep = user.department || '';
-    if (dep && DEP_SECCIONES[dep]) {
-      const permitidas = new Set(DEP_SECCIONES[dep]);
-      document.querySelectorAll('[id$="-section"]').forEach(el => {
-        if (!permitidas.has(el.id)) el.style.display = 'none';
+    // department puede ser "catastro" o "catastro,obras" (múltiples separadas por coma)
+    const deps = (user.department || '').split(',').map(d => d.trim()).filter(Boolean);
+
+    if (deps.length > 0) {
+      let accesoTotal = false;
+      const permitidas = new Set(['municipal-status-section','qgis-layer-control']); // base común
+      deps.forEach(dep => {
+        const r = expandirSecciones(dep);
+        if (r === '*') { accesoTotal = true; return; }
+        r.forEach(s => permitidas.add(s));
       });
-      // Botones de dictamen: solo catastro
-      if (dep !== 'catastro') {
-        document.querySelectorAll('[id="exportBtn"],[id="exportDualBtn"],[id="btn-project-audit"]').forEach(el => {
-          el.style.display = 'none';
+
+      if (!accesoTotal) {
+        document.querySelectorAll('[id$="-section"]').forEach(el => {
+          if (!permitidas.has(el.id)) el.style.display = 'none';
+        });
+        if (!deps.includes('catastro') && !deps.includes('super_admin')) {
+          document.querySelectorAll('[id="exportBtn"],[id="exportDualBtn"],[id="btn-project-audit"]').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+      }
+
+      // Badges de dependencia en el header (uno por cada dep)
+      const colores = {
+        catastro:'bg-blue-600/20 text-blue-400 border-blue-500/30',
+        ambiental:'bg-green-600/20 text-green-400 border-green-500/30',
+        planificacion:'bg-purple-600/20 text-purple-400 border-purple-500/30',
+        obras:'bg-orange-600/20 text-orange-400 border-orange-500/30',
+        educacion:'bg-cyan-600/20 text-cyan-400 border-cyan-500/30',
+        patrimonio:'bg-amber-600/20 text-amber-400 border-amber-500/30',
+        junta_municipal:'bg-red-600/20 text-red-400 border-red-500/30',
+        super_admin:'bg-yellow-600/20 text-yellow-400 border-yellow-500/30',
+        notarial:'bg-slate-600/20 text-slate-400 border-slate-500/30',
+      };
+      const h1 = document.querySelector('header h1');
+      if (h1) {
+        deps.forEach(dep => {
+          const badge = document.createElement('span');
+          badge.className = 'ml-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ' + (colores[dep] || 'bg-gray-600/20 text-gray-400 border-gray-500/30');
+          badge.textContent = dep.replace(/_/g,' ');
+          h1.appendChild(badge);
         });
       }
-      // Badge de dependencia en el header
-      const badge = document.createElement('span');
-      badge.className = 'ml-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border';
-      const colores = { catastro:'bg-blue-600/20 text-blue-400 border-blue-500/30', ambiental:'bg-green-600/20 text-green-400 border-green-500/30', planificacion:'bg-purple-600/20 text-purple-400 border-purple-500/30', obras:'bg-orange-600/20 text-orange-400 border-orange-500/30', educacion:'bg-cyan-600/20 text-cyan-400 border-cyan-500/30', patrimonio:'bg-amber-600/20 text-amber-400 border-amber-500/30' };
-      badge.className += ' ' + (colores[dep] || 'bg-gray-600/20 text-gray-400 border-gray-500/30');
-      badge.textContent = dep;
-      const h1 = document.querySelector('header h1');
-      if (h1) h1.appendChild(badge);
     }
   })();
   </script>

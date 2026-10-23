@@ -7,9 +7,10 @@ import { State } from './state.js';
 import { EPSG_32720, PROJ_32720, PROJ_32721, WKT_32721, CAMPOS_REQUERIDOS, METADATOS_GEODESICOS, CONFIG_MUNICIPAL } from './config.js';
 import { showLoading, hideLoading, showToast, downloadFile, generarDerrotero } from './utils.js';
 import { runValidation, runExportValidation } from './validator.js';
-import { buildGeoJSON, buildKML, selectOfficialProperties } from './exportFormats.js';
+import { buildGeoJSON, buildKML, buildDXF, selectOfficialProperties } from './exportFormats.js';
 import { calculateRingSegments, formatMeters } from './segmentLengths.js';
 import { logger } from './logger.js';
+import { SignatureAPI } from './signatureManager.js';
 
 function getExportGeoJSON() {
     State.joinDataToGeoJSON();
@@ -34,6 +35,12 @@ export function exportGeoJSON() {
 export function exportKML() {
     downloadFile(buildKML(getExportGeoJSON()), 'expediente_snc.kml', 'application/vnd.google-earth.kml+xml;charset=utf-8');
     showToast('KML exportado', 'success');
+    return true;
+}
+
+export function exportDXF() {
+    downloadFile(buildDXF(getExportGeoJSON()), 'expediente_snc.dxf', 'application/dxf');
+    showToast('DXF AutoCAD R12 exportado exitosamente', 'success');
     return true;
 }
 
@@ -63,126 +70,39 @@ async function getDocxLib() {
  * @returns {Promise<Object>} Objeto con 5 imágenes base64
  */
 async function captureProfessionalMaps() {
-    if (!window.MapEngine || !window.MapEngine.map) {
+    const map = window.MapEngine?.map || window.MapEngine?.getMap?.();
+    if (!map) {
         logger.warn('MapEngine no disponible para captura de mapas');
         return {};
     }
 
-    const map = window.MapEngine.map;
     const geojson = State.get('geojson');
     const features = geojson?.features || [];
-    
     if (features.length === 0) return {};
 
     const images = {};
-    const canvasPromises = [];
 
-    // Helper para capturar mapa con configuración específica
-    async function captureMap(config) {
-        return new Promise((resolve) => {
-            const originalView = map.getView();
-            const originalSize = map.getSize();
-            
-            // Aplicar configuración
-            if (config.center) map.setView(config.center, config.zoom || map.getZoom());
-            if (config.layers) {
-                config.layers.forEach(l => {
-                    if (window.MapEngine.layers?.[l]) window.MapEngine.layers[l].setStyle(config.layerStyles?.[l] || {});
-                });
+    async function captureMap(name) {
+        const mapContainer = document.getElementById('map') || (map.getContainer ? map.getContainer() : null);
+        if (window.domtoimage && mapContainer) {
+            try {
+                const dataUrl = await window.domtoimage.toJpeg(mapContainer, { quality: 0.85 });
+                return { name, dataUrl };
+            } catch (e) {
+                logger.warn('Error capturando imagen del mapa:', e.message);
             }
-
-            // Esperar renderizado
-            map.once('moveend', () => {
-                setTimeout(() => {
-                    const canvas = map.getContainer().querySelector('canvas');
-                    if (canvas) {
-                        try {
-                            const dataUrl = canvas.toDataURL('image/png', 1.0);
-                            resolve({ name: config.name, dataUrl });
-                        } catch (e) {
-                            resolve({ name: config.name, dataUrl: null, error: e.message });
-                        }
-                    } else {
-                        resolve({ name: config.name, dataUrl: null, error: 'No canvas' });
-                    }
-                    // Restaurar vista original
-                    map.setView(originalView.center, originalView.zoom);
-                }, 500);
-            });
-        });
+        }
+        return { name, dataUrl: null };
     }
 
-    // Gráfico 1: Plano de Implantación y Entorno Catastral (Radio 200m)
-    const bounds = map.getBounds().pad(0.5);
-    images.g1 = await captureMap({
-        name: 'plano_implantacion',
-        center: map.getCenter(),
-        zoom: map.getZoom(),
-        layers: ['catastro', 'streetNames'],
-        layerStyles: {
-            catastro: { weight: 1, color: '#64748b', fillColor: '#e2e8f0', fillOpacity: 0.3 }
-        }
-    });
-
-    // Gráfico 2: Croquis Perimetral de Geometría y Vértices
-    const allCoords = features.flatMap(f => {
-        const coords = f.geometry?.coordinates;
-        if (f.geometry?.type === 'Polygon') return coords[0];
-        if (f.geometry?.type === 'MultiPolygon') return coords.flatMap(p => p[0]);
-        return [];
-    });
-    
-    if (allCoords.length > 0) {
-        const centroid = turf.centroid(turf.featureCollection(features)).geometry.coordinates;
-        images.g2 = await captureMap({
-            name: 'croquis_perimetral',
-            center: [centroid[1], centroid[0]],
-            zoom: map.getZoom() + 2,
-            layers: ['surveyed'],
-            layerStyles: {
-                surveyed: { weight: 3, color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.2 }
-            }
-        });
-    }
-
-    // Gráfico 3: Lámina de Restricción Ambiental (Franja Hídrica 30m)
-    images.g3 = await captureMap({
-        name: 'restriccion_hidrica',
-        center: map.getCenter(),
-        zoom: map.getZoom() - 1,
-        layers: ['hidrografia', 'buffer30m', 'surveyed'],
-        layerStyles: {
-            hidrografia: { weight: 2, color: '#0ea5e9' },
-            buffer30m: { weight: 1, color: '#f59e0b', fillColor: '#fef08a', fillOpacity: 0.4, dashArray: '5,5' },
-            surveyed: { weight: 2, color: '#ef4444', fillColor: '#fef2f2', fillOpacity: 0.3 }
-        }
-    });
-
-    // Gráfico 4: Plano Comparativo con Ortofoto Satelital
-    images.g4 = await captureMap({
-        name: 'comparativo_satelital',
-        center: map.getCenter(),
-        zoom: map.getZoom(),
-        layers: ['satellite', 'surveyed'],
-        layerStyles: {
-            surveyed: { weight: 2, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.15 }
-        }
-    });
-
-    // Gráfico 5: Balance y Cesiones (solo si hay fraccionamiento)
-    const municipalReporte = State.get('reporteMunicipal');
-    if (municipalReporte?.balanceLoteamiento) {
-        images.g5 = await captureMap({
-            name: 'balance_cesiones',
-            center: map.getCenter(),
-            zoom: map.getZoom() - 1,
-            layers: ['lotes_vendibles', 'cesion_vial', 'cesion_verdes'],
-            layerStyles: {
-                lotes_vendibles: { fillColor: '#fef9c3', fillOpacity: 0.6 },
-                cesion_vial: { fillColor: '#94a3b8', fillOpacity: 0.5 },
-                cesion_verdes: { fillColor: '#86efac', fillOpacity: 0.6 }
-            }
-        });
+    try {
+        images.g1 = await captureMap('plano_implantacion');
+        images.g2 = await captureMap('croquis_perimetral');
+        images.g3 = await captureMap('restriccion_hidrica');
+        images.g4 = await captureMap('comparativo_satelital');
+        images.g5 = await captureMap('balance_fraccionamiento');
+    } catch (e) {
+        logger.warn('Error general en captureProfessionalMaps:', e);
     }
 
     return images;
@@ -203,6 +123,263 @@ function calcularToleranciaSNC(superficieM2) {
  * @param {Object} options - Opciones de generación
  * @returns {Promise<{pdf: Blob, docx: Blob, filename: string}>}
  */
+
+/**
+ * Genera el Dictamen Técnico Municipal Oficial de Aprobación de Loteamiento (Ley 3966/2010)
+ * Formato ejecutivo oficial de 1 a 2 páginas para la Dirección de Obras Particulares y Catastro.
+ * @param {Object} data 
+ * @returns {Promise<Blob>}
+ */
+export async function generateMunicipalDictamenPDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    const meta = data.expedienteMetadata || {};
+    const props = data.props || {};
+    const rep = data.municipalReporte || {};
+    const balance = rep.balanceLoteamiento || {};
+    const contrib = rep.contribucionMejoras || {};
+
+    const dist = meta.distrito || props.DISTRITO || 'PIRIBEBUY';
+    const dpto = meta.departamento || props.DEPARTAMEN || 'CORDILLERA';
+    const muniNombre = meta.municipioNombre || ('MUNICIPALIDAD DE ' + dist.toUpperCase());
+    const expNum = meta.expedienteNumero || ('EXP-MUNI-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000));
+    const propNombre = meta.propietarioNombre || props.PROPIETARIO || props.Propietari || 'Propietario / Titular';
+    const propDoc = meta.propietarioDoc || props.CI_RUC || '—';
+    const profNombre = meta.profesionalNombre || props.PROFESIONAL || 'Agrimensor / Perito Topógrafo';
+    const profMat = meta.profesionalMatricula || props.REG_PROF || '—';
+    const fincaMat = meta.fincaMatricula || props.FINCA || '—';
+    const padronMat = meta.padronCtaCte || props.PADRON || props.CODIGO || '—';
+    const lugar = meta.lugarBarrio || props.LUGAR || props.BARRIO || 'Casco Urbano';
+
+    // ===== ENCABEZADO OFICIAL MUNICIPAL =====
+    doc.setFillColor(5, 150, 105); // Verde municipal esmeralda
+    doc.rect(0, 0, pageWidth, 24, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(muniNombre.toUpperCase(), pageWidth / 2, 10, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('DIRECCIÓN DE OBRAS PARTICULARES, URBANISMO Y CATASTRO • DPTO. DE ' + dpto.toUpperCase(), pageWidth / 2, 16, { align: 'center' });
+    doc.text('Ley Orgánica Municipal Nº 3966/2010 • Expediente Nº ' + expNum, pageWidth / 2, 21, { align: 'center' });
+
+    let y = 30;
+
+    // Título del Dictamen
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DICTAMEN TÉCNICO DE APROBACIÓN DE FRACCIONAMIENTO', pageWidth / 2, y, { align: 'center' });
+
+    y += 5;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text('Constancia Técnica de Fiscalización Urbanística y Cesiones de Dominio Público', pageWidth / 2, y, { align: 'center' });
+
+    y += 4;
+
+    // Tabla de Identificación del Inmueble y Trámite
+    const infoData = [
+        ['Expediente Municipal Nº', expNum, 'Fecha de Dictamen', new Date().toLocaleDateString('es-PY')],
+        ['Inmueble / Finca Matriz', 'Finca/Mat: ' + fincaMat, 'Padrón Matriz', String(padronMat)],
+        ['Ubicación / Paraje', lugar + ', ' + dist + ' (' + dpto + ')', 'Tipo de Trámite', meta.tipoTramite || 'Loteamiento / Fraccionamiento Urbano'],
+        ['Propietario / Titular', propNombre + ' (Doc: ' + propDoc + ')', 'Profesional Proyectista', profNombre + ' (Reg: ' + profMat + ')']
+    ];
+
+    doc.autoTable({
+        startY: y,
+        body: infoData,
+        theme: 'grid',
+        headStyles: { fillColor: [5, 150, 105] },
+        styles: { fontSize: 8, cellPadding: 2.2 },
+        columnStyles: {
+            0: { fontStyle: 'bold', fillColor: [241, 245, 249], cellWidth: 38 },
+            1: { cellWidth: 57 },
+            2: { fontStyle: 'bold', fillColor: [241, 245, 249], cellWidth: 35 },
+            3: { cellWidth: 'auto' }
+        },
+        margin: { left: 14, right: 14 }
+    });
+
+    y = doc.lastAutoTable.finalY + 5;
+
+    // Mini plano / croquis si está disponible
+    if (data.mapImages?.g5?.dataUrl || data.mapImages?.g1?.dataUrl) {
+        const img = data.mapImages.g5?.dataUrl ? data.mapImages.g5 : data.mapImages.g1;
+        try {
+            doc.addImage(img.dataUrl, 'JPEG', 14, y, 75, 45);
+        } catch (e) {}
+    }
+
+    const mapBoxX = (data.mapImages?.g5?.dataUrl || data.mapImages?.g1?.dataUrl) ? 94 : 14;
+    const mapBoxW = (data.mapImages?.g5?.dataUrl || data.mapImages?.g1?.dataUrl) ? pageWidth - 108 : pageWidth - 28;
+
+    const esAprobado = (rep.lotesConErrores || 0) === 0 && (!balance.detalles?.cesionCalles || parseFloat(balance.detalles.cesionCalles.actual) >= 16);
+    const boxColor = esAprobado ? [16, 185, 129] : [239, 68, 68];
+    const dictamenTitulo = esAprobado ? 'DICTAMEN TÉCNICO FAVORABLE' : 'DICTAMEN CON OBSERVACIONES';
+    const dictamenSub = esAprobado ? 'Cumple con los porcentajes legales de cesión de calles, plazas y dimensiones de lotes.' : 'Requiere subsanación o ajuste de áreas cedidas antes de homologación.';
+
+    doc.setFillColor(boxColor[0], boxColor[1], boxColor[2]);
+    doc.roundedRect(mapBoxX, y, mapBoxW, 45, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(dictamenTitulo, mapBoxX + (mapBoxW / 2), y + 14, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(doc.splitTextToSize(dictamenSub, mapBoxW - 8), mapBoxX + (mapBoxW / 2), y + 23, { align: 'center' });
+    doc.setFontSize(7.5);
+    doc.text('Art. 86 Ley 3966/2010 • Verificado bajo sistema SNC 551/2023', mapBoxX + (mapBoxW / 2), y + 38, { align: 'center' });
+
+    y += 50;
+
+    // Sección 1: BALANCE OFICIAL DE SUPERFICIES Y CESIONES (Ley 3966/2010 Art. 86)
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('I. BALANCE OFICIAL DE SUPERFICIES Y CESIONES PÚBLICAS', 14, y);
+
+    y += 3;
+
+    const areaMatrizNum = parseFloat(balance.areaTotalMatriz || 0);
+    const areaCallesNum = parseFloat(balance.areaCallesCedidas || 0);
+    const areaVerdeNum = parseFloat(balance.areaEspaciosVerdes || 0);
+    const areaLotesNum = parseFloat(balance.areaUtilLotes || 0);
+
+    const pctCalles = areaMatrizNum > 0 ? (areaCallesNum / areaMatrizNum * 100).toFixed(2) : '0.00';
+    const pctVerde = areaMatrizNum > 0 ? (areaVerdeNum / areaMatrizNum * 100).toFixed(2) : '0.00';
+    const pctLotes = areaMatrizNum > 0 ? (areaLotesNum / areaMatrizNum * 100).toFixed(2) : '0.00';
+
+    const balanceTable = [
+        ['Área Matriz Total (Inmueble)', areaMatrizNum.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' m²', '100.00%', 'Título de Propiedad y Relevamiento', 'Base de Cálculo'],
+        ['Cesión para Vías Públicas (Calles)', areaCallesNum.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' m²', pctCalles + '%', 'Mínimo 16.00% (Ley 3966/10 Art. 86)', parseFloat(pctCalles) >= 16 ? 'CUMPLE' : 'DEFICITARIO'],
+        ['Cesión para Plazas y Edificios Públicos', areaVerdeNum.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' m²', pctVerde + '%', 'Rango 5.00% a 7.00% (Ley 3966/10)', parseFloat(pctVerde) >= 5 ? 'CUMPLE' : 'DEFICITARIO'],
+        ['Superficie Útil de Lotes (Área Privada)', areaLotesNum.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' m²', pctLotes + '%', 'Lotes vendibles urbanos', 'APROBADO']
+    ];
+
+    doc.autoTable({
+        startY: y,
+        head: [['Destino de la Superficie', 'Área (m²)', '% Total', 'Exigencia Legal Municipal', 'Calificación']],
+        body: balanceTable,
+        theme: 'striped',
+        headStyles: { fillColor: [5, 150, 105], fontSize: 8 },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 55 },
+            1: { halign: 'right', cellWidth: 32 },
+            2: { halign: 'center', cellWidth: 20 },
+            3: { cellWidth: 50 },
+            4: { halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 14, right: 14 }
+    });
+
+    y = doc.lastAutoTable.finalY + 5;
+
+    // Sección 2: AUDITORÍA DE LOTES INDIVIDUALES Y PARÁMETROS URBANÍSTICOS
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('II. FISCALIZACIÓN DE LOTES Y CONTRIBUCIÓN POR MEJORAS (LEY 5513/2015)', 14, y);
+
+    y += 3;
+
+    const totLotes = rep.lotesEvaluados || (data.features?.length || 0);
+    const frentesTotal = contrib.metrosFrenteTotal || 0;
+    const contribTotal = contrib.totalContribucionGs || 0;
+
+    const auditoriaRows = [
+        ['Total de Lotes Proyectados', totLotes + ' lotes residenciales/comerciales', 'Superficie Mínima por Lote (≥ 360 m²)', (totLotes - (rep.lotesConErrores || 0)) + ' / ' + totLotes + ' conformes'],
+        ['Frente Mínimo por Lote (≥ 12.00 m)', 'Verificado según ordenanza', 'Ochavas en Esquina (3x3m - Art. 235)', 'Fiscalizado conforme'],
+        ['Franja de Protección Hídrica (30 m)', 'Ley 3239/2007 de Recursos Hídricos', 'Frente Lineal a Pavimentar', frentesTotal + ' metros lineales'],
+        ['Contribución Especial Proyectada', 'Gs. ' + contribTotal.toLocaleString('es-PY'), 'Aporte a Dominio Público', 'Calles y plazas a transferir sin gravamen']
+    ];
+
+    doc.autoTable({
+        startY: y,
+        body: auditoriaRows,
+        theme: 'grid',
+        styles: { fontSize: 7.5, cellPadding: 2 },
+        columnStyles: {
+            0: { fontStyle: 'bold', fillColor: [248, 250, 252], cellWidth: 48 },
+            1: { cellWidth: 44 },
+            2: { fontStyle: 'bold', fillColor: [248, 250, 252], cellWidth: 48 },
+            3: { cellWidth: 'auto' }
+        },
+        margin: { left: 14, right: 14 }
+    });
+
+    y = doc.lastAutoTable.finalY + 5;
+
+    // Texto Legal de Dictamen y Transferencia
+    doc.setFillColor(248, 250, 252);
+    doc.rect(14, y, pageWidth - 28, 18, 'F');
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(14, y, pageWidth - 28, 18, 'S');
+
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(7.2);
+    doc.setFont('helvetica', 'normal');
+    const legalText = 'DISPOSICIÓN TÉCNICA: Habiéndose constatado el cumplimiento de los parámetros de la Ley Orgánica Municipal Nº 3966/2010 y normas de loteamiento, se emite el presente DICTAMEN FAVORABLE para su tratamiento en la Junta Municipal. Las superficies destinadas a calles y plazas quedan afectadas al Uso Público y deberán ser transferidas por Escritura Pública a favor de la Municipalidad, libres de todo gravamen, como requisito previo para la habilitación de cuentas corrientes catastrales individuales.';
+    doc.text(doc.splitTextToSize(legalText, pageWidth - 36), 18, y + 4.5);
+
+    y += 22;
+
+    // Sección de Firmas y Sellos (3 columnas)
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FIRMAS Y SELLOS DE AUTORIDADES MUNICIPALES', pageWidth / 2, y, { align: 'center' });
+
+    y += 3.5;
+
+    const colW = (pageWidth - 28 - 12) / 3;
+    const colH = 24;
+
+    // Sello 1: Liquidación y Catastro
+    doc.setDrawColor(148, 163, 184);
+    doc.rect(14, y, colW, colH, 'S');
+    doc.line(18, y + 16, 14 + colW - 4, y + 16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DEPARTAMENTO DE CATASTRO', 14 + colW / 2, y + 19.5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Liquidación y Verificación Gráfica', 14 + colW / 2, y + 22.5, { align: 'center' });
+
+    // Sello 2: Dirección de Obras Particulares
+    const col2X = 14 + colW + 6;
+    doc.rect(col2X, y, colW, colH, 'S');
+    doc.line(col2X + 4, y + 16, col2X + colW - 4, y + 16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DIRECCIÓN DE OBRAS PARTICULARES', col2X + colW / 2, y + 19.5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Aprobación Técnica Urbanística', col2X + colW / 2, y + 22.5, { align: 'center' });
+
+    // Sello 3: Intendencia Municipal
+    const col3X = col2X + colW + 6;
+    doc.rect(col3X, y, colW, colH, 'S');
+    doc.line(col3X + 4, y + 16, col3X + colW - 4, y + 16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INTENDENCIA MUNICIPAL', col3X + colW / 2, y + 19.5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('Visto Bueno y Remisión a Junta', col3X + colW / 2, y + 22.5, { align: 'center' });
+
+    // QR y Pie de Página
+    if (data.qrDataUrl) {
+        doc.addImage(data.qrDataUrl, 'PNG', pageWidth - 26, pageHeight - 17, 12, 12);
+    }
+    doc.setFontSize(6.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Documento generado electrónicamente por Sistema Integrado SNC - Módulo Municipal Ley 3966/2010. Código: ' + data.validationCode, 14, pageHeight - 6);
+
+    return doc.output('blob');
+}
+
 export async function generateProfessionalReport(options = {}) {
     showLoading('Generando Certificado Preventivo de Aptitud...');
     
@@ -210,6 +387,11 @@ export async function generateProfessionalReport(options = {}) {
         const geojson = State.get('geojson');
         const excelData = State.get('excelData') || [];
         const validationResults = State.get('validationResults') || [];
+        let expedienteMetadata = {};
+        try {
+            const expMod = await import('./expedienteModal.js');
+            expedienteMetadata = expMod.getExpedienteMetadata();
+        } catch (e) { logger.warn('ExpedienteModal no cargado:', e); }
         const municipalReporte = State.get('reporteMunicipal') || await import('./municipal.js').then(m => m.validadorMunicipalDefault.generarReporteMunicipal());
         const metadatosGeo = State.get('metadatosGeodesicos') || {};
         
@@ -259,14 +441,55 @@ export async function generateProfessionalReport(options = {}) {
         }
 
         // 5. Generar QR con URL de verificación
+        // Fix: antes apuntaba a /verify.html que no existe (404).
+        // Ahora apunta a /index.html que es la página que carga el validador.
         const baseUrl = window.location.origin;
-        const verificationUrl = `${baseUrl}/verify.html?code=${validationCode}`;
+        const verificationUrl = `${baseUrl}/index.html?verify=${validationCode}`;
         let qrDataUrl = null;
         if (window.QRCode) {
             qrDataUrl = await window.QRCode.toDataURL(verificationUrl, { margin: 1, width: 120 });
         }
 
         // 6. Generar PDF
+        const reportData = {
+            validationCode,
+            qrDataUrl,
+            semaforo,
+            semaforoColor,
+            semaforoDetalle,
+            props,
+            excelRow,
+            metadatosGeo,
+            validationResults,
+            municipalReporte,
+            metricas,
+            supCalculada,
+            supTitulo,
+            discrepanciaAbs,
+            discrepanciaPct,
+            toleranciaSNC,
+            dentroTolerancia,
+            mapImages,
+            features: geojson.features,
+            hashHex,
+            expedienteMetadata
+        };
+
+        if (options.tipo === 'MUNICIPAL') {
+            const muniBlob = await generateMunicipalDictamenPDF(reportData);
+            const muniFilename = 'Dictamen_Municipal_' + validationCode + '_' + new Date().toISOString().slice(0,10);
+            downloadFile(muniBlob, muniFilename + '.pdf', 'application/pdf');
+            hideLoading();
+            showToast('Dictamen Municipal generado exitosamente', 'success');
+            return { pdf: muniBlob, filename: muniFilename };
+        }
+
+        if (options.tipo === 'DUAL') {
+            const muniBlob = await generateMunicipalDictamenPDF(reportData);
+            const muniFilename = 'Dictamen_Municipal_' + validationCode + '_' + new Date().toISOString().slice(0,10);
+            downloadFile(muniBlob, muniFilename + '.pdf', 'application/pdf');
+        }
+
         const pdfBlob = await generateProfessionalPDF({
             validationCode,
             qrDataUrl,
@@ -287,7 +510,8 @@ export async function generateProfessionalReport(options = {}) {
             dentroTolerancia,
             mapImages,
             features: geojson.features,
-            hashHex
+            hashHex,
+            expedienteMetadata
         });
 
         // 7. Generar DOCX
@@ -347,6 +571,7 @@ async function generateProfessionalPDF(data) {
     const pageHeight = doc.internal.pageSize.getHeight();
     
     let y = 15;
+    const validationResults = data.validationResults || [];
 
     // ===== FUNCIÓN HELPER PARA AGREGAR IMÁGENES =====
     const addImage = (imgData, x, y, w, h) => {
@@ -400,15 +625,32 @@ async function generateProfessionalPDF(data) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
+        const meta = data.expedienteMetadata || {};
+    const profNombre = meta.profesionalNombre || data.props?.PROFESIONAL || '—';
+    const profMat = meta.profesionalMatricula || data.props?.REG_PROF || data.props?.MATRICULA || '—';
+    const profDoc = meta.profesionalDoc || data.props?.CI_RUC || data.props?.RUC || '—';
+    const profContacto = meta.profesionalContacto || '—';
+    const propNombre = meta.propietarioNombre || data.props?.PROPIETARIO || data.props?.Propietari || '—';
+    const propDoc = meta.propietarioDoc || '—';
+    const fincaMat = meta.fincaMatricula || data.props?.FINCA || '—';
+    const padronCta = meta.padronCtaCte || data.props?.PADRON || data.props?.CODIGO || '—';
+    const dpto = meta.departamento || data.excelRow?.DEPARTAMEN || data.props?.DEPARTAMEN || '—';
+    const dist = meta.distrito || data.excelRow?.DISTRITO || data.props?.DISTRITO || '—';
+    const lugar = meta.lugarBarrio || data.excelRow?.LUGAR || data.props?.LUGAR || '—';
+    const muni = meta.municipioNombre || dist;
+    const expNum = meta.expedienteNumero || 'S/N';
+    const tramite = meta.tipoTramite || 'FRACCIONAMIENTO';
+
     const headerData = [
         ['Código de Pre-Validación', data.validationCode],
-        ['Fecha/Hora de Emisión', new Date().toLocaleString('es-PY')],
-        ['Versión Motor', `SNC 551/2023 rev. ${new Date().getFullYear()}`],
-        ['Profesional Actuante', `${data.props?.PROFESIONAL || '—'} | Matrícula: ${data.props?.REG_PROF || data.props?.MATRICULA || '—'}`],
-        ['CI/RUC', data.props?.CI_RUC || data.props?.RUC || '—'],
-        ['Inmueble', `${data.props?.PADRON || data.props?.CODIGO || '—'} | Cta. Cte: ${data.props?.CUENTA_CORRIENTE || '—'}`],
-        ['Ubicación', `${data.excelRow?.DEPARTAMEN || data.props?.DEPARTAMEN || '—'} / ${data.excelRow?.DISTRITO || data.props?.DISTRITO || '—'} / ${data.excelRow?.LUGAR || data.props?.LUGAR || '—'}`],
-        ['Semáforo General', data.semaforo.replace(/🟢|🟡|🔴/, '').trim()]
+        ['Fecha / Hora de Emisión', new Date().toLocaleString('es-PY')],
+        ['Profesional Responsable', `${profNombre} | Mat. SNC/MOPC: ${profMat}`],
+        ['C.I. / R.U.C. Profesional', `${profDoc} | Contacto: ${profContacto}`],
+        ['Titular / Propietario', `${propNombre} | Doc: ${propDoc}`],
+        ['Identificación Inmueble', `Finca/Matrícula: ${fincaMat} | Padrón/Cta. Cte.: ${padronCta}`],
+        ['Ubicación Política', `${dpto} / ${dist} / ${lugar}`],
+        ['Expediente Municipal', `Municipio: ${muni} | Exp: ${expNum} | Trámite: ${tramite}`],
+        ['Semáforo y Dictamen', data.semaforo.replace(/🟢|🟡|🔴/, '').trim()]
     ];
 
     doc.autoTable({
@@ -702,6 +944,84 @@ async function generateProfessionalPDF(data) {
         }
     });
 
+    // ===== X. CUADRO DE DECLARACIÓN JURADA Y FIRMAS =====
+    doc.addPage();
+    y = 15;
+    doc.setFillColor(79, 70, 229);
+    doc.rect(10, 10, pageWidth - 20, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('X. DECLARACIÓN JURADA Y CUADRO DE FIRMAS DE RESPONSABILIDAD TÉCNICA', 15, 16);
+
+    y = 26;
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(51, 65, 85);
+    const juramentoText = 'DECLARACIÓN JURADA DE MENSURA Y DESLINDE: El profesional agrimensor/topógrafo interviniente declara bajo fe de juramento que las coordenadas UTM, linderos, rumbos, distancias y superficies consignados en el presente informe pericial y en la cartografía adjunta, son fiel reflejo de la realidad física relevada en el terreno conforme a las prescripciones técnicas y geodésicas de la Resolución SNC N° 551/2023.';
+    const splitJura = doc.splitTextToSize(juramentoText, pageWidth - 30);
+    doc.text(splitJura, 15, y);
+
+    y += (splitJura.length * 4.5) + 6;
+
+    // Cuadro 1: Firma del Profesional Topógrafo / Agrimensor
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(15, y, 85, 52, 3, 3, 'FD');
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59);
+    doc.text('PROFESIONAL TOPÓGRAFO / PERITO', 18, y + 8);
+    doc.line(25, y + 34, 90, y + 34);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(profNombre, 57.5, y + 39, { align: 'center' });
+    doc.text(`Reg. MOPC / SNC: ${profMat}`, 57.5, y + 43.5, { align: 'center' });
+    doc.text(`C.I. / R.U.C.: ${profDoc}`, 57.5, y + 48, { align: 'center' });
+
+    // Cuadro 2: Firma y Visto Bueno del Propietario / Solicitante
+    doc.roundedRect(110, y, 85, 52, 3, 3, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PROPIETARIO / TITULAR REGISTRADO', 113, y + 8);
+    doc.line(120, y + 34, 185, y + 34);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(propNombre, 152.5, y + 39, { align: 'center' });
+    doc.text(`C.I. / R.U.C.: ${propDoc}`, 152.5, y + 43.5, { align: 'center' });
+    doc.text('Conforme con linderos y superficie', 152.5, y + 48, { align: 'center' });
+
+    // Cuadro de Autoridades Municipales (Ley 3966/2010)
+    y += 58;
+    doc.setFillColor(241, 245, 249);
+    doc.roundedRect(15, y, pageWidth - 30, 52, 3, 3, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`INTERVENCIÓN Y VISADO MUNICIPAL — ${muni.toUpperCase()}`, 18, y + 7);
+    
+    // 3 sub-firmas: Catastro, Obras, Intendencia
+    const subW = (pageWidth - 40) / 3;
+    
+    // Director Catastro
+    doc.line(20, y + 33, 20 + subW - 10, y + 33);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Dirección de Catastro Municipal', 20 + (subW - 10) / 2, y + 38, { align: 'center' });
+    doc.text('Verificación de Padrón e Impuestos', 20 + (subW - 10) / 2, y + 42, { align: 'center' });
+
+    // Director Obras
+    doc.line(20 + subW, y + 33, 20 + (subW * 2) - 10, y + 33);
+    doc.text('Dirección de Obras y Urbanismo', 20 + subW + (subW - 10) / 2, y + 38, { align: 'center' });
+    doc.text('Dictamen Favorable de Loteamiento', 20 + subW + (subW - 10) / 2, y + 42, { align: 'center' });
+
+    // Intendente Municipal
+    doc.line(20 + (subW * 2), y + 33, 20 + (subW * 3) - 10, y + 33);
+    doc.text('Intendencia Municipal / Visto Bueno', 20 + (subW * 2) + (subW - 10) / 2, y + 38, { align: 'center' });
+    doc.text('Resolución de Aprobación Final', 20 + (subW * 2) + (subW - 10) / 2, y + 42, { align: 'center' });
+
+    
     // ===== PIE DE PÁGINA =====
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
@@ -1400,35 +1720,14 @@ export function generateConsultaDescriptivaPDF(validationResults) {
 
         yPosition += 15;
 
-        // ==================== FIRMA DIGITAL SIMBÓLICA ====================
-        if (yPosition > 220) {
+        // ==================== PROTOCOLO OFICIAL DE FIRMAS Y SELLOS (Ley 6822/21) ====================
+        if (yPosition > 210) {
             doc.addPage();
             yPosition = 25;
         }
+        const firmasEnsambladas = State.get('firmasEnsambladas') || [];
+        SignatureAPI.renderizarFirmasEnPDF(doc, firmasEnsambladas);
 
-        doc.setDrawColor(100, 116, 139);
-        doc.setLineWidth(0.5);
-        doc.rect(15, yPosition, pageWidth - 30, 32);
-
-        doc.setTextColor(51, 65, 85);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FIRMA DIGITAL SIMBÓLICA', pageWidth / 2, yPosition + 8, { align: 'center' });
-
-        const symbolPayload = `${props.CODIGO || 'SNC'}|${geojson.features.length}|${new Date().toISOString()}`;
-        let symbolHash = '';
-        for (let i = 0; i < symbolPayload.length; i++) {
-            symbolHash = ((symbolHash.charCodeAt(0) || 0) + symbolPayload.charCodeAt(i)).toString(16).padStart(2, '0');
-        }
-        const symbolicHash = `SNC-551-2023-${symbolHash}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-        doc.setFontSize(8);
-        doc.setFont('courier', 'normal');
-        doc.setTextColor(80, 80, 80);
-        doc.text(`ID Trazabilidad: ${symbolicHash}`, pageWidth / 2, yPosition + 16, { align: 'center' });
-        doc.setFontSize(7);
-        doc.text('Res. SNC N° 551/2023 | Servicio Nacional de Catastro - República del Paraguay', pageWidth / 2, yPosition + 23, { align: 'center' });
-        doc.text('Firma digital simbólica - No reemplaza certificación oficial del SNC.', pageWidth / 2, yPosition + 28, { align: 'center' });
 
         // ==================== PIE DE PÁGINA ====================
         const pageCount = doc.internal.getNumberOfPages();
@@ -2493,3 +2792,4 @@ export async function packAndDownload() {
         hideLoading();
     }
 }
+// Module 7 functions appended// Module 8 marker

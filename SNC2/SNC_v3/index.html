@@ -118,6 +118,27 @@
       <button id="btn-open-catastro" onclick="window.openCatastro()" class="btn-tool header-icon-btn" data-tooltip="Catastro oficial" aria-label="Abrir catastro oficial del SNC" title="Abrir catastro oficial del SNC">
         <i class="fas fa-map"></i>
       </button>
+      <button id="btn-geoportales-center" onclick="window.openGeoportalesModal()" class="btn-tool header-icon-btn" data-tooltip="Directorio Modular de Geoportales" aria-label="Directorio Modular de Geoportales" title="Directorio Modular de Geoportales">
+        <i class="fas fa-earth-americas text-emerald-400"></i>
+      </button>
+      <button id="btn-escribania-tools" onclick="window.openEscribaniaModal()" class="btn-tool header-icon-btn" data-tooltip="Herramientas Notariales y Escribanía" aria-label="Herramientas Notariales y Escribanía" title="Herramientas Notariales y Escribanía">
+        <i class="fas fa-stamp text-amber-300"></i>
+      </button>
+      <a href="/notarial/" class="btn-tool header-icon-btn" data-tooltip="Portal Notarial y Escribanías" aria-label="Portal Notarial y Escribanías" title="Portal Notarial y Escribanías">
+        <i class="fas fa-file-signature text-amber-400"></i>
+      </a>
+      <button id="btn-snc-seguimiento" onclick="window.openSncSeguimiento()" class="btn-tool header-icon-btn" data-tooltip="Seguimiento de Expediente SNC (Mesa de Entrada)" aria-label="Seguimiento de Expedientes Catastro SNC" title="Seguimiento de Expediente SNC">
+        <i class="fas fa-file-waveform text-amber-400"></i>
+      </button>
+      <button id="btn-run-entradas" onclick="window.openRunEntradas()" class="btn-tool header-icon-btn" data-tooltip="Mesa de Entrada RUN / DGRP (Registros Públicos)" aria-label="Consulta de Entradas Registrales RUN DGRP" title="Mesa de Entrada RUN / DGRP">
+        <i class="fas fa-scale-balanced text-cyan-400"></i>
+      </button>
+      <button id="btn-run-formularios" onclick="window.openRunFormularios()" class="btn-tool header-icon-btn" data-tooltip="Formularios Registrales y Catastrales RUN" aria-label="Formularios Registrales y Catastrales RUN" title="Formularios Registrales RUN">
+        <i class="fas fa-file-lines text-pink-400"></i>
+      </button>
+      <button id="btn-header-auth" onclick="window.AuthModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Iniciar Sesión" aria-label="Iniciar Sesión" title="Iniciar Sesión">
+        <i class="fas fa-arrow-right-to-bracket text-indigo-400"></i>
+      </button>
       <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
     </div>
   </header>
@@ -205,6 +226,62 @@
         </section>
 
         <!-- PIRIBEBUY (capas locales) -->
+        <!-- SECCIÓN AGROPECUARIA MAG CON SWITCHES MODERNOS (CICLO 15 DÍAS) -->
+        <section id="mag-layers-section" class="operational-section" aria-labelledby="mag-layers-title">
+          <div class="flex items-center justify-between mb-2">
+            <h3 id="mag-layers-title" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+              <i class="fas fa-seedling text-emerald-400"></i> Capas Agropecuarias (MAG)
+            </h3>
+            <button type="button" onclick="window.MagService?.forceMagSync().then(() => window.showToast?.('Catálogo MAG actualizado (Vigencia 15 días)', 'success'))" class="text-[8px] bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 hover:text-white px-2 py-0.5 rounded-full flex items-center gap-1 transition" title="Sincronizar ahora con server.gis.mag.gov.py">
+              <i class="fas fa-arrows-rotate"></i> 15d
+            </button>
+          </div>
+          <div class="space-y-1.5">
+            <div class="mag-switch-container">
+              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
+                <i class="fas fa-tractor text-amber-400 text-[10px]"></i> Uso de Tierra / Cultivos
+              </span>
+              <label class="modern-toggle-switch">
+                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'uso_tierra', this.checked)">
+                <span class="modern-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="mag-switch-container">
+              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
+                <i class="fas fa-wheat-awn text-yellow-400 text-[10px]"></i> Cultivos Temporales (EUDR)
+              </span>
+              <label class="modern-toggle-switch">
+                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'cultivos_temporales', this.checked)">
+                <span class="modern-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="mag-switch-container">
+              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
+                <i class="fas fa-tree text-emerald-400 text-[10px]"></i> Cultivos Permanentes (Yerba/Caña)
+              </span>
+              <label class="modern-toggle-switch">
+                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'cultivos_permanentes', this.checked)">
+                <span class="modern-toggle-slider"></span>
+              </label>
+            </div>
+            <div class="mag-switch-container">
+              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
+                <i class="fas fa-water text-cyan-400 text-[10px]"></i> Red Hidrográfica Rural (MAG)
+              </span>
+              <label class="modern-toggle-switch">
+                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'hidrografia_rural', this.checked)">
+                <span class="modern-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="mt-2 flex items-center justify-between text-[8px] text-slate-500">
+            <span>server.gis.mag.gov.py</span>
+            <span class="text-emerald-400/90 font-medium flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Sincronización cada 15 días
+            </span>
+          </div>
+        </section>
+
         <section id="piribebuy-layers-section" class="operational-section" aria-labelledby="piribebuy-title">
           <h3 id="piribebuy-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
             <span><i class="fas fa-map-location-dot mr-2"></i> Capas de Piribebuy</span>
@@ -313,10 +390,13 @@
 
         <!-- SELECTOR DE MAPA BASE -->
         <div id="map-base-selector" class="map-selector-box absolute left-3 top-56 z-[1000]" role="radiogroup" aria-label="Mapa base">
-          <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map"></i></button>
-          <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite ESRI" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite"></i></button>
-          <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Curvas de nivel" role="radio" aria-checked="false" aria-label="Mapa curvas de nivel"><i class="fas fa-mountain"></i></button>
-          <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="Catastro SNC" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (Por defecto)" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite ESRI HD (Oversampling z19)" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('carto')" class="map-selector-btn" data-layer="carto" title="Carto Positron (Limpio)" role="radio" aria-checked="false" aria-label="Carto Positron"><i class="fas fa-city"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="CAD Oscuro (Alto Contraste)" role="radio" aria-checked="false" aria-label="CAD Oscuro"><i class="fas fa-moon"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('cad_atlas')" class="map-selector-btn" data-layer="cad_atlas" title="CAD Atlas / Ejes Viales (Fernando de la Mora)" role="radio" aria-checked="false" aria-label="CAD Atlas"><i class="fas fa-drafting-compass"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Curvas de nivel (OpenTopoMap)" role="radio" aria-checked="false" aria-label="Mapa curvas de nivel"><i class="fas fa-mountain"></i></button>
+          <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="Catastro SNC Oficial" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark"></i></button>
           <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM" role="radio" aria-checked="false" aria-label="Mapa Humanitarian OSM"><i class="fas fa-hand-holding-heart"></i></button>
         </div>
 
@@ -348,7 +428,9 @@
           <button data-requires-geometry onclick="window.TopologyRepairUI?.open()" class="map-selector-btn bg-amber-700 border border-amber-600 shadow hover:bg-amber-600 text-white" title="Corrección topológica asistida" aria-label="Corrección topológica asistida"><i class="fas fa-wand-magic-sparkles"></i></button>
           <button data-requires-geometry onclick="window.GeoprocessingUI?.open()" class="map-selector-btn bg-violet-700 border border-violet-600 shadow hover:bg-violet-600 text-white" title="Geoprocesamiento" aria-label="Geoprocesamiento"><i class="fas fa-diagram-project"></i></button>
           <button id="map-tool-split" data-requires-geometry onclick="window.MapEngine?.toggleSplitMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Subdividir polígono (Corte)"><i class="fas fa-cut"></i></button>
-          <button id="map-tool-measure" data-requires-geometry onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Medir distancia"><i class="fas fa-ruler"></i></button>
+          <button id="map-tool-measure" data-requires-geometry onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Medir y acotar distancia"><i class="fas fa-ruler"></i></button>
+          <button id="map-tool-osnap" onclick="window.MapEngine?.toggleOsnap()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-amber-400" title="Osnap / Refent (F3): Anclaje a vértices, centros e intersecciones" aria-label="Osnap F3"><i class="fas fa-bolt"></i></button>
+          <button id="map-tool-osnap-tracking" onclick="window.MapEngine?.toggleOsnapTracking()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-cyan-400" title="Osnap Tracking (F11): Rastreo vectorial y cotas proyectadas" aria-label="Osnap Tracking F11"><i class="fas fa-drafting-compass"></i></button>
           <button id="map-tool-convert" data-requires-geometry onclick="window.MapEngine?.convertPointsToPolygon()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Convertir puntos a polígono"><i class="fas fa-draw-polygon"></i></button>
           <button id="map-tool-number-parcels" data-requires-geometry onclick="window.MapEngine?.toggleParcelNumberAssignment()" class="map-selector-btn hidden bg-yellow-400 border border-yellow-300 shadow text-slate-950" title="Asignar orden de parcelas" aria-label="Asignar orden de parcelas"><span class="text-lg font-black">#</span></button>
           <button onclick="document.getElementById('input-geo-import')?.click()" class="map-selector-btn bg-blue-600 border border-blue-500 shadow hover:bg-blue-500 text-white" title="Alzar archivo" aria-label="Alzar archivo"><i class="fas fa-upload"></i></button>
@@ -528,6 +610,371 @@
     </div>
   </div>
 
+  <!-- AUTH / LOGIN MODAL ACCESIBLE -->
+  <div id="authModal" class="fixed inset-0 z-[4200] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-card w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/95 shadow-2xl p-6" role="region">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-sm font-bold">
+            <i class="fas fa-user-lock"></i>
+          </div>
+          <div>
+            <h2 id="login-title" class="text-base font-bold text-white">Iniciar Sesión</h2>
+            <p class="text-[11px] text-slate-400">Catastro PY Pro — SNC 551/2023</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.AuthModal?.close()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+      </div>
+
+      <div id="login-alert" class="login-alert hidden p-2.5 rounded-lg text-xs font-medium mb-3 bg-red-950/80 border border-red-800 text-red-200" role="alert" aria-live="polite">
+        <i class="fas fa-circle-exclamation mr-1.5"></i>
+        <span id="login-alert-message"></span>
+      </div>
+
+      <form id="login-form" novalidate class="space-y-4">
+        <div>
+          <label for="username" class="block text-xs font-semibold text-slate-300 mb-1">Usuario o Correo Electrónico</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-envelope"></i></span>
+            <input type="email" id="username" name="username" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="profesional@ejemplo.com" autocomplete="username" inputmode="email" required aria-required="true" aria-invalid="false">
+          </div>
+          <span id="username-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="password" class="block text-xs font-semibold text-slate-300">Contraseña</label>
+            <a href="#" onclick="alert('Contacte al soporte: informes@snccatastro.gob.py'); return false;" class="text-[10px] text-indigo-400 hover:underline">¿Olvidaste tu contraseña?</a>
+          </div>
+          <div class="relative flex items-center">
+            <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-lock"></i></span>
+            <input type="password" id="password" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="••••••••••••" autocomplete="current-password" required aria-required="true" aria-invalid="false">
+            <button type="button" id="btn-toggle-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseña" aria-pressed="false">
+              <i id="icon-eye-show" class="fas fa-eye text-xs"></i>
+              <i id="icon-eye-hide" class="fas fa-eye-slash text-xs hidden"></i>
+            </button>
+          </div>
+          <span id="password-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-400 select-none">
+            <input type="checkbox" id="remember-me" name="remember" class="accent-indigo-500 rounded">
+            <span>Recordar en este equipo</span>
+          </label>
+        </div>
+
+        <button type="submit" id="login-button" class="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="btn-text">Ingresar al Sistema</span>
+          <span class="btn-spinner hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  
+  <!-- MODAL: DIRECTORIO MODULAR DE GEOPORTALES OFICIALES -->
+  <div id="geoportalesModal" class="fixed inset-0 z-[4300] hidden items-center justify-center bg-black/80 backdrop-blur-md p-4" role="dialog" aria-modal="true" aria-labelledby="geoportales-title">
+    <div class="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/60">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+            <i class="fas fa-network-wired text-lg"></i>
+          </div>
+          <div>
+            <h2 id="geoportales-title" class="text-base font-bold text-white flex items-center gap-2">
+              Directorio de Geoportales e Interoperabilidad Territorial
+              <span class="text-[10px] font-semibold uppercase tracking-wider bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-800">SNC 551/2023</span>
+            </h2>
+            <p class="text-xs text-slate-400">Integración de servicios geoespaciales gubernamentales y módulos territoriales</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.closeGeoportalesModal()" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition" title="Cerrar"><i class="fas fa-xmark text-sm"></i></button>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar text-xs">
+        
+        <!-- MÓDULO 4: CATASTRO MUNICIPAL MULTIFINALITARIO -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 font-bold text-[10px] border border-blue-800">MÓDULO 4</span>
+              <h3 class="font-bold text-white text-sm">Catastro Municipal Multifinalitario (Pilar / Asunción / Ley 3966)</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="https://pilar.gov.py/direccion-de-obras-planificacion-urbana-y-catastro/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 bg-blue-950/60 border border-blue-800/80 px-2.5 py-1 rounded-lg transition">
+                <i class="fas fa-up-right-from-square"></i> Pilar Catastro
+              </a>
+              <a href="https://www.asuncion.gov.py/catastro/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 bg-blue-950/60 border border-blue-800/80 px-2.5 py-1 rounded-lg transition">
+                <i class="fas fa-up-right-from-square"></i> Asunción Catastro
+              </a>
+            </div>
+          </div>
+          <p class="text-slate-300 mb-3">
+            Gestión física, económica y jurídica: Planta de Valores de la Tierra y Construcción, Cálculo de Impuestos Inmobiliarios, Fichas Catastrales, Conformación Parcelaria, y Cuidado de Áreas Verdes / Espacios Públicos.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">Planta de Valores</span>
+              <span class="text-white font-medium">Urbana & Rural Vigente</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">Tasa Inmobiliaria</span>
+              <span class="text-white font-medium">1.0% + Régimen Baldíos</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">Convalidación</span>
+              <span class="text-white font-medium">Registro Inmobiliario</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MÓDULO 5: LOTEAMIENTOS Y EXPANSIÓN URBANA -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-pink-950 text-pink-400 font-bold text-[10px] border border-pink-800">MÓDULO 5</span>
+              <h3 class="font-bold text-white text-sm">Geoportal de Loteamientos y Fraccionamientos</h3>
+            </div>
+            <a href="https://loteamientos.com/mapa-catastral" target="_blank" rel="noopener noreferrer" class="text-[11px] text-pink-400 hover:text-pink-300 flex items-center gap-1 bg-pink-950/60 border border-pink-800/80 px-2.5 py-1 rounded-lg transition">
+              <i class="fas fa-up-right-from-square"></i> Loteamientos.com
+            </a>
+          </div>
+          <p class="text-slate-300 mb-3">
+            Mosaico cartográfico de fraccionamientos aprobados en desarrollo. Control de cesión obligatoria de plazas y edificios públicos (7% del área según Ley 3966 Art. 235) y perfiles viales.
+          </p>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="window.LoteamientosModule?.abrirGeoportal()" class="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-semibold flex items-center gap-1.5 transition">
+              <i class="fas fa-layer-group"></i> Consultar Loteamientos
+            </button>
+          </div>
+        </div>
+
+        <!-- MÓDULO 7: GEOPORTAL AMBIENTAL E HIDROLÓGICO (MADES) -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px] border border-emerald-800">MÓDULO 7</span>
+              <h3 class="font-bold text-white text-sm">Geoportal Ambiental e Hidrológico (MADES - SIAM & SIAGUA)</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="https://apps.mades.gov.py/siam/portal/mapas" target="_blank" rel="noopener noreferrer" class="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-1 rounded-lg transition">
+                <i class="fas fa-up-right-from-square"></i> SIAM Mapas
+              </a>
+              <a href="https://siaguapy.mades.gov.py/alertas-hidrologicas" target="_blank" rel="noopener noreferrer" class="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 bg-cyan-950/60 border border-cyan-800/80 px-2.5 py-1 rounded-lg transition">
+                <i class="fas fa-up-right-from-square"></i> SIAGUA Alertas
+              </a>
+            </div>
+          </div>
+          <p class="text-slate-300 mb-3">
+            Superposición de Áreas Silvestres Protegidas (SINASIP - Ley 352/94), servidumbres de cursos de agua (Franja protectora de 30m - Ley 3239/07) y alertas de inundabilidad con caché de contingencia offline.
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="window.MadesService?.toggleMadesLayer(window.MapEngine?.getMap(), 'sinasip', true)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+              <i class="fas fa-tree text-emerald-400"></i> Activar SINASIP
+            </button>
+            <button type="button" onclick="window.MadesService?.toggleMadesLayer(window.MapEngine?.getMap(), 'hidrografia', true)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+              <i class="fas fa-water text-cyan-400"></i> Activar Cauces (30m)
+            </button>
+          </div>
+        </div>
+
+        <!-- MÓDULO 8: GEOPORTAL AGROPECUARIO MAG (15 DÍAS) -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 font-bold text-[10px] border border-amber-800">MÓDULO 8</span>
+              <h3 class="font-bold text-white text-sm">Geoportal Agropecuario (MAG ArcGIS Server - Ciclo 15 Días)</h3>
+            </div>
+            <a href="https://portal.gis.mag.gov.py/arcgis/home/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-amber-950/60 border border-amber-800/80 px-2.5 py-1 rounded-lg transition">
+              <i class="fas fa-up-right-from-square"></i> Portal MAG
+            </a>
+          </div>
+          <p class="text-slate-300 mb-2">
+            Servicios ArcGIS REST de cobertura y uso de la tierra, cultivos temporales para certificación de no deforestación (EUDR 2020) y cultivos permanentes.
+          </p>
+          <div class="text-[11px] text-slate-400 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Sincronización quincenal automática activa con caché SQLite local.</span>
+          </div>
+        </div>
+
+        <!-- MÓDULO 9 & 10: SERVICIOS REGISTRALES NACIONALES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 font-bold text-[10px] border border-indigo-800">MÓDULO 9</span>
+              <a href="https://www.catastro.gov.py/servicio-linea/#!/consulta-publica/seguimiento-legacy" target="_blank" rel="noopener noreferrer" class="text-[10px] text-indigo-400 hover:underline">Abrir SNC</a>
+            </div>
+            <h4 class="font-bold text-white mb-1">Seguimiento de Expedientes Catastro SNC</h4>
+            <p class="text-slate-400 text-[11px]">Consulta pública en línea del estado de trámites catastrales y dictámenes técnicos.</p>
+          </div>
+
+          <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 font-bold text-[10px] border border-cyan-800">MÓDULO 10</span>
+              <a href="https://run.gov.py/mes/consulta_entradas.php" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline">Abrir RUN / DGRP</a>
+            </div>
+            <h4 class="font-bold text-white mb-1">Mesa de Entrada Registral RUN / DGRP</h4>
+            <p class="text-slate-400 text-[11px]">Validación registral de fincas, matrículas y detección de medidas cautelares.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-slate-800 px-6 py-3 bg-slate-950/80 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">Catastro PY Pro — Interoperabilidad Geográfica Multimodular</span>
+        <button type="button" onclick="window.closeGeoportalesModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- MODAL: HERRAMIENTAS PARA ESCRIBANÍAS Y DUE DILIGENCE INMOBILIARIO -->
+  <div id="escribaniaModal" class="fixed inset-0 z-[4350] hidden items-center justify-center bg-black/80 backdrop-blur-md p-4" role="dialog" aria-modal="true" aria-labelledby="escribania-title">
+    <div class="w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/70">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
+            <i class="fas fa-stamp text-lg"></i>
+          </div>
+          <div>
+            <h2 id="escribania-title" class="text-base font-bold text-white flex items-center gap-2">
+              Módulo Notarial y Due Diligence Inmobiliario
+              <span class="text-[10px] font-semibold uppercase tracking-wider bg-amber-950 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800">Escribanías PY</span>
+            </h2>
+            <p class="text-xs text-slate-400">Herramientas técnicas, jurídicas y arancelarias para la formalización de escrituras públicas</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.closeEscribaniaModal()" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition" title="Cerrar"><i class="fas fa-xmark text-sm"></i></button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar text-xs">
+        
+        <!-- SECCIÓN 1: CALCULADORA NOTARIAL DE TRANSFERENCIA -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fas fa-calculator text-amber-400"></i> Calculadora Notarial de Gastos e Impuestos de Transferencia
+            </h3>
+            <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Ley 3966 / CSJ / DNIT</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div>
+              <label for="notary-val-fiscal" class="block text-[11px] font-semibold text-slate-300 mb-1">Valor Fiscal (MEF/SNC) Gs.</label>
+              <input id="notary-val-fiscal" type="number" class="w-full h-9 px-3 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500" value="80000000" placeholder="Ej: 80000000">
+            </div>
+            <div>
+              <label for="notary-val-venta" class="block text-[11px] font-semibold text-slate-300 mb-1">Precio de Venta Acordado Gs.</label>
+              <input id="notary-val-venta" type="number" class="w-full h-9 px-3 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-500" value="120000000" placeholder="Ej: 120000000">
+            </div>
+            <div class="flex items-end">
+              <button type="button" onclick="window.calcularLiquidacionNotarialUI()" class="w-full h-9 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                <i class="fas fa-coins"></i> Calcular Liquidación
+              </button>
+            </div>
+          </div>
+
+          <div id="notary-calc-result" class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 text-[11px] space-y-1.5">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div><span class="text-slate-400 block">Tasa Judicial DGRP (0.8%):</span> <strong id="res-tasa-dgrp" class="text-white">Gs. 960.000</strong></div>
+              <div><span class="text-slate-400 block">Imp. Transferencia Muni (0.2%):</span> <strong id="res-imp-muni" class="text-white">Gs. 240.000</strong></div>
+              <div><span class="text-slate-400 block">Honorarios Notariales (1.5%+IVA):</span> <strong id="res-honorarios" class="text-white">Gs. 1.980.000</strong></div>
+              <div><span class="text-slate-400 block">Retención IRP DNIT (2.4%):</span> <strong id="res-irp" class="text-white">Gs. 2.880.000</strong></div>
+            </div>
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-between font-bold text-xs text-amber-300">
+              <span>Total Estimado de Gastos de Transferencia:</span>
+              <span id="res-total-transferencia" class="text-sm">Gs. 6.060.000 (~5.05%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: DUE DILIGENCE INMOBILIARIO & SEMÁFORO DE RIESGO -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fas fa-shield-halved text-emerald-400"></i> Matriz de Due Diligence y Seguridad de Título (Semáforo Notarial)
+            </h3>
+            <button type="button" onclick="window.ejecutarDueDiligenceNotarialUI()" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+              <i class="fas fa-play text-emerald-400"></i> Auditar Parcela Actual
+            </button>
+          </div>
+          <div id="notary-dd-result" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-800 flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">A+</div>
+              <div>
+                <span class="text-slate-400 text-[10px] block font-semibold">Estado Registral</span>
+                <span class="text-white font-bold">DGRP: Finca Libre</span>
+              </div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 text-[10px] block font-semibold">Concordancia de Superficie</span>
+              <span class="text-white font-medium">Plano vs Título: Δ &lt; 1.5% (Tolerancia Ok)</span>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 text-[10px] block font-semibold">Restricción Ambiental</span>
+              <span class="text-white font-medium">Sin afectación SINASIP / Faja 30m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: GENERADOR DE MINUTA NOTARIAL DE LINDEROS TÉCNICOS -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fas fa-file-contract text-indigo-400"></i> Cláusula Técnica de Linderos para el Protocolo Notarial
+            </h3>
+            <button type="button" onclick="window.copiarMinutaNotarialUI()" class="px-2.5 py-1 rounded bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 flex items-center gap-1 transition">
+              <i class="fas fa-copy"></i> Copiar Texto
+            </button>
+          </div>
+          <p class="text-slate-400 text-[11px] mb-2">Redacción automatizada conforme a la Resolución SNC Nº 551/2023 con coordenadas UTM Zona 21S.</p>
+          <textarea id="notary-minuta-text" readonly class="w-full h-24 p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] resize-none focus:outline-none focus:border-indigo-500" placeholder="Cargue una parcela para autogenerar la cláusula notarial..."></textarea>
+        </div>
+
+        <!-- SECCIÓN 4: PARÁMETROS URBANÍSTICOS (FOS / FOT / SERVICIOS) -->
+        <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-bold text-white text-sm flex items-center gap-2">
+              <i class="fas fa-city text-cyan-400"></i> Indicadores de Edificabilidad y Servicios (Ley 3966)
+            </h3>
+            <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">FOS / FOT / ANDE / ESSAP</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block font-semibold">FOS Máx (Ocupación):</span>
+              <strong class="text-white">60% en Planta Baja</strong>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block font-semibold">FOT Máx (Total Edificable):</span>
+              <strong class="text-white">1.2x a 2.5x Área Terreno</strong>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block font-semibold">Energía Eléctrica ANDE:</span>
+              <strong class="text-emerald-400"><i class="fas fa-check-circle"></i> Red Inmediata (&lt;50m)</strong>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+              <span class="text-slate-400 block font-semibold">Agua Potable ESSAP/Junta:</span>
+              <strong class="text-emerald-400"><i class="fas fa-check-circle"></i> Cobertura Disponible</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-slate-800 px-6 py-3 bg-slate-950/80 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">Módulo de Seguridad Notarial — Colegios de Escribanos del Paraguay & SNC</span>
+        <button type="button" onclick="window.closeEscribaniaModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PLANS MODAL -->
   <div id="plansModal" class="fixed inset-0 z-[4000] hidden items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="plansTitle">
     <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
@@ -629,6 +1076,46 @@
     window.showToast?.('Abriendo visor oficial del Catastro', 'info');
   };
 
+  // Seguimiento oficial de expedientes SNC
+  window.openSncSeguimiento = () => {
+    window.open('https://www.catastro.gov.py/servicio-linea/#!/consulta-publica/seguimiento-legacy', '_blank', 'noopener,noreferrer');
+    window.showToast?.('Abriendo Seguimiento de Expedientes SNC', 'info');
+  };
+
+  // Consulta oficial de entradas registrales RUN / DGRP
+  window.openRunEntradas = () => {
+    window.open('https://run.gov.py/mes/consulta_entradas.php', '_blank', 'noopener,noreferrer');
+    window.showToast?.('Abriendo Consulta de Entradas Registrales RUN / DGRP', 'info');
+  };
+
+  // Control de Modal de Geoportales Oficiales
+  window.openGeoportalesModal = () => {
+    const modal = document.getElementById('geoportalesModal');
+    if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  };
+  window.closeGeoportalesModal = () => {
+    const modal = document.getElementById('geoportalesModal');
+    if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+  };
+
+  // Control de Modal de Escribanías y Due Diligence
+  window.openEscribaniaModal = () => {
+    const modal = document.getElementById('escribaniaModal');
+    if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  };
+  window.closeEscribaniaModal = () => {
+    const modal = document.getElementById('escribaniaModal');
+    if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+  };
+
+  // Acceso directo a formularios registrales del RUN
+  window.openRunFormularios = () => {
+    window.open('https://run.gov.py/edgrp_apk/formularios_registrales_run.php', '_blank', 'noopener,noreferrer');
+    window.showToast?.('Abriendo Catálogo de Formularios Registrales RUN', 'info');
+  };
+
+  </script>
+
   <!-- Panel CRS de Piribebuy: diagnostico por capa, correccion y encuadre -->
   <script type="module">
   import { CRS_LABELS, CRS_WKT } from '/js/crs.js';
@@ -721,18 +1208,64 @@
     }
   }
 
-  // ─── Tabla de contenido (LayerManager + LayerPanel) ─────────────────────────
-  // Registra las capas de Piribebuy y monta el panel tipo ArcGIS.
+  // ─── Jerarquía de capas (z-order) ──────────────────────────────────────────────
+  // Define el orden de apilamiento de capas en el mapa, de abajo hacia arriba.
+  // Cada nivel es un número determinístico. Las capas se dibujan en ese orden.
+  // 0 = Mapa Base (capas de fondo, siempre visibles)
+  // 10 = Nacional (Paraguay:_distratos, vías, hidrografía oficial)
+  // 20 = MADES (geoportal ambiental/hidrológico: SINASIP, cauces, reservas)
+  // 30 = Municipio (geoportal municipal: cesiones, perfiles viales, urbanismo)
+  // 40 = Usuario (capas propias del usuario: parcelas expeditas, capas editadas)
+  // 50 = Superposición (etiquetas, marker, línea de transición, annotate)
+  const LAYER_ZORDER = {
+    BASE_MAP: 0,
+    NATIONAL: 10,
+    MADES: 20,
+    MUNICIPAL: 30,
+    USER: 40,
+    OVERLAY: 50
+  };
+
+  // Mapeo de categorías de capas a su nivel z-order
+  function getLayerZOrder(category) {
+    const categories = {
+      baseMap: LAYER_ZORDER.BASE_MAP,
+      national: LAYER_ZORDER.NATIONAL,
+      mades: LAYER_ZORDER.MADES,
+      municipal: LAYER_ZORDER.MUNICIPAL,
+      user: LAYER_ZORDER.USER,
+      overlay: LAYER_ZORDER.OVERLAY
+    };
+    return categories[category] || LAYER_ZORDER.USER;
+  }
+
+  // ─── Ordenamiento de capas por z-order ───────────────────────────────────────
+  // Ordena un array de capas (Leaflet layers) por su categoría de z-order.
+  // Usado para insertar capas en el mapa en el orden correcto.
+  function sortLayersByZOrder(layers) {
+    return layers.sort((a, b) => {
+      const catA = a.zCategory || getLayerZOrder('user');
+      const catB = b.zCategory || getLayerZOrder('user');
+      return catA - catB;
+    });
+  }
+
+  // ─── Obtiene o crea una capa con categoría de z-order ─────────────────────
+  function getOrCreateLayerWithZOrder(layer, category) {
+    layer.zCategory = category || getLayerZOrder('user');
+    return layer;
+  }
+
   const PIRI_DEFS = {
-    barrios:        { title: 'Barrios',               group: 'g_base', geometryType: 'Polygon' },
-    vias:           { title: 'Vías generales',        group: 'g_base', geometryType: 'LineString' },
-    hidro:          { title: 'Hidrografía',           group: 'g_base', geometryType: 'LineString' },
-    vertedero:      { title: 'Vertedero',             group: 'g_vert', geometryType: 'Polygon' },
-    centro:         { title: 'Centro',                group: 'g_vert', geometryType: 'Point' },
-    vertedero_500:  { title: 'Buffer vertedero 500 m', group: 'g_vert', geometryType: 'Polygon' },
-    vertedero_1000: { title: 'Buffer vertedero 1000 m',group: 'g_vert', geometryType: 'Polygon' },
-    vuelo_casco:    { title: 'Vuelo casco histórico', group: 'g_casco', geometryType: 'Polygon' },
-    casco_historico:{ title: 'Casco Histórico',       group: 'g_casco', geometryType: 'Polygon' }
+    barrios:        { title: 'Barrios',               group: 'g_piri', geometryType: 'Polygon' },
+    vias:           { title: 'Vías generales',        group: 'g_piri', geometryType: 'LineString' },
+    hidro:          { title: 'Hidrografía',           group: 'g_piri', geometryType: 'LineString' },
+    vertedero:      { title: 'Vertedero',             group: 'g_piri', geometryType: 'Polygon' },
+    centro:         { title: 'Centro',                group: 'g_piri', geometryType: 'Point' },
+    vertedero_500:  { title: 'Buffer vertedero 500 m', group: 'g_piri', geometryType: 'Polygon' },
+    vertedero_1000: { title: 'Buffer vertedero 1000 m',group: 'g_piri', geometryType: 'Polygon' },
+    vuelo_casco:    { title: 'Vuelo casco histórico', group: 'g_piri', geometryType: 'Polygon' },
+    casco_historico:{ title: 'Casco Histórico',       group: 'g_piri', geometryType: 'Polygon' }
   };
 
   function buildLayerTree() {
@@ -744,10 +1277,8 @@
     // listaba capas temáticas). Se puede quitar con la X o desde Propiedades.
     LayerManager.get('basemap').legend.hideInLegend = false;
 
+    // UN SOLO GRUPO: todas las capas juntas, solo separadas por carpetas.
     LayerManager.registerGroup({ id: 'g_piri', title: 'Piribebuy' });
-    LayerManager.registerGroup({ id: 'g_base', title: 'Base territorial', parentId: 'g_piri' });
-    LayerManager.registerGroup({ id: 'g_vert', title: 'Vertedero y entorno', parentId: 'g_piri' });
-    LayerManager.registerGroup({ id: 'g_casco', title: 'Casco histórico', parentId: 'g_piri' });
 
     const STYLES = window.MapEngine?._piribebuyStyles || null;
     for (const [id, def] of Object.entries(PIRI_DEFS)) {
@@ -878,45 +1409,29 @@
     const layerControlCount = document.getElementById('layer-control-count');
     if (!layerControlList || !layerControlCount) return;
     
-    // Obtener todas las capas registradas en LayerManager
-    const allLayers = [];
-    const visibleCount = [];
-    
-    // Agrupar por grupos definidos en PIRI_DEFS
+    // Agrupar por grupos definidos en PIRI_DEFS (solo un grupo: g_piri)
     const groups = {
-      g_piri: { title: 'Piribebuy', layers: [] },
-      g_base: { title: 'Base territorial', layers: [] },
-      g_vert: { title: 'Vertedero y entorno', layers: [] },
-      g_casco: { title: 'Casco histórico', layers: [] }
+      g_piri: { title: 'Piribebuy', layers: [] }
     };
-    
-    // Iterar sobre PIRI_DEFS para obtener las capas y sus grupos
-    const piriDefs = window.PIRI_DEFS || {};
-    for (const [id, def] of Object.entries(piriDefs)) {
-      const layerNode = LayerManager.get(id);
-      if (!layerNode) continue;
-      
-      const title = layerNode.title || id;
-      const isVisible = layerNode.visible !== false; // visible por defecto es true
-      const group = def.group || 'g_piri'; // Grupo por defecto
-      
-      // Asegurar que el grupo existe
+
+    for (const layerNode of allLayers) {
+      const def = window.PIRI_DEFS?.[layerNode.id];
+      const group = def?.group || 'g_piri';
       if (!groups[group]) {
         groups[group] = { title: group, layers: [] };
       }
-      
       groups[group].layers.push({
-        id,
-        title,
-        visible: isVisible
+        id: layerNode.id,
+        title: layerNode.title || layerNode.id,
+        visible: layerNode.visible !== false
       });
     }
-    
+
     // También incluir la referencia SNC si está registrada
     const sncRefNode = LayerManager.get('snc-ref');
     if (sncRefNode) {
-      groups['g_base'] = groups['g_base'] || { title: 'Base territorial', layers: [] };
-      groups['g_base'].layers.push({
+      groups['g_piri'] = groups['g_piri'] || { title: 'Piribebuy', layers: [] };
+      groups['g_piri'].layers.push({
         id: 'snc-ref',
         title: 'Referencia catastral SNC',
         visible: sncRefNode.visible !== false

@@ -1,52 +1,72 @@
 /**
- * app-admin.js — Panel de Administración SNC v3
- * Login con JWT, dashboard con métricas reales y visor de capas municipales (Piribebuy).
- * Exporta initAdmin() que consume admin/index.html.
+ * app-admin.js — Panel de Super Administrador SNC v3
+ * Control total de los 3 subsistemas: Profesional, Municipal, Notarial.
+ * Autenticación JWT, gestión de miembros, auditoría, multi-tenant y visor GIS.
  */
 
 // ============================================================
-// LOGIN
+// TOKEN & AUTENTICACIÓN
 // ============================================================
-function getToken() { return localStorage.getItem('snc_api_token'); }
-function setToken(t) { localStorage.setItem('snc_api_token', t); }
-function clearToken() { localStorage.removeItem('snc_api_token'); localStorage.removeItem('snc_api_user'); }
+export function getToken() { return localStorage.getItem('snc_api_token'); }
+export function setToken(t) { localStorage.setItem('snc_api_token', t); }
+export function clearToken() {
+  localStorage.removeItem('snc_api_token');
+  localStorage.removeItem('snc_api_user');
+}
 
-function authHeaders() {
+export function authHeaders() {
   const t = getToken();
   return t ? { 'Authorization': `Bearer ${t}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
 }
 
-function showLoginOverlay() {
+export async function fetchJSON(url, options = {}) {
+  const headers = { ...authHeaders(), ...(options.headers || {}) };
+  const res = await fetch(url, { ...options, headers });
+  if (res.status === 401) {
+    showLoginOverlay();
+    throw new Error('Sesión expirada o no autorizada');
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ============================================================
+// OVERLAY DE LOGIN SUPER ADMIN
+// ============================================================
+export function showLoginOverlay() {
   let overlay = document.getElementById('admin-login-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'admin-login-overlay';
-    overlay.className = 'fixed inset-0 z-[9999] bg-gray-950/95 backdrop-blur-sm flex items-center justify-center';
+    overlay.className = 'fixed inset-0 z-[9999] bg-gray-950/95 backdrop-blur-md flex items-center justify-center p-4';
     overlay.innerHTML = `
       <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
         <div class="text-center mb-6">
-          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30 text-white font-black text-2xl">
+            ⚡
           </div>
-          <h2 class="text-xl font-bold text-white">Panel de Administración</h2>
-          <p class="text-sm text-gray-400 mt-1">SNC v3 · Acceso restringido</p>
+          <h2 class="text-xl font-bold text-white">Consola de Super Administrador</h2>
+          <p class="text-xs text-amber-400 font-mono mt-1 uppercase tracking-wider">SNC v3 · Acceso Total Multi-Perfil</p>
         </div>
-        <form id="admin-login-form" class="space-y-4">
+        <form id="admin-login-form" class="space-y-4 text-xs">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Correo electrónico</label>
+            <label class="block font-medium text-gray-300 mb-1">Correo Electrónico</label>
             <input type="email" id="admin-email" required autocomplete="email"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              placeholder="usuario@municipalidad.gov.py">
+              placeholder="superadmin@snc.gov.py">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
+            <label class="block font-medium text-gray-300 mb-1">Contraseña</label>
             <input type="password" id="admin-password" required autocomplete="current-password"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="••••••••">
           </div>
-          <div id="admin-login-error" class="hidden text-sm text-red-400 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2"></div>
-          <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg transition-colors">
-            Iniciar sesión
+          <div id="admin-login-error" class="hidden text-xs text-red-400 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2"></div>
+          <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/30">
+            Ingresar a la Consola Master
           </button>
         </form>
       </div>`;
@@ -57,9 +77,12 @@ function showLoginOverlay() {
   overlay.style.display = 'flex';
 }
 
-function hideLoginOverlay() {
+export function hideLoginOverlay() {
   const overlay = document.getElementById('admin-login-overlay');
-  if (overlay) { overlay.style.display = 'none'; overlay.classList.add('hidden'); }
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.classList.add('hidden');
+  }
 }
 
 async function handleLogin(e) {
@@ -68,6 +91,7 @@ async function handleLogin(e) {
   const password = document.getElementById('admin-password').value;
   const errorEl = document.getElementById('admin-login-error');
   errorEl.classList.add('hidden');
+
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -76,12 +100,14 @@ async function handleLogin(e) {
     });
     const data = await res.json();
     if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales inválidas');
-    if (data.user?.role !== 'admin') throw new Error('Este usuario no tiene rol de administrador');
+    if (data.user?.role !== 'admin' && data.user?.role !== 'superadmin') {
+      throw new Error('Este usuario no cuenta con privilegios de Administrador o Super Administrador');
+    }
     setToken(data.token);
     localStorage.setItem('snc_api_user', JSON.stringify(data.user));
     hideLoginOverlay();
     loadDashboard();
-    showToast('Sesión iniciada', 'success');
+    showToast('Sesión de Super Administrador iniciada', 'success');
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove('hidden');
@@ -89,35 +115,63 @@ async function handleLogin(e) {
 }
 
 // ============================================================
-// TOAST
+// TOAST NOTIFICATIONS
 // ============================================================
-function showToast(msg, type = 'info') {
+export function showToast(msg, type = 'info') {
   const container = document.getElementById('toastContainer');
   if (!container) return;
-  const colors = { success: 'bg-emerald-600', error: 'bg-red-600', warning: 'bg-amber-600', info: 'bg-blue-600' };
+  const colors = {
+    success: 'bg-emerald-600 border-emerald-500',
+    error: 'bg-red-600 border-red-500',
+    warning: 'bg-amber-600 border-amber-500',
+    info: 'bg-blue-600 border-blue-500',
+  };
   const el = document.createElement('div');
-  el.className = `${colors[type] || colors.info} text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg`;
-  el.textContent = msg;
+  el.className = `${colors[type] || colors.info} border text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span> <span>${msg}</span>`;
   container.appendChild(el);
-  setTimeout(() => el.remove(), 4000);
+  requestAnimationFrame(() => {
+    el.classList.remove('translate-y-2', 'opacity-0');
+  });
+  setTimeout(() => {
+    el.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
 }
 
 // ============================================================
-// DASHBOARD
+// DATOS MAESTROS (MOCK Y PERSISTENCIA LOCAL)
 // ============================================================
-async function fetchJSON(url) {
-  const res = await fetch(url, { headers: authHeaders() });
-  if (res.status === 401) { showLoginOverlay(); throw new Error('No autorizado'); }
-  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return res.json();
-}
+const PROFESIONALES_DEMO = [
+  { id: 'agr-01', nombre: 'Ing. Carlos Benítez', matricula_mopc: 'MOPC-4821', registro_snc: 'SNC-892', circunscripcion: 'Capital / Central', expedientes: 6, estado: 'Habilitado' },
+  { id: 'agr-02', nombre: 'Lic. María Fernández', matricula_mopc: 'MOPC-3910', registro_snc: 'SNC-741', circunscripcion: 'Cordillera (Piribebuy)', expedientes: 4, estado: 'Habilitado' },
+  { id: 'agr-03', nombre: 'Top. Jorge Alcaraz', matricula_mopc: 'MOPC-5102', registro_snc: 'SNC-910', circunscripcion: 'Itapúa', expedientes: 2, estado: 'Habilitado' },
+  { id: 'agr-04', nombre: 'Ing. Roberto Giménez', matricula_mopc: 'MOPC-2190', registro_snc: 'SNC-511', circunscripcion: 'Alto Paraná', expedientes: 0, estado: 'Suspendido' }
+];
 
-async function loadDashboard() {
+const NOTARIOS_DEMO = [
+  { id: 'not-01', nombre: 'Esc. Lourdes Villalba', registro: 'Nº 142', circunscripcion: 'Capital', minutas: 18, estado: 'Habilitada' },
+  { id: 'not-02', nombre: 'Esc. Fernando Duarte', registro: 'Nº 88', circunscripcion: 'Cordillera', minutas: 12, estado: 'Habilitada' },
+  { id: 'not-03', nombre: 'Esc. Beatriz Caballero', registro: 'Nº 205', circunscripcion: 'Central', minutas: 9, estado: 'Habilitada' },
+  { id: 'not-04', nombre: 'Esc. Gustavo Mendoza', registro: 'Nº 67', circunscripcion: 'Guairá', minutas: 4, estado: 'En Auditoría' }
+];
+
+const EXPEDIENTES_DEMO = [
+  { numero: 'EXP-2026-0049', municipio: 'Piribebuy', agrimensor: 'Lic. María Fernández', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '22/10/2026' },
+  { numero: 'EXP-2026-0048', municipio: 'Piribebuy', agrimensor: 'Ing. Carlos Benítez', notaria: 'Esc. Lourdes Villalba', estado: 'En revisión', fecha: '21/10/2026' },
+  { numero: 'EXP-2026-0047', municipio: 'Asunción', agrimensor: 'Ing. Carlos Benítez', notaria: 'Esc. Beatriz Caballero', estado: 'Observado', fecha: '19/10/2026' },
+  { numero: 'EXP-2026-0046', municipio: 'Piribebuy', agrimensor: 'Lic. María Fernández', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '18/10/2026' }
+];
+
+// ============================================================
+// DASHBOARD & CARGA DE LOS 3 PILARES
+// ============================================================
+export async function loadDashboard() {
   const user = JSON.parse(localStorage.getItem('snc_api_user') || '{}');
   const emailEl = document.getElementById('userEmail');
   if (emailEl && user.email) emailEl.textContent = user.email;
 
-  // Métricas principales
+  // Carga de contadores
   try {
     const [members, plans] = await Promise.all([
       fetchJSON('/api/admin/members').catch(() => []),
@@ -125,115 +179,243 @@ async function loadDashboard() {
     ]);
     const membersList = Array.isArray(members) ? members : (members.data || []);
     const plansList = Array.isArray(plans) ? plans : (plans.data || []);
-    set('dashMunicipalities', '1'); // Piribebuy
-    set('dashMembers', String(membersList.length));
-    set('dashPlans', String(plansList.length));
-    set('dashExpedientes', '—');
+
+    const countPros = membersList.filter(u => u.role === 'professional').length || 12;
+    const countNotaries = membersList.filter(u => u.role === 'notary').length || 8;
+
+    setText('dashProfessionals', String(countPros));
+    setText('dashMunicipalities', '1 (Piribebuy)');
+    setText('dashNotaries', String(countNotaries));
+    setText('dashExpedientes', '24');
+
+    renderMembersTable(membersList);
+    renderPlansTable(plansList);
   } catch (e) {
-    console.warn('[admin] métricas:', e.message);
+    console.warn('[superadmin] métricas dashboard:', e.message);
   }
 
-  // Cargar capas de Piribebuy en el mapa
+  // Cargar tablas de los 3 pilares
+  renderProfesionalesTable();
+  renderNotariosTable();
+  renderExpedientesTable();
+
+  // Iniciar mapa
   loadPiribebuyMap();
 }
 
-function set(id, value) {
+function setText(id, text) {
   const el = document.getElementById(id);
-  if (el) el.textContent = value;
+  if (el) el.textContent = text;
 }
 
 // ============================================================
-// DEPENDENCIAS MUNICIPALES
+// PILAR 1: PROFESIONAL (AGRIMENSURA)
 // ============================================================
-const DEPARTAMENTOS = {
-  catastro:     { label: 'Catastro',         icon: '🏛️', color: 'text-blue-400',    secciones: ['municipal-status','fraccionamiento','qgis-layer-control','balance-sidebar','loteamiento','ambiental','symbology','dictamen'] },
-  ambiental:    { label: 'Ambiental',        icon: '🌿', color: 'text-green-400',   secciones: ['municipal-status','qgis-layer-control','ambiental'] },
-  planificacion:{ label: 'Planificación',    icon: '📐', color: 'text-purple-400',  secciones: ['municipal-status','fraccionamiento','qgis-layer-control','balance-sidebar','loteamiento'] },
-  obras:        { label: 'Obras y Vialidad', icon: '🚧', color: 'text-orange-400',  secciones: ['municipal-status','qgis-layer-control','loteamiento'] },
-  educacion:    { label: 'Educación',        icon: '🎓', color: 'text-cyan-400',     secciones: ['municipal-status','qgis-layer-control'] },
-  patrimonio:   { label: 'Patrimonio',      icon: '🏺', color: 'text-amber-400',   secciones: ['municipal-status','qgis-layer-control'] },
+function renderProfesionalesTable() {
+  const tbody = document.getElementById('profesionalesTable');
+  if (!tbody) return;
+
+  tbody.innerHTML = PROFESIONALES_DEMO.map(p => `
+    <tr class="hover:bg-gray-800/40 transition-colors">
+      <td class="px-4 py-3 font-semibold text-white">${p.nombre}</td>
+      <td class="px-4 py-3 font-mono text-blue-400">${p.matricula_mopc}</td>
+      <td class="px-4 py-3 font-mono text-gray-300">${p.registro_snc}</td>
+      <td class="px-4 py-3 text-gray-400">${p.circunscripcion}</td>
+      <td class="px-4 py-3 text-amber-400 font-bold">${p.expedientes} activos</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.estado === 'Habilitado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}">
+          ${p.estado}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-right pr-4 space-x-2">
+        <button onclick="window.toggleEstadoAgrimensor('${p.id}')" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] border border-gray-700 transition">
+          ${p.estado === 'Habilitado' ? 'Suspender' : 'Habilitar'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.toggleEstadoAgrimensor = function(id) {
+  const item = PROFESIONALES_DEMO.find(p => p.id === id);
+  if (item) {
+    item.estado = item.estado === 'Habilitado' ? 'Suspendido' : 'Habilitado';
+    renderProfesionalesTable();
+    showToast(`Estado de ${item.nombre} actualizado a: ${item.estado}`, 'info');
+  }
 };
 
-async function loadDependencias() {
-  const listEl = document.getElementById('depUserList');
-  if (!listEl) return;
-  listEl.innerHTML = '<p class="text-gray-500 text-sm">Cargando...</p>';
+// ============================================================
+// PILAR 2: MUNICIPAL (LEY 3966)
+// ============================================================
+export async function publicarParcelasCiudadano() {
+  const btn = document.getElementById('btnPublicarPiribebuy');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Publicando...';
+  }
   try {
-    const members = await fetchJSON('/api/admin/members');
-    const users = Array.isArray(members) ? members : (members.data || []);
-    // Agrupar por department
-    const porDep = {};
-    users.forEach(u => {
-      const dep = u.department || 'sin_asignar';
-      if (!porDep[dep]) porDep[dep] = [];
-      porDep[dep].push(u);
+    const res = await fetchJSON('/api/municipal/piribebuy/publicar', {
+      method: 'POST',
+      body: JSON.stringify({
+        nombre: 'Municipalidad de Piribebuy',
+        departamento: 'Cordillera',
+        distrito: '0306'
+      })
     });
-    let html = '';
-    const deps = Object.keys(DEPARTAMENTOS);
-    deps.forEach(depKey => {
-      const info = DEPARTAMENTOS[depKey];
-      const depUsers = porDep[depKey] || [];
-      html += `
-        <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
-          <div class="flex items-center gap-3">
-            <span class="text-xl">${info.icon}</span>
-            <div>
-              <p class="text-sm font-semibold ${info.color}">${info.label}</p>
-              <p class="text-[10px] text-gray-500">${info.secciones.length} secciones · ${depUsers.length} usuario(s)</p>
-            </div>
-          </div>
-          <div class="flex gap-1.5 flex-wrap">
-            ${depUsers.map(u => `<span class="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-300 rounded-full border border-gray-700">${u.name || u.email}</span>`).join('')}
-          </div>
-        </div>`;
-    });
-    // Usuarios sin dependencia asignada
-    const sinDep = porDep['sin_asignar'] || [];
-    if (sinDep.length) {
-      html += `
-        <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-red-800/50">
-          <div class="flex items-center gap-3">
-            <span class="text-xl">⚠️</span>
-            <div>
-              <p class="text-sm font-semibold text-red-400">Sin dependencia asignada</p>
-              <p class="text-[10px] text-gray-500">${sinDep.length} usuario(s) sin acceso al portal municipal</p>
-            </div>
-          </div>
-        </div>`;
+    showToast('¡Parcelas de Piribebuy publicadas con éxito en el Portal Ciudadano!', 'success');
+  } catch (err) {
+    showToast(`Aviso: ${err.message}`, 'info');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>🚀</span> Publicar Parcelas a Ciudadanos';
     }
-    listEl.innerHTML = html || '<p class="text-gray-500 text-sm">No hay usuarios.</p>';
-  } catch (e) {
-    listEl.innerHTML = `<p class="text-red-400 text-sm">Error: ${e.message}</p>`;
   }
 }
 
 // ============================================================
-// VISOR DE CAPAS PIRIBEBUY
+// PILAR 3: NOTARIAL (ESCRIBANÍAS / RUN)
+// ============================================================
+function renderNotariosTable() {
+  const tbody = document.getElementById('notariosTable');
+  if (!tbody) return;
+
+  tbody.innerHTML = NOTARIOS_DEMO.map(n => `
+    <tr class="hover:bg-gray-800/40 transition-colors">
+      <td class="px-4 py-3 font-semibold text-white">${n.nombre}</td>
+      <td class="px-4 py-3 font-mono text-purple-400 font-bold">${n.registro}</td>
+      <td class="px-4 py-3 text-gray-400">${n.circunscripcion}</td>
+      <td class="px-4 py-3 text-amber-400 font-bold">${n.minutas} emitidas</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${n.estado === 'Habilitada' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}">
+          ${n.estado}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-right pr-4">
+        <a href="/notarial/" target="_blank" class="px-2.5 py-1 bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 rounded text-[11px] border border-purple-700/50 transition">
+          Ver Minutas ↗
+        </a>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// EXPEDIENTES B2B2G
+// ============================================================
+function renderExpedientesTable() {
+  const tbody = document.getElementById('expedientesTable');
+  if (!tbody) return;
+
+  tbody.innerHTML = EXPEDIENTES_DEMO.map(exp => `
+    <tr class="hover:bg-gray-800/40 transition-colors">
+      <td class="px-4 py-3 font-mono font-bold text-amber-400">${exp.numero}</td>
+      <td class="px-4 py-3 text-white font-medium">${exp.municipio}</td>
+      <td class="px-4 py-3 text-blue-300">${exp.agrimensor}</td>
+      <td class="px-4 py-3 text-purple-300">${exp.notaria}</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${exp.estado === 'Aprobado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : exp.estado === 'En revisión' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'}">
+          ${exp.estado}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-gray-400 font-mono text-[11px]">${exp.fecha}</td>
+      <td class="px-4 py-3 text-right pr-4">
+        <button onclick="window.verDetalleExpediente('${exp.numero}')" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] border border-gray-700 transition">
+          Inspeccionar
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.verDetalleExpediente = function(num) {
+  showToast(`Inspeccionando expediente ${num}: Conforme a Resolución SNC 551/2023 y Ley 7424/2025`, 'info');
+};
+
+// ============================================================
+// USUARIOS Y MIEMBROS GLOBALES
+// ============================================================
+function renderMembersTable(members) {
+  const tbody = document.getElementById('membersTable');
+  if (!tbody) return;
+
+  if (!members || members.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-6 text-center text-gray-500">No hay usuarios registrados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = members.map(u => `
+    <tr class="hover:bg-gray-800/40 transition-colors">
+      <td class="px-4 py-3">
+        <div class="font-bold text-white">${u.name || 'Usuario'}</div>
+        <div class="text-[11px] text-gray-400 font-mono">${u.email}</div>
+      </td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded bg-gray-800 text-amber-300 border border-gray-700 font-mono text-[10px]">${u.plan || 'free'}</span></td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'superadmin' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : u.role === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : u.role === 'admin_municipal' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : u.role === 'admin_notarial' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : u.role === 'professional' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : u.role === 'notary' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-gray-700 text-gray-300'}">
+          ${u.role}
+        </span>
+      </td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${u.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}">
+          ${u.status}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-gray-300">${u.projects_count || 0}</td>
+      <td class="px-4 py-3 text-gray-400 font-mono text-[11px]">${(u.created_at || '').slice(0, 10) || '2026-10-22'}</td>
+      <td class="px-4 py-3 text-right pr-4 space-x-2">
+        <button onclick="window.editarUsuario('${u.id}')" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-amber-300 rounded text-[11px] border border-gray-700 transition">
+          Editar
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// PLANES & FINANZAS
+// ============================================================
+function renderPlansTable(plans) {
+  const tbody = document.getElementById('plansTable');
+  if (!tbody) return;
+
+  if (!plans || plans.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-gray-500">No hay planes configurados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = plans.map(p => `
+    <tr class="hover:bg-gray-800/40 transition-colors">
+      <td class="px-4 py-3 font-mono text-amber-400">${p.id}</td>
+      <td class="px-4 py-3 font-bold text-white">${p.name}</td>
+      <td class="px-4 py-3 text-gray-300">${p.type}</td>
+      <td class="px-4 py-3 font-semibold text-emerald-400 font-mono">${Number(p.price || 0).toLocaleString('es-PY')} PYG</td>
+      <td class="px-4 py-3 text-gray-300">${p.limit_projects || 'Ilimitado'}</td>
+      <td class="px-4 py-3 text-gray-300">${p.limit_expedientes || 'Ilimitado'}</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}">
+          ${p.active ? 'Activo' : 'Inactivo'}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-right pr-4">
+        <button class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] border border-gray-700 transition">Configurar</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// VISOR DE CAPAS TERRITORIALES (LEAFLET GIS)
 // ============================================================
 let adminMap = null;
 const adminLayers = {};
 
 async function loadPiribebuyMap() {
   const mapContainer = document.getElementById('admin-map');
-  if (!mapContainer) {
-    // Crear contenedor de mapa si no existe (en el tab "panel")
-    const panel = document.getElementById('panel-dashboard');
-    if (!panel) return;
-    const mapSection = document.createElement('div');
-    mapSection.className = 'bg-gray-900 border border-gray-800 rounded-lg p-4 mt-6';
-    mapSection.innerHTML = `
-      <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
-        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 014 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-        Capas de Piribebuy
-      </h3>
-      <div class="flex flex-wrap gap-2 mb-3" id="piribebuy-layer-toggles"></div>
-      <div id="admin-map" style="height:400px;border-radius:8px;border:1px solid #374151;background:#0d1117;"></div>
-    `;
-    panel.appendChild(mapSection);
-  }
+  if (!mapContainer) return;
 
   if (!adminMap) {
-    // Cargar Leaflet si no está cargado
     if (typeof L === 'undefined') {
       await new Promise(resolve => {
         const link = document.createElement('link');
@@ -246,13 +428,14 @@ async function loadPiribebuyMap() {
         document.head.appendChild(script);
       });
     }
+
     adminMap = L.map('admin-map', { center: [-25.45, -57.05], zoom: 13 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19,
+      attribution: '© OpenStreetMap contributors · SNC v3 Super Admin GIS',
+      maxZoom: 19,
     }).addTo(adminMap);
   }
 
-  // Crear toggles para cada capa
   const layers = [
     { id: 'barrios', label: 'Barrios', color: '#7c3aed' },
     { id: 'vias', label: 'Vías', color: '#f59e0b' },
@@ -260,15 +443,17 @@ async function loadPiribebuyMap() {
     { id: 'vertedero', label: 'Vertedero', color: '#ef4444' },
     { id: 'casco_historico', label: 'Casco Histórico', color: '#facc15' },
   ];
+
   const toggleContainer = document.getElementById('piribebuy-layer-toggles');
   if (toggleContainer) {
     toggleContainer.innerHTML = '';
     layers.forEach(layer => {
       const btn = document.createElement('button');
-      btn.className = 'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors';
+      btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all';
       btn.style.borderColor = layer.color;
       btn.style.color = layer.color;
       btn.textContent = layer.label;
+
       btn.onclick = async () => {
         if (adminLayers[layer.id]) {
           adminMap.removeLayer(adminLayers[layer.id]);
@@ -283,11 +468,11 @@ async function loadPiribebuyMap() {
             const isPoint = gj.features?.some(f => f.geometry?.type === 'Point');
             adminLayers[layer.id] = isPoint
               ? L.geoJSON(gj, { pointToLayer: (_, ll) => L.circleMarker(ll, { color: layer.color, radius: 6 }) }).addTo(adminMap)
-              : L.geoJSON(gj, { style: { color: layer.color, weight: 1.5, fillOpacity: 0.15 } }).addTo(adminMap);
+              : L.geoJSON(gj, { style: { color: layer.color, weight: 2, fillOpacity: 0.2 } }).addTo(adminMap);
             btn.style.background = layer.color + '33';
             btn.style.opacity = '1';
           } catch (e) {
-            showToast(`No se pudo cargar ${layer.label}: ${e.message}`, 'error');
+            showToast(`Capa ${layer.label}: ${e.message}`, 'error');
           }
         }
       };
@@ -298,43 +483,115 @@ async function loadPiribebuyMap() {
 }
 
 // ============================================================
-// TABS
+// NAVEGACIÓN ENTRE PESTAÑAS
 // ============================================================
-function setupTabs() {
+export function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(b => {
+    const isTarget = b.dataset.tab === tabName;
+    b.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    if (isTarget) {
+      b.classList.add('bg-gray-900', 'text-amber-400', 'border-b-2', 'border-amber-400');
+      b.classList.remove('text-gray-400');
+    } else {
+      b.classList.remove('bg-gray-900', 'text-amber-400', 'border-b-2', 'border-amber-400');
+      b.classList.add('text-gray-400');
+    }
+  });
+
+  panels.forEach(p => {
+    p.classList.remove('active');
+    if (p.id === `panel-${tabName}`) {
+      p.classList.add('active');
+    }
+  });
+
+  if (tabName === 'dashboard' && adminMap) {
+    setTimeout(() => adminMap.invalidateSize(), 200);
+  }
+}
+window.switchTab = switchTab;
+
+function setupTabs() {
+  const tabs = document.querySelectorAll('.tab-btn');
   tabs.forEach(btn => {
     btn.addEventListener('click', () => {
-      tabs.forEach(b => { b.setAttribute('aria-selected', 'false'); b.classList.remove('bg-gray-800', 'text-amber-400'); });
-      btn.setAttribute('aria-selected', 'true');
-      btn.classList.add('bg-gray-800', 'text-amber-400');
-      panels.forEach(p => p.classList.remove('active'));
-      const panel = document.getElementById(`panel-${btn.dataset.tab}`);
-      if (panel) panel.classList.add('active');
-      // Cargar datos específicos por pestaña
+      switchTab(btn.dataset.tab);
       if (btn.dataset.tab === 'dependencias') loadDependencias();
-      if (btn.dataset.tab === 'members') loadMembersList();
     });
   });
 }
 
-async function loadMembersList() {
-  const el = document.getElementById('memberList') || document.querySelector('#panel-members table tbody');
-  if (!el) return;
-  try {
-    const members = await fetchJSON('/api/admin/members');
-    const users = Array.isArray(members) ? members : (members.data || []);
-    if (el.tagName === 'TBODY') {
-      el.innerHTML = users.map(u => `
-        <tr class="border-b border-gray-800">
-          <td class="py-2 px-3 text-sm">${u.name || '—'}</td>
-          <td class="py-2 px-3 text-sm">${u.email}</td>
-          <td class="py-2 px-3 text-sm"><span class="px-2 py-0.5 text-xs rounded-full ${u.role === 'admin' ? 'bg-amber-600/20 text-amber-400' : 'bg-gray-700 text-gray-300'}">${u.role}</span></td>
-          <td class="py-2 px-3 text-sm">${DEPARTAMENTOS[u.department]?.label || '—'}</td>
-          <td class="py-2 px-3 text-sm">${u.status || 'active'}</td>
-        </tr>`).join('');
+// ============================================================
+// MODAL DE USUARIO
+// ============================================================
+function setupModals() {
+  const modal = document.getElementById('memberModal');
+  const openBtn = document.getElementById('createMemberBtn');
+  const closeBtn = document.getElementById('closeMemberModal');
+  const cancelBtn = document.getElementById('cancelMemberModal');
+  const form = document.getElementById('memberForm');
+
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', () => {
+      form.reset();
+      document.getElementById('memberId').value = '';
+      document.getElementById('memberModalTitle').textContent = 'Nuevo Usuario / Miembro';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    });
+  }
+
+  const closeModal = () => {
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
-  } catch (e) { console.warn('[admin] members:', e.message); }
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('memberId').value;
+      const name = document.getElementById('memberName').value.trim();
+      const email = document.getElementById('memberEmail').value.trim().toLowerCase();
+      const password = document.getElementById('memberPassword').value;
+      const role = document.getElementById('memberRole').value;
+      const status = document.getElementById('memberStatus').value;
+      const plan = document.getElementById('memberPlan').value;
+
+      try {
+        if (id) {
+          await fetchJSON(`/api/admin/members/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ name, role, status, plan })
+          });
+          showToast('Usuario actualizado exitosamente', 'success');
+        } else {
+          await fetchJSON('/api/admin/members', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, password, role, status, plan })
+          });
+          showToast('Usuario creado exitosamente', 'success');
+        }
+        closeModal();
+        loadDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+  }
+
+  // Botón publicar Piribebuy
+  const pubBtn = document.getElementById('btnPublicarPiribebuy');
+  if (pubBtn) {
+    pubBtn.addEventListener('click', publicarParcelasCiudadano);
+  }
 }
 
 // ============================================================
@@ -346,17 +603,81 @@ function setupLogout() {
     btn.addEventListener('click', () => {
       clearToken();
       showLoginOverlay();
-      showToast('Sesión cerrada', 'info');
+      showToast('Sesión de Super Administrador finalizada', 'info');
     });
   }
 }
 
 // ============================================================
-// INIT
+// DEPENDENCIAS MUNICIPALES (jerarquía con sub-dependencias)
+// ============================================================
+const DEPARTAMENTOS = {
+  super_admin:     { label: 'Super Administrador',  icon: '⭐', color: 'text-yellow-400', secciones: ['*'],              parent: null },
+  notarial:        { label: 'Notarial',             icon: '📜', color: 'text-slate-400',  secciones: ['municipal-status','qgis-layer-control'], parent: null },
+  junta_municipal: { label: 'Junta Municipal',      icon: '🏛️', color: 'text-red-400',     secciones: ['municipal-status','qgis-layer-control'], parent: null },
+  catastro:        { label: 'Catastro',             icon: '📐', color: 'text-blue-400',    secciones: ['fraccionamiento','balance-sidebar','loteamiento','ambiental','symbology','dictamen'], parent: 'junta_municipal' },
+  ambiental:       { label: 'Ambiental',            icon: '🌿', color: 'text-green-400',   secciones: ['ambiental'],      parent: 'junta_municipal' },
+  planificacion:   { label: 'Planificación',        icon: '📏', color: 'text-purple-400',  secciones: ['fraccionamiento','balance-sidebar','loteamiento'], parent: 'junta_municipal' },
+  obras:           { label: 'Obras y Vialidad',     icon: '🚧', color: 'text-orange-400',  secciones: ['loteamiento'],     parent: 'junta_municipal' },
+  educacion:       { label: 'Educación',            icon: '🎓', color: 'text-cyan-400',     secciones: [],                 parent: 'junta_municipal' },
+  patrimonio:      { label: 'Patrimonio',           icon: '🏺', color: 'text-amber-400',   secciones: [],                 parent: 'junta_municipal' },
+};
+
+async function loadDependencias() {
+  const listEl = document.getElementById('depUserList');
+  if (!listEl) return;
+  listEl.innerHTML = '<p class="text-gray-500 text-sm">Cargando...</p>';
+  try {
+    const members = await fetchJSON('/api/admin/members');
+    const users = Array.isArray(members) ? members : (members.data || []);
+    const porDep = {};
+    users.forEach(u => {
+      const deps = (u.department || '').split(',').map(d => d.trim()).filter(Boolean);
+      if (!deps.length) deps.push('sin_asignar');
+      deps.forEach(dep => {
+        if (!porDep[dep]) porDep[dep] = [];
+        porDep[dep].push(u);
+      });
+    });
+    let html = '';
+    Object.keys(DEPARTAMENTOS).forEach(depKey => {
+      const info = DEPARTAMENTOS[depKey];
+      const depUsers = porDep[depKey] || [];
+      const parentBadge = info.parent ? ` <span class="text-[8px] text-gray-500">↳ ${DEPARTAMENTOS[info.parent]?.label || info.parent}</span>` : '';
+      html += `
+        <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">${info.icon}</span>
+            <div>
+              <p class="text-sm font-semibold ${info.color}">${info.label}${parentBadge}</p>
+              <p class="text-[10px] text-gray-500">${info.secciones.includes('*') ? 'acceso total' : info.secciones.length + ' secciones'} · ${depUsers.length} usuario(s)</p>
+            </div>
+          </div>
+          <div class="flex gap-1.5 flex-wrap max-w-[50%] justify-end">
+            ${depUsers.map(u => `<span class="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-300 rounded-full border border-gray-700">${u.name || u.email}</span>`).join('')}
+          </div>
+        </div>`;
+    });
+    const sinDep = porDep['sin_asignar'] || [];
+    if (sinDep.length) {
+      html += `<div class="p-3 bg-gray-950 rounded-lg border border-red-800/50">
+        <p class="text-sm text-red-400">⚠️ ${sinDep.length} usuario(s) sin dependencia asignada</p>
+      </div>`;
+    }
+    listEl.innerHTML = html || '<p class="text-gray-500 text-sm">No hay usuarios.</p>';
+  } catch (e) {
+    listEl.innerHTML = `<p class="text-red-400 text-sm">Error: ${e.message}</p>`;
+  }
+}
+
+// ============================================================
+// INIT PRINCIPAL
 // ============================================================
 export function initAdmin() {
   setupTabs();
+  setupModals();
   setupLogout();
+
   const token = getToken();
   if (!token) {
     showLoginOverlay();
