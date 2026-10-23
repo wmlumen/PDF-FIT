@@ -1,0 +1,193 @@
+{
+  "diagnostico_login": {
+    "elementos_detectados": {
+      "etiqueta_form": "form#login-form (novalidate)",
+      "campo_correo": {
+        "etiqueta": "input#login-email",
+        "tipo": "email",
+        "requerido": true,
+        "placeholder": "correo@ejemplo.com"
+      },
+      "campo_password": {
+        "etiqueta": "input#login-password",
+        "tipo": "password",
+        "requerido": true,
+        "placeholder": "••••••••"
+      },
+      "boton_submit": {
+        "etiqueta": "button#login-submit",
+        "tipo": "submit",
+        "texto": "Ingresar"
+      },
+      "boton_mostrar_password": {
+        "etiqueta": "button#pw-toggle",
+        "tipo": "button",
+        "funcion": "toggle mostrar/ocultar clave"
+      },
+      "caja_error": {
+        "etiqueta": "div#login-error",
+        "tipo": "alert",
+        "mostrar": "none"
+      },
+      "enlace_olvide": {
+        "etiqueta": "a[href='/recover.html']",
+        "texto": "Olvidé mi contraseña"
+      },
+      "enlace_registro": {
+        "etiqueta": "a[href='/register.html']",
+        "texto": "Crear cuenta"
+      },
+      "header": {
+        "etiqueta": "header",
+        "logo": true,
+        "titulo": "Catastro PY Pro"
+      },
+      "footer": {
+        "etiqueta": "footer",
+        "enlaces_legal": ["Términos", "Privacidad"]
+      }
+    },
+    "diagnosticos_problemas": {
+      "1": {
+        "id": 1,
+        "categoria": "Seguridad",
+        "problema": "Sin protección CSRF ni Rate Limiting en el formulario de login",
+        "severidad": "Alta",
+        "impacto": "Ataque de fuerza bruta y CSRF posible",
+        "recomendacion": "Agregar middleware rate limit (express-rate-limit) y token CSRF"
+      },
+      "2": {
+        "id": 2,
+        "categoria": "Validación",
+        "problema": "novalidate en el formulario — validación solo en JS, no en servidor",
+        "severidad": "Media",
+        "impacto": "Los datos no pueden ser validados por el navegador; el servidor debe validar siempre",
+        "recomendacion": "Añadir validación del lado del servidor además de la del cliente"
+      },
+      "3": {
+        "id": 3,
+        "categoria": "Accesibilidad",
+        "problema": "No hay aria-live en la caja de error, no hay role=\"alert\" en el campo",
+        "severidad": "Media",
+        "impacto": "Usuarios de lectores de pantalla no reciben feedback sobre errores",
+        "recomendacion": "Añadir aria-live=\"polite\" a la caja de error y role=\"alert\" a los campos"
+      },
+      "4": {
+        "id": 4,
+        "categoria": "Authenticación",
+        "problema": "Guarda el token en localStorage sin expiración definida",
+        "severidad": "Alta",
+        "impacto": "Vulnérabilidad XSS: token accesible por scripts; sin expiración controlada",
+        "recomendacion": "Usar httpOnly cookies o gestionar expiración en el cliente (solo si hay control del backend)"
+      },
+      "5": {
+        "id": 5,
+        "categoria": "Alertas",
+        "problema": "No hay confirmación de cerrar sesión (logout)",
+        "severidad": "Baja",
+        "impacto": "Sin función de cierre de sesión definida en el HTML",
+        "recomendacion": "Añadir botón de logout en el header y en el panel de usuario"
+      },
+      "6": {
+        "id": 6,
+        "categoria": "Validación",
+        "problema": "El email es de tipo \"email\" pero no hay patrones adicionales (trim, etc.)",
+        "severidad": "Baja",
+        "impacto": "El usuario puede ingresar emails con espacios en blanco",
+        "recomendacion": "Añadir .trim() en el backend y validar patrones adicionales"
+      },
+      "7": {
+        "id": 7,
+        "categoria": "Error handling",
+        "problema": "El catch() no distingue entre fallos de red, timeout y error del servidor",
+        "severidad": "Media",
+        "impacto": "El usuario ve \"Error de conexión\" para cualquier fallo",
+        "recomendacion": "Agregar timeout y distinguir errores de red vs servidor"
+      },
+      "8": {
+        "id": 8,
+        "categoria": "Pruebas",
+        "problema": "No hay pruebas automatizadas de login (e2e o unitarias)",
+        "severidad": "Media",
+        "impacto": "No hay verificación automatizada de flujo de login",
+        "recomendacion": "Agregar pruebas e2e con Playwright y test de unitarias para la lógica de validación"
+      }
+    },
+    "problemas_seguridad": {
+      "1": {
+        "id": 1,
+        "problema": "Authentication token stored in localStorage (XSS vulnerable)",
+        "severidad": "Alta",
+        "soluc": "Usar httpOnly cookies o implementar expiración con refresh token"
+      },
+      "2": {
+        "id": 2,
+        "problema": "Sin rate limiting para protección contra brute force",
+        "severidad": "Alta",
+        "soluc": "Implementar express-rate-limit con reset en minutos"
+      },
+      "3": {
+        "id": 3,
+        "problema": "Sin protección CSRF (token en el formulario)",
+        "severidad": "Media",
+        "soluc": "Agregar token CSRF a la sesión"
+      }
+    },
+    "accesibilidad": {
+      "1": {
+        "id": 1,
+        "problema": "Falta aria-live en la caja de error",
+        "severidad": "Media",
+        "impacto": "Screen readers no notificarán errores",
+        "soluc": "Añadir aria-live=\"polite\" en #login-error"
+      },
+      "2": {
+        "id": 2,
+        "problema": "Falta campo \"name\" en el input email",
+        "severidad": "Baja",
+        "impacto": "Los datos no se envían correctamente en submits",
+        "soluc": "Añadir name=\"email\" al input"
+      },
+      "3": {
+        "id": 3,
+        "problema": "Falta label asociado a password (ya existe)",
+        "severidad": "Baja",
+        "impacto": "Menor accesibilidad",
+        "soluc": "Verificar que label for este correctamente vinculado"
+      }
+    },
+    "buenas_practicas": {
+      "1": {
+        "id": 1,
+        "practise": "Autocomplete correcto",
+        "descripcion": "email y current-password usados correctamente",
+        "estado": "✅"
+      },
+      "2": {
+        "id": 2,
+        "practise": "Toggle contraseña (show/hide)",
+        "descripcion": "Funcionalidad completa con aria-pressed y aria-label",
+        "estado": "✅"
+      },
+      "3": {
+        "id": 3,
+        "practise": "Loading state",
+        "descripcion": "Spinner y disabled en el botón",
+        "estado": "✅"
+      },
+      "4": {
+        "id": 4,
+        "practise": "Mensajes de error específicos por código HTTP",
+        "descripcion": "Mapeo 400, 401, 403, 409, 429, 500",
+        "estado": "✅"
+      },
+      "5": {
+        "id": 5,
+        "practise": "Validación del lado del cliente",
+        "descripcion": "Validación del email con regex y required",
+        "estado": "✅"
+      }
+    },
+    "recomendacion_resumen": "El componente es funcional y robusto, pero necesita mejoras en seguridad (localStorage, rate limiting, CSRF) y accesibilidad (aria-live). Recomendado implementar: (1) httpOnly cookies para tokens, (2) express-rate-limit, (3) aria-live para errores, (4) pruebas e2e."
+  }
+}

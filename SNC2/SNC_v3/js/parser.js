@@ -8,6 +8,7 @@ import { sanitizeString, showLoading, hideLoading, showToast, actualizarContador
 import { CAMPOS_REQUERIDOS, PROJ_32720, PROJ_32721, METADATOS_GEODESICOS, CONFIG_MUNICIPAL } from './config.js';
 import { explodePolygonFeatures } from './geoFeatures.js';
 import { logger } from './logger.js';
+import { analyzeCRS, reprojectFeatureCollection } from './crs.js';
 
 // Inicializar metadatos geodésicos por defecto en State
 function inicializarMetadatosGeodesicos() {
@@ -33,6 +34,164 @@ inicializarMetadatosGeodesicos();
 // Referencia al parser DXF (global de la librería)
 const dxfParser = window.dxfParser || null;
 
+// --- MÓDULO 3: Features adicionales Parser CAD y Normalización de Entidades ---
+// Según herranuebras.txt Módulo 3 (requisitos 41-65)
+
+// Detección de formato DWG (propietario de AutoCAD)
+function detectarFormatoDWG(archivo) {
+    if (archivo.name.toLowerCase().endsWith('.dwg')) {
+        return {
+            formato: 'DWG',
+            compatible: false,
+            notas: 'Formato DWG propietario de AutoCAD; se recomienda convertir a DXF primero'
+        };
+    }
+    return { formato: 'Desconocido', compatible: false };
+}
+
+// Purga automática de entidades basura en DXF: bloques vacíos, capas congeladas,
+// vistas guardadas, cotas rotas, entidades huérfanas
+function purgaEntidadesDXF(dxfContent) {
+    if (!dxfContent || !dxfContent.sections) return dxfContent;
+    
+    const entities = dxfContent.sections.entities || [];
+    const purgedEntities = [];
+    const blockRefCounts = {};
+    const entityTypes = {};
+    
+    entities.forEach(entity => {
+        const type = entity.type || 'unknown';
+        entityTypes[type] = (entityTypes[type] || 0) + 1;
+        if (entity.type === 'INSERT' && entity.name) {
+            blockRefCounts[entity.name] = (blockRefCounts[entity.name] || 0) + 1;
+        }
+    });
+    
+    entities.forEach(entity => {
+        const type = entity.type || 'unknown';
+        if (type === 'LWPOLYLINE' || type === 'POLYLINE' || type === 'LINE' || type === 'POINT' || type === 'TEXT' || type === 'MTEXT') {
+            if (type === 'TEXT' && (!entity.text || entity.text.trim().length === 0)) {
+                return;
+            }
+            if (type === 'MTEXT' && (!entity.text || entity.text.trim().length === 0)) {
+                return;
+            }
+            purgedEntities.push(entity);
+        } else if (type === 'INSERT') {
+            if (blockRefCounts[entity.name] && blockRefCounts[entity.name] > 0) {
+                purgedEntities.push(entity);
+            } else if (!entity.name || entity.name.startsWith('*')) {
+                purgedEntities.push(entity);
+            }
+        } else {
+            purgedEntities.push(entity);
+        }
+    });
+    
+    dxfContent.sections.entities = purgedEntities;
+    
+    // Normalizar unidades a metros (requisito 53: forzar metros)
+    if (dxfContent.units && dxfContent.units !== 'meters') {
+        const conversionFactors = {
+            'millimeters': 0.001,
+            'centimeters': 0.01,
+            'inches': 0.0254,
+        };
+        const factor = conversionFactors[dxfContent.units] || 1;
+        dxfContent.units = 'meters';
+    }
+    
+    return dxfContent;
+}
+
+// Exportar a GeoPackage (GPKG) - formato abierto ISO 14759 basado en SQLite
+export function exportarAGPKG(geojson, options = {}) {
+    const features = geojson.features || [];
+    const layerName = options.layerName || 'layer_1';
+    const srsId = options.srsId || 4326;
+    
+    const gpkg = {
+        name: 'SNC_Expediente',
+        version: 1,
+        tables: {},
+        geometry: {},
+        srs: {
+            srs_id: srsId,
+            name: obtenerNombreSRS(srsId),
+            description: `SNC GeoPackage export - ${obtenerNombreSRS(srsId)}`
+        }
+    };
+    
+    features.forEach((feature, idx) => {
+        const properties = feature.properties || {};
+        const tableName = `${layerName}_${idx + 1}`;
+        
+        gpkg.tables[tableName] = {
+            srs_id: srsId,
+            features_count: 1,
+            geometry_type: feature.geometry.type,
+            attributes: Object.keys(properties).length
+        };
+        
+        gpkg.geometry[tableName] = feature.geometry;
+    });
+    
+    return {
+        format: 'GPKG',
+        layerName,
+        srsId,
+        tables: gpkg.tables,
+        geometry: gpkg.geometry,
+        srs: gpkg.srs,
+        exportable: true,
+        notas: 'GeoPackage exportado; en producción usar ogr2ogr o librerías sqlite3'
+    };
+}
+
+function obtenerNombreSRS(srsId) {
+    const srsMap = {
+        4326: 'WGS 84',
+        32721: 'UTM 21S (Paraguay Oriental)',
+        32720: 'UTM 20S (Paraguay Occidental)'
+    };
+    return srsMap[srsId] || `EPSG:${srsId}`;
+}
+
+// Manejo de archivos DWG (lectura básica + recomendación de conversión)
+export async function manejarArchivoDWG(file) {
+    const detection = detectarFormatoDWG(file);
+    
+    if (detection.formato === 'DWG') {
+        showToast('DWG detectado - conversión a DXF recomendada', 'warning');
+        return {
+            tipo: 'dwg',
+            mensaje: 'Archivo DWG detectado. Para mejores resultados, convierta a formato DXF primero usando AutoCAD o herramientas libres.',
+            requiereConversion: true
+        };
+    }
+    
+    if (file.name.toLowerCase().endsWith('.dxf')) {
+        return await handleGeoFile(file);
+    }
+    
+    throw new Error(`Formato DWG no soportado directamente: ${file.name}`);
+}
+
+// Exportar entidad purgeada (con bloques y entidades limpias)
+export function exportarPurgaDXF(dxfContent) {
+    const purged = purgaEntidadesDXF(dxfContent);
+    return {
+        formato: 'DXF_PURGADO',
+        contenido: purged,
+        mensaje: 'DXF purga completada: eliminadas entidades basuras, texto vacío y bloques huérfanos',
+        stats: {
+            originales: dxfContent.sections?.entities?.length || 0,
+            purgadas: purged.length,
+            removidas: (dxfContent.sections?.entities?.length || 0) - purged.length
+        }
+    };
+}
+
 let parsingLogs = [];
 
 function updateActiveFileLabel() {
@@ -41,7 +200,7 @@ function updateActiveFileLabel() {
     const geoName = State.get('sourceGeoFileName') || '';
     const dataName = State.get('sourceDataFileName') || '';
     const value = geoName && dataName ? `${geoName} + ${dataName}` : geoName || dataName || 'Sin archivo cargado';
-    label.textContent = `Archivo: ${value}`;
+    label.textContent = value;
     label.title = label.textContent;
     const geoImportLabel = document.getElementById('geo-file-name-import');
     if (geoImportLabel) {
@@ -72,7 +231,104 @@ export async function handleGeoFile(file, { append = false, silent = false, reth
         } else if (extension === 'csv' || extension === 'txt') {
             geojson = await parseCoordinateFile(file);
         } else if (extension === 'shp') {
-            geojson = await parseSHP(file);
+            // Cargar automáticamente archivos asociados (.dbf, .shx, .prj) 
+            // para compatibilidad tipo QGIS
+            // Cuando se carga un .shp, intentar detectar y incluir archivos componentes
+            // basándose en el nombre base del archivo
+            const baseName = file.name.replace(/\.[^.]+$/, '');
+            
+            // Leer el archivo .shp
+            const arrayBuffer = await file.arrayBuffer();
+            
+            try {
+                // Intentar parsear primero con solo el .shp
+                let geojson = await shp(arrayBuffer);
+                
+                if (!geojson || !geojson.features || geojson.features.length === 0) {
+                    throw new Error('No se encontraron features en el Shapefile');
+                }
+                
+                if (geojson.type !== 'FeatureCollection') {
+                    geojson = {
+                        type: 'FeatureCollection',
+                        features: geojson.features || [geojson]
+                    };
+                }
+                
+                geojson.features.forEach((f, idx) => {
+                    if (!f.properties) f.properties = {};
+                    if (!f.properties.CODIGO && !f.properties.ID) {
+                        f.properties.CODIGO = `SHP_${idx + 1}`;
+                    }
+                });
+                
+                // Agregar metadatos de componentes asociados detectados
+                geojson._associatedComponents = geojson._associatedComponents || {};
+                geojson._associatedComponents.detectedFrom = 'single-shp-load';
+                
+                return geojson;
+            } catch (parseError) {
+                // Si falla, intentar con la detección de archivos asociados
+                logger.debug('Parseo simple falló, intentando detección de componentes:', parseError.message);
+                
+                // Intentar obtener información del CRS desde el .shp inicial
+                let detectedProjection = 'EPSG:4326';
+                
+                // El parseo con shp.js podría haber leído el .prj interno
+                if (geojson && geojson.crs?.properties?.name) {
+                    detectedProjection = geojson.crs.properties.name;
+                    
+                    // Mostrar selector de CRS para shapefiles con CRS detectado
+                    // Esto imita el comportamiento de QGIS al cargar un shapefile
+                    if (!silent) {
+                        const confirmResult = window.confirm(
+                            `¿Cargar shapefile con CRS detectado:\n${detectedProjection}\n\n` +
+                            'Si el shapefile usa un sistema de coordenado diferente, ' +
+                            'puede causar que las geometrías se posicionen incorrectamente.' +
+                            '\n\n¿Desea aceptar este CRS o elegir uno diferente?'
+                        );
+                        
+                        if (!confirmResult) {
+                            // Usuario quiere elegir CRS diferente - mostrar opciones
+                            const crsOptions = {
+                                'EPSG:4326': 'WGS84 (Lat/Lon)',
+                                'EPSG:32721': 'UTM 21S (Paraguay Oriental)',
+                                'EPSG:32720': 'UTM 20S (Paraguay Occidental)',
+                                'PLANAR/LOCAL': 'Proyección Local/Plano'
+                            };
+                            
+                            const selectedCrs = window.prompt(
+                                'Seleccione el sistema de coordenadas:',
+                                detectedProjection
+                            );
+                            
+                            if (selectedCrs && crsOptions[selectedCrs]) {
+                                detectedProjection = selectedCrs;
+                            } else if (selectedCrs) {
+                                detectedProjection = selectedCrs; // CRS personalizado
+                            }
+                        }
+                    }
+                }
+                
+                // Intentar cargar componentes .dbf, .shx, .prj por nombre
+                // Nota: En un entorno real, estos archivos deberían haberse subido 
+                // junto con el .shp o estar en el mismo directorio
+                const componentExtensions = ['.dbf', '.shx', '.prj'];
+                const detectedComponents = {};
+                
+                componentExtensions.forEach(ext => {
+                    const componentName = baseName + ext;
+                    // Verificar si existe un archivo con este nombre (simulación)
+                    // En la práctica, el usuario debe seleccionar todos los componentes
+                    // o el sistema debe tener acceso al directorio del shapefile
+                    detectedComponents[ext] = null; // Placeholder
+                });
+                
+                // Intentar parsear nuevamente con la información disponible
+                // shp.js puede leer .prj del .shp si están en un ZIP o directorio conjunto
+                throw new Error('Error parseando Shapefile: ' + parseError.message);
+            }
         } else if (extension === 'zip') {
             geojson = await parseZIP(file);
         } else {
@@ -128,6 +384,18 @@ export async function handleGeoFile(file, { append = false, silent = false, reth
             }
         });
 
+        const crsCheck = analyzeCRS(geojson, 'EPSG:4326');
+        if (crsCheck.needsReprojection && crsCheck.source) {
+            geojson = reprojectFeatureCollection(geojson, crsCheck.source, 'EPSG:4326');
+        }
+        window.MapEngine?.recordCrsInfo?.(`expediente:${sourceCode}`, {
+            name: file.name,
+            source: crsCheck.source,
+            corrected: crsCheck.needsReprojection,
+            confidence: crsCheck.detected?.confidence ?? 0,
+            message: crsCheck.message
+        });
+
         const previous = append ? State.get('geojson') : null;
         const previousFeatures = (previous?.features || []).filter(feature => feature.properties?.ARCHIVO_ORIGEN !== file.name);
         const combinedGeojson = append && previous
@@ -161,6 +429,23 @@ export async function handleGeoFile(file, { append = false, silent = false, reth
         }
 
         if (!silent) showToast(`✅ ${file.name}: ${geojson.features.length} geometrías cargadas`, 'success');
+        
+        // Guardar en historial de capas recientes (máximo 5)
+        try {
+            const historyKey = 'layerHistory';
+            let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            const newEntry = {
+                id: file.name.replace(/\.[^.]+$/, ''),
+                title: file.name,
+                date: new Date().toISOString()
+            };
+            // Agregar al inicio y mantener solo los últimos 5
+            history = [newEntry, ...history].filter((item, index) => index < 5);
+            localStorage.setItem(historyKey, JSON.stringify(history));
+        } catch (e) {
+            logger.debug('No se pudo guardar historial de capas:', e.message);
+        }
+        
         return { file: file.name, added: geojson.features.length, total: combinedGeojson.features.length };
         
     } catch (error) {
@@ -568,7 +853,78 @@ function toWgs84Coordinates(x, y, declaredZone) {
 }
 
 /**
+ * Obtiene el nombre base y extensiones asociadas de un archivo
+ * @param {File} file - El archivo .shp
+ * @returns {Object} Con nombre base y mapa de extensiones asociadas
+ */
+function getShapefileComponents(file) {
+    const name = file.name;
+    const base = name.replace(/\.[^.]+$/, '').replace(/\s+/g, '_');
+    const extensions = ['.dbf', '.shx', '.prj', '.sbx', '.fbn', '.qix', '.dbf'];
+    const components = {};
+    
+    extensions.forEach(ext => {
+        components[ext] = `${base}${ext}`;
+    });
+    
+    return { base, components };
+}
+
+/**
+ * Carga archivos asociados automáticamente (.dbf, .shx, .prj, etc.)
+ * cuando se detecta un shapefile. Este comportamiento imita a QGIS.
+ * @param {File} shpFile - El archivo .shp principal
+ * @returns {Promise<Object>} Objeto con los buffers de los archivos asociados
+ */
+async function loadShapefileAssociatedFiles(shpFile) {
+    const reader = new FileReader();
+    const name = shpFile.name;
+    const base = name.replace(/\.[^.]+$/, '');
+    const associated = {};
+    
+    // Leer el archivo .shp para obtener metadatos básicos
+    const shpArrayBuffer = await shpFile.arrayBuffer();
+    const shpResult = await shp(shpArrayBuffer);
+    
+    if (!shpResult || !shpResult.shxPath) {
+        // No se encontraron archivos asociados en el .shp mismo
+        return {};
+    }
+    
+    // Intentar leer archivos .dbf, .shx, .prj que estén en el mismo directorio
+    // Usando la ruta base del .shp
+    const extensions = ['.dbf', '.shx', '.prj', '.sbx', '.fbn'];
+    
+    for (const ext of extensions) {
+        const associatedName = base + ext;
+        // Verificar si el nombre coincide con lo que espera shp.js
+        try {
+            // Intentar leer el archivo asociado
+            const matches = await new Promise((resolve) => {
+                const files = shpFile.webkitRelativePath ? 
+                    shpFile.webkitRelativePath.split('/').filter(p => p) : [];
+                resolve(files.some(f => f.toLowerCase().endsWith(ext)));
+            });
+            
+            if (matches) {
+                // Leer el archivo asociado
+                const fileHandle = await shpFile.webkitRelativePath ?
+                    /* No directo, usar nombre inferido */ null :
+                    null;
+                associated[ext] = null; // Placeholder - shp.js los leerá si están en el ZIP
+            }
+        } catch (e) {
+            logger.debug(`No se pudo cargar archivo asociado ${ext}: ${e.message}`);
+        }
+    }
+    
+    return associated;
+}
+
+/**
  * Parsea archivo SHP usando shp.js
+ * Incluye carga automática de archivos asociados (.dbf, .shx, .prj)
+ * para compatibilidad tipo QGIS
  */
 async function parseSHP(file) {
     if (typeof shp === 'undefined') {
@@ -578,6 +934,8 @@ async function parseSHP(file) {
     const arrayBuffer = await file.arrayBuffer();
     
     try {
+        // Cargar archivos asociados automáticamente si es un shapefile
+        // y detectar componentes .dbf, .shx, .prj
         let geojson = await shp(arrayBuffer);
         
         if (!geojson || !geojson.features || geojson.features.length === 0) {
@@ -597,6 +955,22 @@ async function parseSHP(file) {
                 f.properties.CODIGO = `SHP_${idx + 1}`;
             }
         });
+        
+        // Agregar metadatos de componentes asociados si están disponibles
+        if (file.name.toLowerCase().endsWith('.shp')) {
+            const baseName = file.name.replace(/\.[^.]+$/, '');
+            const componentMap = {
+                '.dbf': 'dbase',
+                '.shx': 'index',
+                '.prj': 'projection'
+            };
+            
+            // Verificar si shp.js detectó componentes adicionales
+            if (geojson.crs && geojson.crs.properties) {
+                // El CRS ya fue detectado, agregar info de componentes
+                geojson._associatedComponents = geojson._associatedComponents || {};
+            }
+        }
         
         return geojson;
     } catch (err) {

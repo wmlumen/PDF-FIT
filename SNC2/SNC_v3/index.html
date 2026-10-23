@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -73,7 +73,7 @@
           <i class="fas fa-user-shield header-context-icon" aria-hidden="true"></i>
           <div class="header-context-copy">
             <span class="header-context-label">Usuario</span>
-            <span id="session-user" class="header-context-value">Sin sesiÃ³n</span>
+            <span id="session-user" class="header-context-value">Sin sesión</span>
           </div>
           <div id="session-actions" class="header-session-actions"></div>
         </div>
@@ -114,6 +114,9 @@
       <button id="exportProfessionalBtn" data-requires-work onclick="window.App?.exportProfessionalReport()" class="btn-tool header-icon-btn" style="background: linear-gradient(135deg, #059669, #047857);" data-tooltip="Certificado Preventivo de Aptitud (PDF + DOCX)" aria-label="Generar Certificado Preventivo de Aptitud y DiagnÃ³stico Integral"><i class="fas fa-certificate"></i></button>
       <span id="separator-export-utilities" class="header-action-separator" aria-hidden="true"></span>
       <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
+      <button id="btn-pout-module" onclick="window.openPoutModule?.()" class="btn-tool header-icon-btn" data-tooltip="Módulo POUT Municipal" aria-label="Módulo POUT Municipal" title="Módulo POUT Municipal">
+        <i class="fas fa-file-signature text-amber-300"></i>
+      </button>
       <a href="mailto:wmlumen@gmail.com" class="btn-tool header-icon-btn" data-tooltip="Contacto: wmlumen@gmail.com" aria-label="Contactar por correo a wmlumen@gmail.com"><i class="fas fa-envelope" aria-hidden="true"></i></a>
       <button id="btn-open-catastro" onclick="window.openCatastro()" class="btn-tool header-icon-btn" data-tooltip="Catastro oficial" aria-label="Abrir catastro oficial del SNC" title="Abrir catastro oficial del SNC">
         <i class="fas fa-map"></i>
@@ -142,6 +145,78 @@
       <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinaciÃ³n de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
     </div>
   </header>
+<script>
+(function () {
+  const bar = document.getElementById('header-actions');
+  if (!bar) return;
+  const byId = id => document.getElementById(id);
+  const make = (tag, cls, html) => {
+    const el = document.createElement(tag);
+    el.className = cls;
+    if (html) el.innerHTML = html;
+    return el;
+  };
+  const groupWrap = (title, icon, ids) => {
+    const wrap = make('div', 'hdr-group');
+    const toggle = make('button', 'btn-tool header-icon-btn hdr-group-toggle', `<i class="fas ${icon}"></i>`);
+    toggle.type = 'button';
+    toggle.title = title;
+    toggle.setAttribute('aria-label', title);
+    toggle.setAttribute('aria-expanded', 'false');
+    const panel = make('div', 'hdr-group-panel');
+    ids.forEach(id => { const el = byId(id); if (el) panel.appendChild(el); });
+    wrap.append(toggle, panel);
+    return wrap;
+  };
+
+  const quick = make('div', 'hdr-quick');
+  ['btn-project-new', 'btn-project-open', 'btn-project-save'].forEach(id => {
+    const el = byId(id);
+    if (el) quick.appendChild(el);
+  });
+  quick.insertAdjacentHTML('beforeend',
+    '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Medir" aria-label="Medir" onclick="window.MapEngine?.toggleMeasureMode()"><i class="fas fa-ruler"></i></button>' +
+    '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Editar vértices" aria-label="Editar vértices" onclick="window.MapEngine?.toggleVertexEdit()"><i class="fas fa-bezier-curve"></i></button>' +
+    '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Capas" aria-label="Capas" onclick="document.getElementById(\'qgis-layer-control\')?.scrollIntoView({ behavior: \'smooth\', block: \'start\' })"><i class="fas fa-layer-group"></i></button>');
+
+  const projectGroup = groupWrap('Proyecto', 'fa-folder-open',
+    ['btn-project-rename', 'btn-project-delete', 'btn-project-validate', 'btn-project-audit']);
+  const exportGroup = groupWrap('Exportar', 'fa-file-export',
+    ['exportBtn', 'exportGeoJSONBtn', 'exportKMLBtn', 'exportProfessionalBtn']);
+
+  const input = byId('input-project-open');
+  const toolsPanel = make('div', 'hdr-group-panel');
+  Array.from(bar.children).forEach(el => {
+    if (el === input || el.classList.contains('hdr-group') || el.classList.contains('hdr-quick')) return;
+    if (el.classList.contains('header-action-separator')) { el.remove(); return; }
+    toolsPanel.appendChild(el);
+  });
+  const toolsGroup = make('div', 'hdr-group');
+  const toolsToggle = make('button', 'btn-tool header-icon-btn hdr-group-toggle', '<i class="fas fa-toolbox"></i>');
+  toolsToggle.type = 'button';
+  toolsToggle.title = 'Herramientas';
+  toolsToggle.setAttribute('aria-label', 'Herramientas');
+  toolsToggle.setAttribute('aria-expanded', 'false');
+  toolsGroup.append(toolsToggle, toolsPanel);
+
+  bar.replaceChildren(...[input, quick, projectGroup, exportGroup, toolsGroup].filter(Boolean));
+
+  bar.addEventListener('click', e => {
+    const toggle = e.target.closest('.hdr-group-toggle');
+    if (!toggle) return;
+    const group = toggle.parentElement;
+    document.querySelectorAll('#header-actions .hdr-group.open').forEach(g => { if (g !== group) g.classList.remove('open'); });
+    const open = group.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  const closeAll = () => document.querySelectorAll('#header-actions .hdr-group.open').forEach(g => {
+    g.classList.remove('open');
+    g.querySelector('.hdr-group-toggle')?.setAttribute('aria-expanded', 'false');
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.hdr-group-toggle')) closeAll(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+})();
+</script>
 
   <div class="fixed top-16 left-0 right-0 bottom-0 flex">
 
@@ -154,45 +229,56 @@
           <h3 id="stats-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
             <i class="fas fa-chart-pie mr-2"></i> Estado del Proyecto
           </h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-              <p class="text-[9px] text-slate-500 uppercase">Superficie</p>
-              <p class="leading-tight font-bold text-white" id="stat-area"><span class="block text-sm">0.00 mÂ²</span><span class="text-[10px] text-slate-500">0.0000 ha</span></p>
-            </div>
-            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-              <p class="text-[9px] text-slate-500 uppercase">Parcelas</p>
-              <p class="text-lg font-bold text-white" id="stat-count">0</p>
-            </div>
-            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-              <p class="text-[9px] text-slate-500 uppercase">Integridad</p>
-              <div id="stat-alerts" class="inline-block px-2 py-0.5 mt-1 text-[10px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Pendiente</div>
-            </div>
-            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800">
-              <p class="text-[9px] text-slate-500 uppercase">Zona UTM</p>
-              <p class="text-xs font-bold text-slate-200" id="stat-zone">21S / WGS84</p>
-            </div>
-            <div class="col-span-2 grid grid-cols-2 gap-3 rounded-xl border border-blue-500/20 bg-blue-950/20 p-3">
-              <div class="min-w-0 border-r border-slate-800 pr-3">
-                <p class="text-[9px] uppercase text-slate-500">Departamento</p>
-                <p id="stat-dpto-map" class="mt-1 truncate text-xs font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+          <div class="grid grid-cols-3 gap-1.5">
+              <div class="col-span-2 min-w-0 bg-slate-900/50 px-2 py-1.5 rounded-lg border border-slate-800">
+                <p class="text-[8px] text-slate-500 uppercase truncate">Superficie</p>
+                <p class="leading-tight font-bold text-white" id="stat-area"><span class="block text-[11px] whitespace-nowrap">0.00 m²</span><span class="text-[9px] text-slate-500">0.0000 ha</span></p>
               </div>
-              <div class="min-w-0">
-                <p class="text-[9px] uppercase text-slate-500">Distrito</p>
-                <p id="stat-dist-map" class="mt-1 truncate text-xs font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              <div class="min-w-0 bg-slate-900/50 px-2 py-1.5 rounded-lg border border-slate-800">
+                <p class="text-[8px] text-slate-500 uppercase truncate">Parcelas</p>
+                <p class="text-sm font-bold text-white" id="stat-count">0</p>
               </div>
+          </div>
+          <div class="mt-1.5 grid grid-cols-3 gap-1.5 rounded-lg border border-blue-500/20 bg-blue-950/20 p-1.5">
+            <div class="min-w-0">
+              <p class="text-[8px] uppercase text-slate-500 truncate">Departamento</p>
+              <p id="stat-dpto-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[8px] uppercase text-slate-500 truncate">Distrito</p>
+              <p id="stat-dist-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[8px] uppercase text-slate-500 truncate">Barrio</p>
+              <p id="stat-barrio" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
           </div>
         </section>
 
-        <!-- Panel de control de capas estilo QGIS -->
+        <!-- Capas: un solo árbol por carpetas con todas las herramientas -->
         <section id="qgis-layer-control" class="operational-section" aria-labelledby="layer-control-title">
-          <h3 id="layer-control-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
-            <span><i class="fas fa-layer-group mr-2"></i> Capas del Proyecto</span>
-            <div class="text-[8px] text-slate-400">Capas activas: <span id="layer-control-count">0</span></div>
+          <h3 id="layer-control-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
+            <span><i class="fas fa-map-location-dot mr-2"></i> Capas</span>
+            <span class="text-[8px] font-normal normal-case tracking-normal text-slate-400">Activas: <span id="layer-control-count">0</span></span>
           </h3>
-          <div id="layer-control-list" class="space-y-1 max-h-80 overflow-y-auto">
-            <!-- Capas cargadas se insertarÃ¡n dinÃ¡micamente -->
+          <div class="mb-2 flex items-center gap-2">
+            <label for="piribebuy-export-crs" class="shrink-0 text-[9px] text-slate-400" title="Proyección con la que se exportan el shapefile y sus coordenadas"><i class="fas fa-globe mr-0.5"></i> Exportar en</label>
+            <select id="piribebuy-export-crs" class="min-w-0 flex-1 rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 text-[9px] text-slate-200 focus:border-blue-500 focus:outline-none">
+              <option value="EPSG:32721" selected>UTM 21S (EPSG:32721)</option>
+              <option value="EPSG:4326">WGS84 grados (EPSG:4326)</option>
+              <option value="EPSG:32720">UTM 20S (EPSG:32720)</option>
+            </select>
+            <button id="piribebuy-crs-refresh" type="button" class="shrink-0 text-[9px] text-slate-500 hover:text-blue-400" title="Re-evaluar proyecciones de las capas" aria-label="Re-evaluar proyecciones"><i class="fas fa-rotate"></i></button>
+            <button type="button" onclick="window.MagService?.forceMagSync().then(() => window.showToast?.('Catálogo MAG actualizado (vigencia 15 días)', 'success'))" class="flex shrink-0 items-center gap-1 rounded-full border border-emerald-700/60 bg-emerald-950/80 px-2 py-0.5 text-[8px] text-emerald-300 hover:text-white" title="Sincronizar catálogo MAG (server.gis.mag.gov.py)"><i class="fas fa-arrows-rotate"></i> MAG 15d</button>
           </div>
+          <div id="piribebuyCrsReport" class="mb-2 space-y-1"></div>
+          <div class="mb-1 flex justify-end">
+            <button id="lp-new-folder" type="button" class="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[9px] text-slate-300 hover:text-white"><i class="fas fa-folder-plus"></i> Carpeta</button>
+            <button id="lp-new-layer" type="button" class="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[9px] text-slate-300 hover:text-white"><i class="fas fa-layer-group"></i> Capa</button>
+            <button id="lp-new-layer-exp" type="button" class="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[9px] text-slate-300 hover:text-white" title="Crear capa con las geometrías del expediente actual"><i class="fas fa-copy"></i> Desde expediente</button>
+          </div>
+          <div id="lp-tree" class="max-h-[28rem] space-y-0.5 overflow-y-auto rounded border border-slate-800 bg-slate-950/40 p-1"></div>
+          <p class="mt-1.5 pl-1 text-[8px] leading-relaxed text-slate-500">Casilla: mostrar u ocultar. Arrastra para mover. Menú ⋯: encuadrar, propiedades, renombrar y tabla de atributos. Doble clic en el nombre: renombrar.</p>
         </section>
 
         <!-- LAYERS -->
@@ -225,89 +311,6 @@
           </div>
         </section>
 
-        <!-- PIRIBEBUY (capas locales) -->
-        <!-- SECCIÃ“N AGROPECUARIA MAG CON SWITCHES MODERNOS (CICLO 15 DÃAS) -->
-        <section id="mag-layers-section" class="operational-section" aria-labelledby="mag-layers-title">
-          <div class="flex items-center justify-between mb-2">
-            <h3 id="mag-layers-title" class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-              <i class="fas fa-seedling text-emerald-400"></i> Capas Agropecuarias (MAG)
-            </h3>
-            <button type="button" onclick="window.MagService?.forceMagSync().then(() => window.showToast?.('CatÃ¡logo MAG actualizado (Vigencia 15 dÃ­as)', 'success'))" class="text-[8px] bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 hover:text-white px-2 py-0.5 rounded-full flex items-center gap-1 transition" title="Sincronizar ahora con server.gis.mag.gov.py">
-              <i class="fas fa-arrows-rotate"></i> 15d
-            </button>
-          </div>
-          <div class="space-y-1.5">
-            <div class="mag-switch-container">
-              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
-                <i class="fas fa-tractor text-amber-400 text-[10px]"></i> Uso de Tierra / Cultivos
-              </span>
-              <label class="modern-toggle-switch">
-                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'uso_tierra', this.checked)">
-                <span class="modern-toggle-slider"></span>
-              </label>
-            </div>
-            <div class="mag-switch-container">
-              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
-                <i class="fas fa-wheat-awn text-yellow-400 text-[10px]"></i> Cultivos Temporales (EUDR)
-              </span>
-              <label class="modern-toggle-switch">
-                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'cultivos_temporales', this.checked)">
-                <span class="modern-toggle-slider"></span>
-              </label>
-            </div>
-            <div class="mag-switch-container">
-              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
-                <i class="fas fa-tree text-emerald-400 text-[10px]"></i> Cultivos Permanentes (Yerba/CaÃ±a)
-              </span>
-              <label class="modern-toggle-switch">
-                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'cultivos_permanentes', this.checked)">
-                <span class="modern-toggle-slider"></span>
-              </label>
-            </div>
-            <div class="mag-switch-container">
-              <span class="text-[10px] text-slate-300 flex items-center gap-1.5">
-                <i class="fas fa-water text-cyan-400 text-[10px]"></i> Red HidrogrÃ¡fica Rural (MAG)
-              </span>
-              <label class="modern-toggle-switch">
-                <input type="checkbox" onchange="window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), 'hidrografia_rural', this.checked)">
-                <span class="modern-toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-          <div class="mt-2 flex items-center justify-between text-[8px] text-slate-500">
-            <span>server.gis.mag.gov.py</span>
-            <span class="text-emerald-400/90 font-medium flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> SincronizaciÃ³n cada 15 dÃ­as
-            </span>
-          </div>
-        </section>
-
-        <section id="piribebuy-layers-section" class="operational-section" aria-labelledby="piribebuy-title">
-          <h3 id="piribebuy-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
-            <span><i class="fas fa-map-location-dot mr-2"></i> Capas de Piribebuy</span>
-          </h3>
-
-          <!-- ProyecciÃ³n de exportaciÃ³n: fila compacta -->
-          <div class="mb-2 flex items-center gap-2">
-            <label for="piribebuy-export-crs" class="text-[9px] text-slate-400 shrink-0" title="ProyecciÃ³n con la que se exportan el shapefile y sus coordenadas">
-              <i class="fas fa-globe mr-0.5"></i> Exportar en
-            </label>
-            <select id="piribebuy-export-crs" class="flex-1 min-w-0 rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 text-[9px] text-slate-200 focus:border-blue-500 focus:outline-none">
-              <option value="EPSG:32721" selected>UTM 21S (EPSG:32721)</option>
-              <option value="EPSG:4326">WGS84 grados (EPSG:4326)</option>
-              <option value="EPSG:32720">UTM 20S (EPSG:32720)</option>
-            </select>
-            <button id="piribebuy-crs-refresh" class="text-[9px] text-slate-500 hover:text-blue-400 shrink-0" title="Re-evaluar proyecciones de las capas" aria-label="Re-evaluar proyecciones">
-              <i class="fas fa-rotate"></i>
-            </button>
-          </div>
-          <!-- Informe CRS: solo visible si alguna capa necesita atenciÃ³n -->
-          <div id="piribebuyCrsReport" class="mb-2 space-y-1"></div>
-
-          <!-- Tabla de contenido (LayerPanel): grupos, modos, leyenda, renombrar -->
-          <div id="content-panel-host"></div>
-          <p class="mt-1.5 pl-1 text-[8px] leading-relaxed text-slate-500">Doble clic en un nombre para renombrar. Clic derecho para mÃ¡s opciones.</p>
-        </section>
 
         <!-- COORDINATES -->
         <div id="geographic-location-section" class="operational-section p-4 bg-gradient-to-br from-slate-900 to-slate-950 border border-blue-500/20 rounded-xl relative group" aria-labelledby="coords-title">
@@ -353,6 +356,33 @@
       <div class="main-view active" id="view-map" role="tabpanel" aria-labelledby="tab-map">
         <div id="map" role="application" aria-label="Mapa catastral"></div>
 
+        <!-- KPI STRIP: métricas del proyecto activo (flotante top-center, no interfiere con zoom ni hamburguesa) -->
+        <div id="kpi-strip" class="absolute left-1/2 top-3 z-[950] -translate-x-1/2 flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-950/90 px-3 py-1.5 shadow-2xl backdrop-blur" role="status" aria-label="Métricas del proyecto" aria-live="polite">
+          <div class="flex items-center gap-1.5 px-2" title="Parcelas cargadas en el proyecto">
+            <i class="fas fa-box-archive text-[11px] text-blue-400"></i>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400">Parcelas</span>
+            <span id="kpi-parcelas" class="text-xs font-bold text-white">0</span>
+          </div>
+          <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
+          <div class="flex items-center gap-1.5 px-2" title="Área total SIG computada">
+            <i class="fas fa-ruler-combined text-[11px] text-emerald-400"></i>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400">Área</span>
+            <span id="kpi-area" class="text-xs font-bold text-white">0 m²</span>
+          </div>
+          <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
+          <div class="flex items-center gap-1.5 px-2" title="Vértices totales dibujados">
+            <i class="fas fa-draw-polygon text-[11px] text-purple-400"></i>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400">Vértices</span>
+            <span id="kpi-vertices" class="text-xs font-bold text-white">0</span>
+          </div>
+          <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
+          <div class="flex items-center gap-1.5 px-2" title="Resultado de la última validación">
+            <i class="fas fa-clipboard-check text-[11px] text-amber-400"></i>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400">Validación</span>
+            <span id="kpi-validacion" class="text-xs font-bold text-slate-500">—</span>
+          </div>
+        </div>
+
         <!-- INSPECTOR LATERAL -->
         <aside id="parcel-inspector" class="hidden absolute top-20 right-16 bottom-4 z-[1100] w-80 max-w-[calc(100%-5rem)] overflow-hidden rounded-xl border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur" aria-label="Inspector de parcela">
           <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
@@ -388,20 +418,24 @@
           </div>
         </aside>
 
+        <div id="map-bottom-left-stack" class="map-bottom-left-stack"></div>
+        <!-- Zona UTM sobre el mapa: centro inferior, sin fondo -->
+        <p class="pointer-events-none absolute bottom-2 left-1/2 z-[1000] -translate-x-1/2 whitespace-nowrap text-[11px] font-bold text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8)">Zona UTM: <span id="stat-zone-map">21S / WGS84</span></p>
         <!-- SELECTOR DE MAPA BASE (hamburguesa flotante derecha-arriba) -->
-        <div id="map-base-selector" class="map-selector-box absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
+        <div id="map-base-selector" class="absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
           <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
-                    <div id="map-base-menu" class="map-base-menu" hidden>
+          <div id="map-base-menu" class="map-base-menu" hidden>
             <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
               <span class="map-menu-heading">Mapa base</span>
-              <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (Por defecto)" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
-              <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false" aria-label="Mapa satelital Esri"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
-              <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Humanitario"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
-              <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="SNC Catastro Oficial" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
-              <button onclick="window.MapEngine?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="Oscuro OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Oscuro"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
-              <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Topográfico OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Topográfico"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
+              <button type="button" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (por defecto)" role="radio" aria-checked="true"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+              <button type="button" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+              <button type="button" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+              <button type="button" class="map-selector-btn" data-layer="catastro" title="SNC Catastro oficial" role="radio" aria-checked="false"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+              <button type="button" class="map-selector-btn" data-layer="carto_dark" title="Oscuro CartoDB" role="radio" aria-checked="false"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+              <button type="button" class="map-selector-btn" data-layer="topo" title="Topográfico OpenTopoMap" role="radio" aria-checked="false"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
             </div>
           </div>
+        </div>
 
         <!-- MAP TOOLS -->
         <div id="map-tools" class="operational-section absolute left-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
@@ -1116,8 +1150,8 @@
   <script type="module">
   import { CRS_LABELS, CRS_WKT } from '/js/crs.js';
   import LayerManager from '/js/layerManager.js';
-  import LayerPanel from '/js/layerPanel.js';
   import MapLegend from '/js/mapLegend.js';
+import OverviewMap from '/js/overviewMap.js';
   import * as AttributeTableUI from '/js/attributeTableUI.js';
   import { showToast } from '/js/utils.js';
 
@@ -1146,41 +1180,118 @@
   });
 
   /**
-   * Renderiza el informe CRS. Solo muestra capas que requieren ATENCIÃ“N
-   * (reproyectadas o no identificadas). Las correctas ya se ven como badge
-   * en el Ã¡rbol, asÃ­ que listarlas acÃ¡ serÃ­a duplicar informaciÃ³n y ocupar
-   * alto de pantalla sin aportar nada.
+   * Informe de proyección: lista lo que se aplicó a cada capa, se copia con un botón
+   * y se oculta solo tras unos segundos.
    */
-  function renderCrsReport() {
+  let crsReportTimer = null;
+  let crsReportLastKey = '';
+
+  function refreshHeaderContext() {
+    const file = document.getElementById('active-file-name');
+    if (file) {
+      const geo = window.State?.get?.('sourceGeoFileName') || '';
+      const data = window.State?.get?.('sourceDataFileName') || '';
+      const value = geo && data ? `${geo} + ${data}` : geo || data || 'Sin archivo cargado';
+      file.textContent = value;
+      file.title = value;
+    }
+    const session = document.getElementById('session-user');
+    if (session) {
+      let who = '';
+      try {
+        const user = JSON.parse(localStorage.getItem('snc_api_user') || 'null');
+        who = user?.name || user?.nombre || user?.username || user?.email || '';
+      } catch {
+        who = '';
+      }
+      session.textContent = who || 'Sin sesión';
+    }
+  }
+  window.State?.subscribe?.('sourceGeoFileName', refreshHeaderContext);
+  window.State?.subscribe?.('sourceDataFileName', refreshHeaderContext);
+  window.State?.subscribe?.('geojson', () => renderCrsReport());
+  window.addEventListener('storage', refreshHeaderContext);
+  window.addEventListener('focus', refreshHeaderContext);
+  refreshHeaderContext();
+
+  function reportCrsName(code) {
+    const names = { 'EPSG:32721': 'UTM 21S (EPSG:32721)', 'EPSG:32720': 'UTM 20S (EPSG:32720)', 'EPSG:4326': 'WGS84 (EPSG:4326)' };
+    return names[code] || code;
+  }
+
+  function crsReportLines(items) {
+    return items.map(item => {
+      if (item.corrected) {
+        return `${item.name}: reproyectada de ${reportCrsName(item.source)} a WGS84 (EPSG:4326) para el mapa; confianza ${Math.round(item.confidence * 100)} %.`;
+      }
+      if (!item.source) return `${item.name}: proyección no identificada; revisar manualmente.`;
+      return `${item.name}: sin cambios (${reportCrsName(item.source)}).`;
+    });
+  }
+
+  function hideCrsReport() {
+    clearTimeout(crsReportTimer);
+    const box = document.getElementById('piribebuyCrsReport');
+    if (box) {
+      box.hidden = true;
+      box.innerHTML = '';
+    }
+  }
+
+  function scheduleCrsReportHide() {
+    clearTimeout(crsReportTimer);
+    crsReportTimer = setTimeout(hideCrsReport, 10000);
+  }
+
+  function renderCrsReport(force = false) {
     const box = document.getElementById('piribebuyCrsReport');
     if (!box) return;
-    const list = (window.MapEngine?.listPiribebuyCrs?.() || [])
-      .filter(i => i.corrected || !i.source || i.confidence < 0.9);
-    if (!list.length) { box.innerHTML = ''; box.hidden = true; return; }
+    const items = (window.MapEngine?.listPiribebuyCrs?.() || []).filter(i => i.corrected || !i.source || i.confidence < 0.9);
+    if (!items.length) {
+      hideCrsReport();
+      return;
+    }
+    const key = items.map(i => `${i.id}:${i.source}:${i.corrected}`).join('|');
+    if (!force && key === crsReportLastKey) return;
+    crsReportLastKey = key;
+    const lines = crsReportLines(items);
+    box.dataset.report = ['Informe de proyección del expediente', ...lines].join('\n');
     box.hidden = false;
-    box.innerHTML = `<div class="text-[8px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">ProyecciÃ³n â€” requiere atenciÃ³n</div>` +
-      list.map(item => {
-        const conf = Math.round((item.confidence || 0) * 100);
-        const color = item.corrected ? 'text-emerald-400' : 'text-amber-400';
-        const icon = item.corrected ? 'fa-wand-magic-sparkles' : 'fa-triangle-exclamation';
-        const src = item.source ? CRS_LABEL(item.source) : 'no identificada';
-        return `<div class="flex items-start gap-1.5 rounded border border-slate-800 bg-slate-950/60 px-1.5 py-1">
-          <i class="fas ${icon} ${color} text-[9px] mt-0.5"></i>
-          <div class="min-w-0 flex-1">
-            <div class="text-[9px] font-bold text-slate-300 truncate">${item.name}</div>
-            <div class="text-[8px] ${color}">${src}${item.corrected ? ' Â· reproyectada' : ''} <span class="text-slate-600">(${conf}%)</span></div>
-          </div>
-        </div>`;
-      }).join('');
+    box.innerHTML = `<div class="rounded border border-emerald-700/40 bg-slate-950/80 p-1.5 text-[9px] text-slate-300">
+      <div class="mb-1 flex items-center justify-between gap-2">
+        <span class="font-bold uppercase tracking-wider text-emerald-400">Proyección aplicada</span>
+        <span class="flex shrink-0 gap-1">
+          <button type="button" data-crs-copy class="rounded bg-slate-800 px-1.5 py-0.5 text-[8px] hover:bg-slate-700"><i class="fas fa-copy"></i> Copiar</button>
+          <button type="button" data-crs-close class="rounded bg-slate-800 px-1.5 py-0.5 text-[8px] hover:bg-slate-700" aria-label="Cerrar informe">✕</button>
+        </span>
+      </div>
+      <ul class="space-y-0.5">${lines.map(l => `<li>${escapeAttr(l)}</li>`).join('')}</ul>
+    </div>`;
+    scheduleCrsReportHide();
   }
+
+  document.getElementById('piribebuyCrsReport')?.addEventListener('click', async e => {
+    if (e.target.closest('[data-crs-close]')) {
+      hideCrsReport();
+      return;
+    }
+    if (e.target.closest('[data-crs-copy]')) {
+      const text = document.getElementById('piribebuyCrsReport').dataset.report || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        window.showToast?.('Informe de proyección copiado', 'success');
+      } catch {
+        window.showToast?.('No se pudo copiar el informe', 'warning');
+      }
+    }
+  });
+
   window.PiribebuyCrs.render = renderCrsReport;
 
   // Refrescar el informe cuando cambie la visibilidad de una capa.
-  window.addEventListener('snc:layers-changed', () => {
-    setTimeout(renderCrsReport, 100);
-  });
+  window.addEventListener('snc:layers-changed', () => updateLayerControlPanel());
   document.getElementById('piribebuy-crs-refresh')?.addEventListener('click', () => {
-    renderCrsReport();
+    renderCrsReport(true);
     window.showToast?.('DiagnÃ³stico de proyecciÃ³n actualizado', 'info');
   });
 
@@ -1253,15 +1364,15 @@
   }
 
   const PIRI_DEFS = {
-    barrios:        { title: 'Barrios',               group: 'g_piri', geometryType: 'Polygon' },
-    vias:           { title: 'VÃ­as generales',        group: 'g_piri', geometryType: 'LineString' },
-    hidro:          { title: 'HidrografÃ­a',           group: 'g_piri', geometryType: 'LineString' },
-    vertedero:      { title: 'Vertedero',             group: 'g_piri', geometryType: 'Polygon' },
-    centro:         { title: 'Centro',                group: 'g_piri', geometryType: 'Point' },
-    vertedero_500:  { title: 'Buffer vertedero 500 m', group: 'g_piri', geometryType: 'Polygon' },
-    vertedero_1000: { title: 'Buffer vertedero 1000 m',group: 'g_piri', geometryType: 'Polygon' },
-    vuelo_casco:    { title: 'Vuelo casco histÃ³rico', group: 'g_piri', geometryType: 'Polygon' },
-    casco_historico:{ title: 'Casco HistÃ³rico',       group: 'g_piri', geometryType: 'Polygon' }
+    barrios:        { title: 'Barrios',               group: 'g_base', geometryType: 'Polygon' },
+    vias:           { title: 'Vías generales',        group: 'g_base', geometryType: 'LineString' },
+    hidro:          { title: 'Hidrografía',           group: 'g_base', geometryType: 'LineString' },
+    vertedero:      { title: 'Vertedero',             group: 'g_vert', geometryType: 'Polygon' },
+    centro:         { title: 'Centro',                group: 'g_vert', geometryType: 'Point' },
+    vertedero_500:  { title: 'Buffer vertedero 500 m', group: 'g_vert', geometryType: 'Polygon' },
+    vertedero_1000: { title: 'Buffer vertedero 1000 m',group: 'g_vert', geometryType: 'Polygon' },
+    vuelo_casco:    { title: 'Vuelo casco histórico', group: 'g_casco', geometryType: 'Polygon' },
+    casco_historico:{ title: 'Casco Histórico',       group: 'g_casco', geometryType: 'Polygon' }
   };
 
   function buildLayerTree() {
@@ -1273,8 +1384,10 @@
     // listaba capas temÃ¡ticas). Se puede quitar con la X o desde Propiedades.
     LayerManager.get('basemap').legend.hideInLegend = false;
 
-    // UN SOLO GRUPO: todas las capas juntas, solo separadas por carpetas.
-    LayerManager.registerGroup({ id: 'g_piri', title: 'Piribebuy' });
+    LayerManager.registerGroup({ id: 'g_piri', title: 'Municipio' });
+    LayerManager.registerGroup({ id: 'g_base', title: 'Base territorial', parentId: 'g_piri' });
+    LayerManager.registerGroup({ id: 'g_vert', title: 'Vertedero y entorno', parentId: 'g_piri' });
+    LayerManager.registerGroup({ id: 'g_casco', title: 'Casco histórico', parentId: 'g_piri' });
 
     const STYLES = window.MapEngine?._piribebuyStyles || null;
     for (const [id, def] of Object.entries(PIRI_DEFS)) {
@@ -1294,6 +1407,17 @@
       geometryType: 'Polygon'
     });
     LayerManager.get('snc-ref').legend.hideInLegend = true;
+    LayerManager.registerGroup({ id: 'g_mag', title: 'Agropecuario (MAG)' });
+    const MAG_LAYERS = [
+      ['uso_tierra', 'Uso de tierra / cultivos'],
+      ['cultivos_temporales', 'Cultivos temporales (EUDR)'],
+      ['cultivos_permanentes', 'Cultivos permanentes (yerba/caña)'],
+      ['hidrografia_rural', 'Red hidrográfica rural (MAG)']
+    ];
+    for (const [id, title] of MAG_LAYERS) {
+      LayerManager.registerLayer({ id, title, parentId: 'g_mag', sourceType: 'mag', sourcePath: 'server.gis.mag.gov.py', geometryType: 'Raster' });
+      LayerManager.get(id).visible = false;
+    }
     // Por defecto la referencia NO se muestra: solo aparece si el usuario la
     // activa. Y no figura en la leyenda salvo que se lo indique.
     LayerManager.get('snc-ref').visible = false;
@@ -1304,60 +1428,9 @@
     return true;
   }
 
-  function mountContentPanel() {
-    const host = document.getElementById('content-panel-host');
-    if (!host) return false;
-    return LayerPanel.mount(host, {
-      onToggleLayer: async (id, visible) => {
-        // Solo las capas de Piribebuy tienen cargador propio.
-        if (PIRI_DEFS[id]) {
-          await window.MapEngine?.togglePiribebuyLayer(id, visible);
-        } else if (id === 'snc-ref') {
-          // El checkbox del arbol maneja la capa VISUAL (opcional). La capa
-          // REMOTA se controla aparte, desde Propiedades.
-          await window.MapEngine?.toggleSNCReferenceLayer(visible);
-        }
-      },
-      onZoomLayer: (id) => {
-        if (PIRI_DEFS[id]) window.MapEngine?.zoomToPiribebuyLayer(id);
-        else window.MapEngine?.focusWorkPolygon();
-      },
-      // Etiquetado por atributo: al cambiar la config en Propiedades, se
-      // redibujan las etiquetas de la capa sobre el mapa.
-      onLabelChange: (id, config) => {
-        if (PIRI_DEFS[id]) {
-          const n = window.MapEngine?.setLayerLabelConfig?.(id, config) || 0;
-          if (config?.enabled && !n && !(config.field || config.expression)) {
-            showToast('ElegÃ­ una columna para mostrar en la etiqueta', 'warning');
-          }
-        }
-      }
-    });
-  }
 
   // Sincroniza la escala del visor para que los rangos minScale/maxScale funcionen.
-  function bindScaleSync() {
-    const map = window.MapEngine?.getMap?.();
-    if (!map) return;
-    const sync = () => {
-      LayerPanel.syncScaleFromMap(map);
-      // Las etiquetas pueden tener su propio rango de escala: al cambiar el
-      // zoom hay que reevaluar si corresponde mostrarlas.
-      if ((LayerManager.labelsActiveLayers?.()?.length || 0) > 0) {
-        window.MapEngine?.refreshAllLabels?.(LayerManager.currentScale ?? null);
-      }
-    };
-    map.on('zoomend', sync);
-    sync();
-  }
 
-  // Reconstruye el panel cuando se activa/desactiva una capa de Piribebuy,
-  // para que el Ã¡rbol refleje el estado real.
-  window.addEventListener('snc:layers-changed', () => {
-    const map = window.MapEngine?.getMap?.();
-    if (map) LayerPanel.syncScaleFromMap(map);
-    LayerPanel.render();
-  });
 
   /**
    * Carga en el mapa las capas que el modelo marca como visibles.
@@ -1395,115 +1468,610 @@
     }
 
     // Un solo refresco, ya con todas las capas dibujadas.
-    LayerPanel.render();
     window.MapEngine?.refreshActiveLayersUI?.();
     console.info(`Capas visibles cargadas en ${Math.round(performance.now() - t0)} ms`);
 
-    // Actualizar panel de control de capas
-  function updateLayerControlPanel() {
-    const layerControlList = document.getElementById('layer-control-list');
-    const layerControlCount = document.getElementById('layer-control-count');
-    if (!layerControlList || !layerControlCount) return;
-    
-    // Agrupar por grupos definidos en PIRI_DEFS (solo un grupo: g_piri)
-    const groups = {
-      g_piri: { title: 'Piribebuy', layers: [] }
-    };
-
-    for (const layerNode of allLayers) {
-      const def = window.PIRI_DEFS?.[layerNode.id];
-      const group = def?.group || 'g_piri';
-      if (!groups[group]) {
-        groups[group] = { title: group, layers: [] };
-      }
-      groups[group].layers.push({
-        id: layerNode.id,
-        title: layerNode.title || layerNode.id,
-        visible: layerNode.visible !== false
-      });
-    }
-
-    // TambiÃ©n incluir la referencia SNC si estÃ¡ registrada
-    const sncRefNode = LayerManager.get('snc-ref');
-    if (sncRefNode) {
-      groups['g_piri'] = groups['g_piri'] || { title: 'Piribebuy', layers: [] };
-      groups['g_piri'].layers.push({
-        id: 'snc-ref',
-        title: 'Referencia catastral SNC',
-        visible: sncRefNode.visible !== false
-      });
-    }
-    
-    // Construir el HTML del panel
-    let html = '';
-    let totalVisible = 0;
-    
-    for (const [groupId, group] of Object.entries(groups)) {
-      if (group.layers.length === 0) continue;
-      
-      html += `<div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800 mb-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">${group.title}</span>
-                    <span class="text-[8px] text-slate-500">${group.layers.length} capas</span>
-                  </div>`;
-      
-      group.layers.forEach((layer, index) => {
-        const checked = layer.visible ? 'checked' : '';
-        const layerId = layer.id;
-        const layerTitle = layer.title;
-        
-        html += `<label class="flex items-start gap-2 cursor-pointer select-none">
-                    <input type="checkbox" ${checked} 
-                           class="mt-0.5 accent-blue-500 layer-checkbox" 
-                           data-layer-id="${layerId}"
-                           aria-label="Mostrar/ocultar ${layerTitle}">
-                    <div class="flex-1 min-w-0">
-                      <div class="text-[9px] font-bold text-slate-300 truncate">${layerTitle}</div>
-                      <div class="text-[8px] text-slate-400">${layerId}</div>
-                    </div>
-                    <span class="text-[8px] text-slate-500">${index + 1}</span>
-                  </label>`;
-        
-        if (layer.visible) totalVisible++;
-      });
-      
-      html += `</div>`);
-    }
-    
-    layerControlList.innerHTML = html;
-    layerControlCount.textContent = totalVisible;
-    
-    // AÃ±adir event listeners a los checkboxs
-    document.querySelectorAll('.layer-checkbox').forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const layerId = this.getAttribute('data-layer-id');
-        toggleLayerVisibility(layerId, this.checked);
-      });
-    });
-  }
-  
-  // FunciÃ³n para alternar visibilidad de una capa
-  function toggleLayerVisibility(layerId, visible) {
-    // Evitar toggles mÃºltiples simultÃ¡neos
-    const layerNode = LayerManager.get(layerId);
-    if (!layerNode) return;
-    
-    // Actualizar visibilidad en LayerManager
-    layerNode.visible = visible;
-    
-    // Si es la referencia SNC, tambiÃ©n actualizar el motor del mapa
-    if (layerId === 'snc-ref') {
-      window.MapEngine?.toggleSNCReferenceLayer?.(visible);
-    } else {
-      // Para capas de Piribebuy, recargar la capa
-      window.MapEngine?.togglePiribebuyLayer?.(layerId, visible, { silent: true });
-    }
-    
-    // Actualizar panel y leyenda
     updateLayerControlPanel();
-    LayerPanel.render();
+  }
+
+  const layerPanelState = { expanded: new Set(['g_piri', 'g_base', 'g_vert', 'g_casco', 'g_mag']) };
+
+  function visibleTreeRoots() {
+    return LayerManager.roots.filter(id => LayerManager.get(id)?.sourceType !== 'basemap');
+  }
+
+  function renderLayerNode(id, depth, siblings) {
+    const n = LayerManager.get(id);
+    if (!n) return '';
+    const pos = siblings.indexOf(id);
+    const indent = `padding-left:${2 + depth * 12}px`;
+    const title = escapeAttr(n.title);
+
+    if (n.kind === 'group') {
+      const open = layerPanelState.expanded.has(id);
+      const kids = n.children.filter(k => LayerManager.get(k));
+      const visibleKids = kids.filter(k => LayerManager.get(k).visible).length;
+      return `<div>
+        <div class="lp-row group flex items-center gap-1 rounded px-1 py-0.5 hover:bg-slate-800/60" data-id="${id}" draggable="true" style="${indent}">
+          <button type="button" class="lp-group-toggle" data-action="expand" data-id="${id}" aria-expanded="${open}" title="${open ? 'Ocultar' : 'Mostrar'} subcapas">${open ? '▾' : '▸'}</button>
+          <input type="checkbox" class="lp-check accent-blue-500 shrink-0" data-action="toggle" data-id="${id}" ${n.visible ? 'checked' : ''} aria-label="Visibilidad de ${title}">
+          <span class="lp-title flex-1 min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-slate-300" title="${title}">${n.title}</span>
+          <span class="text-[8px] text-slate-500">${visibleKids}/${kids.length}</span>
+          <button type="button" data-action="delete-folder" data-id="${id}" class="shrink-0 text-[9px] text-slate-600 hover:text-red-400" title="Eliminar carpeta"><i class="fas fa-trash"></i></button>
+        </div>
+        ${open ? kids.map(k => renderLayerNode(k, depth + 1, kids)).join('') : ''}
+      </div>`;
+    }
+
+    const vector = n.sourceType === 'geojson';
+    const styles = window.MapEngine?._piribebuyStyles?.[id] || {};
+    const patch = n.renderer?.type === 'single' ? n.renderer.fill
+      : n.renderer?.type === 'unique' ? Object.values(n.renderer.colors)[0]
+      : (styles.fillColor || styles.color || '#94a3b8');
+    const notes = [
+      n.status === 'error' ? '<i class="fas fa-triangle-exclamation text-red-400" title="No se pudo cargar la fuente"></i>' : '',
+      LayerManager.isInScaleRange(id) ? '' : '<span class="text-[8px] text-slate-500">fuera de escala</span>'
+    ].join('');
+    const controls = vector ? `<button type="button" data-action="menu" data-id="${id}" class="lp-menu text-[10px] text-slate-500 hover:text-slate-200 shrink-0" title="Opciones de capa"><i class="fas fa-ellipsis-vertical"></i></button>` : '';
+    return `<div class="lp-row group flex items-center gap-1 rounded px-1 py-0.5 hover:bg-slate-800/60" data-id="${id}" draggable="true" style="${indent}">
+      <span class="w-3 shrink-0"></span>
+      <input type="checkbox" class="lp-check accent-blue-500 shrink-0" data-action="toggle" data-id="${id}" ${n.visible ? 'checked' : ''} aria-label="Visibilidad de ${title}">
+      <span class="lp-patch shrink-0 w-2.5 h-2.5 rounded-sm" style="background:${patch}"></span>
+      <div class="flex-1 min-w-0">
+        <span class="lp-title block truncate text-[10px] text-slate-200" title="${title}">${n.title}</span>
+        ${legendSwatches(n)}
+      </div>
+      ${notes}
+      ${controls}
+    </div>`;
+  }
+
+  function legendLayers() {
+    const engine = (window.MapEngine?.getActiveLayersInfo?.() || []).filter(l => l.baseMap || !LayerManager.get(l.id));
+    const tree = LayerManager.layers()
+      .filter(n => n.visible && n.sourceType !== 'basemap' && n.id !== 'snc-ref')
+      .map(n => {
+        const styles = window.MapEngine?._piribebuyStyles?.[n.id] || {};
+        const first = n.renderer?.type === 'unique' ? Object.values(n.renderer.colors)[0] : null;
+        const style = n.renderer?.type === 'single' ? { color: n.renderer.stroke, fillColor: n.renderer.fill }
+          : first ? { color: first, fillColor: first }
+          : { color: styles.color, fillColor: styles.fillColor, radius: styles.radius };
+        const title = LayerManager.isInScaleRange(n.id) ? n.title : `${n.title} (fuera de escala)`;
+        return { id: n.id, title, style, geometryType: n.geometryType, features: window.MapEngine?.getPiribebuyFeatures?.(n.id)?.length || 0 };
+      });
+    return [...engine, ...tree];
+  }
+
+  function renderBasemapRow() {
+    const active = document.querySelector('#map-base-menu [data-layer].active span');
+    const name = active ? active.textContent.trim() : 'OpenStreetMap';
+    return `<div class="flex items-center gap-1.5 rounded border-t border-slate-800 px-1 pt-1.5 mt-1">
+      <span class="w-3 shrink-0"></span>
+      <i class="fas fa-map text-[10px] text-blue-300 w-3 text-center"></i>
+      <span class="truncate text-[10px] text-slate-300">Mapa base: <strong class="text-blue-200">${escapeAttr(name)}</strong></span>
+    </div>`;
+  }
+  function updateLayerControlPanel() {
+    const list = document.getElementById('lp-tree');
+    const count = document.getElementById('layer-control-count');
+    if (!list || !count) return;
+    const roots = visibleTreeRoots();
+    list.innerHTML = roots.map(id => renderLayerNode(id, 0, roots)).join('');
+    list.insertAdjacentHTML('beforeend', renderBasemapRow());
+    count.textContent = LayerManager.layers().filter(n => n.visible && n.sourceType !== 'basemap').length;
+    if (list.dataset.bound !== 'true') {
+      list.dataset.bound = 'true';
+      list.addEventListener('click', onLayerPanelClick);
+      list.addEventListener('input', onLayerPanelInput);
+      list.addEventListener('dblclick', onLayerPanelDblClick);
+      list.addEventListener('dragstart', onLayerDragStart);
+      list.addEventListener('dragover', onLayerDragOver);
+      list.addEventListener('drop', onLayerDrop);
+      list.addEventListener('dragend', () => { dragId = null; clearDropMarks(); });
+      document.getElementById('lp-new-folder')?.addEventListener('click', createFolder);
+      document.getElementById('lp-new-layer')?.addEventListener('click', () => createUserLayer(false));
+      document.getElementById('lp-new-layer-exp')?.addEventListener('click', () => createUserLayer(true));
+      list.addEventListener('change', e => {
+        if (e.target.dataset.action === 'toggle') toggleLayerVisibility(e.target.dataset.id, e.target.checked);
+      });
+    }
+  }
+
+  function applyDrawOrderToMap() {
+    const order = [];
+    LayerManager.walk(n => { if (n.kind === 'layer' && n.sourceType !== 'basemap' && n.id !== 'snc-ref') order.push(n.id); });
+    window.MapEngine?.setPiribebuyDrawOrder?.(order);
+  }
+
+
+  function toSentenceCase(text) {
+    const t = text.trim().toLowerCase();
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
+  function startRename(id, titleEl) {
+    const n = LayerManager.get(id);
+    if (!n) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = n.title;
+    input.setAttribute('aria-label', 'Nuevo nombre');
+    input.className = 'min-w-0 flex-1 rounded border border-blue-500 bg-slate-800 px-1 py-0.5 text-[10px] text-white focus:outline-none';
+    const bar = document.createElement('span');
+    bar.className = 'flex shrink-0 gap-0.5';
+    bar.innerHTML = '<button type="button" data-case="upper" class="rounded bg-slate-700 px-1 text-[8px] text-slate-200 hover:bg-slate-600" title="Todo en mayúsculas">AA</button>'
+      + '<button type="button" data-case="sentence" class="rounded bg-slate-700 px-1 text-[8px] text-slate-200 hover:bg-slate-600" title="Tipo oración">Aa</button>';
+    titleEl.replaceWith(input);
+    input.after(bar);
+    input.focus();
+    input.select();
+
+    let done = false;
+    const finish = save => {
+      if (done) return;
+      done = true;
+      const value = input.value.trim();
+      if (save && value) n.title = value;
+      updateLayerControlPanel();
+      window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+    };
+    bar.addEventListener('mousedown', e => e.preventDefault());
+    bar.addEventListener('click', e => {
+      const kind = e.target.closest('[data-case]')?.dataset.case;
+      if (!kind) return;
+      input.value = kind === 'upper' ? input.value.toUpperCase() : toSentenceCase(input.value);
+      input.focus();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') finish(true);
+      else if (e.key === 'Escape') finish(false);
+    });
+    input.addEventListener('blur', () => finish(true));
+  }
+
+  function onLayerPanelDblClick(e) {
+    const title = e.target.closest('.lp-title');
+    const row = e.target.closest('[data-id]');
+    if (title && row) startRename(row.dataset.id, title);
+  }
+
+  let dragId = null;
+
+  function clearDropMarks() {
+    document.querySelectorAll('#lp-tree [data-drop]').forEach(el => el.removeAttribute('data-drop'));
+  }
+
+  function dropZoneFor(e, row) {
+    const r = row.getBoundingClientRect();
+    const y = (e.clientY - r.top) / r.height;
+    const node = LayerManager.get(row.dataset.id);
+    if (node?.kind === 'group' && y > 0.25 && y < 0.75) return 'into';
+    return y < 0.5 ? 'before' : 'after';
+  }
+
+  function onLayerDragStart(e) {
+    const row = e.target.closest('.lp-row[data-id]');
+    if (!row) return;
+    dragId = row.dataset.id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragId);
+  }
+
+  function onLayerDragOver(e) {
+    if (!dragId) return;
+    e.preventDefault();
+    clearDropMarks();
+    const row = e.target.closest('.lp-row[data-id]');
+    if (!row) {
+      document.getElementById('lp-tree').dataset.drop = 'root';
+      return;
+    }
+    row.dataset.drop = dropZoneFor(e, row);
+  }
+
+  function finishDrop() {
+    dragId = null;
+    clearDropMarks();
+    document.getElementById('lp-tree')?.removeAttribute('data-drop');
+    applyDrawOrderToMap();
+    updateLayerControlPanel();
+    window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+  }
+
+  function onLayerDrop(e) {
+    if (!dragId) return;
+    e.preventDefault();
+    const id = dragId;
+    const row = e.target.closest('.lp-row[data-id]');
+    if (!row) {
+      LayerManager.move(id, null);
+      finishDrop();
+      return;
+    }
+    const target = row.dataset.id;
+    if (target === id) {
+      finishDrop();
+      return;
+    }
+    const zone = dropZoneFor(e, row);
+    if (zone === 'into') {
+      LayerManager.move(id, target);
+    } else {
+      const parentId = LayerManager.get(target)?.parentId ?? null;
+      if ((LayerManager.get(id)?.parentId ?? null) !== parentId) LayerManager.move(id, parentId);
+      const siblings = (parentId === null ? LayerManager.roots : LayerManager.get(parentId).children).filter(s => s !== id);
+      const idx = siblings.indexOf(target);
+      LayerManager.reorder(id, zone === 'before' ? idx : idx + 1);
+    }
+    finishDrop();
+  }
+
+  function createFolder() {
+    const name = (window.prompt('Nombre de la carpeta:') || '').trim();
+    if (!name) return;
+    LayerManager.registerGroup({ id: `g_user_${Date.now()}`, title: name, parentId: null });
+    updateLayerControlPanel();
+    window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+  }
+
+  function deleteFolder(id) {
+    const n = LayerManager.get(id);
+    if (!n || n.kind !== 'group') return;
+    const hasLayers = n.children.length > 0;
+    if (!window.confirm(`¿Eliminar la carpeta "${n.title}"?${hasLayers ? ' Sus capas pasan al nivel principal.' : ''}`)) return;
+    LayerManager.removeGroup(id);
+    applyDrawOrderToMap();
+    window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+  }
+
+
+  function onLayerPanelClick(e) {
+    const el = e.target.closest('[data-action]');
+    if (!el || el.tagName !== 'BUTTON') return;
+    const { action, id } = el.dataset;
+    if (action === 'expand') {
+      if (layerPanelState.expanded.has(id)) layerPanelState.expanded.delete(id);
+      else layerPanelState.expanded.add(id);
+      updateLayerControlPanel();
+    } else if (action === 'toggle') {
+      toggleLayerVisibility(id, !LayerManager.get(id).visible);
+    } else if (action === 'menu') {
+      openRowMenu(id, el);
+    } else if (action === 'zoom') {
+      window.MapEngine?.zoomToPiribebuyLayer?.(id);
+    } else if (action === 'props') {
+      openLayerProperties(id);
+    } else if (action === 'delete-folder') {
+      deleteFolder(id);
+    }
+  }
+
+  function onLayerPanelInput(e) {
+    const el = e.target;
+    if (el.dataset.action !== 'opacity') return;
+    const value = Number(el.value) / 100;
+    LayerManager.get(el.dataset.id).opacity = value;
+    window.MapEngine?.setPiribebuyOpacity?.(el.dataset.id, value);
+  }
+
+  function escapeAttr(value) {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function parseScaleInput(raw) {
+    const n = Number(String(raw).trim());
+    return raw === '' || !Number.isFinite(n) || n <= 0 ? null : n;
+  }
+
+  function hslToHex(h, s, l) {
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+      return Math.round(c * 255).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  function categoryPalette(count) {
+    return Array.from({ length: count }, (_, i) => hslToHex((i * 360) / Math.max(count, 1), 0.7, 0.55));
+  }
+
+  function legendSwatches(n) {
+    if (n.renderer?.type !== 'unique') return '';
+    return `<div class="mt-0.5 flex flex-wrap gap-0.5">${Object.values(n.renderer.colors).slice(0, 8)
+      .map(c => `<span style="background:${c}" class="inline-block h-2 w-2 rounded-sm"></span>`).join('')}</div>`;
+  }
+
+  let rowMenuEl = null;
+
+  function closeRowMenu() {
+    rowMenuEl?.remove();
+    rowMenuEl = null;
+  }
+
+  function openRowMenu(id, btn) {
+    closeRowMenu();
+    const n = LayerManager.get(id);
+    const r = btn.getBoundingClientRect();
+    const items = [
+      ['zoom', 'fa-crosshairs', 'Encuadrar'],
+      ['props', 'fa-sliders', 'Propiedades'],
+      ['rename', 'fa-pen', 'Renombrar'],
+      ['table', 'fa-table', 'Tabla de atributos']
+    ];
+    if (n?.sourceType === 'geojson') items.push(['duplicate', 'fa-copy', 'Duplicar capa']);
+    if (n?.sourceType === 'geojson') items.push(['export', 'fa-download', 'Exportar GeoJSON']);
+    if (n?.sourcePath === 'usuario') items.push(['delete', 'fa-trash', 'Eliminar capa']);
+    const menu = document.createElement('div');
+    menu.id = 'lp-row-menu';
+    menu.className = 'fixed z-[4400] w-44 rounded-lg border border-slate-700 bg-slate-900 p-1 text-[10px] text-slate-200 shadow-xl';
+    menu.style.top = `${r.bottom + 4}px`;
+    menu.style.left = `${Math.max(8, r.right - 176)}px`;
+    menu.innerHTML = items.map(([action, icon, label]) => `<button type="button" data-menu-action="${action}" data-id="${id}" class="flex w-full items-center gap-2 rounded px-2 py-1 text-left hover:bg-slate-800 ${action === 'delete' ? 'text-red-300' : ''}"><i class="fas ${icon} w-3 text-center text-slate-400"></i>${label}</button>`).join('');
+    document.body.appendChild(menu);
+    rowMenuEl = menu;
+  }
+
+  function runMenuAction(action, id) {
+    if (action === 'zoom') {
+      window.MapEngine?.zoomToPiribebuyLayer?.(id);
+    } else if (action === 'props') {
+      openLayerProperties(id);
+    } else if (action === 'rename') {
+      const title = document.querySelector(`#lp-tree .lp-row[data-id="${id}"] .lp-title`);
+      if (title) startRename(id, title);
+    } else if (action === 'table') {
+      window.dispatchEvent(new CustomEvent('snc:open-attribute-table', { detail: { layerId: id } }));
+    } else if (action === 'duplicate') {
+      duplicateLayer(id);
+    } else if (action === 'export') {
+      exportLayerGeojson(id);
+    } else if (action === 'delete') {
+      deleteUserLayer(id);
+    }
+  }
+
+  function exportLayerGeojson(id) {
+    const n = LayerManager.get(id);
+    const target = window.PiribebuyCrs?.exportCrs?.() || 'EPSG:32721';
+    const fc = window.MapEngine?.exportPiribebuyLayer?.(id, target);
+    if (!fc || !fc.features?.length) {
+      window.showToast?.('La capa no tiene entidades para exportar', 'warning');
+      return;
+    }
+    const base = (n?.title || id).replace(/[^\p{L}\p{N}_-]+/gu, '_');
+    const url = URL.createObjectURL(new Blob([JSON.stringify(fc)], { type: 'application/geo+json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${base}_${target.replace(':', '_')}.geojson`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function createUserLayer(fromExpediente) {
+    const name = (window.prompt('Nombre de la capa:') || '').trim();
+    if (!name) return;
+    const source = fromExpediente ? (window.State?.get?.('geojson')?.features || []) : [];
+    if (fromExpediente && !source.length) {
+      window.showToast?.('No hay expediente cargado para copiar', 'warning');
+      return;
+    }
+    const id = `u_${Date.now()}`;
+    LayerManager.registerLayer({ id, title: name, parentId: null, sourceType: 'geojson', sourcePath: 'usuario', geometryType: 'Polygon' });
+    LayerManager.get(id).visible = false;
+    window.MapEngine?.registerUserLayer?.(id, { type: 'FeatureCollection', features: source.map(f => JSON.parse(JSON.stringify(f))) });
+    await toggleLayerVisibility(id, true);
+  }
+
+  async function duplicateLayer(id) {
+    const src = LayerManager.get(id);
+    if (!src) return;
+    if (!(window.MapEngine?.getPiribebuyFeatures?.(id)?.length)) {
+      await window.MapEngine?.togglePiribebuyLayer?.(id, true, { silent: true, deferRefresh: true });
+    }
+    const features = (window.MapEngine?.getPiribebuyFeatures?.(id) || []).map(f => JSON.parse(JSON.stringify(f)));
+    const newId = `u_${Date.now()}`;
+    LayerManager.registerLayer({ id: newId, title: `${src.title} (copia)`, parentId: src.parentId ?? null, sourceType: 'geojson', sourcePath: 'usuario', geometryType: src.geometryType });
+    const node = LayerManager.get(newId);
+    node.renderer = src.renderer ? JSON.parse(JSON.stringify(src.renderer)) : undefined;
+    node.opacity = src.opacity;
+    node.visible = false;
+    window.MapEngine?.registerUserLayer?.(newId, { type: 'FeatureCollection', features });
+    await toggleLayerVisibility(newId, true);
+  }
+
+  function deleteUserLayer(id) {
+    const n = LayerManager.get(id);
+    if (!n || n.sourcePath !== 'usuario') return;
+    if (!window.confirm(`¿Eliminar la capa "${n.title}"? No se puede deshacer.`)) return;
+    window.MapEngine?.removePiribebuyLayer?.(id);
+    LayerManager.remove(id);
+    applyDrawOrderToMap();
+    window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+  }
+
+
+  document.addEventListener('click', e => {
+    const item = e.target.closest('[data-menu-action]');
+    if (item) {
+      const { menuAction, id } = item.dataset;
+      closeRowMenu();
+      runMenuAction(menuAction, id);
+      return;
+    }
+    if (rowMenuEl && !e.target.closest('[data-action="menu"]')) closeRowMenu();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRowMenu(); });
+
+  function openLayerProperties(id) {
+    const n = LayerManager.get(id);
+    if (!n) return;
+    document.getElementById('layer-props-modal')?.remove();
+    const features = window.MapEngine?.getPiribebuyFeatures?.(id) ?? [];
+    const fields = [...new Set(features.slice(0, 200).flatMap(f => Object.keys(f.properties || {})))];
+    const opacityPct = Math.round((n.opacity ?? 1) * 100);
+    const renderer = n.renderer?.type === 'unique' ? 'unique' : 'single';
+    const single = n.renderer?.type === 'single' ? n.renderer : { fill: '#f97316', stroke: '#f97316', weight: 2 };
+    const field = 'w-full rounded border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] text-white';
+    const modal = document.createElement('div');
+    modal.id = 'layer-props-modal';
+    modal.className = 'fixed inset-0 z-[4500] flex items-center justify-center bg-black/60 p-4';
+    modal.innerHTML = `<div role="dialog" aria-modal="true" aria-labelledby="layer-props-title" class="max-h-[90vh] w-full max-w-sm space-y-3 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 p-4 text-slate-200 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 id="layer-props-title" class="truncate text-xs font-bold">${escapeAttr(n.title)}</h3>
+        <button type="button" data-props="cancel" class="text-slate-400 hover:text-white" aria-label="Cerrar">✕</button>
+      </div>
+      <section class="space-y-2">
+        <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500">General</h4>
+        <label class="block text-[10px] text-slate-400">Nombre
+          <input id="lp-title" class="${field}" value="${escapeAttr(n.title)}">
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block text-[10px] text-slate-400">Escala mínima (1:)
+            <input id="lp-minscale" type="number" min="1" step="1000" class="${field}" value="${n.minScale ?? ''}" placeholder="sin límite">
+          </label>
+          <label class="block text-[10px] text-slate-400">Escala máxima (1:)
+            <input id="lp-maxscale" type="number" min="1" step="1000" class="${field}" value="${n.maxScale ?? ''}" placeholder="sin límite">
+          </label>
+        </div>
+        <label class="block text-[10px] text-slate-400">Transparencia (<span id="lp-opacity-out">${opacityPct}</span>%)
+          <input id="lp-opacity" type="range" min="0" max="100" step="5" value="${opacityPct}" class="mt-1 w-full accent-blue-500">
+        </label>
+      </section>
+      <section class="space-y-2">
+        <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Simbología</h4>
+        <select id="lp-renderer" class="${field}">
+          <option value="single" ${renderer === 'single' ? 'selected' : ''}>Símbolo único</option>
+          <option value="unique" ${renderer === 'unique' ? 'selected' : ''}>Valores únicos (categorías)</option>
+        </select>
+        <div id="lp-single" class="space-y-2" ${renderer === 'single' ? '' : 'hidden'}>
+          <label class="flex items-center justify-between text-[10px] text-slate-400">Relleno <input id="lp-fill" type="color" value="${single.fill}"></label>
+          <label class="flex items-center justify-between text-[10px] text-slate-400">Contorno <input id="lp-stroke" type="color" value="${single.stroke}"></label>
+          <label class="flex items-center justify-between text-[10px] text-slate-400">Grosor <input id="lp-weight" type="number" min="0" max="10" step="0.5" value="${single.weight}" class="w-20 rounded border border-slate-700 bg-slate-800 px-1 py-0.5 text-white"></label>
+        </div>
+        <div id="lp-unique" class="space-y-2" ${renderer === 'unique' ? '' : 'hidden'}>
+          <select id="lp-field" class="${field}">
+            ${fields.map(f => `<option value="${escapeAttr(f)}" ${n.renderer?.field === f ? 'selected' : ''}>${escapeAttr(f)}</option>`).join('')}
+          </select>
+          <button type="button" data-props="categories" class="rounded bg-slate-800 px-2 py-1 text-[10px] hover:bg-slate-700">Generar categorías</button>
+          <div id="lp-cats" class="max-h-32 space-y-1 overflow-y-auto"></div>
+        </div>
+      </section>
+      <section class="space-y-1">
+        <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Metadatos</h4>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[10px]">
+          <dt class="text-slate-500">Origen</dt><dd class="truncate">${escapeAttr(n.sourcePath || '—')}</dd>
+          <dt class="text-slate-500">Tipo de fuente</dt><dd>${escapeAttr(n.sourceType || '—')}</dd>
+          <dt class="text-slate-500">Geometría</dt><dd>${escapeAttr(n.geometryType || '—')}</dd>
+          <dt class="text-slate-500">Coordenadas</dt><dd>EPSG:4326 (WGS84)</dd>
+          <dt class="text-slate-500">Entidades</dt><dd>${features.length}</dd>
+          <dt class="text-slate-500">Grupo</dt><dd class="truncate">${escapeAttr(LayerManager.get(n.parentId)?.title || 'Nivel principal')}</dd>
+          <dt class="text-slate-500">Campos</dt><dd class="truncate">${escapeAttr(fields.join(', ') || '—')}</dd>
+        </dl>
+      </section>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" data-props="cancel" class="rounded bg-slate-800 px-3 py-1.5 text-[11px] hover:bg-slate-700">Cancelar</button>
+        <button type="button" data-props="save" class="rounded bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-500">Aceptar</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+
+    modal.addEventListener('input', e => {
+      if (e.target.id === 'lp-opacity') modal.querySelector('#lp-opacity-out').textContent = e.target.value;
+    });
+    modal.addEventListener('change', e => {
+      if (e.target.id !== 'lp-renderer') return;
+      const unique = e.target.value === 'unique';
+      modal.querySelector('#lp-single').hidden = unique;
+      modal.querySelector('#lp-unique').hidden = !unique;
+    });
+    modal.addEventListener('click', e => {
+      const action = e.target.closest('[data-props]')?.dataset.props;
+      if (action === 'cancel') modal.remove();
+      if (action === 'save') saveLayerProperties(id, modal);
+      if (action === 'categories') buildCategoryEditor(id, modal);
+    });
+    modal.addEventListener('keydown', e => { if (e.key === 'Escape') modal.remove(); });
+    modal.querySelector('#lp-title').focus();
+  }
+
+
+  function buildCategoryEditor(id, modal) {
+    const field = modal.querySelector('#lp-field').value;
+    const features = window.MapEngine?.getPiribebuyFeatures?.(id) ?? [];
+    const counts = new Map();
+    features.forEach(f => {
+      const v = String(f.properties?.[field] ?? '');
+      counts.set(v, (counts.get(v) || 0) + 1);
+    });
+    const values = [...counts.keys()].sort();
+    const previous = LayerManager.get(id).renderer?.colors || {};
+    const palette = categoryPalette(values.length);
+    modal.querySelector('#lp-cats').innerHTML = values.length === 0
+      ? '<p class="text-[10px] text-slate-500">Sin valores en este campo.</p>'
+      : values.map((v, i) => `<label class="flex items-center justify-between gap-2 text-[10px] text-slate-300">
+          <span class="flex items-center gap-2"><input type="color" data-cat="${escapeAttr(v)}" value="${previous[v] || palette[i]}"> ${escapeAttr(v || '(vacío)')}</span>
+          <span class="text-slate-500">${counts.get(v)}</span></label>`).join('');
+  }
+
+  function saveLayerProperties(id, modal) {
+    const n = LayerManager.get(id);
+    const minScale = parseScaleInput(modal.querySelector('#lp-minscale').value);
+    const maxScale = parseScaleInput(modal.querySelector('#lp-maxscale').value);
+    if (minScale !== null && maxScale !== null && minScale < maxScale) {
+      showToast('La escala mínima debe ser mayor (más alejada) que la máxima', 'warning');
+      return;
+    }
+    let renderer;
+    if (modal.querySelector('#lp-renderer').value === 'unique') {
+      const colors = {};
+      modal.querySelectorAll('[data-cat]').forEach(input => { colors[input.dataset.cat] = input.value; });
+      if (Object.keys(colors).length === 0) {
+        showToast('Genera las categorías antes de aceptar', 'warning');
+        return;
+      }
+      renderer = { type: 'unique', field: modal.querySelector('#lp-field').value, colors };
+    } else {
+      renderer = {
+        type: 'single',
+        fill: modal.querySelector('#lp-fill').value,
+        stroke: modal.querySelector('#lp-stroke').value,
+        weight: Number(modal.querySelector('#lp-weight').value) || 0
+      };
+    }
+    n.title = modal.querySelector('#lp-title').value.trim() || n.title;
+    n.minScale = minScale;
+    n.maxScale = maxScale;
+    window.MapEngine?.setPiribebuyRenderer?.(id, renderer);
+    window.MapEngine?.setPiribebuyOpacity?.(id, Number(modal.querySelector('#lp-opacity').value) / 100);
+    window.MapEngine?.syncPiribebuyScaleRange?.();
+    modal.remove();
+    updateLayerControlPanel();
+  }
+
+
+  async function toggleLayerVisibility(layerId, visible) {
+    const before = new Map(LayerManager.layers().map(n => [n.id, n.visible]));
+    LayerManager.setVisible(layerId, visible);
+    const changed = LayerManager.layers().filter(n => n.sourceType !== 'basemap' && n.visible !== before.get(n.id));
+    for (const n of changed) {
+      try {
+        if (n.id === 'snc-ref') window.MapEngine?.toggleSNCReferenceLayer?.(n.visible);
+        else if (n.sourceType === 'mag') await window.MagService?.toggleMagLayer(window.MapEngine?.getMap(), n.id, n.visible);
+        else await window.MapEngine?.togglePiribebuyLayer?.(n.id, n.visible, { silent: true, deferRefresh: true });
+      } catch (err) {
+        console.warn(`No se pudo ${n.visible ? 'mostrar' : 'ocultar'} la capa ${n.id}`, err);
+        n.status = 'error';
+      }
+    }
+    applyDrawOrderToMap();
+    updateLayerControlPanel();
     window.MapEngine?.refreshActiveLayersUI?.();
   }
+
 
   /**
    * Espera a que el mapa estÃ© realmente listo, en vez de dormir un tiempo fijo.
@@ -1530,15 +2098,11 @@
       console.warn('El mapa no quedÃ³ listo en 15 s; se monta el panel igual.');
     }
     buildLayerTree();
-    if (mountContentPanel()) {
-      bindScaleSync();
-      // Reflejar el estado inicial real de las capas visibles.
-      LayerPanel.render();
-    }
+    updateLayerControlPanel();
     // Leyenda unificada DENTRO del mapa (abajo a la izquierda): fusiona el
     // antiguo "ðŸ“ Capas Activas" con la secciÃ³n "Leyenda" del panel.
     MapLegend.mount(document.getElementById('view-map'), {
-      getActiveLayers: () => window.MapEngine?.getActiveLayersInfo?.() || [],
+      getActiveLayers: legendLayers,
       onZoomLayer: (id) => {
         if (window.MapEngine?.getPiribebuyFeatures?.(id)?.length) {
           window.MapEngine.zoomToPiribebuyLayer(id);
@@ -1547,6 +2111,7 @@
         }
       }
     });
+    OverviewMap.mount(document.getElementById('view-map'), window.MapEngine?.getMap?.());
     // Dibujar las capas que el panel muestra como activas.
     loadVisibleLayers();
   });
@@ -1758,6 +2323,7 @@
     </div>
 </div>
   </div>
+  <script src="/js/mapLayoutManager.js"></script>
   <script src="/js/basemapMenu.js"></script>
 </body>
 </html>

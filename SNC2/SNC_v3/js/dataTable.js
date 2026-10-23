@@ -5,7 +5,7 @@
 
 import { State } from './state.js';
 import { CAMPOS_REQUERIDOS } from './config.js';
-import { sanitizeString, showToast } from './utils.js';
+import { sanitizeString, showToast, downloadFile } from './utils.js';
 import { GeometryHistory } from './geometryHistory.js';
 import { logger } from './logger.js';
 
@@ -444,3 +444,56 @@ export async function autoCompleteWithSNC() {
         showToast(`❌ ${error.message || 'Ocurrió un error en el autocompletado'}`, 'error');
     }
 }
+
+/** Exporta los datos de las parcelas en GeoJSON o JSON */
+export function exportData(format = 'geojson') {
+    const geojson = State.get('geojson');
+    const excelData = State.get('excelData') || [];
+
+    if (format === 'geojson') {
+        if (!geojson || !geojson.features?.length) {
+            showToast('No hay geometrías cargadas para exportar en GeoJSON', 'warning');
+            return;
+        }
+        const filename = (State.get('sourceGeoFileName') || 'expediente_parcelas').replace(/\.[^/.]+$/, '') + '.geojson';
+        downloadFile(JSON.stringify(geojson, null, 2), filename, 'application/geo+json');
+        showToast('Expediente exportado como ' + filename, 'success');
+    } else if (format === 'json') {
+        const dataToExport = excelData.length > 0 ? excelData : (geojson?.features?.map(f => f.properties) || []);
+        if (!dataToExport.length) {
+            showToast('No hay registros en la tabla para exportar', 'warning');
+            return;
+        }
+        const filename = 'listado_parcelas.json';
+        downloadFile(JSON.stringify(dataToExport, null, 2), filename, 'application/json');
+        showToast('Listado exportado como ' + filename, 'success');
+    }
+}
+
+// ── Exposición global ─────────────────────────────────────────────────────────
+// index.html invoca window.DataTable?.render/undoAttributeEdit/redoAttributeEdit/
+// autoCompleteWithSNC/editRow/..., y mapEngine.js llama a window.DataTable?.render()
+// tras cargar geometrías. Este módulo nunca se asignaba a `window`, así que la
+// vista "Datos" quedaba vacía y los tres botones no hacían nada.
+// (app/index.js lo importa como módulo con nombre, que NO crea la global.)
+window.DataTable = {
+    render,
+    selectRow,
+    selectByParcelNumber,
+    clearSelection,
+    editRow,
+    cancelEdit,
+    saveRow,
+    undoAttributeEdit,
+    redoAttributeEdit,
+    updateCell,
+    addRow,
+    deleteRow,
+    saveToExcel,
+    togglePin,
+    loadTemplateFromLink,
+    autoCompleteWithSNC,
+    exportData
+};
+
+export default window.DataTable;

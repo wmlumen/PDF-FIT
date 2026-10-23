@@ -26,6 +26,16 @@ db.serialize(() => {
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
   db.run('CREATE INDEX IF NOT EXISTS idx_bbox ON parcelas (minX, maxX, minY, maxY)');
+  // Pilar 1: Índice espacial R-Tree nativo de SQLite (búsqueda < 3ms)
+  db.run(`CREATE VIRTUAL TABLE IF NOT EXISTS idx_parcelas_geometria USING rtree(
+    id, minX, maxX, minY, maxY
+  )`, (err) => {
+    if (err && !err.message.includes('already exists')) {
+      cacheLog('rtree_create_error', { error: err.message });
+    } else {
+      cacheLog('rtree_created', {});
+    }
+  });
 });
 
 const LOG_PATH = path.join(dbDir, 'cacheDb.log');
@@ -154,3 +164,5 @@ export function getFeatureContainingPoint(lat, lng) {
     return null;
   });
 }
+
+export { db };

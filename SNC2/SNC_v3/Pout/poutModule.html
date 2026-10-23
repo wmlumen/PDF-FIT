@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POUT Municipal — SNC_v3</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/Pout/poutModule.css">
+  <style>/* Heredados de Sistema-POUT-Municipal.html */
+  :root {
+    --bg:        var(--color-bg, #f8fafc);
+    --card:      var(--color-card, #ffffff);
+    --ink:       var(--color-text, #1e293b);
+    --muted:     var(--color-muted, #64748b);
+    --accent:    var(--color-secondary, #0f766e);
+    --accent2:   var(--color-accent, #14b8a6);
+    --good:      var(--color-success, #059669);
+    --warn:      var(--color-warning, #d97706);
+    --danger:    var(--color-danger, #b91c1c);
+    --border:    var(--color-border, #e2e8f0);
+    --radius:    8px;
+  }
+  .section-desc { padding:0.8rem; background:#f1f5f9; border-radius:8px; font-size:0.95rem; }
+  .flow-step { background:#eff6ff; border:1px solid #93c5fd; border-radius:6px; padding:0.8rem; margin:0.5rem 0; font-size:0.9rem; }
+  .flow-arrow { font-size:1.2rem; color:#6b7280; text-align:center; margin:0.3rem 0; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="mod-header">
+      <div class="mod-header__left">
+        <span class="mod-icon">📑</span>
+        <div>
+          <h2>POUT Municipal</h2>
+          <p class="mod-sub">Plan de Ordenamiento Urbano y Territorial — gestión, diagnóstico, seguimiento y geoportal.</p>
+        </div>
+      </div>
+      <div class="mod-header__right">
+        <button id="btnPoutNew" class="btn btn--primary">➕ Nuevo municipio</button>
+        <button id="btnPoutExport" class="btn btn--secondary">📄 Exportar datos</button>
+      </div>
+    </header>
+
+    <div class="mod-tabs">
+      <button class="tab active" data-tab="diagnostico">📊 Diagnóstico</button>
+      <button class="tab" data-tab="estado">🚦 Estado POUT</button>
+      <button class="tab" data-tab="geoportal">🗺️ Geoportal</button>
+      <button class="tab" data-tab="bitacora">📜 Bitácora</button>
+      <button class="tab" data-tab="recursos">📚 Recursos</button>
+      <button class="tab" data-tab="documento">📄 Documento</button>
+    </div>
+
+    <div class="mod-content">
+
+      <!-- DIAGNÓSTICO -->
+      <section id="tab-diagnostico" class="tab-panel active">
+        <div class="card">
+          <h3>Diagnóstico territorial</h3>
+          <p class="muted section-desc">
+            1. <strong>Diagnóstico territorial.</strong> Cartografía base (UTM 21S/20S, WGS84),
+            levantamiento de cobertura y datos socioeconómicos, evaluación de riesgos
+            ambientales y sociales, matriz de usos de suelo actual.
+          </p>
+          <div class="grid">
+            <div class="grid__row">
+              <span class="muted">Municipio:</span>
+              <input id="poutMuni" class="input" placeholder="Ej. Luque" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Población total:</span>
+              <input id="poutPob" type="number" class="input" placeholder="0" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Densidad (hab/km²):</span>
+              <input id="poutDens" type="number" class="input" placeholder="0" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Crecimiento anual %:</span>
+              <input id="poutCrec" type="number" class="input" step="0.01" placeholder="0.0" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Acceso agua %:</span>
+              <input id="poutAgua" type="number" class="input" placeholder="0" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Acceso luz %:</span>
+              <input id="poutLuz" type="number" class="input" placeholder="0" />
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btnPoutSaveDiag" class="btn btn--primary">💾 Guardar diagnóstico</button>
+            <button id="btnPoutClearDiag" class="btn btn--secondary">🗑️ Limpiar</button>
+            <button id="btnPoutExportCsv" class="btn btn--success">⬇️ Exportar CSV</button>
+          </div>
+          <div id="poutDiagOut" class="muted"></div>
+        </div>
+      </section>
+
+      <!-- ESTADO POUT -->
+      <section id="tab-estado" class="tab-panel">
+        <div class="card">
+          <h3>Estado y vigencia del POUT</h3>
+          <p class="muted section-desc">
+            2. <strong>Marco normativo:</strong> Guía POUT 2025 (MEF/STP), Lineamientos 2023–2025,
+            Ley N° 3966/2010. Actualización mínima: 5 años.
+          </p>
+          <div class="flow-step"><strong>Etapa 1 — Diagnóstico territorial</strong></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><strong>Etapa 2 — Estrategia territorial</strong></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><strong>Etapa 3 — Proyecto urbano</strong></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><strong>Etapa 4 — Documentos legales</strong></div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step"><strong>Etapa 5 — Seguimiento y actualización</strong></div>
+
+          <div class="grid">
+            <div class="grid__row">
+              <span class="muted">Año de aprobación:</span>
+              <input id="poutAnio" type="number" class="input" placeholder="2025" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Estado:</span>
+              <select id="poutEstado" class="input">
+                <option value="APROBADO">APROBADO</option>
+                <option value="EN_PROCESO">EN_PROCESO</option>
+                <option value="PENDIENTE">PENDIENTE</option>
+                <option value="ANULADO">ANULADO</option>
+              </select>
+            </div>
+            <div class="grid__row">
+              <span class="muted">Última actualización:</span>
+              <input id="poutUltAct" type="date" class="input" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Ordenanza número:</span>
+              <input id="poutOrdenanza" type="text" class="input" placeholder="Ej. N° 12345" />
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btnPoutEval" class="btn btn--primary">🔍 Evaluar vigencia</button>
+            <button id="btnPoutGenOrdenanza" class="btn btn--warning">📐 Generar ordenanza (PDF)</button>
+          </div>
+          <div id="poutEvalOut" class="muted"></div>
+        </div>
+      </section>
+
+      <!-- GEOPORTAL -->
+      <section id="tab-geoportal" class="tab-panel">
+        <div class="card">
+          <h3>Geoportal municipal</h3>
+          <p class="muted section-desc">
+            Capas oficiales integradas: IGN Paraguay (Límites/Divipolis), MAG/ArcGIS (Distrital_Datos_Destacados),
+            MADES (Zonas de protección), MOPC (Red vial). Sistemas: SIRGAS 2000 UTM 21S/20S y WGS84.
+          </p>
+          <div id="pout-map"></div>
+          <div class="action-row" style="margin-top:0.5rem;">
+            <button id="btnPoutLayerMag"   class="btn btn--secondary">🏛️ MAG distritos</button>
+            <button id="btnPoutLayerMades" class="btn btn--secondary">⚠ MADES riesgos</button>
+            <button id="btnPoutLayerMopc"  class="btn btn--secondary">🛣️ MOPC vialidad</button>
+            <button id="btnPoutExportMap"  class="btn btn--success">📷 Exportar mapa (PNG)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BITÁCORA -->
+      <section id="tab-bitacora" class="tab-panel">
+        <div class="card">
+          <h3>Bitácora de cambios</h3>
+          <p class="muted section-desc">
+            4. <strong>Auditoría y trazabilidad:</strong> fecha/hora, autor, descripción y motivo de cada
+            modificación. Firma digital (opcional) o hash SHA-256 para trazabilidad.
+          </p>
+          <div class="grid">
+            <div class="grid__row">
+              <span class="muted">Autor:</span>
+              <input id="poutAutor" class="input" placeholder="Nombre / usuario" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Descripción:</span>
+              <input id="poutDesc" class="input" placeholder="¿Qué cambió?" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Motivo:</span>
+              <input id="poutMotivo" class="input" placeholder="¿Por qué?" />
+            </div>
+            <div class="grid__row">
+              <span class="muted">Hash SHA-256:</span>
+              <input id="poutHash" class="input" placeholder="Opcional" />
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btnPoutLog" class="btn btn--primary">📝 Registrar cambio</button>
+            <button id="btnPoutClearLog" class="btn btn--secondary">📋 Historial</button>
+          </div>
+          <div id="poutLogOut" class="muted"></div>
+          <div id="poutLogList" class="muted"></div>
+        </div>
+      </section>
+
+      <!-- RECURSOS -->
+      <section id="tab-recursos" class="tab-panel">
+        <div class="card">
+          <h3>Recursos oficiales</h3>
+          <table class="resource-table">
+            <tr><th>Fuente</th><th>Formato</th><th>Endpoint</th><th>Descripción</th></tr>
+            <tr><td>IGN Paraguay</td><td>SHP, GeoJSON, PDF</td><td><a href="https://www.ign.gov.py" target="_blank">ign.gov.py</a></td><td>Mapas oficiales 1:50.000 · límites y divipolis.</td></tr>
+            <tr><td>MAG / ArcGIS</td><td>GeoJSON, SHP</td><td><a href="https://server.gis.mag.gov.py/arcgis/rest/services/GEOPORTAL/Distritos_Py/MapServer?f=pjson" target="_blank">server.gis.mag.gov.py</a></td><td>Capa Distrital_Datos_Destacados_Estandarizado.</td></tr>
+            <tr><td>INE</td><td>Excel, CSV, SHP</td><td>Instituto Nacional de Estadística</td><td>Demografía (P30, P60, censos 2012/2022).</td></tr>
+            <tr><td>MADES</td><td>SHP, GeoJSON</td><td>Ministerio de Ambiente</td><td>Zonas de protección, reservas, unidades de conservación.</td></tr>
+            <tr><td>MOPC</td><td>SHP, GeoJSON</td><td>Ministerio de Obras Públicas</td><td>Red vial, puentes, avance de obras.</td></tr>
+            <tr><td>Esri World Imagery</td><td>PNG</td><td><a href="https://tiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer" target="_blank">tiles.arcgis.com</a></td><td>Imágenes satelitales para análisis.</td></tr>
+            <tr><td>OpenStreetMap</td><td>SHP, PBF</td><td><a href="https://download.geofabrik.de/south-america/paraguay.html" target="_blank">download.geofabrik.de</a></td><td>Datos vectoriales abiertos (octubre 2026).</td></tr>
+          </table>
+          <div class="note">
+            Sistemas oficiales: SIRGAS 2000 / UTM 21S (EPSG:32721), UTM 20S (EPSG:32720) y WGS84 (EPSG:4326).
+            Compatibles con EPSG:2193 para interoperabilidad MEF/STP.
+          </div>
+          <div class="callout">
+            <strong>📡 EndPoint nacional:</strong>
+            GET <code>/api/pout/municipios/{codigo}</code> → datos actualizados del POUT.
+            POST <code>/api/pout/export/{tipo}</code> → descarga en Excel (XLSX), SHP, GeoJSON o PDF institucional.
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCUMENTO -->
+      <section id="tab-documento" class="tab-panel">
+        <div class="card">
+          <h3>Especificación POUT — Base documental</h3>
+          <p class="muted">Documento de referencia técnica institucional (Guía POUT 2025 / MEF-STP). Integrado desde Sistema-POUT-Municipal.html.</p>
+          <div class="section-desc">
+            Distritos con POUT aprobados (septiembre 2026):
+            <table class="resource-table">
+              <tr><th>Municipio</th><th>Año</th><th>Estado</th></tr>
+              <tr><td><strong>Asunción</strong></td><td>Plan Regulador 2018</td><td><span class="badge badge-obsoleto">Obsoleto</span></td></tr>
+              <tr><td><strong>Luque</strong></td><td>2025</td><td><span class="badge badge-vigente">Vigente</span></td></tr>
+              <tr><td><strong>San Lorenzo</strong></td><td>2024</td><td><span class="badge badge-vigente">Vigente</span></td></tr>
+              <tr><td><strong>Encarnación</strong></td><td>2021</td><td><span class="badge badge-obsoleto">Obsoleto (2026)</span></td></tr>
+              <tr><td><strong>Villa Hayes</strong></td><td>2020</td><td><span class="badge badge-obsoleto">Obsoleto (2025)</span></td></tr>
+            </table>
+          </div>
+          <div class="callout">
+            <strong>Implementación piloto recomendada</strong> en Luque / San Lorenzo / Encarnación — municipios con POUT reciente (2021–2025) y trayectoria consolidada.
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="pout-footer">
+      <p>Sistema Digital POUT Municipal · SNC v3 · Homologado con Guía POUT 2025 (MEF/STP)</p>
+      <p>Ley N° 3966/2010 · Actualización periódica mínima: 5 años · EPSG:4326 / EPSG:32721</p>
+    </footer>
+  </div>
+
+  <!-- Leaflet JS servido localmente -->
+  <script src="/vendor/leaflet.js"></script>
+  <script src="/Pout/poutModule.js"></script>
+</body>
+</html>

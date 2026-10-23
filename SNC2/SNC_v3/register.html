@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta · SNC v3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  body{background:#050505;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
+  .hidden{display:none !important}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #reg-strength{height:6px;border-radius:9999px;background:#1e293b;overflow:hidden;transition:background .2s ease}
+  #reg-strength > div{height:100%;width:0;border-radius:9999px;transition:width .25s ease,background .25s ease}
+  .toggle-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:15px;padding:2px}
+  .toggle-eye:hover{color:#e2e8f0}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="flex items-center gap-3 px-6 py-4 border-b border-[#1e293b]">
+  <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+    <i class="fas fa-landmark text-white text-sm"></i>
+  </div>
+  <span class="text-white font-bold text-lg">SNC v3</span>
+  <span class="text-[#94a3b8] text-sm hidden sm:inline">· Catastro PY Pro</span>
+</header>
+
+<!-- Contenido -->
+<main class="flex-1 flex items-start justify-center px-4 py-10">
+  <div style="width:100%;max-width:420px" class="flex flex-col gap-6">
+
+    <!-- Formulario de registro -->
+    <section id="reg-card" style="border:1px solid #1e293b;border-radius:16px;padding:20px;background:#0a0a0a">
+      <h1 class="text-white text-xl font-bold mb-1">Crear una cuenta</h1>
+      <p class="text-[#94a3b8] text-sm mb-5">Regístrate para administrar tus proyectos y expedientes catastrales.</p>
+
+      <form id="reg-form" novalidate class="flex flex-col gap-4">
+
+        <!-- Nombre -->
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-name" class="text-sm text-[#94a3b8] font-medium">Nombre completo</label>
+          <input type="text" id="reg-name" name="name" placeholder="Ej.: María Fernández" autocomplete="name"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+        </div>
+
+        <!-- Email -->
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-email" class="text-sm text-[#94a3b8] font-medium">Correo electrónico</label>
+          <input type="email" id="reg-email" name="email" placeholder="tu@correo.com" autocomplete="email"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+        </div>
+
+        <!-- Contraseña -->
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-password" class="text-sm text-[#94a3b8] font-medium">Contraseña</label>
+          <div style="position:relative">
+            <input type="password" id="reg-password" name="password" placeholder="••••••••" autocomplete="new-password"
+                   style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 40px 10px 12px;color:#fff;width:100%">
+            <button type="button" id="reg-toggle-password" class="toggle-eye" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <!-- Indicador de fortaleza -->
+          <div id="reg-strength" aria-hidden="true"><div id="reg-strength-bar"></div></div>
+          <p id="reg-strength-text" class="text-xs" style="color:#64748b"></p>
+          <span class="text-xs" style="color:#64748b">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo.</span>
+        </div>
+
+        <!-- Confirmar contraseña -->
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-confirm" class="text-sm text-[#94a3b8] font-medium">Confirmar contraseña</label>
+          <div style="position:relative">
+            <input type="password" id="reg-confirm" name="confirm" placeholder="••••••••" autocomplete="new-password"
+                   style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 40px 10px 12px;color:#fff;width:100%">
+            <button type="button" id="reg-toggle-confirm" class="toggle-eye" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <p id="reg-error" class="hidden text-sm" style="color:#f87171"></p>
+
+        <button type="submit" id="reg-submit"
+                style="background:#111;border:1px solid #333;border-radius:12px;padding:12px 16px;color:#fff;font-weight:700;cursor:pointer">
+          Crear cuenta
+        </button>
+      </form>
+
+      <p class="text-sm text-[#94a3b8] text-center mt-5">
+        ¿Ya tienes cuenta?
+        <a href="/login-directo.html" style="color:#7dd3fc;font-weight:600;text-decoration:none">Iniciar sesión</a>
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<!-- Footer obligatorio -->
+<footer style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid #1e293b;color:#64748b;font-size:11px;">
+  <span>SNC v3 · Catastro PY Pro</span>
+  <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
+  <span style="display:flex;gap:14px;">
+    <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
+    <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
+  </span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // ---------- Validaciones locales ----------
+  function validarEmail(email) {
+    return EMAIL_RE.test(email);
+  }
+
+  function validarPassword(pw) {
+    if (pw.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+    if (!/[A-Z]/.test(pw)) return 'La contraseña debe incluir al menos 1 letra mayúscula.';
+    if (!/[a-z]/.test(pw)) return 'La contraseña debe incluir al menos 1 letra minúscula.';
+    if (!/[0-9]/.test(pw)) return 'La contraseña debe incluir al menos 1 número.';
+    if (!/[^A-Za-z0-9]/.test(pw)) return 'La contraseña debe incluir al menos 1 símbolo.';
+    return null;
+  }
+
+  // Puntuación de fortaleza: 0 = vacía, 1 débil, 2 media, 3 fuerte, 4 muy fuerte
+  function scorePassword(pw) {
+    if (!pw) return 0;
+    var score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (pw.length >= 12) score++;
+    return Math.min(score, 4);
+  }
+
+  var STRENGTH = [
+    { label: '', color: '#1e293b', width: '0' },
+    { label: 'Contraseña débil', color: '#ef4444', width: '25%' },
+    { label: 'Contraseña media', color: '#f59e0b', width: '50%' },
+    { label: 'Contraseña fuerte', color: '#22c55e', width: '75%' },
+    { label: 'Contraseña muy fuerte', color: '#3b82f6', width: '100%' }
+  ];
+
+  // ---------- Utilidades de UI ----------
+  function mostrarError(el, msg) {
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function ocultarError(el) {
+    el.textContent = '';
+    el.classList.add('hidden');
+  }
+
+  function setLoading(btn, textoOriginal, cargando) {
+    btn.disabled = cargando;
+    btn.style.opacity = cargando ? '0.6' : '1';
+    btn.style.cursor = cargando ? 'not-allowed' : 'pointer';
+    if (cargando) {
+      btn.innerHTML = '<span class="spinner"></span>Creando cuenta...';
+    } else {
+      btn.textContent = textoOriginal;
+    }
+  }
+
+  function httpError(status, serverMessage) {
+    if (serverMessage) return serverMessage;
+    if (status === 400) return 'Los datos enviados no son válidos. Verifica la información.';
+    if (status === 401) return 'No autorizado. La sesión pudo expirar.';
+    if (status === 403) return 'Acceso denegado.';
+    if (status === 409) return 'Conflicto con el estado actual. Intenta nuevamente.';
+    if (status === 429) return 'Demasiados intentos. Espera unos minutos y vuelve a intentar.';
+    if (status >= 500) return 'Error del servidor. Intenta más tarde.';
+    return 'Ocurrió un error inesperado. Intenta nuevamente.';
+  }
+
+  // ---------- Elementos del DOM ----------
+  var form = document.getElementById('reg-form');
+  var nameInput = document.getElementById('reg-name');
+  var emailInput = document.getElementById('reg-email');
+  var pwInput = document.getElementById('reg-password');
+  var confirmInput = document.getElementById('reg-confirm');
+  var errorEl = document.getElementById('reg-error');
+  var submitBtn = document.getElementById('reg-submit');
+  var strengthBar = document.getElementById('reg-strength-bar');
+  var strengthText = document.getElementById('reg-strength-text');
+  var togglePw = document.getElementById('reg-toggle-password');
+  var toggleConfirm = document.getElementById('reg-toggle-confirm');
+
+  var textoSubmit = submitBtn.textContent;
+
+  // ---------- Botón "ojo": mostrar / ocultar contraseña ----------
+  function wireToggle(btn, input) {
+    btn.addEventListener('click', function () {
+      var isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      var icon = btn.querySelector('i');
+      if (icon) icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+      btn.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      btn.title = isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña';
+    });
+  }
+  wireToggle(togglePw, pwInput);
+  wireToggle(toggleConfirm, confirmInput);
+
+  // ---------- Indicador de fortaleza ----------
+  function actualizarFortaleza() {
+    var s = scorePassword(pwInput.value);
+    var data = STRENGTH[s];
+    strengthBar.style.width = data.width;
+    strengthBar.style.background = data.color;
+    strengthText.textContent = data.label;
+    strengthText.style.color = s > 0 ? data.color : '#64748b';
+  }
+  pwInput.addEventListener('input', actualizarFortaleza);
+
+  // ---------- Envío del formulario ----------
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    ocultarError(errorEl);
+
+    var name = nameInput.value.trim();
+    var email = emailInput.value.trim().toLowerCase();
+    var pw = pwInput.value;
+    var confirm = confirmInput.value;
+
+    // 1) Validación local
+    if (!name) {
+      mostrarError(errorEl, 'El nombre es obligatorio.');
+      return;
+    }
+    if (!validarEmail(email)) {
+      mostrarError(errorEl, 'Ingresa un correo electrónico válido.');
+      return;
+    }
+    var pwError = validarPassword(pw);
+    if (pwError) {
+      mostrarError(errorEl, pwError);
+      return;
+    }
+    if (pw !== confirm) {
+      mostrarError(errorEl, 'Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(submitBtn, textoSubmit, true);
+
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pw, name: name })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) throw { status: res.status, data: data };
+          return data;
+        });
+      })
+      .then(function (data) {
+        setLoading(submitBtn, textoSubmit, false);
+        // 201: guardar token y redirigir
+        var token = data && (data.token || (data.user && data.user.token));
+        if (token) {
+          try { localStorage.setItem('snc_token', token); } catch (err) { /* almacenamiento no disponible */ }
+        }
+        window.location.href = '/index.html';
+      })
+      .catch(function (err) {
+        setLoading(submitBtn, textoSubmit, false);
+        if (!err) {
+          mostrarError(errorEl, 'No se pudo conectar con el servidor. Verifica tu conexión.');
+          return;
+        }
+        if (err.status === 409) {
+          // Email ya registrado: mensaje claro + enlace a login
+          errorEl.innerHTML = 'Este correo ya está registrado. ' +
+            '<a href="/login-directo.html" style="color:#7dd3fc;font-weight:600">Ir a iniciar sesión</a>.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        var serverMessage = err.data && (err.data.message || err.data.error || err.data.msg);
+        mostrarError(errorEl, httpError(err.status, serverMessage));
+      });
+  });
+
+})();
+</script>
+</body>
+</html>

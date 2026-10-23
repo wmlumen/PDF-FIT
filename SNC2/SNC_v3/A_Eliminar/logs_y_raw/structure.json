@@ -1,0 +1,49 @@
+{
+  "build": {
+    "timestamp": "2026-10-18T23:xx:xxZ",
+    "node_version": "22.13.0",
+    "commit": "3f26f4c1a7b2b0d1e6dd56d0810e9ff63e3f9e11"
+  },
+  "estructura": [
+    {
+      "carpeta": "/mnt/c/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3",
+      "tipo": "Carpeta del proyecto",
+      "archivos": [
+        "server-api.js",
+        "db.cjs",
+        "login-directo.html",
+        "register.html",
+        "recover.html",
+        "index.html",
+        "js/app.js",
+        "css/styles.css",
+        "package.json",
+        "README.md"
+      ]
+    }
+  ],
+  "servicios": [
+    {
+      "nombre": "Backend del Sistema",
+      "puerto": 5556,
+      "base_de_datos": "SQLite (data/snc.sqlite)",
+      "autenticación": "JWT Bearer (usuario admin: admin@snc.test / admin123)",
+      "público": true,
+      "privado": ["/api/admin/*"]
+    },
+    {
+      "nombre": "Interfaz de usuario (Frontend)",
+      "servicios": [
+        "login-directo.html — Login / register / recover (endpoints públicos)",
+        "admin.html — Panel con 4 vistas (miembros, planes, finanzas, IPs)",
+        "index.html — Inicio (redirección a admin)"
+      ]
+    }
+  ],
+  "verificación": {
+    "api_health": "http://localhost:5556/api/health",
+    "login_test": "POST http://localhost:5556/api/auth/login",
+    "admin_test": "GET http://localhost:5556/api/admin/plans (token requerido)",
+    "admin_ui": "GET http://localhost:5556/admin.html (servido público)"
+  }
+}

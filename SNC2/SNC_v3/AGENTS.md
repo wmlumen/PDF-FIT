@@ -144,14 +144,12 @@ data/
 ├── 2.Municipal/             # Datos municipales + plantilla oficial SNC 551/2023
 ├── 3.Usuario/               # Datos cargados por usuarios (vacío)
 ├── 4.Prueba/                # Datos de test y muestras
-├── municipal/               # Publicaciones municipales (info.json + parcelas.geojson)
-├── piribebuy/               # Capas de Piribebuy convertidas de SHP (11 archivos, 2.1 MB)
-│   ├── barrios.geojson      # 34 barrios
-│   ├── vias.geojson         # 2171 vías
-│   ├── hidro.geojson        # 110 cursos de agua
-│   ├── vertedero*.geojson   # 4 capas de vertedero (incluye buffers 500m/1000m)
-│   ├── casco_historico.geojson
-│   └── centro.geojson
+├── municipal/               # ÚNICA carpeta de capas municipales (por municipio)
+│   ├── piribebuy/           # Capas de Piribebuy por carpeta de grupo (subgrupos del panel)
+│   │   ├── base/            # Base territorial: barrios, vias, hidro, zona_influencia
+│   │   ├── vertedero/       # Vertedero y entorno: vertedero, vertedero_500/1000, vertedero_integrado, centro
+│   │   └── casco/           # Casco histórico: casco_historico, vuelo_casco
+│   └── test_muni/           # Municipio de prueba (info.json + parcelas.geojson)
 ├── DISTRITOS_PY_CNPV2022.geojson  # 40 MB — distritos oficiales CNPV 2022
 ├── distritos_py_light.geojson     # versión ligera (865 KB)
 ├── snc.sqlite                # Base de datos del sistema (users, projects, expedientes)
@@ -160,7 +158,9 @@ data/
 ```
 
 **Reglas:**
-- Los GeoJSON de `piribebuy/` se regeneran con `node scripts/convert-piribebuy.mjs` (fuente: SHP externos).
+- **NO existe `data/piribebuy/`**: las capas de cada municipio viven en `data/municipal/<municipio>/`.
+- Ruta HTTP canónica: `/data/municipal/piribebuy/*.geojson` (alias retrocompatible: `/data/piribebuy/*`).
+- Los GeoJSON de `municipal/piribebuy/` se regeneran con `node scripts/convert-piribebuy.mjs` (fuente: SHP externos).
 - Los logs (`db.log`, `cacheDb.log`) los escribe el servidor en ejecución; no eliminar mientras corre.
 - `dist/` y `public/` son artefactos de build: NO deben contener copias de datos de `data/`.
 

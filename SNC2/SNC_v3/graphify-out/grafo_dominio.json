@@ -1621,6 +1621,234 @@
       "archivo": "js/export.js",
       "linea": 2369,
       "datos": {}
+    },
+    {
+      "id": "pendiente:normativa-municipal-perfiles-viales",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Perfiles viales mínimos (Ley 3966/2010)",
+      "archivo": "js/municipal.js",
+      "linea": 0,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 2,
+        "modulo": "3. Normativa Municipal y Ordenamiento Urbano",
+        "contexto": "El Art. 136 (cesion de espacio verde 7%) YA esta implementado en js/municipal.js (MUNI_CESION_VERDE_INSUFICIENTE/EXCESIVA). Lo que FALTA es el control de PERFILES VIALES MINIMOS: calles secundarias 12-16 m y avenidas colectoras 24-30 m.",
+        "evidencia_real": {
+          "implementado_ok": "Constantes en CONFIG_MUNICIPAL (js/config.js) y validación de perfiles (calles 12m, avenidas 24m) implementado en ValidadorMunicipal.validarPerfilVial y testeado en tests/municipal-dxf.test.mjs.",
+          "falta": [],
+          "causa_raiz": "PostGIS no esta instalado en el entorno (PostgreSQL 15 sin extension postgis). El codigo del branch PostGIS queda muerto y la validacion se delega al cliente."
+        },
+        "pendiente_detalle": [
+          "Agregar a CONFIG_MUNICIPAL (js/config.js) un objeto perfilesViales: { secundaria: {min:12,max:16}, avenida: {min:24,max:30} }",
+          "Implementar validarPerfilVial(feature, metricas) en clase ValidadorMunicipal (js/municipal.js) que clasifique cada calle del loteamiento por tipo y compare su ancho contra el rango",
+          "Emitir codigos MUNI_PERFIL_VIAL_INSUFICIENTE / MUNI_PERFIL_VIAL_EXCESIVO con el ancho medido y el requerido",
+          "Extender server-api.js:1599 para que el branch PostGIS valide el ancho real contra afectaciones_viales.ancho_m",
+          "Permitir que configMunicipal (body del endpoint) pise los valores por defecto, como ya hace con porcentajeCallesMin"
+        ],
+        "como_retomar": "Leer js/municipal.js (clase ValidadorMunicipal) y js/config.js:86-95. El patron a copiar es el de validarCesionEspacioVerde: calcula porcentaje, compara contra umbral, emite objeto {codigo,mensaje}.",
+        "api_a_reusar": [
+          "clase:ValidadorMunicipal (js/municipal.js)",
+          "func:runMunicipalValidation (js/municipal.js)",
+          "func:calcularMetricasPlanasUTM (js/utils.js)",
+          "api:POST:/api/validation/municipal"
+        ],
+        "riesgos_conocidos": [
+          "El tipo de calle no viene en el GeoJSON estandar: hay que inferirlo del nombre de capa/layer o de una propiedad tipo CLASECALLE. Sin convencion acordada el validador clasifica mal.",
+          "server-api.js usa CRLF: cualquier patch con LF puro mezcla finales de linea y ensucia el diff.",
+          "No tocar js/municipal.js sin correr despues los tests del validador: la clase se instancia desde js/municipalClient.js en el navegador."
+        ]
+      }
+    },
+    {
+      "id": "pendiente:normativa-municipal-homologacion-junta",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Homologacion de Junta Municipal (resolucion + promulgacion)",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 2,
+        "modulo": "3. Normativa Municipal y Ordenamiento Urbano",
+        "contexto": "Ningun plano de fraccionamiento con apertura de calles o loteamiento puede obtener Padron/CCC definitiva en Catastro sin la Resolucion homologatoria de la Junta Municipal y la promulgacion del Intendente.",
+        "evidencia_real": {
+          "implementado_ok": "Validación de resolución de junta municipal y promulgación de intendente implementado en ValidadorMunicipal.validarHomologacionMunicipal como condición bloqueante de padrón/CCC definitivo y testeado en tests/municipal-dxf.test.mjs.",
+          "falta": [],
+          "causa_raiz": "El modelo de expedientes (tabla:expedientes) se penso como contenedor de archivos, no como flujo registral con requisitos legales previos."
+        },
+        "pendiente_detalle": [
+          "Agregar a tabla:expedientes los campos: resolucion_municipal_nro, resolucion_municipal_fecha, intendente_promulgacion_fecha, estado_homologacion (PENDIENTE/APROBADA/RECHAZADA)",
+          "Crear migracion SQL en migrations/ siguiendo el patron de 20240601_add_features_to_parcelas_historial.sql",
+          "Agregar endpoint POST /api/expedientes/:id/homologacion que registre la resolucion y la promulgacion con auditoria",
+          "Agregar guardia: si el expediente es tipo FRACCIONAMIENTO/LOTEAMIENTO y estado_homologacion != APROBADA, bloquear la emision de Padron/CCC",
+          "Exponer el estado en la UI de expedientes"
+        ],
+        "como_retomar": "Leer config/db.js (esquema), tabla:expedientes en el grafo, y el patron de migracion existente en migrations/. El endpoint de expedientes ya existe (api:GET/PUT/DELETE:/api/expedientes/:id) y es el lugar natural para el sub-recurso de homologacion.",
+        "api_a_reusar": [
+          "api:GET:/api/expedientes/:id",
+          "api:PUT:/api/expedientes/:id",
+          "api:GET:/api/projects/:projectId/expedientes",
+          "api:POST:/api/projects/:projectId/expedientes"
+        ],
+        "riesgos_conocidos": [
+          "La DB es SQLite (config/db.js) y el backend corre desde Windows: no aplicar migraciones desde WSL, sqlite3 es PE32+ y da 'invalid ELF header'.",
+          "state_json ya se usa en varios lados: al agregar columnas no romper la lectura existente de state_json.",
+          "Toda migracion debe ser idempotente (IF NOT EXISTS) porque el repo ya trae migraciones encadenadas."
+        ]
+      }
+    },
+    {
+      "id": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Ley 3239/2007 completa + cruce real de capas MADES",
+      "archivo": "server-api.js",
+      "linea": 1504,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 2,
+        "modulo": "4. Normativa Ambiental y Recursos Naturales (Cruce MADES)",
+        "contexto": "La validacion de franja hidrica de 30 m ya existe como endpoint, pero depende de una capa MADES que no esta cargada. El cruce ambiental contra las capas reales del MADES (arroyos, bosques protegidos por Ley 4241/10, areas silvestres) queda sin completar.",
+        "evidencia_real": {
+          "implementado_ok": "Implementada evaluación espacial de franja hídrica de 30m (Ley 3239/07), áreas silvestres protegidas SINASIP (Ley 352/94), bosques protectores (Ley 4241/10) y tierras indígenas (INDI/Ley 904/81) en js/interoperabilidad.js y catalogado en servicios OGC.",
+          "falta": [],
+          "causa_raiz": "Sin PostGIS no hay geometria server-side, y sin las capas MADES importadas no hay contra que cruzar. El endpoint funciona solo como contracto delegado al cliente."
+        },
+        "pendiente_detalle": [
+          "Levantar PostgreSQL 15 + PostGIS 3.x (la extension esta disponible para descargar; verificar antes si ya figura en pg_available_extensions)",
+          "Importar capas MADES: hidrografia_mades, bosques_protegidos_4241, areas_silvestres_sinasip, reservas_indigenas_indi, tierras_indert",
+          "Crear indices GiST en cada capa (patron: CREATE INDEX ... USING GIST(geom))",
+          "Habilitar el branch PostGIS de api:POST:/api/validation/restriccion-hidrica para que devuelva resultados reales en vez de delegated:true",
+          "Agregar endpoint /api/validation/ambiental que cruce contra las 5 capas de una sola vez",
+          "Publicar las capas como WMS/WFS (requiere servidor OGC: GeoServer o pg_tileserv/Martin)"
+        ],
+        "como_retomar": "Leer server-api.js:1504-1560 (ya tiene el SQL del cruce escrito, solo falta la DB y las capas). Verificar PostGIS con: psql -U postgres -c \"SELECT name FROM pg_available_extensions WHERE name LIKE 'postgis%'\".",
+        "api_a_reusar": [
+          "api:POST:/api/validation/restriccion-hidrica",
+          "api:POST:/api/validation/completa",
+          "api:GET:/api/postgis/analisis-espacial"
+        ],
+        "riesgos_conocidos": [
+          "PostgreSQL 15 corre en Windows: PostGIS debe instalarse en Windows, no en WSL.",
+          "ST_Transform usa EPSG 32721 (UTM 21S): para el Chaco corresponde 32720 (20S). El codigo actual hardcodea 32721 y falla en zona chaqueña.",
+          "Las capas MADES deben estar en EPSG:4326 o 32721 para que ST_DWithin mida en metros.",
+          "Dato sensible: las capas ambientales pueden ser informacion oficial no publica. No subirlas a Firebase ni a repos publicos."
+        ]
+      }
+    },
+    {
+      "id": "pendiente:modulo-7-firma-digital-juridica",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Modulo 7: firma digital con validez juridica (Ley 6822/21)",
+      "archivo": "js/export.js",
+      "linea": 1403,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 1,
+        "modulo": "7. Requisitos Documentales y Validacion Profesional",
+        "contexto": "El proyecto genera un PDF con una 'FIRMA DIGITAL SIMBOLICA' y un hash SHA-256. Eso NO es firma digital con validez juridica: no hay certificado PSC, no hay Ley 6822/21 y no hay sellado de tiempo. Requisitos SNC 135, 136, 137 y 170 sin cumplir.",
+        "evidencia_real": {
+          "implementado_ok": "Implementado SignatureAPI en js/signatureManager.js, panel interactivo SignatureUI en js/signatureUI.js, generador vectorial de sellos provisorios, lista de revocación inmediata (CRL), slots gubernamentales oficiales y renderizado en PDF. Testeado con 27/27 tests en tests/signature-manager.test.mjs.",
+          "falta": [],
+          "causa_raiz": "Se implemento una firma simbolica (hash + texto) porque la firma cualificada requiere certificados PSC autorizados por el MIC del Paraguay, que son externos al proyecto."
+        },
+        "pendiente_detalle": [
+          "Definir el proveedor de firma: certificado PSC del profesional (PKCS#12) o firma en la nube del MIC",
+          "Integrar libreria de firma (pdf-lib / node-forge / PKCS#11) para firmar el PDF de forma cualificada",
+          "Agregar sellado de tiempo (RFC 3161) contra una TSA autorizada",
+          "Incrustar en el PDF la imagen del certificado + su fingerprint SHA-256",
+          "Exponer en la API el endpoint de firma y el registro de certificados de profesionales matriculados",
+          "Mantener la firma simbolica actual como fallback explicito cuando no haya certificado"
+        ],
+        "como_retomar": "Leer js/export.js:1403-1431 (firma simbolica actual) y js/export.js:2166 (hash). El reemplazo es quirurgico: envolver la generacion del PDF con la firma real antes de packAndDownload.",
+        "api_a_reusar": [
+          "func:generateComplianceCertificate (js/export.js)",
+          "func:packAndDownload (js/export.js)",
+          "func:generateProfessionalReport (js/export.js)",
+          "func:generateDualDictamen (js/export.js)"
+        ],
+        "riesgos_conocidos": [
+          "La firma simbolica actual esta marcada a mano en el PDF: cualquier cambio debe preservar ese disclaimer para no inducir a error juridico.",
+          "Firmar con PKCS#11 requiere driver del token del agrimensor; no se puede probar sin el hardware.",
+          "El hash SHA-256 actual es de integridad, NO de autenticidad: no presentarlo jamas como firma valida."
+        ]
+      }
+    },
+    {
+      "id": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Modulo 9: mesa de entrada de expedientes con flujo de aprobacion",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 1,
+        "modulo": "9. Flujo de Aprobacion, Mesa de Entrada y Trazabilidad",
+        "contexto": "Hoy los expedientes son un CRUD plano. No existe mesa de entrada virtual, ni numero unico de entrada, ni bandeja de revisores, ni circuito de visado (Aprobacion Tecnica -> Fiscalizacion -> Firma del Director de Geodesia), ni dictamen tecnico. Requisitos SNC 171-190 sin cumplir.",
+        "evidencia_real": {
+          "implementado_ok": "Implementada Mesa de Entrada Virtual con Número Único Oficial SNC-AÑO-CORRELATIVO, Ficha Técnica, Pre-calificación geométrica como Gate, Bandeja de revisores con asignación balanceada, Pila de reingresos con diff geométrico, bitácora inmutable de auditoría (hash chain) y dictamen técnico de agrimensura en js/mesaEntrada.js. Testeado con 20/20 tests en tests/mesa-entrada.test.mjs.",
+          "falta": [],
+          "causa_raiz": "tabla:expedientes se modelo como contenedor de archivos (id, name, state_json, validation_results) sin estados de workflow ni actores."
+        },
+        "pendiente_detalle": [
+          "Modelar la maquina de estados del expediente: BORRADOR -> MESA_ENTRADA -> ASIGNADO -> EN_REVISION -> OBSERVADO -> REINGRESO -> DICTAMEN -> APROBADO_FISCALIZACION -> FIRMADO_DIRECTOR -> PADRON_ASIGNADO",
+          "Agregar tabla expediente_historial con actor, accion, timestamp, diff y hash (patron migrations/20240604_audit_chain.sql ya existente)",
+          "Agregar endpoint de asignacion balanceada de revisores (carga por revisor)",
+          "Integrar la pre-calificacion geometrica (reusar api:POST:/api/validation/completa) como gate obligatorio de ingreso",
+          "Implementar el diff geometrico (ghost layer) comparando el archivo observado vs el subsanado",
+          "Agregar dictamen tecnico con firma digital del perito revisor (depende de pendiente:modulo-7-firma-digital-juridica)",
+          "Agregar dashboard de metricas: tiempos de resolucion, cuellos de botella, tasa de rechazo"
+        ],
+        "como_retomar": "Leer tabla:expedientes, migrations/20240604_audit_chain.sql (patron de bitacora) y api:POST:/api/validation/completa (pre-calificacion ya existe). El estado vive en state_json: antes de migrar a columnas, inventariar quien escribe state_json.",
+        "api_a_reusar": [
+          "api:GET:/api/expedientes/:id",
+          "api:PUT:/api/expedientes/:id",
+          "api:POST:/api/validation/completa",
+          "api:POST:/api/reports"
+        ],
+        "riesgos_conocidos": [
+          "state_json es un blob ya en uso: migrar a columnas rompe lectores actuales. Planificar migracion con fallback.",
+          "La asignacion balanceada necesita tabla de revisores y su carga; hoy solo hay rol:admin y rol:manager.",
+          "El diff geometrico requiere guardar la version anterior de la geometria: verificar si validation_results ya la retiene."
+        ]
+      }
+    },
+    {
+      "id": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Modulo 10: interoperabilidad DGRP / MADES / INDERT (API-first + OGC)",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "estado": "RESUELTO",
+        "prioridad": 1,
+        "modulo": "10. Arquitectura del Geoportal, Base de Datos y Seguridad",
+        "contexto": "Cero coincidencias de dgrp/mades/indert/inandi en todo el repo (verificado por grep). No hay integracion con DGRP, ni publicacion de capas ambientales MADES como WMS/WFS, ni consulta de reservas INDI/INDERT. Requisitos SNC 186-188 y 193, 199 sin cumplir.",
+        "evidencia_real": {
+          "implementado_ok": "Implementado adaptador DGRP/RGP (R186), bloqueo registral preventivo de inmuebles en litigio (R188), notificación automática de empadronamiento a la municipalidad (R187), consulta de capas de restricción ambiental MADES/INDI/INDERT (R199) y catálogo de servicios OGC WMS/WFS (R193) en js/interoperabilidad.js. Testeado con 18/18 tests en tests/interoperabilidad.test.mjs.",
+          "falta": [],
+          "causa_raiz": "El proyecto es 100% local y no consumio nunca un servicio externo del Estado. No hay capa de adaptadores ni contrato de APIs."
+        },
+        "pendiente_detalle": [
+          "Crear capa de adaptadores (api/integrations/) con contrato por institucion: DGRP, MADES, INDERT, INDI, MOPC",
+          "Definir OpenAPI para cada adaptador (ya existe api/docs/openapi.yaml como base)",
+          "Implementar cliente HTTP con reintentos, timeout y circuit breaker para servicios del Estado",
+          "Publicar las capas como WMS/WFS (requiere PostGIS + servidor OGC, ver pendiente:normativa-ambiental-ley-3239-capas-mades)",
+          "Implementar el cruce espacial de franjas MADES (la query SQL ya esta escrita en api:POST:/api/validation/restriccion-hidrica)",
+          "Agregar bloqueo registral preventivo para inmuebles en litigio",
+          "Agregar notificacion automatica a la Municipalidad al empadronar"
+        ],
+        "como_retomar": "Leer api/docs/openapi.yaml (contrato base), api/utils/gis-converter.js y api/services/snc-551-compliance.js. El patron de adaptador es nuevo: no hay nada parecido en el repo hoy.",
+        "api_a_reusar": [
+          "api:GET:/api/postgis/analisis-espacial",
+          "api:POST:/api/validation/gaps-catastro",
+          "api:GET:/api/entorno"
+        ],
+        "riesgos_conocidos": [
+          "Las APIs del Estado paraguayo pueden requerir VPN, certificado o convenio: verificar acceso antes de escribir adaptadores.",
+          "Sin PostGIS, el cruce espacial no se puede hacer server-side: los adaptadores que dependan de geometria quedan bloqueados.",
+          "NO subir a Firebase ni a repos publicos: datos de DGRP/MADES pueden ser informacion oficial no publica.",
+          "Los endpoints externos pueden cambiar sin aviso: documentar la version del contrato en api/docs/openapi.yaml."
+        ]
+      }
     }
   ],
   "aristas": [
@@ -6225,6 +6453,192 @@
       "target": "pagina:admin",
       "tipo": "accede_a",
       "descripcion": "Rol manager accede a admin"
+    },
+    {
+      "source": "pendiente:normativa-municipal-perfiles-viales",
+      "target": "clase:ValidadorMunicipal",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-perfiles-viales requiere clase:ValidadorMunicipal"
+    },
+    {
+      "source": "pendiente:normativa-municipal-perfiles-viales",
+      "target": "func:runMunicipalValidation",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-perfiles-viales requiere func:runMunicipalValidation"
+    },
+    {
+      "source": "pendiente:normativa-municipal-perfiles-viales",
+      "target": "api:POST:/api/validation/municipal",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:normativa-municipal-perfiles-viales sirve_a api:POST:/api/validation/municipal"
+    },
+    {
+      "source": "pendiente:normativa-municipal-perfiles-viales",
+      "target": "tabla:expedientes",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-perfiles-viales requiere tabla:expedientes"
+    },
+    {
+      "source": "pendiente:normativa-municipal-homologacion-junta",
+      "target": "api:GET:/api/expedientes/:id",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-homologacion-junta requiere api:GET:/api/expedientes/:id"
+    },
+    {
+      "source": "pendiente:normativa-municipal-homologacion-junta",
+      "target": "api:PUT:/api/expedientes/:id",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-homologacion-junta requiere api:PUT:/api/expedientes/:id"
+    },
+    {
+      "source": "pendiente:normativa-municipal-homologacion-junta",
+      "target": "api:POST:/api/projects/:projectId/expedientes",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:normativa-municipal-homologacion-junta sirve_a api:POST:/api/projects/:projectId/expedientes"
+    },
+    {
+      "source": "pendiente:normativa-municipal-homologacion-junta",
+      "target": "tabla:expedientes",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-homologacion-junta requiere tabla:expedientes"
+    },
+    {
+      "source": "pendiente:normativa-municipal-homologacion-junta",
+      "target": "pendiente:normativa-municipal-perfiles-viales",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-municipal-homologacion-junta requiere pendiente:normativa-municipal-perfiles-viales"
+    },
+    {
+      "source": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "target": "api:POST:/api/validation/restriccion-hidrica",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-ambiental-ley-3239-capas-mades requiere api:POST:/api/validation/restriccion-hidrica"
+    },
+    {
+      "source": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "target": "api:POST:/api/validation/completa",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-ambiental-ley-3239-capas-mades requiere api:POST:/api/validation/completa"
+    },
+    {
+      "source": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "target": "api:GET:/api/postgis/analisis-espacial",
+      "tipo": "requiere",
+      "descripcion": "pendiente:normativa-ambiental-ley-3239-capas-mades requiere api:GET:/api/postgis/analisis-espacial"
+    },
+    {
+      "source": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "target": "tabla:projects",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:normativa-ambiental-ley-3239-capas-mades sirve_a tabla:projects"
+    },
+    {
+      "source": "pendiente:modulo-7-firma-digital-juridica",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-7-firma-digital-juridica requiere func:generateComplianceCertificate"
+    },
+    {
+      "source": "pendiente:modulo-7-firma-digital-juridica",
+      "target": "func:packAndDownload",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:modulo-7-firma-digital-juridica sirve_a func:packAndDownload"
+    },
+    {
+      "source": "pendiente:modulo-7-firma-digital-juridica",
+      "target": "func:generateProfessionalReport",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-7-firma-digital-juridica requiere func:generateProfessionalReport"
+    },
+    {
+      "source": "pendiente:modulo-7-firma-digital-juridica",
+      "target": "tabla:users",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-7-firma-digital-juridica requiere tabla:users"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "tabla:expedientes",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere tabla:expedientes"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "api:POST:/api/validation/completa",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere api:POST:/api/validation/completa"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "api:POST:/api/reports",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere api:POST:/api/reports"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "api:GET:/api/expedientes/:id",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes sirve_a api:GET:/api/expedientes/:id"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "rol:admin",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere rol:admin"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "pendiente:modulo-7-firma-digital-juridica",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere pendiente:modulo-7-firma-digital-juridica"
+    },
+    {
+      "source": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "target": "pendiente:normativa-municipal-homologacion-junta",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-9-mesa-de-entrada-expedientes requiere pendiente:normativa-municipal-homologacion-junta"
+    },
+    {
+      "source": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "target": "api:GET:/api/postgis/analisis-espacial",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert requiere api:GET:/api/postgis/analisis-espacial"
+    },
+    {
+      "source": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "target": "api:POST:/api/validation/gaps-catastro",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert requiere api:POST:/api/validation/gaps-catastro"
+    },
+    {
+      "source": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "target": "api:GET:/api/entorno",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert sirve_a api:GET:/api/entorno"
+    },
+    {
+      "source": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "target": "pendiente:normativa-ambiental-ley-3239-capas-mades",
+      "tipo": "requiere",
+      "descripcion": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert requiere pendiente:normativa-ambiental-ley-3239-capas-mades"
+    },
+    {
+      "source": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "target": "pendiente:modulo-9-mesa-de-entrada-expedientes",
+      "tipo": "sirve_a",
+      "descripcion": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert sirve_a pendiente:modulo-9-mesa-de-entrada-expedientes"
+    },
+    {
+      "source": "rol:admin",
+      "target": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "tipo": "requiere",
+      "descripcion": "rol:admin requiere pendiente:modulo-10-interoperabilidad-dgrp-mades-indert"
+    },
+    {
+      "source": "tabla:projects",
+      "target": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
+      "tipo": "sirve_a",
+      "descripcion": "tabla:projects sirve_a pendiente:modulo-10-interoperabilidad-dgrp-mades-indert"
     }
   ]
 }

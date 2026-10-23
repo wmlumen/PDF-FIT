@@ -571,7 +571,7 @@ export {
 };
 
 // Exponer a window para uso global
-window.ParaguayRef = {
+if (typeof window !== "undefined") window.ParaguayRef = {
     DEPARTAMENTOS_PY,
     DISTRITOS_PY,
     validarDPTO,

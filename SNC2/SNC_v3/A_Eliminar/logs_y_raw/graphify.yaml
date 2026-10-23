@@ -1,0 +1,164 @@
+# Archivo de configuración de Graphify para SNC_v3
+# Define la configuración para el graphify knowledge graph (estructura local con tree-sitter)
+# Usado por la herramienta graphify-install en .hermes/skills/software-development/graphify-setup
+
+# Extenciones de archivos a incluir en el grafo (lenguajes de programación y documentos)
+include_extensions:
+  - .py
+  - .js
+  - .ts
+  - .tsx
+  - .jsx
+  - .json
+  - .yaml
+  - .yml
+  - .toml
+  - .md
+  - .txt
+
+# Rutas, directorios y patrones a excluir de la extracción
+exclude_paths:
+  - node_modules/
+  - __pycache__/
+  - __tests__/
+  - test/
+  - spec/
+  - .git/
+  - .github/
+  - build/
+  - dist/
+  - data/Paraguay/*
+  - data/Prueba/*
+  - data/piribebuy/*
+  - "*.log"
+  - "*.tmp"
+  - "*.bak"
+  - "*.old"
+  - "*.swp"
+  - .vscode/
+  - .idea/
+
+# Tamaño máximo de archivo a procesar (en bytes) — archivos mayores son saltados
+max_file_size: 5242880
+
+# Extracción opcional de embeddings vectoriales (requiere API key de modelo local)
+vector_extraction:
+  enabled: false
+  model: nomic-ai/nomic-embed-text-v1
+
+# Configuración principal del grafo y opciones de exportación
+
+# Algoritmo de detección de comunidades (leiden o louvain)
+graph:
+  community_algorithm: leiden
+
+  # Mínimo de confianza entre comunidades para conservarlo (0-1)
+  min_community_confidence: 0.3
+
+  # Cantidad de nodos más importantes a exponer en el resumen del grafo
+  top_nodes_count: 100
+
+  # Exportar GraphML (para importación en GEF) — habilitado por defecto
+  export_graphml: true
+  graphml_path: graphify-out/SNC_v3_graph.graphml
+
+  # Exportar DOT (para Graphviz) — habilitado por defecto
+  export_dot: true
+  dot_path: graphify-out/SNC_v3_graph.dot
+
+  # Generar visualización HTML interactiva con force-directed graph
+  enable_interactive_visualization: true
+  visualization_path: graphify-out/graph.html
+
+# Preguntas estándar de análisis del grafo que el agente puede responder automáticamente
+analysis_questions:
+  - ¿Qué archivos importan los índices principales (index.html, index-municipal.html)?
+  - ¿Cuáles son los servicios Node.js más importantes (server.js, etc.)?
+  - ¿Qué archivos configuran los parámetros del mapa (parámetros.map, leaflet, etc.)?
+  - ¿Cuáles son los archivos de mapeo/shapefile más utilizados (Shapely, etc.)?
+  - ¿Qué endpoints de Leaflet manejan los clics de los usuarios?
+  - ¿Qué middleware Express procesan los encabezados de autenticación?
+  - ¿Cuáles son los endpoints de API públicos más utilizados?
+  - ¿Qué npm packages se usan comúnmente?
+  - ¿Cuáles son los directorios más grandes por número de archivos?
+  - ¿Qué scripts de GitHub Actions se usan para CI/CD?
+
+# Consultas predefinidas al grafo que se pueden invocar con "graphify query"
+predefined_queries:
+  inicio del mapa: navegar desde index.html hacia files/index-*.html
+  servidor: encontrar todos los archivos con 'server' o 'api' en el nombre
+  capas: extraer todos los archivos GeoJSON, .shp y .geojson
+  autenticación: query para localizar archivos que usan JWT, session, auth, etc.
+
+# Contexto del proyecto que se inyecta en el prompt del agente
+project_context:
+  nombre: SNC_v3
+  descripción: Plataforma de administración urbana para Paraguay — incluye frontend (HTML/JS), backend Node, mapeo GeoJSON/Shp y UI de interacción de mapas.
+  tecnologías:
+    - Node.js
+    - Express
+    - Leaflet
+    - GeoJSON
+    - Shapely
+    - Python
+    - PostgreSQL
+    - JWT
+    - npm
+    - GitHub Actions
+    - Docker
+  ubicaciones_clave:
+    - server/
+    - municipal/
+    - index.html
+    - index-municipal.html
+    - index_server.html
+    - ciudadano/
+    - dist/
+    - data/
+  dependencias_comunes:
+    - express
+    - leaflet
+    - jwt-decode
+    - pg
+    - shapely
+    - pyproj
+    - geojson
+  patrones_urls:
+    - /api/*
+    - /municipal/*
+    - /ciudadano/*
+    - /fluxograma.html
+
+# Preferencias del agente para la interacción con el grafo
+agent_preferences:
+  # Cantidad de nodos del grafo a inyectar en el contexto (para mantener bajo consumo de tokens)
+  graph_context_size: 500
+
+  # Si es verdadero, el agente priorizará el grafo en vez de leer archivos en crudo
+  prefer_graph_source: true
+
+  # Lista de archivos que son buenos puntos de inicio para navegar el código
+  good_start_files:
+    - index.html
+    - index-municipal.html
+    - index_server.html
+
+  # Cantidad máxima de nodos a enviar en un solo chunk
+  chunk_size: 1500
+
+  # Permitir que el agente haga queries al grafo después de cada cambio en el código
+  live_query_on_change: true
+
+  # Número máximo de días para conservar el grafo en cache antes de invalidarlo
+  cache_max_age_days: 30
+
+# Tareas automáticas de mantenimiento del grafo (pueden ser ejecutadas con cron)
+maintenance:
+  # Si es verdadero, el grafo se actualiza automáticamente cuando git detecta cambios
+  auto_update_on_git_changes: true
+
+  # Si es verdadero, entradas del grafo obsoletas (sin cambios en el repo por > 90 días) son eliminadas
+  cleanup_old_entries: true
+
+  # Si es verdadero, el grafo actualizado se exporta como parte de las actualizaciones del sistema
+  export_graph_on_update: true

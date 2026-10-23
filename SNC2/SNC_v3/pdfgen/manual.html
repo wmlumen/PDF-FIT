@@ -873,31 +873,34 @@
     <tr><td><strong>Portal Ciudadano</strong></td><td><code>ciudadano/index.html</code></td><td>Propietarios, compradores y contribuyentes</td><td>Consulta pública de estado parcelario, certificado de no superposición y verificación de autenticidad por QR.</td></tr>
     <tr><td><strong>Panel Administrativo</strong></td><td><code>admin.html</code></td><td>Directores, revisores técnicos y auditores</td><td>Control de carga de revisores, trazabilidad registral y bitácora de auditoría.</td></tr>
   </table>
-  <div class="flow" style="margin-top:1.4rem;">
-    <div class="row">
-      <div class="num">1</div>
-      <div class="step"><strong>Portal Principal</strong><br><code>index.html</code><br>Peritos topógrafos, agrimensores</div>
+  <div class="flow" style="margin-top:1.4rem; border-color:#1f4fd0; border-width:2px;">
+    <div class="row" style="background:#eff6ff;">
+      <div class="num" style="background:#1f4fd0;">1</div>
+      <div class="step"><strong>🌐 Portal Central</strong><br><code>index.html</code><br><em>Peritos topógrafos, agrimensores</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">2</div>
-      <div class="step"><strong>Portal Municipal</strong><br><code>municipal/index.html</code><br>Ley 3966/10 · Urbanismo</div>
+    <div class="row" style="background:#fffef5;">
+      <div class="num" style="background:#2563eb;">2</div>
+      <div class="step"><strong>🏛️ Portal Municipal</strong><br><code>municipal/index.html</code><br><em>Ley 3966/10 · Urbanismo</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">3</div>
-      <div class="step"><strong>Portal Notarial</strong><br><code>notarial/index.html</code><br>Escribanías, notarios</div>
+    <div class="row" style="background:#fdf4ff;">
+      <div class="num" style="background:#7c3aed;">3</div>
+      <div class="step"><strong>⚖️ Portal Notarial</strong><br><code>notarial/index.html</code><br><em>Escribanías, notarios</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">4</div>
-      <div class="step"><strong>Portal Ciudadano</strong><br><code>ciudadano/index.html</code><br>Público general</div>
+    <div class="row" style="background:#f0f9ff;">
+      <div class="num" style="background:#0891b2;">4</div>
+      <div class="step"><strong>👤 Portal Ciudadano</strong><br><code>ciudadano/index.html</code><br><em>Público general</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">5</div>
-      <div class="step"><strong>Panel Administrativo</strong><br><code>admin.html</code><br>Directores, auditores</div>
+    <div class="row" style="background:#f5f3ff;">
+      <div class="num" style="background:#6d28d9;">5</div>
+      <div class="step"><strong>📋 Panel Administrativo</strong><br><code>admin.html</code><br><em>Directores, auditores</em></div>
     </div>
+  </div>
+  <div class="note">
+    <b>Nota:</b> Todos los portales comparten el mismo núcleo de validación catastral (SNC 551/2023) y motor espacial soberano, pero cada uno presenta un conjunto específico de herramientas y entregables según su perfil institucional. El <strong>Portal Central</strong> es el más completo, incluyendo carga de datos, validación topológica, COGO y firma digital. Los demás portales son versiones especializadas con acceso restringido y funciones segmentadas.
   </div>
 </main>
 
@@ -1104,76 +1107,60 @@
     <li><strong>Tierras Indígenas (INDI - Ley 904/81):</strong> Imprescriptibles e inembargables. Cualquier subdivisión sobre ellas es nula de pleno derecho.</li>
   </ul>
 
-  <h3 id="s8-3">8.3 Firmas Electrónicas Cualificadas y Sellos Institucionales (4 Slots - Ley 6822/2021)</h3>
-  
+<h3 id="s8-3">8.3 Firmas Electrónicas Cualificadas y Sellos Institucionales (4 Slots - Ley 6822/2021)</h3>
+
   <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:10px 14px; margin-bottom:12px;">
     <span style="color:#be123c; font-weight:bold; font-size:0.85rem;">🕐 REVISIÓN HISTÓRICA / REGLA AJUSTADA:</span>
     <span style="color:#881337; font-size:0.82rem;"> Se conserva tachada la redacción preliminar y se actualiza a la jerarquía oficial implementada en <code>js/signatureManager.js</code> bajo la Ley N° 6822/2021 y Resolución SNC N° 551/2023:</span>
   </div>
 
-  <div style="text-decoration:line-through; color:#6b7280; opacity:0.75; margin-bottom:1rem;">
-    <p>El sistema implementa una jerarquía estricta de validación mediante js/signatureManager.js:</p>
-    <div class="flow" style="background:#f3f4f6;">
-      <div class="row"><div class="num" style="background:#9ca3af;">1</div><div class="step">Slot 1: Responsable Técnico (Perito Agrimensor con Matrícula MOPC/SNC).</div></div>
-      <div class="row"><div class="num" style="background:#9ca3af;">2</div><div class="step">Slot 2: Revisor Municipal (Director de Catastro u Obras Municipales).</div></div>
-      <div class="row"><div class="num" style="background:#9ca3af;">3</div><div class="step">Slot 3: Calificador Técnico Catastral (Servicio Nacional de Catastro).</div></div>
-      <div class="row"><div class="num" style="background:#9ca3af;">4</div><div class="step">Slot 4: Autoridad Resolutiva (Director del SNC / RUN). Emisión del Certificado definitivo.</div></div>
-    </div>
-  </div>
-
-  <p>El sistema implementa el <strong>Protocolo Gubernamental Oficial de Firmas y Sellos</strong> mediante <code>js/signatureManager.js</code>, garantizando el estricto cumplimiento de la <strong>Ley N° 6822/2021</strong> (Servicios de Confianza y Firma Digital Cualificada) y la <strong>Resolución SNC N° 551/2023</strong>. Se establecen 4 slots jerárquicos con distinción técnica estricta entre <em>Sellos Internos Institucionales</em> y <em>Firmas Digitales Cualificadas</em>:</p>
-
-  <div class="flow">
+  <div class="flow" style="border-color:#0f172a; border-width:2px;">
     <div class="row">
-      <div class="num">1</div>
+      <div class="num" style="background:#1d4ed8;">1</div>
       <div class="step">
-        <strong>Slot 1 (slot_profesional): Responsable Técnico de Agrimensura</strong> <span class="badge-tag badge-blue">Firma Digital Cualificada</span><br>
-        <em>Rol Requerido:</em> <code>AGRIMENSOR_TOPOGRAFO</code> (Perito Agrimensor con Matrícula habilitante MOPC/SNC).<br>
-        <em>Alcance:</em> Declaración jurada de mensura, georreferenciación y responsabilidad técnica del profesional actuante. <strong>Obligatorio para dictamen definitivo.</strong>
+        <strong>Slot 1 (slot_profesional)</strong> <span class="badge-tag badge-blue">Firma Digital Cualificada</span><br>
+        <em>Rol:</em> <code>AGRIMENSOR_TOPOGRAFO</code><br>
+        <em>Alcance:</em> Declaración jurada de mensura, georreferenciación y responsabilidad técnica. <strong>Obligatorio definitivo.</strong>
       </div>
     </div>
+    <div class="arrow">↓</div>
     <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">2</div>
+      <div class="num" style="background:#b45309;">2</div>
       <div class="step">
-        <strong>Slot 2 (slot_revisor): Control Técnico y Topológico</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
-        <em>Rol Requerido:</em> <code>REVISOR_TECNICO</code> (Revisor Municipal de Catastro u Obras / Técnico Calificador SNC).<br>
-        <em>Alcance:</em> Sello institucional de control preliminar de topología, no superposición y consistencia de atributos. Trámite en revisión interna.
+        <strong>Slot 2 (slot_revisor)</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
+        <em>Rol:</em> <code>REVISOR_TECNICO</code><br>
+        <em>Alcance:</em> Control preliminar de topología, no superposición y consistencia de atributos.
       </div>
     </div>
+    <div class="arrow">↓</div>
     <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">3</div>
+      <div class="num" style="background:#b45309;">3</div>
       <div class="step">
-        <strong>Slot 3 (slot_fiscalizador): Fiscalización y Dictamen</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
-        <em>Rol Requerido:</em> <code>JEFE_FISCALIZACION</code> (Jefatura de Fiscalización Catastral y Registral).<br>
-        <em>Alcance:</em> Visto bueno interno de la jefatura técnica y verificación del cumplimiento normativo de tolerancias e informes periciales.
+        <strong>Slot 3 (slot_fiscalizador)</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
+        <em>Rol:</em> <code>JEFE_FISCALIZACION</code><br>
+        <em>Alcance:</em> Visto bueno interno de la jefatura técnica y verificación del cumplimiento normativo.
       </div>
     </div>
+    <div class="arrow">↓</div>
     <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">4</div>
+      <div class="num" style="background:#15803d;">4</div>
       <div class="step">
-        <strong>Slot 4 (slot_director): Aprobación y Homologación Oficial</strong> <span class="badge-tag badge-green">Firma Digital Cualificada</span><br>
-        <em>Rol Requerido:</em> <code>AUTORIDAD_RESOLUTIVA</code> (Director General del SNC / Intendente Municipal / Director RUN).<br>
-        <em>Alcance:</em> Firma digital cualificada de la máxima autoridad con emisión de Certificado Catastral definitivo y asignación de Padrón/CCC. <strong>Obligatorio definitivo.</strong>
+        <strong>Slot 4 (slot_director)</strong> <span class="badge-tag badge-green">Firma Digital Cualificada</span><br>
+        <em>Rol:</em> <code>AUTORIDAD_RESOLUTIVA</code><br>
+        <em>Alcance:</em> Firma digital cualificada de máxima autoridad con emisión de Certificado definitivo. <strong>Obligatorio definitivo.</strong>
       </div>
     </div>
   </div>
 
-  <p><strong>Regla de Negocio Gubernamental Estricta:</strong></p>
-  <ul>
-    <li><strong>Sellos Internos:</strong> Utilizados exclusivamente en etapas previas o en revisión (<code>BORRADOR</code>, <code>MESA_ENTRADA</code>, <code>ASIGNADO</code>, <code>EN_REVISION</code>, <code>OBSERVADO</code>, <code>REINGRESO</code>) mediante sellos institucionales circulares oficiales o rectangulares de visado.</li>
-    <li><strong>Firmas Digitales Cualificadas:</strong> Requisito infranqueable para etapas definitivas (<code>DICTAMEN</code>, <code>APROBADO_FISCALIZACION</code>, <code>FIRMADO_DIRECTOR</code>, <code>PADRON_ASIGNADO</code>).</li>
-    <li><strong>Seguridad Criptográfica:</strong> Validación automática de la cadena de confianza PKI (entidad emisora certificada por MIC), sellado de tiempo criptográfico (Timestamping según RFC 3161) y verificación de revocación en tiempo real mediante Lista de Certificados Revocados (CRL).</li>
-  </ul>
-
+  <div class="note">
+    <b>Reglas de negocio:</b>
+    <ul>
+      <li><strong>Sellos Internos:</strong> Uso exclusivo en etapas previas (<code>BORRADOR</code>, <code>MESA_ENTRADA</code>, <code>EN_REVISION</code>, <code>OBSERVADO</code>, <code>REINGRESO</code>).</li>
+      <li><strong>Firmas Digitales Cualificadas:</strong> Requisito infranqueable para etapas definitivas (<code>DICTAMEN</code>, <code>APROBADO_FISCALIZACION</code>, <code>FIRMADO_DIRECTOR</code>, <code>PADRON_ASIGNADO</code>).</li>
+      <li><strong>Seguridad Criptográfica:</strong> Validación PKI automática, sellado de tiempo RFC 3161 y verificación de revocación en CRL.</li>
+    </ul>
+  </div>
+</main>
   <h3 id="s8-4">8.4 Motor Espacial Soberano (Base de Datos, R-Tree y Vector Tiles)</h3>
   <p>El sistema incluye una arquitectura de base de datos y motor vectorial soberano, completamente local y sin depender de servidores externos. La documentación se encontraba fragmentada; aquí se detalla la integración:</p>
   <ul>
@@ -1198,25 +1185,25 @@
     <li><strong>Almacenamiento Offline:</strong> Las parcelas del distrito se guardan en IndexedDB del navegador para trabajo 100% desconectado en campo, sin necesidad de conexión a internet.</li>
     <li><strong>Base de Datos Local:</strong> <code>data/catastro_cache.db</code> (8.184 parcelas activas con columnas <code>minX, minY, maxX, maxY</code>) y <code>database/database.db</code> (SQLite mainstream). Ambos soportan la búsqueda R-Tree.</li>
   </ul>
-  <div class="flow" style="margin-top:1.2rem;">
-    <div class="row">
-      <div class="num">1</div>
-      <div class="step"><strong>Motor Soberano Local (SQLite + R-Tree)</strong><br><code>database/database.db</code><br><code>catastro_cache.db</code><br>Búsqueda colindante &lt; 3 ms</div>
+  <div class="flow" style="border-color:#0f172a; border-width:2px;">
+    <div class="row" style="background:#f0fdf4;">
+      <div class="num" style="background:#15803d;">1</div>
+      <div class="step"><strong>Motor Soberano Local (SQLite + R-Tree)</strong><br><code>database/database.db</code><br><code>catastro_cache.db</code><br><em>Búsqueda colindante &lt; 3 ms</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">2</div>
-      <div class="step"><strong>API Soberana (Express/Node)</strong><br><code>GET /api/v3/catastro/vector-view</code><br><code>minX · minY · maxX · maxY</code><br>Auth: Firebase Emulador (9099)</div>
+    <div class="row" style="background:#eff6ff;">
+      <div class="num" style="background:#1d4ed8;">2</div>
+      <div class="step"><strong>API Soberana (Express/Node)</strong><br><code>GET /api/v3/catastro/vector-view</code><br><code>minX · minY · maxX · maxY</code><br><em>Auth: Firebase Emulador (9099)</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">3</div>
-      <div class="step"><strong>Vector Tiles PMTiles (Cloudflare R2)</strong><br><code>*.pmtiles</code><br>17 Departamentos<br>MapLibre/Leaflet</div>
+    <div class="row" style="background:#fdf4ff;">
+      <div class="num" style="background:#7c3aed;">3</div>
+      <div class="step"><strong>Vector Tiles PMTiles (Cloudflare R2)</strong><br><code>*.pmtiles</code><br>17 Departamentos<br><em>MapLibre/Leaflet</em></div>
     </div>
     <div class="arrow">↓</div>
-    <div class="row">
-      <div class="num">4</div>
-      <div class="step"><strong>Offline Storage (IndexedDB)</strong><br><code>Navegador (100% local)</code><br>Cache de parcelas del distrito<br>Sin conexión</div>
+    <div class="row" style="background:#f5f3ff;">
+      <div class="num" style="background:#6d28d9;">4</div>
+      <div class="step"><strong>Offline Storage (IndexedDB)</strong><br><code>Navegador (100% local)</code><br><em>Cache de parcelas del distrito</em><br><em>Sin conexión</em></div>
     </div>
   </div>
   <div class="note">
@@ -1593,29 +1580,25 @@
 <main id="s11">
   <h2 class="sec">11. Guía Paso a Paso para el Operador</h2>
 
-  <div class="flow">
-    <div class="row">
-      <div class="num">1</div>
+  <div class="flow" style="border-color:#0f172a; border-width:2px;">
+    <div class="row" style="background:#eff6ff;">
+      <div class="num" style="background:#1f4fd0;">1</div>
       <div class="step">
         <strong>Paso 1: Cargar el Plano y Datos Tabulares</strong><br>
         Arrastra tu archivo Shapefile (ZIP con .shp, .shx, .dbf y .prj), DXF, KML o GeoJSON sobre el visor. Si tienes la planilla Excel oficial con los datos de los títulos, arrástrala simultáneamente para vincular propietarios y números de padrón.
       </div>
     </div>
-    <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">2</div>
+    <div class="arrow">↓</div>
+    <div class="row" style="background:#fffef5;">
+      <div class="num" style="background:#2563eb;">2</div>
       <div class="step">
         <strong>Paso 2: Ejecutar la Validación Pericial</strong><br>
         Haz clic en el botón <strong>"Validar"</strong>. El sistema verificará en milisegundos la proyección WGS84 UTM 21S/20S, la ausencia absoluta de superposiciones (0.000 m²) y que la diferencia de superficie cumpla con el margen admisible (±5% urbano / ±10% rural).
       </div>
     </div>
-    <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">3</div>
+    <div class="arrow">↓</div>
+    <div class="row" style="background:#fffef5;">
+      <div class="num" style="background:#2563eb;">3</div>
       <div class="step">
         <strong>Paso 3: Revisar el Diagnóstico y Parámetros Municipales</strong><br>
         Inspecciona el semáforo en el panel lateral:
@@ -1627,18 +1610,24 @@
         Verifica en la pestaña municipal el cumplimiento del 16% vial, 5%-7% de plazas y el indicador verde VEP (≥ 9.0 m²/hab).
       </div>
     </div>
-    <div class="row">
-      <div class="arrow">↓</div>
-    </div>
-    <div class="row">
-      <div class="num">4</div>
+    <div class="arrow">↓</div>
+    <div class="row" style="background:#fdf4ff;">
+      <div class="num" style="background:#7c3aed;">4</div>
       <div class="step">
-        <strong>Paso 4: Firmar Digitalmente y Descargar Entregables</strong><br>
-        Completa los datos del profesional actuante y aplica la firma digital cualificada (Slot 1). Luego, descarga los entregables con un solo clic:
+        <strong>Paso 4: Firmar Digitalmente</strong><br>
+        Completa los datos del profesional actuante y aplica la firma digital cualificada (Slot 1). Verifica el circuito de firmas (4 slots) antes de emitir el certificado definitivo.
+      </div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row" style="background:#f0f9ff;">
+      <div class="num" style="background:#0891b2;">5</div>
+      <div class="step">
+        <strong>Paso 5: Descargar Entregables</strong><br>
+        Descarga los entregables con un solo clic:
         <ul>
-          <li><strong>Certificar:</strong> Descarga el Certificado Preventivo en PDF y DOCX con QR y Hash SHA-256.</li>
-          <li><strong>Exportar DXF:</strong> Descarga el plano en AutoCAD R12 con capas oficiales.</li>
-          <li><strong>Exportar Shapefile:</strong> Descarga el paquete oficial ZIP de 4 archivos exigido por el SNC/RUN.</li>
+          <li><strong>Certificar:</strong> Certificado Preventivo en PDF y DOCX con QR y Hash SHA-256.</li>
+          <li><strong>Exportar DXF:</strong> Plano en AutoCAD R12 con capas oficiales.</li>
+          <li><strong>Exportar Shapefile:</strong> Paquete ZIP de 4 archivos exigido por el SNC/RUN.</li>
         </ul>
       </div>
     </div>
@@ -1757,7 +1746,7 @@
     <strong>SNC_v3 — Sistema Nacional de Catastro y Registro Unificado Nacional</strong><br>
     Manual Técnico y de Usuario Único Oficial · República del Paraguay · Actualizado al 2026-10-22.
   </div>
-</main>
+>
 
 </body>
 </html>

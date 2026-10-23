@@ -1,7 +1,59 @@
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
-import { resolve } from 'path';
-import { readFileSync } from 'fs';
+import { resolve, sep, extname } from 'path';
+import { readFileSync, existsSync, createReadStream } from 'fs';
+
+const DEV_VENDOR_FILES = {
+  '/vendor/leaflet.js': 'node_modules/leaflet/dist/leaflet.js',
+  '/vendor/leaflet.css': 'node_modules/leaflet/dist/leaflet.css',
+  '/vendor/turf.min.js': 'node_modules/@turf/turf/turf.min.js',
+  '/vendor/proj4.js': 'node_modules/proj4/dist/proj4.js',
+  '/vendor/xlsx.full.min.js': 'node_modules/xlsx/dist/xlsx.full.min.js',
+  '/vendor/xlsx.mjs': 'node_modules/xlsx/xlsx.mjs',
+  '/vendor/jszip.min.js': 'node_modules/jszip/dist/jszip.min.js',
+  '/vendor/jspdf.umd.min.js': 'node_modules/jspdf/dist/jspdf.umd.min.js',
+  '/vendor/jspdf.plugin.autotable.min.js': 'node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js',
+  '/vendor/shpwrite.js': 'node_modules/shp-write/shpwrite.js',
+  '/vendor/dxf-parser.js': 'node_modules/dxf-parser/dist/dxf-parser.js',
+  '/vendor/dom-to-image.min.js': 'node_modules/dom-to-image/dist/dom-to-image.min.js',
+  '/vendor/docx.mjs': 'node_modules/docx/dist/index.mjs',
+};
+const DEV_VENDOR_PREFIXES = {
+  '/vendor/fontawesome/': 'node_modules/@fortawesome/fontawesome-free/',
+};
+const MIME = {
+  '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.eot': 'application/vnd.ms-fontobject',
+};
+
+function devVendorPlugin() {
+  return {
+    name: 'snc-dev-vendor',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url || '').split('?')[0];
+        let rel = DEV_VENDOR_FILES[url];
+        if (!rel) {
+          const prefix = Object.keys(DEV_VENDOR_PREFIXES).find(p => url.startsWith(p));
+          if (prefix) rel = DEV_VENDOR_PREFIXES[prefix] + url.slice(prefix.length);
+        }
+        if (!rel) return next();
+        const nodeModules = resolve(__dirname, 'node_modules') + sep;
+        const abs = resolve(__dirname, rel);
+        if (!abs.startsWith(nodeModules) || !existsSync(abs)) return next();
+        res.setHeader('Content-Type', MIME[extname(abs)] || 'application/octet-stream');
+        createReadStream(abs).pipe(res);
+      });
+    },
+  };
+}
 
 export default defineConfig({
   root: '.',
@@ -81,6 +133,7 @@ export default defineConfig({
   
   // Plugins
   plugins: [
+    devVendorPlugin(),
     legacy({
       targets: ['defaults', 'not IE 11'],
       modernPolyfills: ['es/global-this', 'es.array.find', 'es.array.includes'],

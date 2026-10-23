@@ -266,6 +266,7 @@ def main() -> int:
     parser.add_argument("--all", action="store_true", help="Indexar todo el corpus indexable del repo")
     parser.add_argument("--commit", default=None, help="Commit con el que se marca el grafo (built_at_commit)")
     parser.add_argument("--dry-run", action="store_true", help="Solo calcula y muestra el resultado")
+    parser.add_argument("--force", action="store_true", help="Fuerza la sobreescritura de graph.json")
     args = parser.parse_args()
 
     if not GRAPH_JSON.exists():
@@ -394,7 +395,7 @@ def main() -> int:
         str(GRAPH_JSON),
         built_at_commit=args.commit,
         community_labels=labels,
-        force=G.number_of_nodes() < len(current),
+        force=args.force or (G.number_of_nodes() < len(current)),
     )
     if not wrote:
         return _fail("to_json rechazó escribir graph.json (guarda de reducción). Restaurá el respaldo si hace falta.")

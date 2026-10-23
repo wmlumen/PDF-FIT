@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notarial PY Pro — Escribanías PY · Ley 7.424/25 RUN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <script src="/vendor/leaflet.js"></script>
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #111827; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-500 flex items-center justify-center text-white shadow-lg shadow-amber-600/30">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          Notarial PY Pro <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">Escribanías PY</span>
+        </h1>
+        <p class="text-xs text-gray-400">Seguridad Jurídica Inmobiliaria · Ley 7.424/25 RUN · Res. SNC 551/2023</p>
+      </div>
+    </div>
+
+    <!-- Navegación cruzada -->
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <a href="/" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors border border-gray-700 flex items-center gap-1.5">
+        <span>📐</span> Portal Profesional
+      </a>
+      <a href="/municipal/" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors border border-gray-700 flex items-center gap-1.5">
+        <span>🏛️</span> Portal Municipal
+      </a>
+      <a href="/ciudadano/" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors border border-gray-700 flex items-center gap-1.5">
+        <span>👥</span> Portal Ciudadano
+      </a>
+      <a href="/admin/" class="px-3 py-1.5 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/40 font-semibold transition-colors flex items-center gap-1.5">
+        <span>🛡️</span> Super Admin
+      </a>
+    </div>
+  </header>
+
+  <!-- Enlaces oficiales -->
+  <div class="bg-gray-900/60 border-b border-gray-800 px-6 py-2 flex flex-wrap items-center justify-between text-xs text-gray-400">
+    <div class="flex items-center gap-4">
+      <span class="font-medium text-gray-300">Geoportales Oficiales:</span>
+      <a href="https://catastro.gov.py" target="_blank" rel="noopener" class="text-amber-400 hover:underline flex items-center gap-1">
+        SNC Catastro Nacional (catastro.gov.py) ↗
+      </a>
+      <a href="https://run.gov.py" target="_blank" rel="noopener" class="text-blue-400 hover:underline flex items-center gap-1">
+        Registro Unificado Nacional (run.gov.py) ↗
+      </a>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span>Interconexión B2B2G Activa</span>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Panel Izquierdo: Mapa & Due Diligence (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-6">
+      <!-- Mapa -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-xl flex flex-col relative">
+        <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <span>🗺️</span> Visor Cartográfico e Inmueble Notarial
+          </h2>
+          <span class="text-xs text-gray-400">Coordenadas EPSG:32721 (WGS84 / UTM 21S)</span>
+        </div>
+        <div class="relative w-full h-[420px]">
+          <div id="notary-map" class="h-full w-full bg-gray-950"></div>
+          <!-- SELECTOR DE MAPA BASE FLOTANTE -->
+          <div id="map-base-selector" class="absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
+            <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
+            <div id="map-base-menu" class="map-base-menu" hidden>
+              <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+                <span class="map-menu-heading">Mapa base</span>
+                <button type="button" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (por defecto)" role="radio" aria-checked="true"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+                <button type="button" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+                <button type="button" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+                <button type="button" class="map-selector-btn" data-layer="catastro" title="SNC Catastro oficial" role="radio" aria-checked="false"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+                <button type="button" class="map-selector-btn" data-layer="carto_dark" title="Oscuro CartoDB" role="radio" aria-checked="false"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+                <button type="button" class="map-selector-btn" data-layer="topo" title="Topográfico OpenTopoMap" role="radio" aria-checked="false"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auditoría y Due Diligence -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>🛡️</span> Due Diligence Notarial Preventivo (Semáforo de Riesgo)
+          </h3>
+          <button id="btn-run-audit" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition-colors">
+            Ejecutar Validación
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div class="p-3 rounded-lg bg-gray-800/60 border border-gray-700/60">
+            <span class="text-xs text-gray-400 block mb-1">Condición Registral DGRP</span>
+            <select id="sel-dgrp-estado" class="w-full bg-gray-900 border border-gray-700 rounded text-xs px-2.5 py-1.5 text-white">
+              <option value="LIBRE">Libre de Gravamen</option>
+              <option value="HIPOTECA">Con Hipoteca Vigente</option>
+              <option value="EMBARGO">Embargo Ejecutivo</option>
+              <option value="LITIS">Litispendencia / Medida Cautelar</option>
+              <option value="INHIBICION">Titular Inhibido</option>
+            </select>
+          </div>
+          <div class="p-3 rounded-lg bg-gray-800/60 border border-gray-700/60">
+            <span class="text-xs text-gray-400 block mb-1">Franja Hídrica (Ley 3239/07)</span>
+            <span id="audit-hidrica" class="text-xs font-semibold text-emerald-400">Sin Afectación ( > 30m )</span>
+          </div>
+          <div class="p-3 rounded-lg bg-gray-800/60 border border-gray-700/60">
+            <span class="text-xs text-gray-400 block mb-1">Superposición Linderos</span>
+            <span id="audit-linderos" class="text-xs font-semibold text-emerald-400">Tolerancia 0.00% SNC</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Derecho: Liquidación Notarial & Minuta (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      <!-- Calculadora de Liquidación de Transferencia -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+        <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span>💰</span> Liquidación de Gastos de Transferencia e Impuestos
+        </h3>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-400 mb-1">Valor Fiscal (PYG)</label>
+              <input type="number" id="inp-val-fiscal" value="150000000" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-400 mb-1">Precio de Venta (PYG)</label>
+              <input type="number" id="inp-val-venta" value="280000000" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-amber-500">
+            </div>
+          </div>
+          <button id="btn-notary-calc" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-md">
+            Calcular Gastos y Aranceles Notariales
+          </button>
+          <div class="p-4 rounded-lg bg-gray-950 border border-gray-800 flex items-center justify-between mt-3">
+            <div>
+              <span class="text-xs text-gray-400 block">Total Estimado Gastos de Transferencia</span>
+              <span id="out-total-gastos" class="text-xl font-bold text-amber-400">PYG 11.200.000</span>
+            </div>
+            <span class="text-[10px] text-gray-500">Arancel + DGRP + IRP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minuta Notarial Automatizada -->
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>📜</span> Cláusula de Linderos y Minuta Notarial
+          </h3>
+          <button id="btn-copy-minuta" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-amber-300 rounded text-xs transition-colors border border-amber-500/30">
+            Copiar Minuta
+          </button>
+        </div>
+        <textarea id="out-minuta-text" rows="11" readonly class="w-full flex-1 p-3 bg-gray-950 border border-gray-800 rounded-lg text-gray-300 text-xs font-mono scrollbar-thin resize-none focus:outline-none">PRIMERA: LINDEROS Y DIMENSIONES TÉCNICAS (CONFORME A PLANO CATASTRAL):
+El inmueble objeto de la presente transferencia individualizado como Padrón Nº 4.521, Finca Nº 1.208 del Distrito de Piribebuy, Departamento de Cordillera, cuenta con una SUPERFICIE TOTAL de 1.250,45 m² (Mil doscientos cincuenta metros cuadrados con cuarenta y cinco decímetros cuadrados), cuyas medidas y linderos son los siguientes:
+- AL NORTE: Mide 25,00 metros, linda con la Calle Municipal de 16 metros de ancho oficial;
+- AL SUR: Mide 25,00 metros, linda con la Parcela 08, Padrón 4.522;
+- AL ESTE: Mide 50,02 metros, linda con el Lote 02;
+- AL OESTE: Mide 50,02 metros, linda con la Finca 1.200.
+Coordenadas Geodésicas de Referencia en Proyección UTM Zona 21 Sur, Datum SIRGAS2000 / WGS84, en cumplimiento de la Resolución SNC Nº 551/2023 y Ley Nº 7.424/2025 del Registro Unificado Nacional (RUN).</textarea>
+      </div>
+    </div>
+  </main>
+
+  <!-- Script initialization -->
+  <script src="/js/mapLayoutManager.js"></script>
+  <script src="/js/basemapMenu.js"></script>
+  <script type="module">
+    import { AppNotarial } from '/js/app-notarial.js';
+    document.addEventListener('DOMContentLoaded', () => {
+      AppNotarial.init();
+    });
+  </script>
+</body>
+</html>

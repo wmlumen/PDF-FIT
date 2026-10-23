@@ -1,0 +1,370 @@
+/* poutModule.css — Sistema Digital POUT Municipal para SNC_v3
+   Basado en variables de color y estructura de surveyModule.css / planModule.css
+   Tokens alineados al esquema institucional del SNC. */
+:root {
+  /* Paleta primaria SNC (catastro) */
+  --color-primary:        #1d4ed8;
+  --color-primary-light:  #3b82f6;
+  --color-secondary:      #0f766e;
+  --color-accent:         #14b8a3;
+  --color-success:        #059669;
+  --color-warning:        #d97706;
+  --color-danger:         #b91c1c;
+  --color-info:           #0284c7;
+
+  /* Neutros */
+  --color-muted:          #6b7280;
+  --color-text:           #1e293b;
+  --color-text-light:     #f8fafc;
+  --color-border:         #e5e7eb;
+  --color-card:           #ffffff;
+  --color-bg:             #f8fafc;
+  --color-bg-alt:         #f1f5f9;
+  --color-sidebar:        #0f172a;
+  --color-sidebar-border: #1e293b;
+
+  --radius:               8px;
+  --radius-lg:            12px;
+  --radius-sm:            6px;
+  --shadow-sm:            0 1px 2px rgba(0,0,0,0.05);
+  --shadow:               0 4px 6px -1px rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg:            0 10px 25px rgba(0,0,0,0.12);
+
+  /* Badges de estado POUT */
+  --badge-aprobado:       #dcfce7;
+  --badge-aprobado-fg:    #15803d;
+  --badge-proceso:        #fef3c7;
+  --badge-proceso-fg:     #b45309;
+  --badge-pendiente:      #dbeafe;
+  --badge-pendiente-fg:   #1d4ed8;
+  --badge-anulado:        #fee2e2;
+  --badge-anulado-fg:     #b91c1c;
+}
+
+/* ===== Reset base */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ===== Contenedor principal */
+#app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ===== Header del módulo */
+.mod-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.mod-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mod-icon {
+  font-size: 1.6rem;
+}
+
+.mod-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.mod-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.mod-header__right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ===== Pestañas */
+.mod-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--color-bg-alt);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* ===== Contenido */
+.mod-content {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tab-panel {
+  display: none;
+  padding: 1rem 0;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ===== Tarjetas */
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card p {
+  margin: 0 0 0.6rem;
+  color: #4b5563;
+}
+
+/* ===== Texto secundario */
+.muted {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+/* ===== Grid de indicadores */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.grid__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.85rem;
+}
+
+.grid__row:last-child {
+  border-bottom: none;
+}
+
+/* ===== Inputs */
+.input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(29, 78, 226, 0.15);
+}
+
+/* select.input */
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280'%3E%3Cpath d='M7 10L3 6h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 2rem;
+}
+
+/* ===== Botones */
+.btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+.btn--primary:hover:not(:disabled) { background: var(--color-primary-light); }
+
+.btn--secondary {
+  background: #e5e7eb;
+  color: #111827;
+  border-color: #d1d5db;
+}
+.btn--secondary:hover:not(:disabled) { background: #d1d5db; }
+
+.btn--success {
+  background: var(--color-success);
+  color: #ffffff;
+  border-color: var(--color-success);
+}
+.btn--success:hover:not(:disabled) { background: #04783; }
+
+.btn--warning {
+  background: var(--color-warning);
+  color: #ffffff;
+  border-color: var(--color-warning);
+}
+.btn--warning:hover:not(:disabled) { filter: brightness(0.9); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-muted);
+  border-color: var(--color-border);
+}
+.btn--ghost:hover:not(:disabled) { background: #f3f4f6; color: #111827; }
+
+.action-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ===== Badges de estado POUT */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-aprobado   { background: var(--badge-aprobado);   color: var(--badge-aprobado-fg); }
+.badge-proceso    { background: var(--badge-proceso);    color: var(--badge-proceso-fg); }
+.badge-pendiente  { background: var(--badge-pendiente);  color: var(--badge-pendiente-fg); }
+.badge-anulado    { background: var(--badge-anulado);    color: var(--badge-anulado-fg); }
+
+/* ===== Leyenda de recursos (4.1) */
+.resource-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+.resource-table th {
+  background: var(--color-primary);
+  color: #ffffff;
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  font-size: 0.78rem;
+}
+.resource-table td {
+  border: 1px solid var(--color-border);
+  padding: 0.45rem 0.6rem;
+  vertical-align: top;
+}
+.resource-table tr:nth-child(even) td { background: #f8fafc; }
+.resource-table a { color: var(--color-info); text-decoration: none; word-break: break-all; }
+.resource-table a:hover { text-decoration: underline; }
+
+/* ===== Notas / llamadas */
+.note, .callout {
+  padding: 0.75rem 1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.88rem;
+  margin: 0.75rem 0;
+}
+.note   { background: #eff6ff; border-left: 4px solid var(--color-info);   color: #1e3a8a; }
+.callout { background: #fffbeb; border-left: 4px solid var(--color-warning); color: #78350a; }
+
+/* ===== Estilos institucionales heredados del spec (flow-step / section-desc) */
+.section-desc { padding:0.8rem; background:#f1f5f9; border-radius:8px; font-size:0.95rem; margin:0.75rem 0; }
+.flow-step { background:#eff6ff; border:1px solid #93c5fd; border-radius:6px; padding:0.8rem; margin:0.5rem 0; font-size:0.9rem; }
+.flow-arrow { font-size:1.2rem; color:#6b7280; text-align:center; margin:0.3rem 0; }
+
+/* ===== Badges del spec POUT (estado de vigencia) */
+.badge-vigente { background:#dcfce7; color:#15803d; }
+.badge-obsoleto { background:#fee2e2; color:#b91c1c; }
+.badge-pendiente { background:#fef3c7; color:#b45309; }
+
+/* ===== Footer del módulo */
+footer.pout-footer {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+/* ===== Mapa del geoportal */
+#pout-map {
+  width: 100%;
+  height: 420px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.leaflet-container { height: 100%; }
+
+/* ===== Responsivo */
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+  .action-row { flex-direction: column; }
+}

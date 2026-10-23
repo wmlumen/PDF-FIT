@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generación de Planos — SNC_v3</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/modules/planModule/planModule.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.draw@1.0.4/dist/leaflet.draw.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="mod-header">
+      <div class="mod-header__left">
+        <span class="mod-icon">📐</span>
+        <div>
+          <h2>Generación de Planos</h2>
+          <p class="mod-sub">Plano planimétrico, altimétrico y exportación de documentos para la parcela.</p>
+        </div>
+      </div>
+      <div class="mod-header__right">
+        <button id="btnExport" class="btn btn--primary">📄 Exportar PDF</button>
+      </div>
+    </header>
+
+    <div class="mod-tabs">
+      <button class="tab active" data-tab="plano">📐 Plano planimétrico</button>
+      <button class="tab" data-tab="altimetro">⛰️ Plano altimétrico</button>
+      <button class="tab" data-tab="electronico">🔗 Certificado electrónico</button>
+      <button class="tab" data-tab="maps">🗺️ Vista en el mapa</button>
+    </div>
+
+    <div class="mod-content">
+      <!-- PLANIMÉTRICO -->
+      <section id="tab-plano" class="tab-panel active">
+        <div class="card">
+          <h3>Plano planimétrico</h3>
+          <p class="muted">Plan que muestra las líneas, distancias, áreas y coordenadas de la parcela.</p>
+          <div class="grid">
+            <div class="grid__row"><span class="muted">Distancia total:</span><strong id="pDistTotal">—</strong></div>
+            <div class="grid__row"><span class="muted">Área:</span><strong id="pAreaTotal">—</strong></div>
+            <div class="grid__row"><span class="muted">Coordenadas iniciales:</span><strong id="pCoordIni">—</strong></div>
+            <div class="grid__row"><span class="muted">N° de puntos:</span><strong id="pPuntosN">—</strong></div>
+          </div>
+          <div class="action-row">
+            <button id="btnRenderPlano" class="btn btn--primary">🖼️ Renderizar plano</button>
+            <button id="btnExportPDF" class="btn btn--secondary">📄 Exportar PDF</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ALTIMÉTRICO -->
+      <section id="tab-altimetro" class="tab-panel">
+        <div class="card">
+          <h3>Plano altimétrico</h3>
+          <p class="muted">Plan que muestra la pendiente, elevación máxima y diferencias de nivel.</p>
+          <div id="altiPreview" class="grid">
+            <div class="grid__row"><span class="muted">Altitud promedio:</span><strong id="aProm">—</strong></div>
+            <div class="grid__row"><span class="muted">Altitud máxima:</span><strong id="aMax">—</strong></div>
+            <div class="grid__row"><span class="muted">Diferencia de nivel:</span><strong id="aDif">—</strong></div>
+            <div class="grid__row"><span class="muted">Pendiente (promedio):</span><strong id="aPend">—</strong></div>
+          </div>
+          <button id="btnCalcAlt" class="btn btn--primary">🔢 Calcular altimetría</button>
+        </div>
+      </section>
+
+      <!-- CERTIFICADOS -->
+      <section id="tab-electronico" class="tab-panel">
+        <div class="card">
+          <h3>Certificado electrónico</h3>
+          <p class="muted">Certificado de parcella con sello digital y datos catastrales.</p>
+          <div class="card" style="background:#fafafa;padding:1rem;border:1px solid #e5e7eb;border-radius:6px;">
+            <table class="cert-table">
+              <tr><td>Parcelable:</td><td><strong id="certParcel">—</strong></td></tr>
+              <tr><td>Municipio:</td><td><strong id="certMunicipio">—</strong></td></tr>
+              <tr><td>Uso:</td><td><strong id="certUso">—</strong></td></tr>
+              <tr><td>Superficie:</td><td><strong id="certArea">—</strong> m²</td></tr>
+              <tr><td>Distancia total:</td><td><strong id="certDist">—</strong> m</td></tr>
+              <tr><td>Fecha:</td><td><strong id="certFecha">—</strong></td></tr>
+            </table>
+          </div>
+          <button id="btnSello" class="btn btn--primary" disabled>🔏 Aplicar sello digital</button>
+          <button id="btnExportCert" class="btn btn--secondary" disabled>📄 Exportar PDF certificado</button>
+        </div>
+      </section>
+
+      <!-- MAPA -->
+      <section id="tab-maps" class="tab-panel">
+        <div id="map" class="map"></div>
+        <div class="card">
+          <h4>Navegación del mapa</h4>
+          <div class="toolbar-row">
+            <button id="btnClearPlano" class="btn btn--ghost">🗑️ Limpiar plano</button>
+            <button id="btnZoom" class="btn btn--secondary">🔍 Zoom al parcela</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turf@6.5.0/turf.min.js"></script>
+  <script src="/modules/planModule/planModule.js"></script>
+</body>
+</html>

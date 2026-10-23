@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - Catastro PY Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      background: #050505;
+      color: #e2e8f0;
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .login-card {
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 20px;
+      background: #0a0a0a;
+    }
+    .login-input {
+      background: #1e293b;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #fff;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .login-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    .login-btn {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .login-btn:hover:not(:disabled) {
+      background: #1a1a1a;
+      border-color: #555;
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .pw-toggle-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 14px;
+    }
+    .pw-toggle-btn:hover {
+      color: #e2e8f0;
+    }
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fca5a5;
+      font-size: 14px;
+      display: none;
+    }
+    .login-link {
+      color: #7dd3fc;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .login-link:hover {
+      text-decoration: underline;
+    }
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2563eb, #4338ca);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header style="border-bottom:1px solid #1e293b;padding:14px 0;">
+    <div style="max-width:1100px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="logo-icon">
+          <i class="fas fa-landmark"></i>
+        </div>
+        <span style="font-size:18px;font-weight:700;color:#fff;">Catastro PY Pro</span>
+      </div>
+      <a href="/index.html" class="login-link" style="font-size:14px;">
+        <i class="fas fa-arrow-left" style="margin-right:4px;"></i>Volver al inicio
+      </a>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+    <div class="login-card" style="width:100%;max-width:400px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 6px;">Iniciar Sesión</h1>
+        <p style="font-size:14px;color:#94a3b8;margin:0;">Ingrese sus credenciales para acceder al sistema</p>
+      </div>
+
+      <!-- Error Box -->
+      <div id="login-error" class="error-box" role="alert"></div>
+
+      <!-- Form -->
+      <form id="login-form" novalidate style="margin-top:16px;">
+        <!-- Email -->
+        <div style="margin-bottom:16px;">
+          <label for="login-email" style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">
+            Correo electrónico
+          </label>
+          <input
+            type="email"
+            id="login-email"
+            name="email"
+            class="login-input"
+            placeholder="correo@ejemplo.com"
+            autocomplete="email"
+          >
+        </div>
+
+        <!-- Password -->
+        <div style="margin-bottom:20px;">
+          <label for="login-password" style="display:block;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:6px;">
+            Contraseña
+          </label>
+          <div style="position:relative;">
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              class="login-input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              style="padding-right:44px;"
+            >
+            <button
+              type="button"
+              id="pw-toggle"
+              class="pw-toggle-btn"
+              aria-label="Mostrar contraseña"
+              aria-pressed="false"
+              style="position:absolute;right:6px;top:50%;transform:translateY(-50%);"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="login-submit" class="login-btn" style="width:100%;margin-bottom:16px;">
+          Ingresar
+        </button>
+      </form>
+
+      <!-- Links -->
+      <div style="text-align:center;font-size:14px;">
+        <div style="margin-bottom:8px;">
+          <a href="/recover.html" class="login-link">Olvidé mi contraseña</a>
+        </div>
+        <div>
+          <span style="color:#94a3b8;">¿No tiene cuenta?</span>
+          <a href="/register.html" class="login-link" style="margin-left:4px;">Crear cuenta</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid #1e293b;color:#64748b;font-size:11px;max-width:1100px;margin:0 auto;width:100%;padding-left:20px;padding-right:20px;">
+    <span>SNC v3 · Catastro PY Pro</span>
+    <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
+    <span style="display:flex;gap:14px;">
+      <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
+      <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
+    </span>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // DOM Elements
+      var form = document.getElementById('login-form');
+      var emailInput = document.getElementById('login-email');
+      var passwordInput = document.getElementById('login-password');
+      var errorBox = document.getElementById('login-error');
+      var submitBtn = document.getElementById('login-submit');
+      var pwToggle = document.getElementById('pw-toggle');
+      var pwIcon = pwToggle.querySelector('i');
+
+      // --- Password Toggle ---
+      pwToggle.addEventListener('click', function() {
+        var isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        pwToggle.setAttribute('aria-pressed', String(isPassword));
+        pwToggle.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        pwIcon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+      });
+
+      // --- Validation Helpers ---
+      function isValidEmail(email) {
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+      }
+
+      function clearError() {
+        errorBox.textContent = '';
+        errorBox.style.display = 'none';
+      }
+
+      function setLoading(loading) {
+        if (loading) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner"></span>Ingresando…';
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Ingresar';
+        }
+      }
+
+      // --- Error Message Mapping ---
+      function getErrorMessage(status, body) {
+        var serverMsg = body && body.message ? body.message : '';
+        switch (status) {
+          case 400:
+            return serverMsg || 'Datos inválidos. Verifique su correo y contraseña.';
+          case 401:
+            return 'Credenciales inválidas. Verifique su correo y contraseña.';
+          case 403:
+            return 'Su cuenta ha sido suspendida. Contacte al administrador.';
+          case 409:
+            return 'Conflicto con la cuenta. Contacte al administrador.';
+          case 429:
+            return 'Demasiados intentos. Por favor espere unos minutos.';
+          default:
+            if (status >= 500) {
+              return 'Error del servidor. Por favor intente más tarde.';
+            }
+            return serverMsg || 'Ocurrió un error inesperado. Intentelo de nuevo.';
+        }
+      }
+
+      // --- Form Submit ---
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearError();
+
+        var email = emailInput.value.trim();
+        var password = passwordInput.value;
+
+        // Local validation BEFORE API call
+        if (!email) {
+          showError('El correo electrónico es obligatorio.');
+          emailInput.focus();
+          return;
+        }
+        if (!isValidEmail(email)) {
+          showError('Ingrese un correo electrónico válido.');
+          emailInput.focus();
+          return;
+        }
+        if (!password) {
+          showError('La contraseña es obligatoria.');
+          passwordInput.focus();
+          return;
+        }
+
+        setLoading(true);
+
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email: email, password: password })
+        })
+        .then(function(response) {
+          return response.json().then(function(body) {
+            return { status: response.status, body: body };
+          });
+        })
+        .then(function(result) {
+          if (result.status === 200 || result.status === 201) {
+            var token = result.body.token;
+            if (token) {
+              localStorage.setItem('snc_token', token);
+            }
+            window.location.href = '/admin.html';
+          } else {
+            setLoading(false);
+            showError(getErrorMessage(result.status, result.body));
+          }
+        })
+        .catch(function() {
+          setLoading(false);
+          showError('Error de conexión. Verifique su red e intente de nuevo.');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

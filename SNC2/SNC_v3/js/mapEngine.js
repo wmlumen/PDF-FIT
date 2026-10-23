@@ -16,12 +16,62 @@ import * as ParaguayRef from './paraguayRef.js';
 import { State } from './state.js';
 import { showToast, calcularCentroide, simplifyGeometryIfNeeded, formatNumber, calcularMetricasPlanasUTM } from './utils.js';
 import LayerGuard from './layerGuard.js';
+import { analyzeCRS, reprojectFeatureCollection } from './crs.js';
+import LayerManager from './layerManager.js';
 import { GeometryHistory } from './geometryHistory.js';
 import { createLineageEvent, getParcelId } from './lineage.js';
 import { calculateRingSegments, formatMeters } from './segmentLengths.js';
 import { logger } from './logger.js';
+import { OsnapManager } from './osnapManager.js';
+
+/**
+ * Especificación de Panes y orden de apilamiento visual (Z-Index)
+ * Nivel 1: Mapas Base (pane-base, zIndex: 200)
+ * Nivel 2: Capas de Paraguay / Nacional (pane-paraguay, zIndex: 300)
+ * Nivel 3: Capas Agropecuarias MAG (pane-mag, zIndex: 400)
+ * Nivel 4: Capas Ambientales MADES (pane-mades, zIndex: 500)
+ * Nivel 5: Catastro SNC y Loteamientos (pane-catastro, zIndex: 600)
+ * Nivel 6: Municipio (pane-municipal, zIndex: 700)
+ * Nivel 7: Usuario (pane-usuario, zIndex: 800)
+ */
+export const LAYER_ZORDER = {
+    BASE: 0,
+    NACIONAL: 10,
+    PARAGUAY: 10,
+    MAG: 15,
+    MADES: 20,
+    MUNICIPAL: 30,
+    USER: 40,
+    USUARIO: 40,
+    OVERLAY: 50
+};
+
+export function sortLayersByZOrder(layers = []) {
+    return Array.isArray(layers) ? layers : [];
+}
+
+export const LAYER_PANES = {
+    BASE: { name: 'pane-base', zIndex: 200 },
+    PARAGUAY: { name: 'pane-paraguay', zIndex: 300 },
+    MAG: { name: 'pane-mag', zIndex: 400 },
+    MADES: { name: 'pane-mades', zIndex: 500 },
+    CATASTRO: { name: 'pane-catastro', zIndex: 600 },
+    MUNICIPAL: { name: 'pane-municipal', zIndex: 700 },
+    USUARIO: { name: 'pane-usuario', zIndex: 800 }
+};
+
+export function setupMapPanes(mapInstance) {
+    if (!mapInstance || typeof mapInstance.createPane !== 'function') return;
+    Object.values(LAYER_PANES).forEach(({ name, zIndex }) => {
+        if (!mapInstance.getPane(name)) {
+            const pane = mapInstance.createPane(name);
+            pane.style.zIndex = zIndex;
+        }
+    });
+}
 
 let map = null;
+let osnapManager = null;
 let parcelasLayer = null;
 let deptosLayer = null;
 let distritosLayer = null;
@@ -88,13 +138,33 @@ const TILE_LAYERS = {
     satellite: {
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attribution: '© ESRI World Imagery',
-        name: '🛰️ Satélite'
+        name: '🛰️ Satélite',
+        maxNativeZoom: 18
+    },
+    // CartoDB Positron
+    carto: {
+        url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        attribution: '© OpenStreetMap, © CARTO',
+        name: '🗺️ Carto Light'
+    },
+    // CartoDB Dark Matter
+    carto_dark: {
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        attribution: '© OpenStreetMap, © CARTO',
+        name: '🗺️ Carto Dark'
+    },
+    // CAD Atlas / Ejes viales
+    cad_atlas: {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '© CAD Atlas SNC',
+        name: '📐 CAD Atlas'
     },
     // Curvas de nivel topográficas (OpenTopoMap)
     topo: {
         url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
         attribution: '© OpenTopoMap (CC-BY-SA) | Datos: © OpenStreetMap contributors',
-        name: '⛰️ Curvas de nivel'
+        name: '⛰️ Curvas de nivel',
+        maxNativeZoom: 17
     },
     // Catastro oficial (WMS parcelas_activas) como capa base
     catastro: {
@@ -180,9 +250,10 @@ export async function init() {
                 map = L.map('map', {
                     center: MAP_CONFIG.center,
                     zoom: MAP_CONFIG.zoom,
-                    layers: [layers.satellite]
+                    layers: [layers.osm]
                 });
-                
+                setupMapPanes(map);
+
                 // Inicializar LayerGuard con el mapa
                 LayerGuard.init(map);
 
@@ -206,33 +277,6 @@ export async function init() {
                 // Escala
                 L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
 
-                // Botón para ir a Asunción
-                const homeControl = L.control({ position: 'topleft' });
-                homeControl.onAdd = () => {
-                    const div = L.DomUtil.create('div', 'leaflet-bar home-button');
-                    const button = L.DomUtil.create('a', 'home-map-button', div);
-                    button.href = '#';
-                    button.title = 'Vuelo a Asunción';
-                    button.setAttribute('aria-label', 'Vuelo a Asunción');
-                    button.innerHTML = '<i class="fas fa-plane-arrival"></i>';
-                    button.style.display = 'flex';
-                    button.style.alignItems = 'center';
-                    button.style.justifyContent = 'center';
-                    button.style.width = '34px';
-                    button.style.height = '34px';
-                    button.style.background = '#0f172a';
-                    button.style.color = '#93c5fd';
-                    button.style.fontSize = '15px';
-                    button.style.textDecoration = 'none';
-                    L.DomEvent.disableClickPropagation(div);
-                    L.DomEvent.on(button, 'click', (event) => {
-                        L.DomEvent.preventDefault(event);
-                        map.setView(MAP_CONFIG.center, MAP_CONFIG.zoom);
-                        showToast('Vuelo a Asunción', 'info');
-                    });
-                    return div;
-                };
-                homeControl.addTo(map);
 
                 // Control ubicado debajo del vuelo a Asunción: enfoca el polígono de trabajo.
                 const focusParcelControl = L.control({ position: 'topleft' });
@@ -261,12 +305,9 @@ export async function init() {
                 };
                 focusParcelControl.addTo(map);
 
-                // Integra el selector de mapas con los controles nativos en una sola barra visual.
-                const leftControls = map.getContainer().querySelector('.leaflet-top.leaflet-left');
+                // Selector de mapas base: permanece SOLO flotando en la esquina derecha arriba (right-3 top-3)
                 const baseSelector = document.getElementById('map-base-selector');
-                if (leftControls && baseSelector) {
-                    baseSelector.classList.add('leaflet-control');
-                    leftControls.appendChild(baseSelector);
+                if (baseSelector) {
                     L.DomEvent.disableClickPropagation(baseSelector);
                     L.DomEvent.disableScrollPropagation(baseSelector);
                 }
@@ -285,7 +326,7 @@ export async function init() {
                                 const tempLayer = L.geoJSON(geojson);
                                 const bounds = tempLayer.getBounds();
                                 if (bounds.isValid()) {
-                                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+                                    // map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 }); // Preserva vista por defecto OSM Pilar 16
                                     logger.debug('📍 Mapa ajustado a Paraguay');
                                 }
                             }
@@ -300,6 +341,12 @@ export async function init() {
                 window.addEventListener('resize', () => {
                     setTimeout(() => map && map.invalidateSize(), 100);
                 });
+
+                if (map) {
+                    osnapManager = new OsnapManager(map);
+                    window.OsnapManager = osnapManager;
+                    osnapManager.updateToolbarButtons();
+                }
 
                 resolve(map);
 
@@ -711,6 +758,16 @@ function ensureKeyboardShortcuts() {
     document.addEventListener('keydown', event => {
         const tag = event.target?.tagName?.toLowerCase();
         if (['input', 'textarea', 'select'].includes(tag)) return;
+        if (event.key === 'F3') {
+            event.preventDefault();
+            toggleOsnap();
+            return;
+        }
+        if (event.key === 'F11') {
+            event.preventDefault();
+            toggleOsnapTracking();
+            return;
+        }
         if (event.key === 'Escape' && vertexEditSession) {
             event.preventDefault();
             cancelVertexEdit();
@@ -959,14 +1016,123 @@ export function clearProjectLayer() {
  * Carga y renderiza un GeoJSON en el mapa.
  * @param {Object} geojson GeoJSON FeatureCollection de parcelas.
  */
+const VERTEX_LIMIT = 200;
+
+function utmCodeFor(lon) {
+    return lon < -60 ? 'EPSG:32720' : 'EPSG:32721';
+}
+
+function firstCoordinate(coords) {
+    let c = coords;
+    while (Array.isArray(c) && Array.isArray(c[0])) c = c[0];
+    return c;
+}
+
+function toUtmPoint(code, [x, y]) {
+    if (Math.abs(x) > 180 || Math.abs(y) > 90 || typeof proj4 === 'undefined') return [x, y];
+    return proj4(code === 'EPSG:32720' ? PROJ_32720 : PROJ_32721, [x, y]);
+}
+
+function utmVerticesText(code, points) {
+    const shown = points.slice(0, VERTEX_LIMIT).map(p => {
+        const [e, n] = toUtmPoint(code, p);
+        return `${e.toFixed(2)} ${n.toFixed(2)}`;
+    });
+    const rest = points.length - shown.length;
+    return shown.join(' | ') + (rest > 0 ? ` | … (+${rest})` : '');
+}
+
+export function enrichFeatures(fc) {
+    for (const f of fc?.features || []) {
+        const g = f?.geometry;
+        if (!g?.coordinates) continue;
+        f.properties = f.properties || {};
+        const [lon] = firstCoordinate(g.coordinates);
+        const code = Math.abs(lon) > 180 ? 'EPSG:32721' : utmCodeFor(lon);
+        f.properties.ZONA_UTM = code === 'EPSG:32720' ? '20S' : '21S';
+
+        if (g.type === 'Polygon' || g.type === 'MultiPolygon') {
+            const ring = g.type === 'Polygon' ? g.coordinates[0] : (g.coordinates[0]?.[0] || []);
+            const m = calcularMetricasPlanasUTM({ type: 'Feature', geometry: g }, code);
+            f.properties.AREA_M2 = Number(m.areaM2.toFixed(2));
+            f.properties.PERIMETRO_M = Number(m.perimeterM.toFixed(2));
+            f.properties.VERTICES_UTM = utmVerticesText(code, ring.slice(0, -1));
+        } else if (g.type === 'LineString' || g.type === 'MultiLineString') {
+            const line = g.type === 'LineString' ? g.coordinates : g.coordinates.flat();
+            const pts = line.map(p => toUtmPoint(code, p));
+            let len = 0;
+            for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+            f.properties.LONGITUD_M = Number(len.toFixed(2));
+            f.properties.VERTICES_UTM = utmVerticesText(code, line);
+        } else if (g.type === 'Point') {
+            const [e, n] = toUtmPoint(code, g.coordinates);
+            f.properties.COORD_E = Number(e.toFixed(2));
+            f.properties.COORD_N = Number(n.toFixed(2));
+        }
+    }
+    return fc;
+}
+
+function layerFeaturePopupHtml(title, feature) {
+    const p = feature.properties || {};
+    const esc = v => String(v ?? '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+    const metric = p.AREA_M2 != null
+        ? `Área: <b>${formatNumber(p.AREA_M2, 2)} m²</b> · Perímetro: <b>${formatNumber(p.PERIMETRO_M, 2)} m</b>`
+        : p.LONGITUD_M != null
+            ? `Longitud: <b>${formatNumber(p.LONGITUD_M, 2)} m</b>`
+            : p.COORD_E != null
+                ? `Coordenadas UTM: <b>${formatNumber(p.COORD_E, 2)} E · ${formatNumber(p.COORD_N, 2)} N</b>`
+                : '';
+    const attrs = Object.entries(p)
+        .filter(([k]) => k !== 'VERTICES_UTM')
+        .slice(0, 12)
+        .map(([k, v]) => `<tr><td class="pr-2 align-top text-slate-400">${esc(k)}</td><td>${esc(v)}</td></tr>`)
+        .join('');
+    const vertices = String(p.VERTICES_UTM || '').split(' | ').slice(0, 30)
+        .map((v, i) => `<li><span class="text-slate-500">${i + 1}</span> ${esc(v)}</li>`).join('');
+    return `<div class="text-[11px] text-slate-200">
+        <div class="mb-1 font-bold text-white">${esc(title)}</div>
+        <div class="mb-2">${metric}</div>
+        <table class="mb-2 text-[10px]">${attrs}</table>
+        ${vertices ? `<div class="mb-1 text-[10px] text-cyan-300">Vértices UTM (zona ${esc(p.ZONA_UTM)})</div><ol class="max-h-32 overflow-y-auto font-mono text-[10px]">${vertices}</ol>` : ''}
+    </div>`;
+}
+
+let expedienteSaveTimer = null;
+
+function scheduleExpedienteSave(fc) {
+    clearTimeout(expedienteSaveTimer);
+    expedienteSaveTimer = setTimeout(() => {
+        layerDbCall('readwrite', store => store.put({ geojson: fc, name: State.get('sourceGeoFileName') || 'expediente', savedAt: Date.now() }, 'expediente-actual')).catch(() => {});
+    }, 1000);
+}
+
 export function loadGeoJSON(geojson) {
     if (!map) {
         logger.error('Mapa no inicializado');
         return;
     }
 
+    const crs = analyzeCRS(geojson, 'EPSG:4326');
+    if (crs.needsReprojection && crs.source) {
+        geojson = reprojectFeatureCollection(geojson, crs.source, 'EPSG:4326');
+        State.set('geojson', geojson);
+        recordCrsInfo('expediente-actual', {
+            name: State.get('sourceGeoFileName') || 'Expediente',
+            source: crs.source,
+            corrected: true,
+            confidence: crs.detected?.confidence ?? 0,
+            message: crs.message
+        });
+    }
+    enrichFeatures(geojson);
+    scheduleExpedienteSave(geojson);
+
     geometryHistory.syncExternal(geojson);
     updateHistoryControls();
+    if (osnapManager) {
+        osnapManager.setCandidatesFromGeoJSON(geojson);
+    }
 
     // Una actualización de atributos puede notificar el mismo GeoJSON. No se
     // debe quitar ni recrear una parcela que ya está en el mapa.
@@ -1378,17 +1544,90 @@ export function toggleMeasureMode() {
 
     if (measureMode) {
         map.getContainer().style.cursor = 'crosshair';
-        showToast('📏 Modo medición: haz clic en el mapa', 'info');
+        showToast('📏 Medición interactiva: Osnap (F3) y Tracking (F11) activos', 'info');
 
         let points = [];
         let line = null;
+        let previewLine = null;
+        let cursorMeasureTooltip = null;
         let markers = [];
+        let cotaMarkers = [];
+
+        if (!osnapManager) {
+            osnapManager = new OsnapManager(map);
+            window.OsnapManager = osnapManager;
+        }
+        const currentGeo = State.get('geojson');
+        if (currentGeo) {
+            osnapManager.setCandidatesFromGeoJSON(currentGeo);
+        }
+        osnapManager.enabled = true;
+        osnapManager.updateToolbarButtons();
+
+        const onMouseMove = (e) => {
+            const snapResult = osnapManager.processMouseMove(e.latlng);
+            if (points.length >= 1) {
+                const lastPt = points[points.length - 1];
+                const curTarget = [snapResult.lat, snapResult.lng];
+                if (!previewLine) {
+                    previewLine = L.polyline([lastPt, curTarget], {
+                        color: '#38bdf8',
+                        weight: 2,
+                        dashArray: '5, 5',
+                        interactive: false
+                    }).addTo(map);
+                } else {
+                    previewLine.setLatLngs([lastPt, curTarget]);
+                }
+
+                let distSeg = 0;
+                if (typeof turf !== 'undefined' && turf.distance && turf.point) {
+                    distSeg = turf.distance(
+                        turf.point([lastPt[1], lastPt[0]]),
+                        turf.point([curTarget[1], curTarget[0]]),
+                        { units: 'meters' }
+                    );
+                } else {
+                    const dLat = (curTarget[0] - lastPt[0]) * 111320;
+                    const dLng = (curTarget[1] - lastPt[1]) * 111320 * Math.cos(lastPt[0] * Math.PI / 180);
+                    distSeg = Math.hypot(dLat, dLng);
+                }
+
+                if (!cursorMeasureTooltip) {
+                    cursorMeasureTooltip = L.tooltip({
+                        permanent: true,
+                        direction: 'top',
+                        offset: [0, -12],
+                        className: 'bg-slate-900 text-cyan-300 text-xs px-2 py-0.5 rounded border border-cyan-500 shadow font-mono'
+                    }).setContent(`${distSeg.toFixed(2)} m`);
+                    map.openTooltip(cursorMeasureTooltip, curTarget);
+                } else {
+                    cursorMeasureTooltip.setLatLng(curTarget);
+                    cursorMeasureTooltip.setContent(`${distSeg.toFixed(2)} m`);
+                }
+            }
+        };
 
         const onClick = (e) => {
-            const { lat, lng } = e.latlng;
+            let preciseLatLng = e.latlng;
+            if (osnapManager.currentSnap) {
+                preciseLatLng = L.latLng(osnapManager.currentSnap.lat, osnapManager.currentSnap.lng);
+            } else if (osnapManager.currentTracking) {
+                preciseLatLng = L.latLng(osnapManager.currentTracking.projected.lat, osnapManager.currentTracking.projected.lng);
+            }
+
+            const { lat, lng } = preciseLatLng;
             points.push([lat, lng]);
 
-            const marker = L.marker([lat, lng]).addTo(map);
+            osnapManager.setAnchor({ lat, lng });
+
+            const marker = L.circleMarker([lat, lng], {
+                radius: 5,
+                color: '#ffffff',
+                weight: 2,
+                fillColor: '#ef4444',
+                fillOpacity: 1
+            }).addTo(map);
             markers.push(marker);
 
             if (points.length >= 2) {
@@ -1396,27 +1635,58 @@ export function toggleMeasureMode() {
                 line = L.polyline(points, { color: '#ef4444', weight: 3 }).addTo(map);
 
                 let totalDist = 0;
+                let lastSegDist = 0;
                 for (let i = 1; i < points.length; i++) {
                     const from = turf.point([points[i - 1][1], points[i - 1][0]]);
                     const to = turf.point([points[i][1], points[i][0]]);
-                    totalDist += turf.distance(from, to, { units: 'meters' });
+                    const segDist = turf.distance(from, to, { units: 'meters' });
+                    totalDist += segDist;
+                    if (i === points.length - 1) {
+                        lastSegDist = segDist;
+                    }
                 }
-                showToast(`📏 Distancia: ${totalDist.toFixed(2)} m`, 'info');
+
+                const prevPt = points[points.length - 2];
+                const midPt = [(prevPt[0] + lat) / 2, (prevPt[1] + lng) / 2];
+                const cotaMarker = L.marker(midPt, {
+                    interactive: false,
+                    icon: L.divIcon({
+                        className: 'measure-cota-badge',
+                        html: `<div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #38bdf8; color: #e0f2fe; font-family: monospace; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.4); white-space: nowrap;">${lastSegDist.toFixed(2)} m</div>`,
+                        iconAnchor: [30, 10]
+                    })
+                }).addTo(map);
+                cotaMarkers.push(cotaMarker);
+
+                showToast(`📏 Tramo: ${lastSegDist.toFixed(2)} m | Total: ${totalDist.toFixed(2)} m`, 'info');
             }
         };
 
+        map.on('mousemove', onMouseMove);
         map.on('click', onClick);
+
         const measureCleanup = () => {
             map.off('click', onClick);
+            map.off('mousemove', onMouseMove);
             markers.forEach(m => map.removeLayer(m));
+            cotaMarkers.forEach(c => map.removeLayer(c));
             if (line) map.removeLayer(line);
+            if (previewLine) map.removeLayer(previewLine);
+            if (cursorMeasureTooltip) map.closeTooltip(cursorMeasureTooltip);
+            if (osnapManager) {
+                osnapManager.clearVisuals();
+                osnapManager.setAnchor(null);
+            }
         };
 
-        // Exponer cleanup localmente para la desactivación controlada.
         State._measureCleanup = measureCleanup;
     } else {
         if (State._measureCleanup) State._measureCleanup();
         map.getContainer().style.cursor = '';
+        if (osnapManager) {
+            osnapManager.clearVisuals();
+            osnapManager.setAnchor(null);
+        }
         showToast('📏 Modo medición desactivado', 'info');
     }
 
@@ -1659,7 +1929,27 @@ async function performSplit(splitPoints) {
     if (saved) showToast(`Subdivisión completada: ${resultIds.length} parcelas resultantes`, 'success');
 }
 
-export function convertPointsToPolygon() {
+let barriosPromise = null;
+function cargarBarrios() {
+    barriosPromise ??= fetch('data/municipal/piribebuy/base/barrios.geojson')
+        .then(r => (r.ok ? r.json() : null))
+        .catch(() => null);
+    return barriosPromise;
+}
+
+async function identificarUbicacionPoligono(polygon) {
+    const [distritos, barrios] = await Promise.all([ParaguayRef.loadLayer('distritos'), cargarBarrios()]);
+    const interior = turf.pointOnFeature(polygon);
+    const distrito = (distritos?.features || []).find(f => turf.booleanPointInPolygon(interior, f))?.properties;
+    const barrio = (barrios?.features || []).find(f => turf.booleanPointInPolygon(interior, f))?.properties;
+    return {
+        DPTO_DESC: distrito?.DPTO_DESC,
+        DIST_DESC: distrito?.DIST_DESC || distrito?.DIST_DESC_,
+        BARRIO: barrio?.BARLO_DESC
+    };
+}
+
+export async function convertPointsToPolygon() {
     const geojson = State.get('geojson');
     if (!geojson) {
         showToast('No hay geometrías cargadas', 'error');
@@ -1691,6 +1981,7 @@ export function convertPointsToPolygon() {
         const polygon = turf.polygon([polygonCoords]);
         const metrics = calcularMetricasPlanasUTM(polygon, State.get('currentDisplayProjection'));
         const areaHas = metrics.areaM2;
+        const ubicacion = await identificarUbicacionPoligono(polygon);
 
         const newGeojson = {
             type: 'FeatureCollection',
@@ -1703,7 +1994,10 @@ export function convertPointsToPolygon() {
                     PERIMETRO_M: metrics.perimeterM,
                     PUNTOS_ORIG: points.length,
                     TIPO: 'secuencia_de_puntos',
-                    CIERRE: `P${polygonCoords.length - 1} → P1`
+                    CIERRE: `P${polygonCoords.length - 1} → P1`,
+                    DPTO_DESC: ubicacion?.DPTO_DESC,
+                    DIST_DESC: ubicacion.DIST_DESC,
+                    BARRIO: ubicacion.BARRIO
                 },
                 geometry: polygon.geometry
             }]
@@ -1781,6 +2075,271 @@ export function invalidateSize() {
     if (map) setTimeout(() => map && map.invalidateSize(), 100);
 }
 
+const PIRIBEBUY_LAYER_STYLES = {
+    barrios: { color: "#f59e0b", weight: 2, fillColor: "#fbbf24", fillOpacity: 0.12 },
+    vias: { color: "#f8fafc", weight: 2 },
+    hidro: { color: "#38bdf8", weight: 2 },
+    vertedero: { color: "#ef4444", weight: 2, fillColor: "#ef4444", fillOpacity: 0.25 },
+    vertedero_integrado: { color: "#fb7185", weight: 2, fillColor: "#f43f5e", fillOpacity: 0.2 },
+    centro: { color: "#f97316", radius: 6, fillColor: "#fb923c", fillOpacity: 0.9 },
+    vertedero_500: { color: "#f97316", weight: 2, fillColor: "#fb923c", fillOpacity: 0.12 },
+    vertedero_1000: { color: "#eab308", weight: 2, fillColor: "#facc15", fillOpacity: 0.08 },
+    vuelo_casco: { color: "#a78bfa", weight: 2, fillColor: "#8b5cf6", fillOpacity: 0.12 },
+    casco_historico: { color: "#34d399", weight: 2, fillColor: "#10b981", fillOpacity: 0.12 }
+};
+const PIRIBEBUY_FOLDER_BY_GROUP = { g_base: "base", g_vert: "vertedero", g_casco: "casco" };
+const piribebuyLayers = new Map();
+const userLayerData = new Map();
+const piribebuyCrsInfo = new Map();
+
+function normalizeLayerToWgs84(id, fc, node) {
+    const crs = analyzeCRS(fc, 'EPSG:4326');
+    piribebuyCrsInfo.set(id, {
+        name: node?.title || id,
+        source: crs.source,
+        corrected: crs.needsReprojection,
+        confidence: crs.detected?.confidence ?? 0,
+        message: crs.message
+    });
+    if (!crs.needsReprojection || !crs.source) return fc;
+    return reprojectFeatureCollection(fc, crs.source, 'EPSG:4326');
+}
+
+export function recordCrsInfo(id, info) {
+    piribebuyCrsInfo.set(id, info);
+}
+
+export function listPiribebuyCrs() {
+    return [...piribebuyCrsInfo.entries()].map(([id, info]) => ({ id, ...info }));
+}
+
+export function exportPiribebuyLayer(id, targetCode = 'EPSG:4326') {
+    const fc = { type: 'FeatureCollection', features: getPiribebuyFeatures(id) };
+    if (targetCode === 'EPSG:4326') return fc;
+    const projected = reprojectFeatureCollection(fc, 'EPSG:4326', targetCode);
+    return { ...projected, crs: { type: 'name', properties: { name: `urn:ogc:def:crs:${targetCode.replace(':', '::')}` } } };
+}
+
+function piribebuyUrl(node, id) {
+    const folder = PIRIBEBUY_FOLDER_BY_GROUP[node.parentId];
+    const path = `../data/municipal/piribebuy/${folder ? folder + "/" : ""}${encodeURIComponent(id)}.geojson`;
+    return new URL(path, import.meta.url);
+}
+
+const LAYER_DB = 'snc-layers';
+
+function layerDbCall(mode, action) {
+    return new Promise((resolve, reject) => {
+        const open = indexedDB.open(LAYER_DB, 1);
+        open.onupgradeneeded = () => open.result.createObjectStore('layers');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+            const tx = open.result.transaction('layers', mode);
+            const req = action(tx.objectStore('layers'));
+            tx.oncomplete = () => resolve(req?.result);
+            tx.onerror = () => reject(tx.error);
+        };
+    });
+}
+
+async function loadLayerSource(node, id) {
+    const url = piribebuyUrl(node, id);
+    let sig = null;
+    try {
+        const head = await fetch(url, { method: 'HEAD' });
+        if (head.ok) sig = head.headers.get('etag') || head.headers.get('content-length');
+    } catch {
+        sig = null;
+    }
+    if (sig) {
+        try {
+            const cached = await layerDbCall('readonly', store => store.get(`piribebuy:${id}`));
+            if (cached && cached.sig === sig) return { geojson: null, sig, cached };
+        } catch {
+            // Sin IndexedDB se carga siempre desde el archivo.
+        }
+    }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`No se pudo cargar la capa ${id} (HTTP ${response.status})`);
+    return { geojson: await response.json(), sig, cached: null };
+}
+
+function persistLayer(id, sig, geojson, info) {
+    layerDbCall('readwrite', store => store.put({ sig, geojson, info }, `piribebuy:${id}`)).catch(() => {});
+}
+
+export function registerUserLayer(id, geojson) {
+    userLayerData.set(id, geojson);
+}
+
+export function removePiribebuyLayer(id) {
+    const layer = piribebuyLayers.get(id);
+    if (layer && map?.hasLayer(layer)) map.removeLayer(layer);
+    piribebuyLayers.delete(id);
+    userLayerData.delete(id);
+}
+
+export async function togglePiribebuyLayer(id, visible, options = {}) {
+    if (!map) throw new Error("El mapa no está inicializado");
+    const node = LayerManager.get(id);
+    if (!node || node.kind === "group") throw new Error(`Capa Piribebuy desconocida: ${id}`);
+
+    if (!piribebuyScaleListenerBound) {
+        piribebuyScaleListenerBound = true;
+        map.on('zoomend moveend', syncPiribebuyScaleRange);
+    }
+    let layer = piribebuyLayers.get(id);
+    if (visible && !layer) {
+        const loaded = userLayerData.has(id)
+            ? { geojson: userLayerData.get(id), sig: null, cached: null }
+            : await loadLayerSource(node, id);
+        let geojson = loaded.cached?.geojson ?? loaded.geojson;
+        if (geojson?.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+            throw new Error(`GeoJSON inválido para la capa ${id}`);
+        }
+        if (loaded.cached) {
+            piribebuyCrsInfo.set(id, loaded.cached.info);
+        } else {
+            geojson = normalizeLayerToWgs84(id, geojson, node);
+            if (loaded.sig) persistLayer(id, loaded.sig, geojson, piribebuyCrsInfo.get(id));
+        }
+        enrichFeatures(geojson);
+        const style = node.style || PIRIBEBUY_LAYER_STYLES[id] || {};
+        layer = L.geoJSON(geojson, {
+            style: () => style,
+            onEachFeature: (feature, featureLayer) => {
+                featureLayer.on('click', event => {
+                    L.popup({ maxWidth: 360 })
+                        .setLatLng(event.latlng)
+                        .setContent(layerFeaturePopupHtml(LayerManager.get(id)?.title || id, feature))
+                        .openOn(map);
+                });
+            },
+            pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
+                radius: style.radius || 5,
+                color: style.color || "#f97316",
+                fillColor: style.fillColor || style.color || "#f97316",
+                fillOpacity: style.fillOpacity ?? 0.9,
+                weight: style.weight || 1
+            })
+        });
+        layer._sncFeatures = geojson.features;
+        layer.setStyle(stylerFor(id));
+        piribebuyLayers.set(id, layer);
+    }
+
+    if (visible && layer && !map.hasLayer(layer)) layer.addTo(map);
+    if (!visible && layer && map.hasLayer(layer)) map.removeLayer(layer);
+    LayerManager.setVisible(id, visible);
+    if (!options.deferRefresh) {
+        window.dispatchEvent(new CustomEvent("snc:layers-changed", { detail: { id, visible } }));
+    }
+    syncPiribebuyScaleRange();
+    return layer || null;
+}
+
+export function getPiribebuyFeatures(id) {
+    return piribebuyLayers.get(id)?._sncFeatures || [];
+}
+
+export function zoomToPiribebuyLayer(id) {
+    const layer = piribebuyLayers.get(id);
+    if (!map || !layer || !map.hasLayer(layer)) return false;
+    const bounds = layer.getBounds?.();
+    if (bounds?.isValid()) map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
+    return Boolean(bounds?.isValid());
+}
+
+export function getActiveLayersInfo() {
+    if (!map) return [];
+    const active = [];
+    Object.entries(baseLayers || {}).forEach(([id, layer]) => {
+        if (map.hasLayer(layer)) active.push({
+            id: `base-${id}`, title: TILE_LAYERS[id]?.name || id,
+            baseMap: true, style: {}, features: 0
+        });
+    });
+    piribebuyLayers.forEach((layer, id) => {
+        if (!map.hasLayer(layer)) return;
+        const node = LayerManager.get(id);
+        active.push({
+            id, title: node?.title || id, style: node?.style || PIRIBEBUY_LAYER_STYLES[id],
+            geometryType: node?.geometryType, sourcePath: node?.sourcePath,
+            features: layer._sncFeatures?.length || 0
+        });
+    });
+    if (parcelasLayer && map.hasLayer(parcelasLayer)) active.push({
+        id: "parcelas", title: "Parcelas del expediente", geometryType: "Polygon",
+        features: renderedGeojson?.features?.length || 0
+    });
+    return active;
+}
+
+function stylerFor(id) {
+    const node = LayerManager.get(id);
+    const base = PIRIBEBUY_LAYER_STYLES[id] || {};
+    const renderer = node?.renderer;
+    const opacity = node?.opacity ?? 1;
+    return feature => {
+        let color = base.color || "#f97316";
+        let fill = base.fillColor || color;
+        let weight = base.weight ?? 2;
+        if (renderer?.type === "single") {
+            color = renderer.stroke;
+            fill = renderer.fill;
+            weight = renderer.weight;
+        } else if (renderer?.type === "unique") {
+            const value = String(feature?.properties?.[renderer.field] ?? "");
+            color = fill = renderer.colors?.[value] || "#94a3b8";
+        }
+        return { color, fillColor: fill, weight, opacity, fillOpacity: (base.fillOpacity ?? 0.5) * opacity };
+    };
+}
+
+export function setPiribebuyOpacity(id, opacity) {
+    const layer = piribebuyLayers.get(id);
+    if (!layer) return false;
+    const node = LayerManager.get(id);
+    if (node) node.opacity = opacity;
+    layer.setStyle(stylerFor(id));
+    return true;
+}
+
+export function setPiribebuyRenderer(id, renderer) {
+    const layer = piribebuyLayers.get(id);
+    const node = LayerManager.get(id);
+    if (!node) return false;
+    node.renderer = renderer;
+    if (layer) layer.setStyle(stylerFor(id));
+    return true;
+}
+
+export function setPiribebuyDrawOrder(idsTopFirst) {
+    [...idsTopFirst].reverse().forEach(id => {
+        const layer = piribebuyLayers.get(id);
+        if (layer && map?.hasLayer(layer)) layer.bringToFront();
+    });
+}
+
+let piribebuyScaleListenerBound = false;
+
+export function syncPiribebuyScaleRange() {
+    if (!map) return;
+    const metersPerPixel = 156543.03392 * Math.cos(map.getCenter().lat * Math.PI / 180) / Math.pow(2, map.getZoom());
+    LayerManager.setCurrentScale(metersPerPixel / 0.00026458333);
+    LayerManager.layers().forEach(n => {
+        const layer = piribebuyLayers.get(n.id);
+        if (!layer) return;
+        const shouldShow = n.visible && LayerManager.isInScaleRange(n.id);
+        if (shouldShow && !map.hasLayer(layer)) layer.addTo(map);
+        if (!shouldShow && map.hasLayer(layer)) map.removeLayer(layer);
+    });
+}
+
+export function refreshActiveLayersUI() {
+    window.dispatchEvent(new CustomEvent("snc:layers-changed"));
+}
+
 export function setBaseLayer(name) {
     if (!map || !baseLayers) return false;
     const layer = baseLayers[name];
@@ -1790,6 +2349,10 @@ export function setBaseLayer(name) {
         if (map.hasLayer(lyr)) map.removeLayer(lyr);
     });
     if (!map.hasLayer(layer)) layer.addTo(map);
+    const targetMaxZoom = TILE_LAYERS[name]?.maxNativeZoom || 19;
+    if (typeof map.setMaxZoom === 'function') {
+        map.setMaxZoom(targetMaxZoom);
+    }
     document.querySelectorAll('[data-layer]').forEach(btn => btn.classList.toggle('active', btn.dataset.layer === name));
     const isLight = ['osm', 'topo', 'catastro'].includes(name);
     document.body.classList.toggle('map-base-light', isLight);
@@ -1797,8 +2360,28 @@ export function setBaseLayer(name) {
     return true;
 }
 
+export function toggleOsnap(force) {
+    if (!osnapManager && map) {
+        osnapManager = new OsnapManager(map);
+        window.OsnapManager = osnapManager;
+    }
+    return osnapManager ? osnapManager.toggleOsnap(force) : false;
+}
+
+export function toggleOsnapTracking(force) {
+    if (!osnapManager && map) {
+        osnapManager = new OsnapManager(map);
+        window.OsnapManager = osnapManager;
+    }
+    return osnapManager ? osnapManager.toggleTracking(force) : false;
+}
+
+export function getOsnapManager() {
+    return osnapManager;
+}
+
 // Exponer a window para compatibilidad con scripts globales
-window.MapEngine = { init, loadGeoJSON, clearProjectLayer, focusWorkPolygon, restoreStartupView, toggleSNCReferenceLayer, toggleDeptos, toggleDistritos, toggleMeasureMode, toggleSplitMode, toggleParcelNumberAssignment, selectParcelByNumber, convertPointsToPolygon, showTopologyErrors, clearTopologyErrors, closeParcelInspector, invalidateSize, getMap, _updateUtmCoordsDisplay, downloadEnvironmentCache, takeMapScreenshot, captureCertificateMapImages, setBaseLayer, toggleVertexEdit, setVertexEditMode, commitVertexEdit, cancelVertexEdit, undoGeometryEdit, redoGeometryEdit, updateVertexCoordinate, commitExternalGeometry };
+window.MapEngine = { togglePiribebuyLayer, registerUserLayer, removePiribebuyLayer, recordCrsInfo, listPiribebuyCrs, exportPiribebuyLayer, syncPiribebuyScaleRange, setPiribebuyRenderer, setPiribebuyOpacity, setPiribebuyDrawOrder, getPiribebuyFeatures, zoomToPiribebuyLayer, getActiveLayersInfo, refreshActiveLayersUI, _piribebuyStyles: PIRIBEBUY_LAYER_STYLES, LAYER_ZORDER, sortLayersByZOrder, LAYER_PANES, setupMapPanes, init, loadGeoJSON, clearProjectLayer, focusWorkPolygon, restoreStartupView, toggleSNCReferenceLayer, toggleDeptos, toggleDistritos, toggleMeasureMode, toggleOsnap, toggleOsnapTracking, getOsnapManager, toggleSplitMode, toggleParcelNumberAssignment, selectParcelByNumber, convertPointsToPolygon, showTopologyErrors, clearTopologyErrors, closeParcelInspector, invalidateSize, getMap, _updateUtmCoordsDisplay, downloadEnvironmentCache, takeMapScreenshot, captureCertificateMapImages, setBaseLayer, toggleVertexEdit, setVertexEditMode, commitVertexEdit, cancelVertexEdit, undoGeometryEdit, redoGeometryEdit, updateVertexCoordinate, commitExternalGeometry };
 
 export async function downloadEnvironmentCache() {
     if(!map) return;

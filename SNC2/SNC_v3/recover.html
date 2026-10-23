@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recuperar contraseña · SNC v3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  body{background:#050505;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
+  .hidden{display:none !important}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="flex items-center gap-3 px-6 py-4 border-b border-[#1e293b]">
+  <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+    <i class="fas fa-landmark text-white text-sm"></i>
+  </div>
+  <span class="text-white font-bold text-lg">SNC v3</span>
+  <span class="text-[#94a3b8] text-sm hidden sm:inline">· Catastro PY Pro</span>
+</header>
+
+<!-- Contenido -->
+<main class="flex-1 flex items-start justify-center px-4 py-10">
+  <div style="width:100%;max-width:420px" class="flex flex-col gap-6">
+
+    <!-- ===================== PASO 1 ===================== -->
+    <section id="rec-step-1" style="border:1px solid #1e293b;border-radius:16px;padding:20px;background:#0a0a0a">
+      <h1 class="text-white text-xl font-bold mb-1">Recuperar contraseña</h1>
+      <p class="text-[#94a3b8] text-sm mb-5">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+
+      <form id="rec-form-1" novalidate class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="rec-email" class="text-sm text-[#94a3b8] font-medium">Correo electrónico</label>
+          <input type="email" id="rec-email" name="email" placeholder="tu@correo.com" autocomplete="email"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+        </div>
+
+        <p id="rec-error-1" class="hidden text-sm" style="color:#f87171"></p>
+
+        <button type="submit" id="rec-submit-1"
+                style="background:#111;border:1px solid #333;border-radius:12px;padding:12px 16px;color:#fff;font-weight:700;cursor:pointer">
+          Enviar enlace de recuperación
+        </button>
+      </form>
+    </section>
+
+    <!-- ===================== PASO 2 ===================== -->
+    <section id="rec-step-2" class="hidden" style="border:1px solid #1e293b;border-radius:16px;padding:20px;background:#0a0a0a">
+      <h1 class="text-white text-xl font-bold mb-1">Crear nueva contraseña</h1>
+      <p class="text-[#94a3b8] text-sm mb-5">Ingresa el token recibido por correo y tu nueva contraseña.</p>
+
+      <p id="rec-success-msg" class="text-sm mb-4" style="color:#4ade80;font-weight:600"></p>
+
+      <form id="rec-form-2" novalidate class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="rec-token" class="text-sm text-[#94a3b8] font-medium">Token de recuperación</label>
+          <input type="text" id="rec-token" name="token" placeholder="Token recibido por correo"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="rec-password" class="text-sm text-[#94a3b8] font-medium">Nueva contraseña</label>
+          <input type="password" id="rec-password" name="password" placeholder="••••••••" autocomplete="new-password"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+          <span class="text-xs" style="color:#64748b">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo.</span>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="rec-confirm" class="text-sm text-[#94a3b8] font-medium">Confirmar contraseña</label>
+          <input type="password" id="rec-confirm" name="confirm" placeholder="••••••••" autocomplete="new-password"
+                 style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
+        </div>
+
+        <p id="rec-error-2" class="hidden text-sm" style="color:#f87171"></p>
+
+        <button type="submit" id="rec-submit-2"
+                style="background:#111;border:1px solid #333;border-radius:12px;padding:12px 16px;color:#fff;font-weight:700;cursor:pointer">
+          Restablecer contraseña
+        </button>
+      </form>
+    </section>
+
+    <!-- ===================== ÉXITO PASO 2 ===================== -->
+    <section id="rec-success" class="hidden" style="border:1px solid #1e293b;border-radius:16px;padding:20px;background:#0a0a0a">
+      <div class="text-center flex flex-col items-center gap-3">
+        <i class="fas fa-circle-check text-4xl" style="color:#4ade80"></i>
+        <h1 class="text-white text-xl font-bold">¡Contraseña actualizada!</h1>
+        <p class="text-[#94a3b8] text-sm">Tu contraseña se ha restablecido correctamente. Ya puedes iniciar sesión con tu nueva contraseña.</p>
+        <a href="/login-directo.html" style="color:#7dd3fc;font-weight:600;text-decoration:none">Ir al inicio de sesión →</a>
+      </div>
+    </section>
+
+    <!-- Volver -->
+    <div class="text-center">
+      <a href="/login-directo.html" style="color:#7dd3fc;font-weight:600;text-decoration:none;font-size:14px">← Volver al inicio de sesión</a>
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer obligatorio -->
+<footer style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid #1e293b;color:#64748b;font-size:11px;">
+  <span>SNC v3 · Catastro PY Pro</span>
+  <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
+  <span style="display:flex;gap:14px;">
+    <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
+    <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
+  </span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function validarEmail(email) {
+    return EMAIL_RE.test(email);
+  }
+
+  function validarPassword(pw) {
+    if (pw.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+    if (!/[A-Z]/.test(pw)) return 'La contraseña debe incluir al menos 1 letra mayúscula.';
+    if (!/[a-z]/.test(pw)) return 'La contraseña debe incluir al menos 1 letra minúscula.';
+    if (!/[0-9]/.test(pw)) return 'La contraseña debe incluir al menos 1 número.';
+    if (!/[^A-Za-z0-9]/.test(pw)) return 'La contraseña debe incluir al menos 1 símbolo.';
+    return null;
+  }
+
+  function mostrarError(el, msg) {
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function ocultarError(el) {
+    el.textContent = '';
+    el.classList.add('hidden');
+  }
+
+  function setLoading(btn, textoOriginal, cargando) {
+    btn.disabled = cargando;
+    btn.style.opacity = cargando ? '0.6' : '1';
+    btn.style.cursor = cargando ? 'not-allowed' : 'pointer';
+    if (cargando) {
+      btn.innerHTML = '<span class="spinner"></span>Procesando...';
+    } else {
+      btn.textContent = textoOriginal;
+    }
+  }
+
+  function httpError(res) {
+    if (res.status === 400) return 'Los datos enviados no son válidos. Verifica la información.';
+    if (res.status === 401) return 'No autorizado. La sesión pudo expirar.';
+    if (res.status === 403) return 'Acceso denegado.';
+    if (res.status === 409) return 'Conflicto con el estado actual. Intenta nuevamente.';
+    if (res.status === 429) return 'Demasiados intentos. Espera unos minutos y vuelve a intentar.';
+    if (res.status >= 500) return 'Error del servidor. Intenta más tarde.';
+    return 'Ocurrió un error inesperado. Intenta nuevamente.';
+  }
+
+  // ---------- PASO 1: solicitar enlace ----------
+  var form1 = document.getElementById('rec-form-1');
+  var emailInput = document.getElementById('rec-email');
+  var error1 = document.getElementById('rec-error-1');
+  var submit1 = document.getElementById('rec-submit-1');
+  var step1 = document.getElementById('rec-step-1');
+  var step2 = document.getElementById('rec-step-2');
+
+  var textoSubmit1 = submit1.textContent;
+
+  form1.addEventListener('submit', function (e) {
+    e.preventDefault();
+    ocultarError(error1);
+
+    var email = emailInput.value.trim().toLowerCase();
+    if (!validarEmail(email)) {
+      mostrarError(error1, 'Ingresa un correo electrónico válido.');
+      return;
+    }
+
+    setLoading(submit1, textoSubmit1, true);
+
+    fetch('/api/auth/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    })
+      .then(function (res) {
+        if (!res.ok) throw { status: res.status };
+        return res.json();
+      })
+      .then(function () {
+        setLoading(submit1, textoSubmit1, false);
+        // Mensaje de éxito genérico (no enumera usuarios)
+        var successMsg = document.getElementById('rec-success-msg');
+        successMsg.textContent = 'Si el correo está registrado, recibirás un enlace.';
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+      })
+      .catch(function (err) {
+        setLoading(submit1, textoSubmit1, false);
+        if (err && err.status) {
+          mostrarError(error1, httpError({ status: err.status }));
+        } else {
+          mostrarError(error1, 'No se pudo conectar con el servidor. Verifica tu conexión.');
+        }
+      });
+  });
+
+  // ---------- PASO 2: restablecer contraseña ----------
+  var form2 = document.getElementById('rec-form-2');
+  var tokenInput = document.getElementById('rec-token');
+  var pwInput = document.getElementById('rec-password');
+  var confirmInput = document.getElementById('rec-confirm');
+  var error2 = document.getElementById('rec-error-2');
+  var submit2 = document.getElementById('rec-submit-2');
+  var successPanel = document.getElementById('rec-success');
+
+  var textoSubmit2 = submit2.textContent;
+
+  form2.addEventListener('submit', function (e) {
+    e.preventDefault();
+    ocultarError(error2);
+
+    var token = tokenInput.value.trim();
+    var pw = pwInput.value;
+    var confirm = confirmInput.value;
+
+    if (!token) {
+      mostrarError(error2, 'Ingresa el token de recuperación.');
+      return;
+    }
+
+    var pwError = validarPassword(pw);
+    if (pwError) {
+      mostrarError(error2, pwError);
+      return;
+    }
+
+    if (pw !== confirm) {
+      mostrarError(error2, 'Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(submit2, textoSubmit2, true);
+
+    fetch('/api/auth/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, password: pw })
+    })
+      .then(function (res) {
+        if (!res.ok) throw { status: res.status };
+        return res.json();
+      })
+      .then(function () {
+        setLoading(submit2, textoSubmit2, false);
+        step2.classList.add('hidden');
+        successPanel.classList.remove('hidden');
+      })
+      .catch(function (err) {
+        setLoading(submit2, textoSubmit2, false);
+        if (err && err.status) {
+          mostrarError(error2, httpError({ status: err.status }));
+        } else {
+          mostrarError(error2, 'No se pudo conectar con el servidor. Verifica tu conexión.');
+        }
+      });
+  });
+
+})();
+</script>
+</body>
+</html>

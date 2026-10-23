@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes y Certificados — SNC_v3</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/modules/reportModule/reportModule.css">
+</head>
+<body>
+  <div id="app">
+    <header class="mod-header">
+      <div class="mod-header__left">
+        <span class="mod-icon">🗂️</span>
+        <div>
+          <h2>Reportes y Certificados</h2>
+          <p class="mod-sub">Genera certificados, reportes y exportaciones con sello digital y firma electrónica.</p>
+        </div>
+      </div>
+      <div class="mod-header__right">
+        <button id="btnNuevo" class="btn btn--primary">🆕 Nuevo reporte</button>
+      </div>
+    </header>
+
+    <div class="mod-tabs">
+      <button class="tab active" data-tab="nuevo">🆕 Crear reporte</button>
+      <button class="tab" data-tab="lista">📋 Listado de reportes</button>
+      <button class="tab" data-tab="firmas">🔏 Firmas y sellos</button>
+      <button class="tab" data-tab="plantillas">📋 Plantillas</button>
+    </div>
+
+    <div class="mod-content">
+      <!-- CREAR REPORTE -->
+      <section id="tab-nuevo" class="tab-panel active">
+        <div class="card">
+          <h3>Datos del reporte</h3>
+          <div class="fields">
+            <div class="field">
+              <label>Tipo de documento</label>
+              <select id="tipoDoc">
+                <option value="certificado">Certificado de parcela</option>
+                <option value="reporte">Reporte de medición</option>
+                <option value="plan">Plan de loteamiento</option>
+                <option value="informe">Informe técnico</option>
+                <option value="auditoria">Auditoría ambiental</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Parcelable (N° o código)</label>
+              <input type="text" id="reporteParcel" placeholder="Ej. 1234">
+            </div>
+            <div class="field">
+              <label>Fecha</label>
+              <input type="date" id="reporteFecha">
+            </div>
+            <div class="field">
+              <label>Autor / responsable</label>
+              <input type="text" id="reporteAutor" placeholder="Nombre del responsable">
+            </div>
+            <div class="field">
+              <label>Comentario / resumen</label>
+              <textarea id="reporteResumen" rows="3" placeholder="Resumen del documento..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Plantillas disponibles</h3>
+          <div class="grid">
+            <div class="grid__row"><span class="muted">Certificado de parcela:</span><strong id="tplCertificado">—</strong></div>
+            <div class="grid__row"><span class="muted">Reporte de medición:</span><strong id="tplReporte">—</strong></div>
+            <div class="grid__row"><span class="muted">Plan de loteamiento:</span><strong id="tplLote">—</strong></div>
+            <div class="grid__row"><span class="muted">Informe técnico:</span><strong id="tplInfo">—</strong></div>
+            <div class="grid__row"><span class="muted">Auditoría ambiental:</span><strong id="tplAudit">—</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LISTA DE REPORTES -->
+      <section id="tab-lista" class="tab-panel">
+        <div class="card">
+          <h3>Listado de reportes</h3>
+          <div id="reporteList" class="list">
+            <p class="muted">No hay reportes guardados.</p>
+          </div>
+          <button id="btnExportAll" class="btn btn--ghost">📥 Exportar todos los PDF</button>
+        </div>
+      </section>
+
+      <!-- FIRMAS Y SELLOS -->
+      <section id="tab-firmas" class="tab-panel">
+        <div class="card">
+          <h3>Firmas y sellos digitales</h3>
+          <p class="muted">Certifica digitalmente los documentos con sellos de fecha y firma electrónica.</p>
+          <div class="grid">
+            <div class="grid__row"><span class="muted">Certificado digital:</span><strong id="firmCertificado">—</strong></div>
+            <div class="grid__row"><span class="muted">Código de verificación:</span><strong id="firmCodigo">—</strong></div>
+            <div class="grid__row"><span class="muted">Fecha de firma:</span><strong id="firmFecha">—</strong></div>
+          </div>
+          <div class="action-row">
+            <button id="btnGenerarSello" class="btn btn--primary">🔏 Crear sello digital</button>
+            <button id="btnVerificarSello" class="btn btn--ghost">🔍 Verificar sello</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLANTILLAS -->
+      <section id="tab-plantillas" class="tab-panel">
+        <div class="card">
+          <h3>Plantillas de documentos</h3>
+          <p class="muted">Estos son los modelos disponibles. Puedes personalizarlos según tu necesidad.</p>
+          <div class="grid">
+            <div class="grid__row">
+              <span class="muted">Certificado de parcela</span>
+              <span class="muted">Datos básicos + impresión, firma y sello digital.</span>
+            </div>
+            <div class="grid__row">
+              <span class="muted">Reporte de medición</span>
+              <span class="muted">Distancias, áreas, ángulos y supuestos de medición.</span>
+            </div>
+            <div class="grid__row">
+              <span class="muted">Plan de loteamiento</span>
+              <span class="muted">Planimétrico y altimétrico de la parcela.</span>
+            </div>
+            <div class="grid__row">
+              <span class="muted">Informe técnico</span>
+              <span class="muted">Análisis de suelos, pendiente, accesibilidad.</span>
+            </div>
+            <div class="grid__row">
+              <span class="muted">Auditoría ambiental</span>
+              <span class="muted">Evaluación de impacto, riesgos y problemas ambientales.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="/modules/reportModule/reportModule.js"></script>
+</body>
+</html>

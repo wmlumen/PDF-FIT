@@ -1,0 +1,6230 @@
+{
+  "nodos": [
+    {
+      "id": "tabla:expedientes",
+      "tipo": "tabla",
+      "nombre": "expedientes",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "project_id",
+          "name",
+          "state_json",
+          "validation_results",
+          "created_at",
+          "updated_at"
+        ],
+        "filas": 4
+      }
+    },
+    {
+      "id": "tabla:ip_events",
+      "tipo": "tabla",
+      "nombre": "ip_events",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "ip",
+          "user_id",
+          "event",
+          "meta",
+          "created_at"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:payments",
+      "tipo": "tabla",
+      "nombre": "payments",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "user_id",
+          "plan_id",
+          "provider",
+          "status",
+          "amount",
+          "currency",
+          "buyer",
+          "paid_at",
+          "created_at"
+        ],
+        "filas": 4
+      }
+    },
+    {
+      "id": "tabla:plans",
+      "tipo": "tabla",
+      "nombre": "plans",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "name",
+          "type",
+          "price",
+          "currency",
+          "limits_json",
+          "features_json",
+          "watermark",
+          "active",
+          "created_at",
+          "updated_at"
+        ],
+        "filas": 10
+      }
+    },
+    {
+      "id": "tabla:projects",
+      "tipo": "tabla",
+      "nombre": "projects",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "user_id",
+          "name",
+          "created_at",
+          "updated_at"
+        ],
+        "filas": 5
+      }
+    },
+    {
+      "id": "tabla:public_reports",
+      "tipo": "tabla",
+      "nombre": "public_reports",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "user_id",
+          "html_content",
+          "created_at"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:recovery_tokens",
+      "tipo": "tabla",
+      "nombre": "recovery_tokens",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "token",
+          "email",
+          "expires_at"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:usage",
+      "tipo": "tabla",
+      "nombre": "usage",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "key",
+          "value",
+          "updated_at"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:users",
+      "tipo": "tabla",
+      "nombre": "users",
+      "archivo": "data/snc.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "email",
+          "password_hash",
+          "name",
+          "plan",
+          "created_at",
+          "updated_at",
+          "role",
+          "status",
+          "password_hash_v2",
+          "last_login_ip",
+          "stats_json",
+          "blocked_reason",
+          "blocked_until"
+        ],
+        "filas": 8
+      }
+    },
+    {
+      "id": "api:GET:/data/DISTRITOS_PY_CNPV2022.geojson",
+      "tipo": "endpoint",
+      "nombre": "GET /data/DISTRITOS_PY_CNPV2022.geojson",
+      "archivo": "server-api.js",
+      "linea": 64,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/data/DISTRITOS_PY_CNPV2022.geojson",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/health",
+      "tipo": "endpoint",
+      "nombre": "GET /api/health",
+      "archivo": "server-api.js",
+      "linea": 264,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/health",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/auth/me",
+      "tipo": "endpoint",
+      "nombre": "GET /api/auth/me",
+      "archivo": "server-api.js",
+      "linea": 279,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/auth/me",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:PATCH:/api/auth/me",
+      "tipo": "endpoint",
+      "nombre": "PATCH /api/auth/me",
+      "archivo": "server-api.js",
+      "linea": 291,
+      "datos": {
+        "metodo": "PATCH",
+        "ruta": "/api/auth/me",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:POST:/api/map/snc-toggle",
+      "tipo": "endpoint",
+      "nombre": "POST /api/map/snc-toggle",
+      "archivo": "server-api.js",
+      "linea": 305,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/map/snc-toggle",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/plans",
+      "tipo": "endpoint",
+      "nombre": "GET /api/plans",
+      "archivo": "server-api.js",
+      "linea": 320,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/plans",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/auth/register",
+      "tipo": "endpoint",
+      "nombre": "POST /api/auth/register",
+      "archivo": "server-api.js",
+      "linea": 328,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/auth/register",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "plans"
+        ],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:POST:/api/auth/login",
+      "tipo": "endpoint",
+      "nombre": "POST /api/auth/login",
+      "archivo": "server-api.js",
+      "linea": 349,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/auth/login",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:POST:/api/auth/recover",
+      "tipo": "endpoint",
+      "nombre": "POST /api/auth/recover",
+      "archivo": "server-api.js",
+      "linea": 378,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/auth/recover",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:POST:/api/auth/reset",
+      "tipo": "endpoint",
+      "nombre": "POST /api/auth/reset",
+      "archivo": "server-api.js",
+      "linea": 416,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/auth/reset",
+        "auth": false,
+        "admin": false,
+        "tablas": [],
+        "pagina": "login"
+      }
+    },
+    {
+      "id": "api:GET:/api/admin/members",
+      "tipo": "endpoint",
+      "nombre": "GET /api/admin/members",
+      "archivo": "server-api.js",
+      "linea": 465,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/admin/members",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "plans",
+          "projects",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:POST:/api/admin/members",
+      "tipo": "endpoint",
+      "nombre": "POST /api/admin/members",
+      "archivo": "server-api.js",
+      "linea": 498,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/admin/members",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "plans",
+          "projects"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:PATCH:/api/admin/members/:id",
+      "tipo": "endpoint",
+      "nombre": "PATCH /api/admin/members/:id",
+      "archivo": "server-api.js",
+      "linea": 544,
+      "datos": {
+        "metodo": "PATCH",
+        "ruta": "/api/admin/members/:id",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:GET:/api/admin/plans",
+      "tipo": "endpoint",
+      "nombre": "GET /api/admin/plans",
+      "archivo": "server-api.js",
+      "linea": 571,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/admin/plans",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:PUT:/api/admin/plans/:id",
+      "tipo": "endpoint",
+      "nombre": "PUT /api/admin/plans/:id",
+      "archivo": "server-api.js",
+      "linea": 584,
+      "datos": {
+        "metodo": "PUT",
+        "ruta": "/api/admin/plans/:id",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:GET:/api/admin/members/:id/stats",
+      "tipo": "endpoint",
+      "nombre": "GET /api/admin/members/:id/stats",
+      "archivo": "server-api.js",
+      "linea": 603,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/admin/members/:id/stats",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "plans",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:POST:/api/admin/members/:id/stats",
+      "tipo": "endpoint",
+      "nombre": "POST /api/admin/members/:id/stats",
+      "archivo": "server-api.js",
+      "linea": 611,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/admin/members/:id/stats",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:POST:/api/admin/members/:id/block",
+      "tipo": "endpoint",
+      "nombre": "POST /api/admin/members/:id/block",
+      "archivo": "server-api.js",
+      "linea": 619,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/admin/members/:id/block",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:GET:/api/admin/ips/:ip/users",
+      "tipo": "endpoint",
+      "nombre": "GET /api/admin/ips/:ip/users",
+      "archivo": "server-api.js",
+      "linea": 634,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/admin/ips/:ip/users",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "projects",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:GET:/api/projects",
+      "tipo": "endpoint",
+      "nombre": "GET /api/projects",
+      "archivo": "server-api.js",
+      "linea": 641,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/projects",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/projects",
+      "tipo": "endpoint",
+      "nombre": "POST /api/projects",
+      "archivo": "server-api.js",
+      "linea": 650,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/projects",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "plans",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/projects/:id",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/projects/:id",
+      "archivo": "server-api.js",
+      "linea": 668,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/projects/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/projects/temp",
+      "tipo": "endpoint",
+      "nombre": "POST /api/projects/temp",
+      "archivo": "server-api.js",
+      "linea": 680,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/projects/temp",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:GET:/api/projects/temp",
+      "tipo": "endpoint",
+      "nombre": "GET /api/projects/temp",
+      "archivo": "server-api.js",
+      "linea": 719,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/projects/temp",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:GET:/api/projects/temp/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /api/projects/temp/:id",
+      "archivo": "server-api.js",
+      "linea": 733,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/projects/temp/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/projects/temp/:id",
+      "tipo": "endpoint",
+      "nombre": "POST /api/projects/temp/:id",
+      "archivo": "server-api.js",
+      "linea": 746,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/projects/temp/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:GET:/api/projects/:projectId/expedientes",
+      "tipo": "endpoint",
+      "nombre": "GET /api/projects/:projectId/expedientes",
+      "archivo": "server-api.js",
+      "linea": 761,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/projects/:projectId/expedientes",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/projects/:projectId/expedientes",
+      "tipo": "endpoint",
+      "nombre": "POST /api/projects/:projectId/expedientes",
+      "archivo": "server-api.js",
+      "linea": 773,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/projects/:projectId/expedientes",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:GET:/api/expedientes/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /api/expedientes/:id",
+      "archivo": "server-api.js",
+      "linea": 794,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/expedientes/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:PUT:/api/expedientes/:id",
+      "tipo": "endpoint",
+      "nombre": "PUT /api/expedientes/:id",
+      "archivo": "server-api.js",
+      "linea": 824,
+      "datos": {
+        "metodo": "PUT",
+        "ruta": "/api/expedientes/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects",
+          "users"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/expedientes/:id",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/expedientes/:id",
+      "archivo": "server-api.js",
+      "linea": 845,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/expedientes/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "projects"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:GET:/api/expedientes/:id/files",
+      "tipo": "endpoint",
+      "nombre": "GET /api/expedientes/:id/files",
+      "archivo": "server-api.js",
+      "linea": 856,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/expedientes/:id/files",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/expedientes/:id/files",
+      "tipo": "endpoint",
+      "nombre": "POST /api/expedientes/:id/files",
+      "archivo": "server-api.js",
+      "linea": 871,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/expedientes/:id/files",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/expedientes/:id/files/:fileId",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/expedientes/:id/files/:fileId",
+      "archivo": "server-api.js",
+      "linea": 882,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/expedientes/:id/files/:fileId",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes"
+        ],
+        "pagina": "index"
+      }
+    },
+    {
+      "id": "api:POST:/api/reports",
+      "tipo": "endpoint",
+      "nombre": "POST /api/reports",
+      "archivo": "server-api.js",
+      "linea": 898,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/reports",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/report/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /report/:id",
+      "archivo": "server-api.js",
+      "linea": 926,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/report/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "public_reports",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/autocompletar",
+      "tipo": "endpoint",
+      "nombre": "POST /api/autocompletar",
+      "archivo": "server-api.js",
+      "linea": 939,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/autocompletar",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/postgis/analisis-espacial",
+      "tipo": "endpoint",
+      "nombre": "GET /api/postgis/analisis-espacial",
+      "archivo": "server-api.js",
+      "linea": 972,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/postgis/analisis-espacial",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/entorno",
+      "tipo": "endpoint",
+      "nombre": "GET /api/entorno",
+      "archivo": "server-api.js",
+      "linea": 1074,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/entorno",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/payments/mine",
+      "tipo": "endpoint",
+      "nombre": "GET /api/payments/mine",
+      "archivo": "server-api.js",
+      "linea": 1115,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/payments/mine",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments",
+          "plans",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/admin/finance",
+      "tipo": "endpoint",
+      "nombre": "GET /api/admin/finance",
+      "archivo": "server-api.js",
+      "linea": 1122,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/admin/finance",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments",
+          "users"
+        ],
+        "pagina": "admin"
+      }
+    },
+    {
+      "id": "api:POST:/api/payments/checkout-session",
+      "tipo": "endpoint",
+      "nombre": "POST /api/payments/checkout-session",
+      "archivo": "server-api.js",
+      "linea": 1133,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/payments/checkout-session",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "payments",
+          "plans"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/payments/confirm",
+      "tipo": "endpoint",
+      "nombre": "POST /api/payments/confirm",
+      "archivo": "server-api.js",
+      "linea": 1188,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/payments/confirm",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments",
+          "plans"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/payments/redticket/checkout/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /api/payments/redticket/checkout/:id",
+      "archivo": "server-api.js",
+      "linea": 1201,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/payments/redticket/checkout/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "payments",
+          "plans"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/payments/redticket/success/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /api/payments/redticket/success/:id",
+      "archivo": "server-api.js",
+      "linea": 1218,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/payments/redticket/success/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "payments"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/payments/redticket/webhook",
+      "tipo": "endpoint",
+      "nombre": "POST /api/payments/redticket/webhook",
+      "archivo": "server-api.js",
+      "linea": 1245,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/payments/redticket/webhook",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "payments"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/payments/redticket/simulate-pay/:id",
+      "tipo": "endpoint",
+      "nombre": "POST /api/payments/redticket/simulate-pay/:id",
+      "archivo": "server-api.js",
+      "linea": 1291,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/payments/redticket/simulate-pay/:id",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments",
+          "plans"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/api/usage",
+      "tipo": "endpoint",
+      "nombre": "GET /api/usage",
+      "archivo": "server-api.js",
+      "linea": 1303,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/usage",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "payments",
+          "plans",
+          "projects",
+          "usage",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/usage/increment",
+      "tipo": "endpoint",
+      "nombre": "POST /api/usage/increment",
+      "archivo": "server-api.js",
+      "linea": 1329,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/usage/increment",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "expedientes",
+          "plans",
+          "projects",
+          "usage",
+          "users"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/validation/gaps-catastro",
+      "tipo": "endpoint",
+      "nombre": "POST /api/validation/gaps-catastro",
+      "archivo": "server-api.js",
+      "linea": 1353,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/validation/gaps-catastro",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/validation/restriccion-hidrica",
+      "tipo": "endpoint",
+      "nombre": "POST /api/validation/restriccion-hidrica",
+      "archivo": "server-api.js",
+      "linea": 1423,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/validation/restriccion-hidrica",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/validation/municipal",
+      "tipo": "endpoint",
+      "nombre": "POST /api/validation/municipal",
+      "archivo": "server-api.js",
+      "linea": 1481,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/validation/municipal",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:POST:/api/validation/completa",
+      "tipo": "endpoint",
+      "nombre": "POST /api/validation/completa",
+      "archivo": "server-api.js",
+      "linea": 1565,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/validation/completa",
+        "auth": true,
+        "admin": false,
+        "tablas": [],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/",
+      "tipo": "endpoint",
+      "nombre": "GET /",
+      "archivo": "server-api.js",
+      "linea": 1631,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "api:GET:/admin.html",
+      "tipo": "endpoint",
+      "nombre": "GET /admin.html",
+      "archivo": "server-api.js",
+      "linea": 1636,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/admin.html",
+        "auth": true,
+        "admin": true,
+        "tablas": [
+          "payments"
+        ],
+        "pagina": ""
+      }
+    },
+    {
+      "id": "pagina:index",
+      "tipo": "pagina",
+      "nombre": "index.html",
+      "archivo": "index.html.html",
+      "linea": 0,
+      "datos": {
+        "rol": "topografo"
+      }
+    },
+    {
+      "id": "pagina:index-municipal",
+      "tipo": "pagina",
+      "nombre": "index-municipal.html",
+      "archivo": "index-municipal.html.html",
+      "linea": 0,
+      "datos": {
+        "rol": "municipal"
+      }
+    },
+    {
+      "id": "pagina:admin",
+      "tipo": "pagina",
+      "nombre": "admin.html",
+      "archivo": "admin.html.html",
+      "linea": 0,
+      "datos": {
+        "rol": "admin"
+      }
+    },
+    {
+      "id": "pagina:login",
+      "tipo": "pagina",
+      "nombre": "login",
+      "archivo": "login.html",
+      "linea": 0,
+      "datos": {
+        "rol": "publico"
+      }
+    },
+    {
+      "id": "rol:publico",
+      "tipo": "rol",
+      "nombre": "publico",
+      "archivo": "",
+      "linea": 0,
+      "datos": {}
+    },
+    {
+      "id": "rol:topografo",
+      "tipo": "rol",
+      "nombre": "topografo",
+      "archivo": "",
+      "linea": 0,
+      "datos": {}
+    },
+    {
+      "id": "rol:municipal",
+      "tipo": "rol",
+      "nombre": "municipal",
+      "archivo": "",
+      "linea": 0,
+      "datos": {}
+    },
+    {
+      "id": "rol:admin",
+      "tipo": "rol",
+      "nombre": "admin",
+      "archivo": "",
+      "linea": 0,
+      "datos": {}
+    },
+    {
+      "id": "rol:manager",
+      "tipo": "rol",
+      "nombre": "manager",
+      "archivo": "",
+      "linea": 0,
+      "datos": {}
+    },
+    {
+      "id": "func:checkMapDependencies",
+      "tipo": "funcion",
+      "nombre": "checkMapDependencies",
+      "archivo": "js/mapEngine.js",
+      "linea": 57,
+      "datos": {}
+    },
+    {
+      "id": "func:assertMapDependencies",
+      "tipo": "funcion",
+      "nombre": "assertMapDependencies",
+      "archivo": "js/mapEngine.js",
+      "linea": 70,
+      "datos": {}
+    },
+    {
+      "id": "func:init",
+      "tipo": "funcion",
+      "nombre": "init",
+      "archivo": "js/mapEngine.js",
+      "linea": 111,
+      "datos": {}
+    },
+    {
+      "id": "func:setVertexEditMode",
+      "tipo": "funcion",
+      "nombre": "setVertexEditMode",
+      "archivo": "js/mapEngine.js",
+      "linea": 566,
+      "datos": {}
+    },
+    {
+      "id": "func:startVertexEdit",
+      "tipo": "funcion",
+      "nombre": "startVertexEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 575,
+      "datos": {}
+    },
+    {
+      "id": "func:cancelVertexEdit",
+      "tipo": "funcion",
+      "nombre": "cancelVertexEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 592,
+      "datos": {}
+    },
+    {
+      "id": "func:commitVertexEdit",
+      "tipo": "funcion",
+      "nombre": "commitVertexEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 620,
+      "datos": {}
+    },
+    {
+      "id": "func:undoGeometryEdit",
+      "tipo": "funcion",
+      "nombre": "undoGeometryEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 649,
+      "datos": {}
+    },
+    {
+      "id": "func:redoGeometryEdit",
+      "tipo": "funcion",
+      "nombre": "redoGeometryEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 667,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleVertexEdit",
+      "tipo": "funcion",
+      "nombre": "toggleVertexEdit",
+      "archivo": "js/mapEngine.js",
+      "linea": 685,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleParcelNumberAssignment",
+      "tipo": "funcion",
+      "nombre": "toggleParcelNumberAssignment",
+      "archivo": "js/mapEngine.js",
+      "linea": 711,
+      "datos": {}
+    },
+    {
+      "id": "func:closeParcelInspector",
+      "tipo": "funcion",
+      "nombre": "closeParcelInspector",
+      "archivo": "js/mapEngine.js",
+      "linea": 746,
+      "datos": {}
+    },
+    {
+      "id": "func:updateVertexCoordinate",
+      "tipo": "funcion",
+      "nombre": "updateVertexCoordinate",
+      "archivo": "js/mapEngine.js",
+      "linea": 841,
+      "datos": {}
+    },
+    {
+      "id": "func:commitExternalGeometry",
+      "tipo": "funcion",
+      "nombre": "commitExternalGeometry",
+      "archivo": "js/mapEngine.js",
+      "linea": 894,
+      "datos": {}
+    },
+    {
+      "id": "func:getMap",
+      "tipo": "funcion",
+      "nombre": "getMap",
+      "archivo": "js/mapEngine.js",
+      "linea": 919,
+      "datos": {}
+    },
+    {
+      "id": "func:clearProjectLayer",
+      "tipo": "funcion",
+      "nombre": "clearProjectLayer",
+      "archivo": "js/mapEngine.js",
+      "linea": 922,
+      "datos": {}
+    },
+    {
+      "id": "func:loadGeoJSON",
+      "tipo": "funcion",
+      "nombre": "loadGeoJSON",
+      "archivo": "js/mapEngine.js",
+      "linea": 941,
+      "datos": {}
+    },
+    {
+      "id": "func:selectParcelByNumber",
+      "tipo": "funcion",
+      "nombre": "selectParcelByNumber",
+      "archivo": "js/mapEngine.js",
+      "linea": 1136,
+      "datos": {}
+    },
+    {
+      "id": "func:restoreStartupView",
+      "tipo": "funcion",
+      "nombre": "restoreStartupView",
+      "archivo": "js/mapEngine.js",
+      "linea": 1151,
+      "datos": {}
+    },
+    {
+      "id": "func:focusWorkPolygon",
+      "tipo": "funcion",
+      "nombre": "focusWorkPolygon",
+      "archivo": "js/mapEngine.js",
+      "linea": 1162,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleSNCReferenceLayer",
+      "tipo": "funcion",
+      "nombre": "toggleSNCReferenceLayer",
+      "archivo": "js/mapEngine.js",
+      "linea": 1177,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleDeptos",
+      "tipo": "funcion",
+      "nombre": "toggleDeptos",
+      "archivo": "js/mapEngine.js",
+      "linea": 1223,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleDistritos",
+      "tipo": "funcion",
+      "nombre": "toggleDistritos",
+      "archivo": "js/mapEngine.js",
+      "linea": 1282,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleMeasureMode",
+      "tipo": "funcion",
+      "nombre": "toggleMeasureMode",
+      "archivo": "js/mapEngine.js",
+      "linea": 1342,
+      "datos": {}
+    },
+    {
+      "id": "func:toggleSplitMode",
+      "tipo": "funcion",
+      "nombre": "toggleSplitMode",
+      "archivo": "js/mapEngine.js",
+      "linea": 1398,
+      "datos": {}
+    },
+    {
+      "id": "func:convertPointsToPolygon",
+      "tipo": "funcion",
+      "nombre": "convertPointsToPolygon",
+      "archivo": "js/mapEngine.js",
+      "linea": 1631,
+      "datos": {}
+    },
+    {
+      "id": "func:showTopologyErrors",
+      "tipo": "funcion",
+      "nombre": "showTopologyErrors",
+      "archivo": "js/mapEngine.js",
+      "linea": 1693,
+      "datos": {}
+    },
+    {
+      "id": "func:clearTopologyErrors",
+      "tipo": "funcion",
+      "nombre": "clearTopologyErrors",
+      "archivo": "js/mapEngine.js",
+      "linea": 1735,
+      "datos": {}
+    },
+    {
+      "id": "func:invalidateSize",
+      "tipo": "funcion",
+      "nombre": "invalidateSize",
+      "archivo": "js/mapEngine.js",
+      "linea": 1748,
+      "datos": {}
+    },
+    {
+      "id": "func:setBaseLayer",
+      "tipo": "funcion",
+      "nombre": "setBaseLayer",
+      "archivo": "js/mapEngine.js",
+      "linea": 1752,
+      "datos": {}
+    },
+    {
+      "id": "func:downloadEnvironmentCache",
+      "tipo": "funcion",
+      "nombre": "downloadEnvironmentCache",
+      "archivo": "js/mapEngine.js",
+      "linea": 1771,
+      "datos": {}
+    },
+    {
+      "id": "func:takeMapScreenshot",
+      "tipo": "funcion",
+      "nombre": "takeMapScreenshot",
+      "archivo": "js/mapEngine.js",
+      "linea": 1809,
+      "datos": {}
+    },
+    {
+      "id": "func:captureCertificateMapImages",
+      "tipo": "funcion",
+      "nombre": "captureCertificateMapImages",
+      "archivo": "js/mapEngine.js",
+      "linea": 1857,
+      "datos": {}
+    },
+    {
+      "id": "func:openCertificateMap",
+      "tipo": "funcion",
+      "nombre": "openCertificateMap",
+      "archivo": "js/mapEngine.js",
+      "linea": 1955,
+      "datos": {}
+    },
+    {
+      "id": "func:runValidation",
+      "tipo": "funcion",
+      "nombre": "runValidation",
+      "archivo": "js/validator.js",
+      "linea": 30,
+      "datos": {}
+    },
+    {
+      "id": "func:runExportValidation",
+      "tipo": "funcion",
+      "nombre": "runExportValidation",
+      "archivo": "js/validator.js",
+      "linea": 188,
+      "datos": {}
+    },
+    {
+      "id": "func:closeModal",
+      "tipo": "funcion",
+      "nombre": "closeModal",
+      "archivo": "js/validator.js",
+      "linea": 734,
+      "datos": {}
+    },
+    {
+      "id": "func:runMunicipalValidation",
+      "tipo": "funcion",
+      "nombre": "runMunicipalValidation",
+      "archivo": "js/municipal.js",
+      "linea": 262,
+      "datos": {}
+    },
+    {
+      "id": "clase:ValidadorMunicipal",
+      "tipo": "clase",
+      "nombre": "ValidadorMunicipal",
+      "archivo": "js/municipal.js",
+      "linea": 10,
+      "datos": {}
+    },
+    {
+      "id": "func:exportGeoJSON",
+      "tipo": "funcion",
+      "nombre": "exportGeoJSON",
+      "archivo": "js/export.js",
+      "linea": 28,
+      "datos": {}
+    },
+    {
+      "id": "func:exportKML",
+      "tipo": "funcion",
+      "nombre": "exportKML",
+      "archivo": "js/export.js",
+      "linea": 34,
+      "datos": {}
+    },
+    {
+      "id": "func:generateProfessionalReport",
+      "tipo": "funcion",
+      "nombre": "generateProfessionalReport",
+      "archivo": "js/export.js",
+      "linea": 206,
+      "datos": {}
+    },
+    {
+      "id": "func:exportProfessionalReport",
+      "tipo": "funcion",
+      "nombre": "exportProfessionalReport",
+      "archivo": "js/export.js",
+      "linea": 917,
+      "datos": {}
+    },
+    {
+      "id": "func:generateGeodesicSection",
+      "tipo": "funcion",
+      "nombre": "generateGeodesicSection",
+      "archivo": "js/export.js",
+      "linea": 926,
+      "datos": {}
+    },
+    {
+      "id": "func:generateDualDictamen",
+      "tipo": "funcion",
+      "nombre": "generateDualDictamen",
+      "archivo": "js/export.js",
+      "linea": 983,
+      "datos": {}
+    },
+    {
+      "id": "func:generateConsultaDescriptivaPDF",
+      "tipo": "funcion",
+      "nombre": "generateConsultaDescriptivaPDF",
+      "archivo": "js/export.js",
+      "linea": 1106,
+      "datos": {}
+    },
+    {
+      "id": "func:generateShapefile",
+      "tipo": "funcion",
+      "nombre": "generateShapefile",
+      "archivo": "js/export.js",
+      "linea": 1463,
+      "datos": {}
+    },
+    {
+      "id": "func:generatePDFReport",
+      "tipo": "funcion",
+      "nombre": "generatePDFReport",
+      "archivo": "js/export.js",
+      "linea": 1825,
+      "datos": {}
+    },
+    {
+      "id": "func:generateComplianceCertificate",
+      "tipo": "funcion",
+      "nombre": "generateComplianceCertificate",
+      "archivo": "js/export.js",
+      "linea": 2007,
+      "datos": {}
+    },
+    {
+      "id": "func:packAndDownload",
+      "tipo": "funcion",
+      "nombre": "packAndDownload",
+      "archivo": "js/export.js",
+      "linea": 2369,
+      "datos": {}
+    }
+  ],
+  "aristas": [
+    {
+      "source": "tabla:expedientes",
+      "target": "tabla:projects",
+      "tipo": "fk",
+      "descripcion": "expedientes.project_id → projects.id"
+    },
+    {
+      "source": "tabla:ip_events",
+      "target": "tabla:users",
+      "tipo": "fk",
+      "descripcion": "ip_events.user_id → users.id"
+    },
+    {
+      "source": "tabla:payments",
+      "target": "tabla:users",
+      "tipo": "fk",
+      "descripcion": "payments.user_id → users.id"
+    },
+    {
+      "source": "tabla:payments",
+      "target": "tabla:plans",
+      "tipo": "fk",
+      "descripcion": "payments.plan_id → plans.id"
+    },
+    {
+      "source": "tabla:projects",
+      "target": "tabla:users",
+      "tipo": "fk",
+      "descripcion": "projects.user_id → users.id"
+    },
+    {
+      "source": "tabla:public_reports",
+      "target": "tabla:users",
+      "tipo": "fk",
+      "descripcion": "public_reports.user_id → users.id"
+    },
+    {
+      "source": "api:GET:/data/DISTRITOS_PY_CNPV2022.geojson",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /data/DISTRITOS_PY_CNPV2022.geojson usa users"
+    },
+    {
+      "source": "api:GET:/api/health",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/health usa plans"
+    },
+    {
+      "source": "api:GET:/api/health",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/health usa users"
+    },
+    {
+      "source": "api:GET:/api/auth/me",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/auth/me usa plans"
+    },
+    {
+      "source": "api:GET:/api/auth/me",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/auth/me usa users"
+    },
+    {
+      "source": "api:PATCH:/api/auth/me",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "PATCH /api/auth/me usa plans"
+    },
+    {
+      "source": "api:PATCH:/api/auth/me",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "PATCH /api/auth/me usa users"
+    },
+    {
+      "source": "api:POST:/api/map/snc-toggle",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/map/snc-toggle usa plans"
+    },
+    {
+      "source": "api:POST:/api/map/snc-toggle",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/map/snc-toggle usa users"
+    },
+    {
+      "source": "api:GET:/api/plans",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/plans usa plans"
+    },
+    {
+      "source": "api:GET:/api/plans",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/plans usa users"
+    },
+    {
+      "source": "api:POST:/api/auth/register",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/auth/register usa plans"
+    },
+    {
+      "source": "api:POST:/api/auth/login",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/auth/login usa plans"
+    },
+    {
+      "source": "api:POST:/api/auth/login",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/auth/login usa users"
+    },
+    {
+      "source": "api:POST:/api/auth/recover",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/auth/recover usa plans"
+    },
+    {
+      "source": "api:POST:/api/auth/recover",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/auth/recover usa users"
+    },
+    {
+      "source": "api:GET:/api/admin/members",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/members usa plans"
+    },
+    {
+      "source": "api:GET:/api/admin/members",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/members usa projects"
+    },
+    {
+      "source": "api:GET:/api/admin/members",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/members usa users"
+    },
+    {
+      "source": "api:POST:/api/admin/members",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/admin/members usa plans"
+    },
+    {
+      "source": "api:POST:/api/admin/members",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/admin/members usa projects"
+    },
+    {
+      "source": "api:PATCH:/api/admin/members/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "PATCH /api/admin/members/:id usa users"
+    },
+    {
+      "source": "api:GET:/api/admin/plans",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/plans usa plans"
+    },
+    {
+      "source": "api:GET:/api/admin/plans",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/plans usa users"
+    },
+    {
+      "source": "api:PUT:/api/admin/plans/:id",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "PUT /api/admin/plans/:id usa plans"
+    },
+    {
+      "source": "api:PUT:/api/admin/plans/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "PUT /api/admin/plans/:id usa users"
+    },
+    {
+      "source": "api:GET:/api/admin/members/:id/stats",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/members/:id/stats usa plans"
+    },
+    {
+      "source": "api:GET:/api/admin/members/:id/stats",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/members/:id/stats usa users"
+    },
+    {
+      "source": "api:POST:/api/admin/members/:id/stats",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/admin/members/:id/stats usa users"
+    },
+    {
+      "source": "api:POST:/api/admin/members/:id/block",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/admin/members/:id/block usa users"
+    },
+    {
+      "source": "api:GET:/api/admin/ips/:ip/users",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/ips/:ip/users usa projects"
+    },
+    {
+      "source": "api:GET:/api/admin/ips/:ip/users",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/ips/:ip/users usa users"
+    },
+    {
+      "source": "api:GET:/api/projects",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects usa projects"
+    },
+    {
+      "source": "api:GET:/api/projects",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects usa users"
+    },
+    {
+      "source": "api:POST:/api/projects",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects usa plans"
+    },
+    {
+      "source": "api:POST:/api/projects",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects usa users"
+    },
+    {
+      "source": "api:DELETE:/api/projects/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "DELETE /api/projects/:id usa expedientes"
+    },
+    {
+      "source": "api:DELETE:/api/projects/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "DELETE /api/projects/:id usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects/temp",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/projects/temp",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects/temp",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp usa users"
+    },
+    {
+      "source": "api:GET:/api/projects/temp",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/projects/temp",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp usa projects"
+    },
+    {
+      "source": "api:GET:/api/projects/temp",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp usa users"
+    },
+    {
+      "source": "api:GET:/api/projects/temp/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp/:id usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/projects/temp/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp/:id usa projects"
+    },
+    {
+      "source": "api:GET:/api/projects/temp/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/temp/:id usa users"
+    },
+    {
+      "source": "api:POST:/api/projects/temp/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp/:id usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/projects/temp/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp/:id usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects/temp/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/temp/:id usa users"
+    },
+    {
+      "source": "api:GET:/api/projects/:projectId/expedientes",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/:projectId/expedientes usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/projects/:projectId/expedientes",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/projects/:projectId/expedientes usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects/:projectId/expedientes",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/:projectId/expedientes usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/projects/:projectId/expedientes",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/:projectId/expedientes usa projects"
+    },
+    {
+      "source": "api:POST:/api/projects/:projectId/expedientes",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/projects/:projectId/expedientes usa users"
+    },
+    {
+      "source": "api:GET:/api/expedientes/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/expedientes/:id usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/expedientes/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/expedientes/:id usa projects"
+    },
+    {
+      "source": "api:PUT:/api/expedientes/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "PUT /api/expedientes/:id usa expedientes"
+    },
+    {
+      "source": "api:PUT:/api/expedientes/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "PUT /api/expedientes/:id usa projects"
+    },
+    {
+      "source": "api:PUT:/api/expedientes/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "PUT /api/expedientes/:id usa users"
+    },
+    {
+      "source": "api:DELETE:/api/expedientes/:id",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "DELETE /api/expedientes/:id usa expedientes"
+    },
+    {
+      "source": "api:DELETE:/api/expedientes/:id",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "DELETE /api/expedientes/:id usa projects"
+    },
+    {
+      "source": "api:GET:/api/expedientes/:id/files",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/expedientes/:id/files usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/expedientes/:id/files",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/expedientes/:id/files usa expedientes"
+    },
+    {
+      "source": "api:DELETE:/api/expedientes/:id/files/:fileId",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "DELETE /api/expedientes/:id/files/:fileId usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/reports",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/reports usa expedientes"
+    },
+    {
+      "source": "api:GET:/report/:id",
+      "target": "tabla:public_reports",
+      "tipo": "usa",
+      "descripcion": "GET /report/:id usa public_reports"
+    },
+    {
+      "source": "api:GET:/report/:id",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /report/:id usa users"
+    },
+    {
+      "source": "api:POST:/api/autocompletar",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/autocompletar usa users"
+    },
+    {
+      "source": "api:GET:/api/payments/mine",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/mine usa payments"
+    },
+    {
+      "source": "api:GET:/api/payments/mine",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/mine usa plans"
+    },
+    {
+      "source": "api:GET:/api/payments/mine",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/mine usa users"
+    },
+    {
+      "source": "api:GET:/api/admin/finance",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/finance usa payments"
+    },
+    {
+      "source": "api:GET:/api/admin/finance",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/admin/finance usa users"
+    },
+    {
+      "source": "api:POST:/api/payments/checkout-session",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/checkout-session usa payments"
+    },
+    {
+      "source": "api:POST:/api/payments/checkout-session",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/checkout-session usa plans"
+    },
+    {
+      "source": "api:POST:/api/payments/confirm",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/confirm usa payments"
+    },
+    {
+      "source": "api:POST:/api/payments/confirm",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/confirm usa plans"
+    },
+    {
+      "source": "api:GET:/api/payments/redticket/checkout/:id",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/redticket/checkout/:id usa payments"
+    },
+    {
+      "source": "api:GET:/api/payments/redticket/checkout/:id",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/redticket/checkout/:id usa plans"
+    },
+    {
+      "source": "api:GET:/api/payments/redticket/success/:id",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /api/payments/redticket/success/:id usa payments"
+    },
+    {
+      "source": "api:POST:/api/payments/redticket/webhook",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/redticket/webhook usa payments"
+    },
+    {
+      "source": "api:POST:/api/payments/redticket/simulate-pay/:id",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/redticket/simulate-pay/:id usa payments"
+    },
+    {
+      "source": "api:POST:/api/payments/redticket/simulate-pay/:id",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/payments/redticket/simulate-pay/:id usa plans"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa payments"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa plans"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa projects"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:usage",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa usage"
+    },
+    {
+      "source": "api:GET:/api/usage",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/usage usa users"
+    },
+    {
+      "source": "api:POST:/api/usage/increment",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/usage/increment usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/usage/increment",
+      "target": "tabla:plans",
+      "tipo": "usa",
+      "descripcion": "POST /api/usage/increment usa plans"
+    },
+    {
+      "source": "api:POST:/api/usage/increment",
+      "target": "tabla:projects",
+      "tipo": "usa",
+      "descripcion": "POST /api/usage/increment usa projects"
+    },
+    {
+      "source": "api:POST:/api/usage/increment",
+      "target": "tabla:usage",
+      "tipo": "usa",
+      "descripcion": "POST /api/usage/increment usa usage"
+    },
+    {
+      "source": "api:POST:/api/usage/increment",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "POST /api/usage/increment usa users"
+    },
+    {
+      "source": "api:GET:/",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET / usa payments"
+    },
+    {
+      "source": "api:GET:/admin.html",
+      "target": "tabla:payments",
+      "tipo": "usa",
+      "descripcion": "GET /admin.html usa payments"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:GET:/api/auth/me",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/me"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:PATCH:/api/auth/me",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/me"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:POST:/api/auth/register",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/register"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:POST:/api/auth/login",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/login"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:POST:/api/auth/recover",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/recover"
+    },
+    {
+      "source": "pagina:login",
+      "target": "api:POST:/api/auth/reset",
+      "tipo": "sirve_a",
+      "descripcion": "Página login llama a /api/auth/reset"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:GET:/api/admin/members",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:POST:/api/admin/members",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:PATCH:/api/admin/members/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members/:id"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:GET:/api/admin/plans",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/plans"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:PUT:/api/admin/plans/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/plans/:id"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:GET:/api/admin/members/:id/stats",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members/:id/stats"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:POST:/api/admin/members/:id/stats",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members/:id/stats"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:POST:/api/admin/members/:id/block",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/members/:id/block"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:GET:/api/admin/ips/:ip/users",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/ips/:ip/users"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/projects",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:POST:/api/projects",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:DELETE:/api/projects/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:POST:/api/projects/temp",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/temp"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/projects/temp",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/temp"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/projects/temp/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/temp/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:POST:/api/projects/temp/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/temp/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/projects/:projectId/expedientes",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/:projectId/expedientes"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:POST:/api/projects/:projectId/expedientes",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/projects/:projectId/expedientes"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/expedientes/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:PUT:/api/expedientes/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:DELETE:/api/expedientes/:id",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:GET:/api/expedientes/:id/files",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id/files"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:POST:/api/expedientes/:id/files",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id/files"
+    },
+    {
+      "source": "pagina:index",
+      "target": "api:DELETE:/api/expedientes/:id/files/:fileId",
+      "tipo": "sirve_a",
+      "descripcion": "Página index llama a /api/expedientes/:id/files/:fileId"
+    },
+    {
+      "source": "pagina:admin",
+      "target": "api:GET:/api/admin/finance",
+      "tipo": "sirve_a",
+      "descripcion": "Página admin llama a /api/admin/finance"
+    },
+    {
+      "source": "rol:publico",
+      "target": "pagina:login",
+      "tipo": "accede_a",
+      "descripcion": "Rol publico accede a login"
+    },
+    {
+      "source": "rol:topografo",
+      "target": "pagina:index",
+      "tipo": "accede_a",
+      "descripcion": "Rol topografo accede a index"
+    },
+    {
+      "source": "rol:municipal",
+      "target": "pagina:index-municipal",
+      "tipo": "accede_a",
+      "descripcion": "Rol municipal accede a index-municipal"
+    },
+    {
+      "source": "rol:admin",
+      "target": "pagina:admin",
+      "tipo": "accede_a",
+      "descripcion": "Rol admin accede a admin"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:assertMapDependencies",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y assertMapDependencies en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:init",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y init en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:setVertexEditMode",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y setVertexEditMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:startVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y startVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:cancelVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y cancelVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:checkMapDependencies",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "checkMapDependencies y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:init",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y init en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:setVertexEditMode",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y setVertexEditMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:startVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y startVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:cancelVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y cancelVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:assertMapDependencies",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "assertMapDependencies y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:setVertexEditMode",
+      "tipo": "misma_unidad",
+      "descripcion": "init y setVertexEditMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:startVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y startVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:cancelVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y cancelVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "init y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "init y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "init y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "init y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "init y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "init y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "init y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "init y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "init y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "init y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "init y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "init y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "init y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "init y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "init y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "init y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "init y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "init y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:init",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "init y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:startVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y startVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:cancelVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y cancelVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:setVertexEditMode",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "setVertexEditMode y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:cancelVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y cancelVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:startVertexEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "startVertexEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:commitVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y commitVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:cancelVertexEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "cancelVertexEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:undoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y undoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitVertexEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "commitVertexEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:redoGeometryEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y redoGeometryEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:undoGeometryEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "undoGeometryEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleVertexEdit",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleVertexEdit en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:redoGeometryEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "redoGeometryEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleParcelNumberAssignment",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleParcelNumberAssignment en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleVertexEdit",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleVertexEdit y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:closeParcelInspector",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y closeParcelInspector en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleParcelNumberAssignment",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleParcelNumberAssignment y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:updateVertexCoordinate",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y updateVertexCoordinate en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:closeParcelInspector",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "closeParcelInspector y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:commitExternalGeometry",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y commitExternalGeometry en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:updateVertexCoordinate",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "updateVertexCoordinate y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:getMap",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y getMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:commitExternalGeometry",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "commitExternalGeometry y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:clearProjectLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y clearProjectLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:getMap",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "getMap y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:loadGeoJSON",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y loadGeoJSON en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearProjectLayer",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "clearProjectLayer y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:selectParcelByNumber",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y selectParcelByNumber en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:loadGeoJSON",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "loadGeoJSON y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:restoreStartupView",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y restoreStartupView en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:selectParcelByNumber",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "selectParcelByNumber y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:focusWorkPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y focusWorkPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:restoreStartupView",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "restoreStartupView y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:toggleSNCReferenceLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y toggleSNCReferenceLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:focusWorkPolygon",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "focusWorkPolygon y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:toggleDeptos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y toggleDeptos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSNCReferenceLayer",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSNCReferenceLayer y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:toggleDistritos",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y toggleDistritos en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDeptos",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDeptos y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:toggleMeasureMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y toggleMeasureMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleDistritos",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleDistritos y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:toggleSplitMode",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y toggleSplitMode en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleMeasureMode",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleMeasureMode y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:convertPointsToPolygon",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y convertPointsToPolygon en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:toggleSplitMode",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "toggleSplitMode y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:showTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y showTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:convertPointsToPolygon",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "convertPointsToPolygon y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:clearTopologyErrors",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y clearTopologyErrors en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:showTopologyErrors",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "showTopologyErrors y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:invalidateSize",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y invalidateSize en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:clearTopologyErrors",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "clearTopologyErrors y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:invalidateSize",
+      "target": "func:setBaseLayer",
+      "tipo": "misma_unidad",
+      "descripcion": "invalidateSize y setBaseLayer en js/mapEngine.js"
+    },
+    {
+      "source": "func:invalidateSize",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "invalidateSize y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:invalidateSize",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "invalidateSize y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:invalidateSize",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "invalidateSize y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:invalidateSize",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "invalidateSize y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:setBaseLayer",
+      "target": "func:downloadEnvironmentCache",
+      "tipo": "misma_unidad",
+      "descripcion": "setBaseLayer y downloadEnvironmentCache en js/mapEngine.js"
+    },
+    {
+      "source": "func:setBaseLayer",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "setBaseLayer y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:setBaseLayer",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "setBaseLayer y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:setBaseLayer",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "setBaseLayer y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:downloadEnvironmentCache",
+      "target": "func:takeMapScreenshot",
+      "tipo": "misma_unidad",
+      "descripcion": "downloadEnvironmentCache y takeMapScreenshot en js/mapEngine.js"
+    },
+    {
+      "source": "func:downloadEnvironmentCache",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "downloadEnvironmentCache y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:downloadEnvironmentCache",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "downloadEnvironmentCache y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:takeMapScreenshot",
+      "target": "func:captureCertificateMapImages",
+      "tipo": "misma_unidad",
+      "descripcion": "takeMapScreenshot y captureCertificateMapImages en js/mapEngine.js"
+    },
+    {
+      "source": "func:takeMapScreenshot",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "takeMapScreenshot y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:captureCertificateMapImages",
+      "target": "func:openCertificateMap",
+      "tipo": "misma_unidad",
+      "descripcion": "captureCertificateMapImages y openCertificateMap en js/mapEngine.js"
+    },
+    {
+      "source": "func:runValidation",
+      "target": "func:runExportValidation",
+      "tipo": "misma_unidad",
+      "descripcion": "runValidation y runExportValidation en js/validator.js"
+    },
+    {
+      "source": "func:runValidation",
+      "target": "func:closeModal",
+      "tipo": "misma_unidad",
+      "descripcion": "runValidation y closeModal en js/validator.js"
+    },
+    {
+      "source": "func:runExportValidation",
+      "target": "func:closeModal",
+      "tipo": "misma_unidad",
+      "descripcion": "runExportValidation y closeModal en js/validator.js"
+    },
+    {
+      "source": "func:runMunicipalValidation",
+      "target": "clase:ValidadorMunicipal",
+      "tipo": "misma_unidad",
+      "descripcion": "runMunicipalValidation y ValidadorMunicipal en js/municipal.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:exportKML",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y exportKML en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateProfessionalReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateProfessionalReport en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:exportProfessionalReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y exportProfessionalReport en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateGeodesicSection",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateGeodesicSection en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateDualDictamen",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateDualDictamen en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:exportGeoJSON",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "exportGeoJSON y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateProfessionalReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateProfessionalReport en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:exportProfessionalReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y exportProfessionalReport en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateGeodesicSection",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateGeodesicSection en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateDualDictamen",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateDualDictamen en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:exportKML",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "exportKML y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:exportProfessionalReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y exportProfessionalReport en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generateGeodesicSection",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generateGeodesicSection en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generateDualDictamen",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generateDualDictamen en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generateProfessionalReport",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateProfessionalReport y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generateGeodesicSection",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generateGeodesicSection en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generateDualDictamen",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generateDualDictamen en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:exportProfessionalReport",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "exportProfessionalReport y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:generateDualDictamen",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y generateDualDictamen en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generateGeodesicSection",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateGeodesicSection y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateDualDictamen",
+      "target": "func:generateConsultaDescriptivaPDF",
+      "tipo": "misma_unidad",
+      "descripcion": "generateDualDictamen y generateConsultaDescriptivaPDF en js/export.js"
+    },
+    {
+      "source": "func:generateDualDictamen",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "generateDualDictamen y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:generateDualDictamen",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateDualDictamen y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:generateDualDictamen",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generateDualDictamen y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generateDualDictamen",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateDualDictamen y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateConsultaDescriptivaPDF",
+      "target": "func:generateShapefile",
+      "tipo": "misma_unidad",
+      "descripcion": "generateConsultaDescriptivaPDF y generateShapefile en js/export.js"
+    },
+    {
+      "source": "func:generateConsultaDescriptivaPDF",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateConsultaDescriptivaPDF y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:generateConsultaDescriptivaPDF",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generateConsultaDescriptivaPDF y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generateConsultaDescriptivaPDF",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateConsultaDescriptivaPDF y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateShapefile",
+      "target": "func:generatePDFReport",
+      "tipo": "misma_unidad",
+      "descripcion": "generateShapefile y generatePDFReport en js/export.js"
+    },
+    {
+      "source": "func:generateShapefile",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generateShapefile y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generateShapefile",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateShapefile y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generatePDFReport",
+      "target": "func:generateComplianceCertificate",
+      "tipo": "misma_unidad",
+      "descripcion": "generatePDFReport y generateComplianceCertificate en js/export.js"
+    },
+    {
+      "source": "func:generatePDFReport",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generatePDFReport y packAndDownload en js/export.js"
+    },
+    {
+      "source": "func:generateComplianceCertificate",
+      "target": "func:packAndDownload",
+      "tipo": "misma_unidad",
+      "descripcion": "generateComplianceCertificate y packAndDownload en js/export.js"
+    },
+    {
+      "source": "tabla:recovery_tokens",
+      "target": "tabla:users",
+      "tipo": "fk",
+      "descripcion": "recovery_tokens.user_id → users.id"
+    },
+    {
+      "source": "api:GET:/api/postgis/analisis-espacial",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "GET /api/postgis/analisis-espacial usa expedientes"
+    },
+    {
+      "source": "api:GET:/api/entorno",
+      "target": "tabla:users",
+      "tipo": "usa",
+      "descripcion": "GET /api/entorno usa users"
+    },
+    {
+      "source": "api:POST:/api/validation/gaps-catastro",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/validation/gaps-catastro usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/validation/restriccion-hidrica",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/validation/restriccion-hidrica usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/validation/municipal",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/validation/municipal usa expedientes"
+    },
+    {
+      "source": "api:POST:/api/validation/completa",
+      "target": "tabla:expedientes",
+      "tipo": "usa",
+      "descripcion": "POST /api/validation/completa usa expedientes"
+    },
+    {
+      "source": "rol:manager",
+      "target": "pagina:admin",
+      "tipo": "accede_a",
+      "descripcion": "Rol manager accede a admin"
+    }
+  ]
+}

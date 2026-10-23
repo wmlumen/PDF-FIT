@@ -1,0 +1,377 @@
+{
+  "graph": "SNC_v3_Integration_Graph",
+  "created_at": "2026-10-18",
+  "nodes": [
+    {
+      "id": "M7_validacion_documental",
+      "type": "module",
+      "label": "Módulo 7: Validación Documental",
+      "status": "implemented",
+      "dependencies": [
+        "M10_RBAC",
+        "js_state",
+        "js_validator"
+      ],
+      "blocked_by": [
+        "A0-1",
+        "A0-2",
+        "A0-3",
+        "A0-4",
+        "A0-5",
+        "A0-6",
+        "A0-7"
+      ],
+      "description": "Firma digital, validación adjuntos, carátula SNC"
+    },
+    {
+      "id": "M8_UTM_PDF_A",
+      "type": "module",
+      "label": "Módulo 8: Cuadrícula UTM & PDF/A",
+      "status": "implemented_partial",
+      "dependencies": [
+        "M7_validacion_documental",
+        "js_config",
+        "js_state"
+      ],
+      "blocked_by": [
+        "A0-1",
+        "A0-2",
+        "A0-3",
+        "A0-4",
+        "A0-5",
+        "A0-6",
+        "A0-7"
+      ],
+      "description": "Cuadrícula UTM, PDF/A-2b, simbología mojón"
+    },
+    {
+      "id": "M9_notificaciones",
+      "type": "module",
+      "label": "Módulo 9: Notificaciones e Interoperabilidad",
+      "status": "implemented_partial",
+      "dependencies": [
+        "M7_validacion_documental",
+        "js_state",
+        "js_utils"
+      ],
+      "blocked_by": [
+        "A0-1",
+        "A0-2",
+        "A0-3",
+        "A0-4",
+        "A0-5",
+        "A0-6",
+        "A0-7"
+      ],
+      "description": "Mesa entrada, notificaciones, CCC, resolución municipal"
+    },
+    {
+      "id": "M10_RBAC_MFA",
+      "type": "module",
+      "label": "Módulo 10: RBAC, MFA, Particionado BD",
+      "status": "implemented_partial",
+      "dependencies": [
+        "js_state",
+        "js_utils"
+      ],
+      "blocked_by": [
+        "A0-1",
+        "A0-2",
+        "A0-3",
+        "A0-4",
+        "A0-5",
+        "A0-6",
+        "A0-7"
+      ],
+      "description": "RBAC, MFA TOTP/SMS, particionamiento BD"
+    },
+    {
+      "id": "A0_1_password_app",
+      "type": "blocker",
+      "label": "A0-1: Revocar contraseña aplicación Gmail",
+      "status": "open",
+      "blocked_by": [],
+      "dependencies": [],
+      "description": "Credenciales reales versionadas en ejercicio/contraseña app.txt"
+    },
+    {
+      "id": "A0_2_firebase_key",
+      "type": "blocker",
+      "label": "A0-2: Rotar clave Firebase Admin",
+      "status": "open",
+      "dependencies": [],
+      "description": "Clave privada de Firebase Admin (snc511) en serviceAccountKey.json sin cifrar"
+    },
+    {
+      "id": "A0_3_publicar_repo",
+      "type": "blocker",
+      "label": "A0-3: Dejar de publicar repositorio",
+      "status": "open",
+      "dependencies": [],
+      "description": "firebase.json publica todo el repositorio (docs/, tests/, ejercicio/)"
+    },
+    {
+      "id": "A0_4_datos_credenciales",
+      "type": "blocker",
+      "label": "A0-4: Sacar datos/credenciales del historial",
+      "status": "open",
+      "dependencies": [],
+      "description": "ejercicio/contraseña app.txt, data/users.json, data/*.json en historial Git"
+    },
+    {
+      "id": "A0_5_jwt_secret",
+      "type": "blocker",
+      "label": "A0-5: JWT_SECRET obligatorio y aleatorio",
+      "status": "open",
+      "dependencies": [],
+      "description": "config.env.js, .env.example: secreto por defecto conocido"
+    },
+    {
+      "id": "A0_6_update_user_cjs",
+      "type": "blocker",
+      "label": "A0-6: Eliminar _update_user.cjs y rotar password admin",
+      "status": "open",
+      "dependencies": [],
+      "description": "_update_user.cjs + contraseña cuenta admin afectada"
+    },
+    {
+      "id": "A0_7_gitleaks",
+      "type": "blocker",
+      "label": "A0-7: Añadir gitleaks y completar .gitignore",
+      "status": "open",
+      "dependencies": [],
+      "description": ".gitignore, .husky/ o .githooks/; archivo con secreto de prueba rechazado"
+    },
+    {
+      "id": "A1_1_helper_recurso",
+      "type": "task",
+      "label": "A1-1: Helper propiedad recurso en 9 endpoints",
+      "status": "pending",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blocked_by": [],
+      "description": "server-api.js (675, 768-799, 801-903, 1208, 1225); tests negativos usuario A → recurso B"
+    },
+    {
+      "id": "A1_2_completar_expedientes",
+      "type": "task",
+      "label": "A1-2: Completar expedientes db",
+      "status": "pending",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blocked_by": [],
+      "description": "db.cjs: findByProject, update, deleteById; /api/expedientes respuestas 200/201 con base real"
+    },
+    {
+      "id": "Municipal_module",
+      "type": "module",
+      "label": "Módulo Municipal (Ley 3966)",
+      "status": "pending",
+      "dependencies": [
+        "M7_validacion_documental"
+      ],
+      "blocked_by": [
+        "A0_1",
+        "A0_2",
+        "A0_3",
+        "A0_4",
+        "A0_5",
+        "A0_6",
+        "A0_7"
+      ],
+      "description": "js/municipal.js, js/municipalClient.js, index-municipal.html"
+    },
+    {
+      "id": "Topology_module",
+      "type": "module",
+      "label": "Módulo Topología y COGO",
+      "status": "completed",
+      "dependencies": [],
+      "blocked_by": [],
+      "description": "js/topologyRepair.js: detectGaps, validateOchavas, detectMicroHoles (6/6 tests passing)"
+    }
+  ],
+  "edges": [
+    {
+      "from": "A0_1_password_app",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_1_password_app",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_1_password_app",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_1_password_app",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_2_firebase_key",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_2_firebase_key",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_2_firebase_key",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_2_firebase_key",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_3_publicar_repo",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_3_publicar_repo",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_3_publicar_repo",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_3_publicar_repo",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_4_datos_credenciales",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_4_datos_credenciales",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_4_datos_credenciales",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_4_datos_credenciales",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_5_jwt_secret",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_5_jwt_secret",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_5_jwt_secret",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_5_jwt_secret",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_6_update_user_cjs",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_7_gitleaks",
+      "to": "M7_validacion_documental",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_7_gitleaks",
+      "to": "M8_UTM_PDF_A",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_7_gitleaks",
+      "to": "M9_notificaciones",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "A0_7_gitleaks",
+      "to": "M10_RBAC_MFA",
+      "type": "BLOQUEA"
+    },
+    {
+      "from": "M10_RBAC_MFA",
+      "to": "A1_1_helper_recurso",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "M10_RBAC_MFA",
+      "to": "A1_2_completar_expedientes",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "M7_validacion_documental",
+      "to": "A1_1_helper_recurso",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "M7_validacion_documental",
+      "to": "A1_2_completar_expedientes",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "M8_UTM_PDF_A",
+      "to": "Topology_module",
+      "type": "INTEGRA_CON"
+    },
+    {
+      "from": "M9_notificaciones",
+      "to": "Municipal_module",
+      "type": "INTEGRA_CON"
+    },
+    {
+      "from": "js_state",
+      "to": "M7_validacion_documental",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "js_state",
+      "to": "M8_UTM_PDF_A",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "js_state",
+      "to": "M9_notificaciones",
+      "type": "DEPENDE_DE"
+    },
+    {
+      "from": "js_state",
+      "to": "M10_RBAC_MFA",
+      "type": "DEPENDE_DE"
+    }
+  ]
+}

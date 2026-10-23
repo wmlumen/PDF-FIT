@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "env": {
+      "NODE_ENV": "development",
+      "PORT": "5556",
+      "JWT_SECRET": "secret",
+      "SNC_DATA_DIR": "data",
+      "ADMIN_EMAIL": "admin@snc.test",
+      "ADMIN_PASSWORD": "admin123"
+    }
+  },
+  "before": null,
+  "after": {
+    "script": "node server-api.js",
+    "paths": {
+      "generada": "C:\\Users\\HP 250 G10\\Documents\\GITHUT\\SNC2\\SNC_v3",
+      "archivo": "server-api.js"
+    },
+    "result": "Ejecutándose en http://localhost:5556/admin.html (servicio público), /api/* protegidos por authMiddleware + adminMiddleware"
+  }
+}

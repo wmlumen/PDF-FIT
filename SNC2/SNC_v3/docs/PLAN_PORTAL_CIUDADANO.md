@@ -1,9 +1,9 @@
 # Plan de Mejoras — Portal Ciudadano (Compartir datos municipales)
 
-> **Estado:** PENDIENTE — 5 mejoras sin implementar.
+> **Estado:** COMPLETADO — 5/5 mejoras implementadas y verificadas con tests unitarios (`tests/portal-ciudadano.test.mjs`).
 > **Objetivo:** Una municipalidad publica sus datos catastrales y la ciudadanía
 > los consulta a través de la página o de un enlace compartible.
-> **Verificado el:** 2026-10-22. Portal actual: `ciudadano/index.html` (398 líneas).
+> **Verificado el:** 2026-10-22. Test suite: `npm test` (32/32 suites en verde).
 
 ---
 

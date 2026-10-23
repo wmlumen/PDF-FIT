@@ -1,0 +1,94 @@
+Basándose en la arquitectura del sistema **SNC v3** y los requerimientos del panel administrativo (`admin/index.html`) orientados a la gestión global de la plataforma, miembros, planes y finanzas, el panel de administración debería contar con las siguientes secciones y características clave:
+
+* **Métricas y Analítica Global (Dashboard):**
+* Tarjetas de resumen con indicadores clave (KPIs): número total de municipios activos, profesionales/agrimensores registrados, expedientes procesados en el sistema y volumen de transacciones financieras.
+* Gráficos de actividad de la plataforma en tiempo real.
+
+
+* **Gestión de Miembros y Usuarios:**
+* Listado de usuarios con filtros por rol (Administrador, Técnico Municipal, Profesional/Agrimensor, Ciudadano).
+* Herramientas para aprobar, suspender, dar de baja cuentas o restablecer accesos y credenciales.
+* Control de IPs y registros de auditoría de acceso al sistema.
+
+
+* **Gestión de Planes y Suscripciones (B2B):**
+* Configuración de planes de servicio para profesionales o municipios.
+* Control del estado de las suscripciones (activas, vencidas, pendientes de pago).
+
+
+
+
+* **Módulo de Finanzas y Facturación:**
+* Historial y control de cobros (integración con pasarelas de pago como Red Ticket).
+
+
+* Registro de facturación, comprobantes emitidos y reportes de ingresos por municipio o período.
+
+
+* **Auditoría y Monitoreo del Sistema:**
+* Visor de logs de errores del backend y estado de salud de la API.
+* Monitoreo del uso de almacenamiento y consultas espaciales en la base de datos.
+
+1. Módulo de Fiscalización Tributaria y Cobranzas Coactivas (Anti-Prescripción)
+Dado que la plataforma cruza la cartografía con los estados de cuenta tributarios, este módulo es crítico para evitar la pérdida de recaudación municipal:
+
+Mapa de Morosidad por Semáforo: Visualización automatizada de los lotes pintados en color verde, amarillo, naranja y rojo según su nivel de atraso en el pago del impuesto inmobiliario y tasas.
+
+Control de Prescripción (Ley Nº 125/1991): Alertas tempranas sobre deudas cercanas a cumplir el plazo de prescripción de 5 años para emitir notificaciones automáticas de intimación de pago.
+
+Detección de Fugas Catastrales: Herramienta de auditoría espacial que identifica discrepancias, como inmuebles registrados fiscalmente con calzada de tierra pero que espacialmente se ubican frentes a vías asfaltadas.
+
+2. Módulo de Validación Ambiental y Servidumbres (Ley Nº 3239/07)
+Para automatizar la revisión de expedientes técnicos presentados por agrimensores y profesionales independientes:
+
+Cruce Automático con Cursos Hídricos: Verificación topológica en tiempo real mediante PostGIS para detectar si una mensura infringe la franja de protección obligatoria de 30 metros de los cauces hídricos.
+
+Validación de Geometrías: Control automático de cierres de polígonos, solapamientos con parcelas vigentes colindantes y superposición con dominios públicos o servidumbres viales.
+
+3. Módulo de Emisión de Dictámenes e Informes Legales
+Informe "A" (Pre-validación Preventiva): Generación automática de un documento en formato Word (.docx) con mapas dinámicos inyectados, destinado al agrimensor para certificar que su trabajo preliminar cumple con las normativas antes de ingresar formalmente al municipio.
+
+Informe "B" (Dictamen Pericial Vinculante): Documento oficial generado para los técnicos y directores de la municipalidad, respaldando con sustento geoespacial y legal la aprobación o rechazo del expediente.
+
+4. Módulo de Interoperabilidad y Gestión de Expedientes (B2B2G)
+Bandeja de Entrada Municipal: Panel operativo para los funcionarios comunales donde ingresan las solicitudes de los profesionales, ordenadas por estado (En revisión, Observado, Aprobado, Rechazado).
+
+Pasarela de Pagos (Red Ticket): Integración activa para el cobro de tasas de visación de planos, certificados catastrales y tributos municipales de forma digital.
+
+¿Y qué más a nivel de infraestructura y seguridad?
+Políticas de Aislamiento Multi-Tenant (RLS): Garantizar que mediante la base de datos (PostgreSQL/PostGIS con Row Level Security), cada municipio solo pueda visualizar y administrar su propia información territorial sin cruces de datos con otras comunas.
+
+Auditoría de Accesos (Logs): Registro detallado de qué usuario, técnico o administrador consultó, modificó o aprobó una coordenada o expediente, asegurando la trazabilidad legal de cada movimiento en el sistema.
+
+Para complementar de forma integral la plataforma **SNC v3**, el **panel de administración (`admin/index.html`)** debe no solo cubrir la gestión general de miembros y finanzas, sino también integrar herramientas directas para supervisar la salud operativa del sistema catastral y los municipios.
+
+A continuación se detalla qué más debería contener y habilitar este panel:
+
+---
+
+### 1. Gestión de Municipios y Tenants (Multi-Tenant)
+
+Dado que la arquitectura se basa en aislar la información de distintas comunas bajo un mismo sistema:
+
+* **Directorio de Municipalidades:** Listado de comunas dadas de alta en la plataforma, con indicadores de uso de almacenamiento, número de expedientes activos y volumen de consultas espaciales en PostGIS/SQLite.
+* **Activación y Configuración de Subdominios:** Creación y control de accesos exclusivos para cada municipio, parametrización de sellos digitales y logotipos institucionales para los informes en Word (`.docx`).
+
+### 2. Panel de Control de Pagos y Suscripciones B2B2G
+
+* **Monitoreo de Red Ticket:** Visor en tiempo real del estado de las pasarelas de pago integradas para el cobro de tasas de visación y servicios catastrales.
+
+
+* **Control de Facturación por Perfil:** Gestión de planes de servicio para agrimensores independientes y municipios, controlando renovaciones, vencimientos y alertas de suspensión por falta de pago.
+
+### 3. Auditoría de Seguridad y Logs del Sistema
+
+* **Visor de Errores de API:** Registro de peticiones fallidas o errores 500 provenientes del servidor Node.js.
+* **Trazabilidad de Accesos (Logs de Auditoría):** Control de qué usuarios accedieron a qué parcelas o modificaron capas críticas, garantizando la seguridad legal de la plataforma.
+
+---
+
+### ¿Y qué más módulos habilitar en la plataforma?
+
+* **Módulo de Fiscalización Tributaria y Prevención de Prescripción:** Un visor geoespacial en el mapa que cruza la cartografía con los estados de cuenta, pintando los lotes con un semáforo de morosidad (verde, amarillo, naranja, rojo) para evitar que las deudas tributarias cumplan el plazo de prescripción de 5 años (Ley Nº 125/1991).
+* **Módulo de Servidumbres Ambientales (Ley Nº 3239/07):** Validación topológica automatizada para detectar si una mensura o proyecto invade la franja de protección obligatoria de 30 metros de los cauces hídricos.
+* **Módulo de Generación de Dictámenes (Informes A y B):** Exportación automatizada de documentos periciales en formato Word (`.docx`) con mapas dinámicos inyectados, tanto para la pre-validación del agrimensor como para la aprobación final del municipio.

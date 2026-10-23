@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.is_admin == true;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function projectOwner(projectId) {
+      let d = get(/databases/default/docs/projects/{projectId});
+      return d.data.owner_id;
+    }
+
+    function expOwner(expId) {
+      let d = get(/databases/default/docs/expedientes/{expId});
+      return d.data.owner_id;
+    }
+
+    function paymentOwner(paymentId) {
+      let d = get(/databases/default/docs/payments/{paymentId});
+      return d.data.user_id;
+    }
+
+    match /users/{userId} {
+      allow read:  if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /plans/{planId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /projects/{projectId} {
+      allow read:  if isOwner(projectOwner(projectId));
+      allow write: if isOwner(projectOwner(projectId)) || isAdmin();
+    }
+
+    match /expedientes/{expId} {
+      allow read:  if isOwner(expOwner(expId));
+      allow write: if isOwner(expOwner(expId)) || isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read:  if isOwner(paymentOwner(paymentId));
+      allow write: if isOwner(paymentOwner(paymentId)) || isAdmin();
+    }
+
+    match /usage/{key} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /public_reports/{reportId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    match /recovery_tokens/{token} {
+      allow read:  if false;
+      allow write: if false;
+    }
+
+  }
+}

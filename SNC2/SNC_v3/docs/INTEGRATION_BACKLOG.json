@@ -1,0 +1,540 @@
+{
+  "backlog": "SNC_v3_Integration_Backlog",
+  "created_at": "2026-10-18",
+  "total_tasks": 20,
+  "completed": 0,
+  "pending": 20,
+  "in_progress": 0,
+  "blocked": 14,
+  "deferred": 0,
+  "tasks": [
+    {
+      "id": "A0_1_password_app",
+      "title": "Revocar contraseña aplicación Gmail",
+      "description": "Credenciales reales versionadas: contraseña de app Gmail en ejercicio/contraseña app.txt, copias de la base en data/, contraseña de admin en _update_user.cjs",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "Credenciales versionadas en repositorio",
+        "Evidence: auditoria.md §C-01"
+      ],
+      "acceptance_criteria": [
+        "Credencial vieja ya no autentica",
+        "git grep no encuentra el valor",
+        "Nueva credencial guardada fuera del repo"
+      ],
+      "verification": [
+        "git grep -r 'contraseña app' --no-index",
+        "Probar autenticación con clave antigua vs nueva"
+      ],
+      "files_affected": [
+        "ejercicio/contraseña app.txt",
+        "data/contraseña app.txt",
+        "_update_user.cjs",
+        ".env"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-1; forma parte de Fase 0 contención; no modificar sin autorización"
+    },
+    {
+      "id": "A0_2_firebase_key",
+      "title": "Rotar clave Firebase Admin",
+      "description": "Clave privada de Firebase Admin (snc511) en serviceAccountKey.json sin cifrar",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "Clave privada sin cifrar en disco",
+        "Evidence: auditoria.md §C-02"
+      ],
+      "acceptance_criteria": [
+        "Clave anterior revocada",
+        "Backend arranca sin el archivo (o con secreto inyectado por env)"
+      ],
+      "verification": [
+        "Revocar en consola Firebase IAM",
+        "Probar que server-api.cjs arranca sin serviceAccountKey.json"
+      ],
+      "files_affected": [
+        "serviceAccountKey.json",
+        "firebase.json",
+        "config.env.js"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-2; forma parte de Fase 0 contención"
+    },
+    {
+      "id": "A0_3_publicar_repo",
+      "title": "Dejar de publicar repositorio",
+      "description": "firebase.json publica todo el repositorio (docs/, tests/, ejercicio/, admin.html, _update_user.cjs)",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "firebase.json public: '.' incluye todos los directorios del repo",
+        "Evidence: auditoria.md §C-03"
+      ],
+      "acceptance_criteria": [
+        "curl a /ejercicio/contraseña%20app.txt, /docs/, /tests/, /admin.html, /_update_user.cjs devuelve 404"
+      ],
+      "verification": [
+        "Ejecutar curl a las URLs mencionadas",
+        "Verificar que retornan 404"
+      ],
+      "files_affected": [
+        "firebase.json",
+        "firebase.scripts.json"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-3; forma parte de Fase 0 contenedor"
+    },
+    {
+      "id": "A0_4_datos_credenciales",
+      "title": "Sacar datos y credenciales del historial",
+      "description": "ejercicio/contraseña app.txt, data/users.json, data/*.json, data/*.bak*, data/*.db-shm, data/*.db-wal",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "Datos y credenciales versionados en git history",
+        "Evidence: auditoria.md §C-04"
+      ],
+      "acceptance_criteria": [
+        "Archivos ausentes en HEAD y en el historial",
+        "gitleaks limpio"
+      ],
+      "verification": [
+        "gitleaks scan",
+        "git log --all --oneline -- ejercicio/contraseña*"
+      ],
+      "files_affected": [
+        "ejercicio/contraseña app.txt",
+        "data/users.json",
+        "data/*.json",
+        "data/*.bak*",
+        "data/*.db-shm",
+        "data/*.db-wal",
+        ".gitignore"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-4; requiere purgar historial git"
+    },
+    {
+      "id": "A0_5_jwt_secret",
+      "title": "JWT_SECRET obligatorio y aleatorio",
+      "description": "config.env.js, .env.example: JWT_SECRET con valor por defecto conocido; sesiones no revocables",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "JWT_SECRET con valor por defecto conocido",
+        "Evidence: auditoria.md §C-05"
+      ],
+      "acceptance_criteria": [
+        "JWT_SECRET obligatorio, aleatorio (≥32 bytes) y validado en todos los entornos",
+        "El proceso no arranca con secreto vacío, corto o placeholder"
+      ],
+      "verification": [
+        "Verificar config.env.js y .env.example contienen JWT_SECRET válido",
+        "Probar arranque del backend con secreto configurado"
+      ],
+      "files_affected": [
+        "config.env.js",
+        ".env.example",
+        ".env"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-5; requiere generar JWT_SECRET aleatorio de ≥32 bytes"
+    },
+    {
+      "id": "A0_6_update_user_cjs",
+      "title": "Eliminar _update_user.cjs y rotar password admin",
+      "description": "_update_user.cjs y contraseña de la cuenta admin afectada",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        "Archivo _update_user.cjs existe en repositorio",
+        "Evidence: auditoria.md §C-06"
+      ],
+      "acceptance_criteria": [
+        "_update_user.cjs ausente en HEAD",
+        "Contraseña anterior inválida",
+        "Nueva solo en gestor de secretos"
+      ],
+      "verification": [
+        "Verificar _update_user.cjs no está en HEAD",
+        "Probar contraseña admin antigua no funciona",
+        "Verificar nueva contraseña solo en gestor de secretos"
+      ],
+      "files_affected": [
+        "_update_user.cjs",
+        ".env",
+        "serviceAccountKey.json"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-6; archivo a eliminar + credenciales a rotar"
+    },
+    {
+      "id": "A0_7_gitleaks",
+      "title": "Añadir gitleaks y completar .gitignore",
+      "description": ".gitignore, .husky/ o .githooks/; archivo con un secreto de prueba es rechazado",
+      "type": "security",
+      "status": "blocked",
+      "priority": "critical",
+      "module": "infraestructura",
+      "dependencies": [],
+      "blockers": [
+        ".gitignore no incluye patrones sensibles",
+        "Evidence: auditoria.md §C-07"
+      ],
+      "acceptance_criteria": [
+        "Un archivo con un secreto de prueba es rechazado por gitleaks en pre-commit/CI",
+        ".gitignore incluye _*.cjs, *.sqlite*, graphify-out/"
+      ],
+      "verification": [
+        "Ejecutar gitleaks pre-commit con un archivo de prueba que contenga una cadena tipo password",
+        "Verificar .gitignore contiene las exenciones necesarias"
+      ],
+      "files_affected": [
+        ".gitignore",
+        ".husky/",
+        ".githooks/",
+        "scripts/"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo crítico A0-7; configuración de prevención de fugas"
+    },
+    {
+      "id": "A1_1_helper_recurso",
+      "title": "Helper propiedad recurso en 9 endpoints",
+      "description": "Completar helper de propiedad de recurso y aplicación en los 9 endpoints de C-04",
+      "type": "bug",
+      "status": "pending",
+      "priority": "high",
+      "module": "server-api.js",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "9 endpoints no verifican propiedad del proyecto/expediente/pago"
+      ],
+      "acceptance_criteria": [
+        "Tests negativos: usuario A contra recurso de B → 404/403 en todos los endpoints"
+      ],
+      "verification": [
+        "Ejecutar tests de usuario A → recurso B en los 9 endpoints especificados",
+        "Verificar respuesta 404/403 en todos"
+      ],
+      "files_affected": [
+        "server-api.js",
+        "tests/api-security.test.mjs"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-1; depende de cierre de A0-1, A0-2, A0-5 para remover bloqueos"
+    },
+    {
+      "id": "A1_2_completar_expedientes",
+      "title": "Completar expedientes y migrar files_json",
+      "description": "Completar expedientes (findByProject, update, deleteById) y migrar files_json",
+      "type": "bug",
+      "status": "pending",
+      "priority": "high",
+      "module": "db.cjs, server-api.js",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "db.cjs sin expedientes.findByProject/update/deleteById y esquema sin files_json"
+      ],
+      "acceptance_criteria": [
+        "GET/POST /api/projects/:id/expedientes, PUT/DELETE /api/expedientes/:id y /files responden 200/201 con la base real"
+      ],
+      "verification": [
+        "Probar endpoints CRUD de expedientes con base de datos real",
+        "Verificar respuestas 200/201"
+      ],
+      "files_affected": [
+        "db.cjs",
+        "server-api.js",
+        "tests/db-modulo1.test.mjs",
+        "tests/db-modulo9.test.mjs"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-2; depende de cierre de A0-1, A0-2, A0-5; requiere modificar db.cjs (zona congelada Fase 0)"
+    },
+    {
+      "id": "A1_3_backend_unico",
+      "title": "Un solo backend por variable DB_BACKEND",
+      "description": "Completar un solo backend por variable DB_BACKEND; completar contrato de Firestore o eliminarlo",
+      "type": "feature",
+      "status": "pending",
+      "priority": "high",
+      "module": "server-api.js, js/firestore-db.cjs",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "Múltiples backends posibles; contrato Firestore incompleto"
+      ],
+      "acceptance_criteria": [
+        "Test de contrato pasa con ambos backends (SQLite y Firestore)",
+        "Arranque falla si el backend elegido no inicializa"
+      ],
+      "verification": [
+        "Probar con backend SQLite",
+        "Probar con backend Firestore (simulado)",
+        "Verificar mensaje de error si backend no inicializa"
+      ],
+      "files_affected": [
+        "server-api.js",
+        "js/firestore-db.cjs",
+        "tsconfig.json"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-3; arquitectura multi-backend"
+    },
+    {
+      "id": "A1_4_webhook_firma",
+      "title": "Webhook con body crudo y secreto",
+      "description": "Webhook con body crudo antes de express.json; secreto obligatorio; usar metadata.payment_id",
+      "type": "feature",
+      "status": "pending",
+      "priority": "high",
+      "module": "server-api.js (75, 1252-1296)",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "Webhook no puede validar la firma (body consumido + secreto ausente)"
+      ],
+      "acceptance_criteria": [
+        "Firma HMAC válida aceptada (200) y firma inválida rechazada (401)",
+        "Con test reproducible"
+      ],
+      "verification": [
+        "Probar webhook con firma HMAC válida",
+        "Probar webhook con firma HMAC inválida",
+        "Verificar estados 200 y 401 respectivamente"
+      ],
+      "files_affected": [
+        "server-api.js",
+        "scripts/promotion_gate.sh"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-4; requiere modificar server-api.js (zona parcialmente congelada)"
+    },
+    {
+      "id": "A1_5_await_health",
+      "title": "await en /api/usage/increment y health check",
+      "description": "await en /api/usage/increment y health check real",
+      "type": "bug",
+      "status": "pending",
+      "priority": "medium",
+      "module": "server-api.js (271-280, 1336-1347)",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "await faltando en /api/usage/increment; health check no devuelve 503 con DB caída"
+      ],
+      "acceptance_criteria": [
+        "Exportar respeta el límite del plan; /api/health devuelve 503 con DB caída"
+      ],
+      "verification": [
+        "Probar límite de exportación",
+        "Probar /api/health con DB caída"
+      ],
+      "files_affected": [
+        "server-api.js"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-5"
+    },
+    {
+      "id": "A1_6_versionar_hash_legacy",
+      "title": "Migración de hash legacy y bootstrap admin",
+      "description": "Migración de hash legacy y bootstrap de admin fuera del registro",
+      "type": "maintenance",
+      "status": "pending",
+      "priority": "medium",
+      "module": "server-api.js (335-383), db.cjs",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "Usuarios con password_hash antiguo pueden entrar y quedan migrados; primer registro es member"
+      ],
+      "acceptance_criteria": [
+        "Un usuario con password_hash antiguo puede entrar y queda migrado; el primer registro es member"
+      ],
+      "verification": [
+        "Probar login con hash legacy",
+        "Verificar migración automática",
+        "Verificar primer registro es member"
+      ],
+      "files_affected": [
+        "server-api.js (335-383)",
+        "db.cjs"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-6"
+    },
+    {
+      "id": "A1_7_rate_limit",
+      "title": "Rate limit antes parser de body",
+      "description": "Rate limit antes del parser de body, store con limpieza y trust proxy",
+      "type": "security",
+      "status": "pending",
+      "priority": "medium",
+      "module": "server-api.js (75, 157-206)",
+      "dependencies": [
+        "A0_1",
+        "A0_2",
+        "A0_5"
+      ],
+      "blockers": [
+        "Rate limit antes del parser de body; store con limpieza y trust proxy"
+      ],
+      "acceptance_criteria": [
+        "429 al superar el límite con IP simulada; sin crecimiento del Map"
+      ],
+      "verification": [
+        "Simular múltiples requests desde IP distinta",
+        "Verificar que el Map no crece ilimitadamente"
+      ],
+      "files_affected": [
+        "server-api.js (75, 157-206)"
+      ],
+      "created_at": "2026-10-18",
+      "updated_at": "2026-10-18",
+      "notes": "Hallazgo A1-7"
+    },
+    {
+      "id": "A2_1_flat_eslint",
+      "title": "Migrar a flat config ESLint",
+      "description": "Migrar a flat config de ESLint y arreglar dependencias",
+      "type": "maintenance",
+      "status": "done",
+      "priority": "medium",
+      "module": ".eslintrc.cjs → eslint.config.js, package.json",
+      "dependencies": [],
+      "blockers": [
+        "No se encuentra eslint.config.js"
+      ],
+      "updated_at": "2026-10-18",
+      "notes": "ESLint flat config creado (eslint.config.js). Verificado: key files intact, 68+ tests passing. Lista para next task."
+    },
+    {
+      "id": "A2_2_tsconfig",
+      "title": "Corregir tscoconfig",
+      "description": "Corregir tscoconfig (baseUrl, claves duplicadas, server//)",
+      "type": "bug",
+      "status": "in_progress",
+      "priority": "medium",
+      "module": "tsconfig.json",
+      "dependencies": [],
+      "blockers": [
+        "baseUrl deprecado (TS 6), claves duplicadas"
+      ],
+      "updated_at": "2026-10-18",
+      "notes": "Corregir tscoconfig: baseUrl deprecado, claves duplicadas, server//. Revisar y ajustar tsconfig.json"
+    },
+    {
+      "id": "A2_3_firebase_gate",
+      "title": "Firebase gate y scripts",
+      "description": "Alinear firebase.json, firebase.scripts.json y el gate; decidir si hay Functions",
+      "type": "configuration",
+      "status": "pending",
+      "priority": "high",
+      "module": "firebase*.json, scripts/promotion_gate.sh",
+      "dependencies": [],
+      "blockers": [
+        "npm run predeploy en verde y firebase deploy --only hosting funciona"
+      ]
+    },
+    {
+      "id": "A2_4_CI",
+      "description": "CI con test + lint + typecheck + audit + gitleaks; versionar lockfile",
+      "type": "configuration",
+      "status": "pending",
+      "priority": "high",
+      "module": ".github/workflows/, package-lock.json, .gitignore",
+      "dependencies": []
+    },
+    {
+      "id": "A2_5_XSS_sanitizar",
+      "description": "Alinear HTML del checkout y sanitizar reportes con DOMPurify",
+      "type": "security",
+      "status": "pending",
+      "priority": "medium",
+      "module": "server-api.js (905-944, 1208-1250)",
+      "dependencies": []
+    },
+    {
+      "id": "A2_6_Logs_PII",
+      "description": "Logs sin PII + rotación + escritura asíncrona",
+      "type": "security",
+      "status": "pending",
+      "priority": "medium",
+      "module": "db.cjs (19-26, 211-239), cacheDb.js (31-59)",
+      "dependencies": []
+    },
+    {
+      "id": "A2_7_capa_datos",
+      "description": "Consolidar capa de datos, borrar huérfanos y deduplicar public/",
+      "type": "maintenance",
+      "status": "pending",
+      "priority": "medium",
+      "module": "db.js, js/payment.js, js/firebase-client.js, public/css/css, public/img/img",
+      "dependencies": []
+    },
+    {
+      "id": "A2_8_graphify",
+      "description": "Mantener graphify-out actualizado con el corpus completo y fuera del deploy público",
+      "type": "maintenance",
+      "status": "pending",
+      "priority": "medium",
+      "module": "graphify-out/*",
+      "dependencies": []
+    }
+  ]
+}

@@ -1,96 +1,105 @@
-/**
- * basemapMenu.js — Selector de mapa base tipo hamburguesa (flotante derecha-arriba).
- * Maneja el toggle del menú y el estado activo en TODAS las páginas con mapa.
- *
- * Requisitos en el HTML:
- *   <div id="map-base-selector" class="map-selector-box absolute right-3 top-3 z-[1000]">
- *     <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle">☰</button>
- *     <div id="map-base-menu" class="map-base-menu" hidden>
- *       <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm">OSM</button>
- *       ...
- *     </div>
- *   </div>
- *
- * Este script se auto-inicializa al cargar. No requiere export/import.
- */
+// Hamburguesa de mapa base: #map-base-selector > toggle + #map-base-menu > [data-layer]
 (function initBasemapMenu() {
   'use strict';
 
-  function setup() {
-    const toggle = document.getElementById('map-base-menu-toggle');
-    const menu = document.getElementById('map-base-menu');
-    if (!toggle || !menu) return; // la página no tiene el componente
-
-    // --- Toggle abrir/cerrar ---
-    toggle.addEventListener('click', function (e) {
-      e.stopPropagation();
-      const abierto = !menu.hidden;
-      menu.hidden = abierto;
-      toggle.setAttribute('aria-expanded', String(!abierto));
-    });
-
-    // --- Cerrar al hacer clic fuera ---
-    document.addEventListener('click', function (e) {
-      if (menu.hidden) return;
-      const box = document.getElementById('map-base-selector');
-      if (box && !box.contains(e.target)) {
-        menu.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    // --- Cerrar con Escape ---
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !menu.hidden) {
-        menu.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.focus();
-      }
-    });
-
-    // --- Sincronizar estado activo al seleccionar una capa ---
-    menu.querySelectorAll('[data-layer]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        // Quitar active de todos
-        menu.querySelectorAll('[data-layer]').forEach(function (b) {
-          b.classList.remove('active');
-          b.setAttribute('aria-checked', 'false');
-        });
-        // Marcar el seleccionado
-        btn.classList.add('active');
-        btn.setAttribute('aria-checked', 'true');
-        // Cerrar el menú
-        menu.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-      });
-    });
-
-    // --- Restaurar última capa base elegida (por página) ---
-    try {
-      const page = location.pathname.split('/').pop() || 'index.html';
-      const guardada = localStorage.getItem('snc_basemap_' + page);
-      if (guardada && window.MapEngine?.setBaseLayer) {
-        window.MapEngine.setBaseLayer(guardada);
-        menu.querySelectorAll('[data-layer]').forEach(function (b) {
-          const activo = b.dataset.layer === guardada;
-          b.classList.toggle('active', activo);
-          b.setAttribute('aria-checked', String(activo));
-        });
-      }
-    } catch (e) { /* localStorage no disponible */ }
-
-    // --- Guardar la elección del usuario ---
-    const original = window.MapEngine?.setBaseLayer;
-    if (original) {
-      window.MapEngine.setBaseLayer = function (name) {
-        original(name);
-        try {
-          const page = location.pathname.split('/').pop() || 'index.html';
-          localStorage.setItem('snc_basemap_' + page, name);
-        } catch (e) { /* noop */ }
-      };
-    }
+  function pageKey() {
+    const page = location.pathname.split('/').filter(Boolean).pop() || 'index.html';
+    return 'snc_basemap_' + page;
   }
+
+  function applyLayer(name) {
+    return [window.MapEngine, window._adminMap, window.AppNotarial].some(engine =>
+      typeof engine?.setBaseLayer === 'function' && engine.setBaseLayer(name) === true
+    );
+  }
+
+  function markActive(menu, name) {
+    menu.querySelectorAll('[data-layer]').forEach(btn => {
+      const on = btn.dataset.layer === name;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-checked', String(on));
+    });
+  }
+
+  function restoreSaved(menu) {
+    let saved = null;
+    try {
+      saved = localStorage.getItem(pageKey());
+    } catch (_) {
+      return;
+    }
+    const names = Array.from(menu.querySelectorAll('[data-layer]'), btn => btn.dataset.layer);
+    if (!saved || !names.includes(saved)) return;
+
+    markActive(menu, saved);
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      if (applyLayer(saved) || attempts >= 40) clearInterval(timer);
+    }, 250);
+  }
+
+  function setup() {
+    document.querySelectorAll('#map-base-menu-toggle').forEach(toggle => {
+      if (toggle.dataset.basemapBound === 'true') return;
+      toggle.dataset.basemapBound = 'true';
+
+      const box = toggle.closest('#map-base-selector');
+      const menu = box?.querySelector('#map-base-menu');
+      if (!box || !menu) return;
+
+      const isOpen = () => !menu.hidden;
+
+      function open() {
+        menu.hidden = false;
+        box.classList.add('is-expanded');
+        box.style.zIndex = '1350';
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+
+      function close() {
+        menu.hidden = true;
+        box.classList.remove('is-expanded');
+        box.style.zIndex = '';
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      toggle.addEventListener('click', e => {
+        e.stopPropagation();
+        if (isOpen()) close();
+        else open();
+      });
+
+      document.addEventListener('click', e => {
+        if (isOpen() && !box.contains(e.target)) close();
+      });
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && isOpen()) {
+          close();
+          toggle.focus();
+        }
+      });
+
+      menu.querySelectorAll('[data-layer]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const name = btn.dataset.layer;
+          markActive(menu, name);
+          applyLayer(name);
+          window.dispatchEvent(new CustomEvent('snc:layers-changed'));
+          try {
+            localStorage.setItem(pageKey(), name);
+          } catch (_) { /* almacenamiento no disponible: la elección solo dura esta sesión */ }
+          close();
+        });
+      });
+
+      restoreSaved(menu);
+    });
+  }
+
+  window.BasemapMenu = { init: setup };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setup);

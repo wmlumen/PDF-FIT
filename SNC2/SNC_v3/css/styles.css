@@ -453,17 +453,6 @@
             box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.3);
         }
 
-        /* Map Selector Floating */
-        .map-selector-box {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            padding: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        }
         .map-selector-btn {
             width: 36px;
             height: 36px;
@@ -1250,141 +1239,6 @@ header .header-icon-btn[aria-disabled="true"] { opacity: 0.4; }
   background: #4f46e5 !important;
   color: #ffffff !important;
 }
-#map-base-selector {
-  position: absolute !important;
-  top: 0.75rem !important;
-  right: 0.75rem !important;
-  left: auto !important;
-  bottom: auto !important;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  width: auto;
-  max-width: calc(100vw - 1.5rem);
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 0.75rem;
-  background: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
-  z-index: 1000;
-}
-/* Botón hamburguesa (toggle): compacto, solo icono */
-#map-base-selector .map-base-menu-toggle {
-  width: 2.75rem !important;
-  height: 2.75rem !important;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  padding: 0 !important;
-  border: 1px solid rgba(148, 163, 184, 0.35) !important;
-  border-radius: 0.75rem !important;
-  background: rgba(15, 23, 42, 0.92) !important;
-  color: #e2e8f0;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  transition: background 0.15s, color 0.15s;
-}
-#map-base-selector .map-base-menu-toggle:hover {
-  background: rgba(30, 41, 59, 0.95) !important;
-  color: #38bdf8;
-}
-body.map-base-light #map-base-selector .map-base-menu-toggle {
-  background: rgba(255, 255, 255, 0.96) !important;
-  color: #334155;
-  border-color: rgba(51, 65, 85, 0.2) !important;
-}
-
-/* Menú desplegable de mapas base */
-#map-base-menu {
-  position: absolute !important;
-  top: calc(100% + 0.35rem) !important;
-  right: 0 !important;
-  min-width: 13rem;
-  max-height: min(70vh, 32rem);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.4rem !important;
-  border: 1px solid rgba(148, 163, 184, 0.3) !important;
-  border-radius: 0.75rem !important;
-  background: rgba(15, 23, 42, 0.96) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(8px);
-  z-index: 1001;
-}
-#map-base-menu[hidden] { display: none !important; }
-#map-base-menu .map-menu-heading {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #64748b;
-  padding: 0.25rem 0.5rem 0.15rem;
-}
-
-/* Opciones del menú: ancho completo, texto visible, alineado a la izquierda */
-#map-base-menu .map-selector-btn {
-  width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  min-height: 2.25rem !important;
-  max-height: none !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center;
-  gap: 0.55rem !important;
-  padding: 0.4rem 0.65rem !important;
-  border: 1px solid transparent !important;
-  border-radius: 0.5rem !important;
-  background: transparent !important;
-  color: #cbd5e1 !important;
-  font-size: 0.82rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-}
-#map-base-menu .map-selector-btn:hover {
-  background: rgba(51, 65, 85, 0.6) !important;
-  color: #f1f5f9 !important;
-}
-#map-base-menu .map-selector-btn.active {
-  background: rgba(56, 189, 248, 0.15) !important;
-  color: #38bdf8 !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
-}
-#map-base-menu .map-selector-btn i {
-  display: inline-flex !important;
-  width: 1.1rem !important;
-  justify-content: center;
-  font-size: 0.95rem;
-  flex-shrink: 0;
-}
-#map-base-menu .map-selector-btn span {
-  display: inline !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-body.map-base-light #map-base-menu {
-  background: rgba(255, 255, 255, 0.97) !important;
-  border-color: rgba(51, 65, 85, 0.15) !important;
-}
-body.map-base-light #map-base-menu .map-selector-btn { color: #334155 !important; }
-body.map-base-light #map-base-menu .map-selector-btn:hover { background: rgba(241, 245, 249, 0.9) !important; }
-body.map-base-light #map-base-menu .map-selector-btn.active {
-  background: rgba(59, 130, 246, 0.12) !important;
-  color: #1d4ed8 !important;
-}
-
-@media (max-width: 640px) {
-  #map-base-selector .map-base-menu-toggle { width: 2.5rem !important; height: 2.5rem !important; }
-  #map-base-menu { min-width: 11rem; }
-  #map-base-menu .map-selector-btn { font-size: 0.78rem; padding: 0.35rem 0.55rem !important; }
-}
 
 /* Acciones uniformes: el nombre queda disponible para hover y lectores de pantalla. */
 button.icon-only-action {
@@ -1635,7 +1489,6 @@ body.map-base-light #lp-menu .lp-menu-item:hover,
 body.map-base-light #lp-menu .lp-menu-item:focus-visible {
   background: rgba(14, 165, 233, 0.16) !important;
   color: #0369a1 !important;
-}
 }
 
 /* Modo monocromo: sin tinte azul */
@@ -2778,81 +2631,122 @@ body.theme-navy-yellow #map-legend .ml-zoom:hover { background: rgba(250, 204, 2
   #map-legend .ml-body { max-height: 150px; }
 }
 
-/* Menú hamburguesa de mapas base - Floating Glass Island */
-#map-base-selector, .map-selector-box {
-  width: 2.75rem;
-  padding: 0.35rem !important;
-  border-radius: 14px !important;
-  background: rgba(15, 23, 42, 0.94) !important;
-  backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
-  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
-  overflow: hidden;
+/* Selector de mapa base: hamburguesa flotante arriba a la derecha */
+#map-base-selector {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
-#map-base-selector.is-expanded, .map-selector-box.is-expanded { 
-  width: min(18.5rem, calc(100vw - 2.5rem)) !important; 
-  border-color: rgba(99, 102, 241, 0.6) !important; 
-  z-index: 1350 !important;
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(99, 102, 241, 0.4) !important;
+#map-base-selector.is-expanded {
+  z-index: 1350;
 }
-/* Anti-solapamiento: al desplegar la hamburguesa, las herramientas de dibujo/cálculo no interfieren */
-#map-base-selector.is-expanded ~ #map-tools,
-.map-selector-box.is-expanded ~ #map-tools {
+#map-base-selector .map-base-menu-toggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.94);
+  color: #e2e8f0;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s, color 0.15s;
+}
+#map-base-selector .map-base-menu-toggle:hover,
+#map-base-selector.is-expanded .map-base-menu-toggle {
+  background: rgba(30, 41, 59, 0.98);
+  color: #38bdf8;
+}
+#map-base-selector .map-base-menu-toggle:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+#map-base-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 13rem;
+  max-height: min(70vh, 32rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.97);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+}
+#map-base-menu[hidden] {
+  display: none;
+}
+#map-base-menu .map-menu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+#map-base-menu .map-menu-heading {
+  padding: 0.3rem 0.5rem 0.2rem;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#map-base-menu .map-selector-btn {
+  width: 100%;
+  height: auto;
+  min-height: 2.1rem;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+#map-base-menu .map-selector-btn i {
+  width: 1.1rem;
+  flex-shrink: 0;
+  text-align: center;
+}
+#map-base-menu .map-selector-btn span {
+  white-space: nowrap;
+}
+#map-base-menu .map-selector-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+#map-base-menu .map-selector-btn.active {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-weight: 700;
+}
+#map-base-selector.is-expanded ~ #map-tools {
   opacity: 0.2;
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
-#map-base-selector .map-base-menu-toggle, .map-selector-box .map-base-menu-toggle {
-  width: 2rem !important; min-height: 2rem !important; height: 2rem !important;
-  border-radius: 10px !important; background: transparent !important; color: #94a3b8 !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
+@media (max-width: 640px) {
+  #map-base-menu {
+    min-width: 11rem;
+  }
 }
-#map-base-selector .map-base-menu-toggle:hover, .map-selector-box .map-base-menu-toggle:hover { 
-  color: #38bdf8 !important; background: rgba(255, 255, 255, 0.08) !important; 
-}
-#map-base-menu, .map-base-menu { 
-  max-height: min(70vh, 36rem); 
-  overflow-y: auto; 
-  margin-top: 0.35rem; 
-}
-#map-base-menu[hidden], .map-base-menu[hidden], #map-base-menu.hidden, .map-base-menu.hidden { 
-  display: none !important; 
-}
-#map-base-menu .map-menu-section, .map-base-menu .map-menu-section { 
-  display: flex; flex-direction: column; gap: 0.2rem; padding: 0.35rem 0; 
-}
-#map-base-menu .map-menu-section + .map-menu-section, .map-base-menu .map-menu-section + .map-menu-section { 
-  border-top: 1px solid rgba(255, 255, 255, 0.1); 
-}
-#map-base-menu .map-menu-heading, .map-base-menu .map-menu-heading { 
-  padding: 0.25rem 0.45rem; color: #94a3b8; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; 
-}
-#map-base-selector #map-base-menu .map-selector-btn, .map-selector-box .map-base-menu .map-selector-btn {
-  width: 100% !important; min-height: 2.15rem !important; height: 2.15rem !important;
-  justify-content: flex-start; gap: 0.55rem; padding: 0 0.6rem !important;
-  border-radius: 9px !important;
-  color: #cbd5e1; font-size: 0.76rem; text-align: left;
-  transition: all 0.15s ease !important;
-}
-#map-base-selector #map-base-menu .map-selector-btn:hover, .map-selector-box .map-base-menu .map-selector-btn:hover { 
-  background: rgba(255, 255, 255, 0.06) !important; color: #ffffff !important; 
-}
-#map-base-selector #map-base-menu .map-selector-btn.active, .map-selector-box .map-base-menu .map-selector-btn.active {
-  background: rgba(16, 185, 129, 0.14) !important;
-  border: 1px solid rgba(16, 185, 129, 0.35) !important;
-  color: #34d399 !important; font-weight: 700 !important;
-}
-#map-base-selector #map-base-menu .map-selector-btn i, .map-selector-box .map-base-menu .map-selector-btn i { 
-  display: inline-flex !important; width: 1.1rem; 
-}
-#map-base-selector #map-base-menu .map-selector-btn span, .map-selector-box .map-base-menu .map-selector-btn span { 
-  display: inline !important; white-space: nowrap; 
-}
-body.map-base-light #map-base-selector.is-expanded { background: rgba(15, 23, 42, 0.96) !important; }
-body.map-base-light #map-base-menu .map-selector-btn { color: #e2e8f0 !important; }
 
         /* Popup elevado sobre el dibujo (Anti-solapamiento de polígono y cotas) */
         .snc-parcel-popup-elevated .leaflet-popup-content-wrapper {
@@ -2927,3 +2821,31 @@ body.map-base-light #map-base-menu .map-selector-btn { color: #e2e8f0 !important
 }
 .modern-toggle-switch input:checked + .modern-toggle-slider { background-color: #059669; }
 .modern-toggle-switch input:checked + .modern-toggle-slider::before { transform: translateX(0.85rem); }
+
+/* Herramientas de mapa en la esquina superior izquierda: debajo del zoom, no encima */
+#map-tools.map-pos-top-left { top: 13.5rem !important; }
+/* Controles de zoom siempre visibles por encima de cualquier capa o botonera */
+.leaflet-top.leaflet-left { z-index: 1100; }
+/* Barra superior: acordeón por grupos y accesos rápidos */
+#header-actions { position: relative; align-items: center; }
+#header-actions .hdr-quick { display: flex; align-items: center; gap: 6px; }
+#header-actions .hdr-group { position: relative; display: flex; align-items: center; }
+#header-actions .hdr-group-panel {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 1600;
+  flex-wrap: wrap; gap: 6px; width: max-content; max-width: 320px; padding: 8px;
+  background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+#header-actions .hdr-group.open .hdr-group-panel { display: flex; }
+#header-actions .hdr-group-panel > * { flex: 0 0 auto; }
+/* Contexto del expediente: compacto, el texto se ajusta en líneas y no se corta */
+.header-context { gap: 0.35rem; padding-left: 0.25rem; }
+.header-context-item { min-height: 0; max-width: none; padding: 0.2rem 0.45rem; gap: 0.35rem; border-radius: 0.5rem; }
+.header-user-context { max-width: none; }
+.header-file-context { width: auto; max-width: 15rem; }
+.header-context-copy { min-width: 0; }
+.header-context-icon { font-size: 0.65rem; }
+.header-context-label { font-size: 0.5rem; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; overflow: visible; text-overflow: clip; }
+.header-context-value { font-size: 0.62rem; line-height: 1.15; white-space: normal; overflow: visible; text-overflow: clip; max-width: none; overflow-wrap: anywhere; }
+@media (max-width: 1180px) { .header-file-context { display: flex; max-width: 11rem; } }
+@media (max-width: 980px) { .header-file-context { max-width: 9rem; } }

@@ -738,3 +738,205 @@ export function closeModal() {
         modal.classList.remove('active');
     }
 }
+
+/**
+ * MÓDULO 2: Estructura Catastral y Jerarquía Política (R21-R40)
+ * Requerimientos herranuebras.txt: R21-R40
+ */
+
+/**
+ * Validación del formato folio real electrónico DGRP.
+ * @param {string} codigo - Código catastral a validar
+ * @returns {Object} Resultado de validación
+ */
+function validarFormatoDGRP(codigo) {
+    if (!codigo) return { valido: false, mensaje: 'Código vacío' };
+
+    const codigoUpper = codigo.toString().trim().toUpperCase();
+
+    // Formato folio real electrónico DGRP: folio-número
+    // Ejemplos: folio 1234, folio 1234/5, folio-R-123
+    const dgrpPatterns = [
+        /^FOLIO\s+\d{1,6}(\/\d{1,3})?$/i,       // FOLIO 1234 o FOLIO 1234/5
+        /^FO-\d{1,6}(\/\d{1,3})?$/i,            // FO-1234 o FO-1234/5
+        /^\d{1,6}(\/\d{1,3})?$/,                 // 1234 o 1234/5 (numérico puro)
+    ];
+
+    let patronValido = false;
+    dgrpPatterns.forEach((pat) => {
+        if (pat.test(codigoUpper)) patronValido = true;
+    });
+
+    if (patronValido) {
+        return { valido: true, mensaje: 'Formato DGRP electrónico válido' };
+    }
+
+    // Patrones de folio antiguo / variaciones
+    const oldPatterns = [
+        /^\d{1,8}$/,                              // Número puro de 1-8 dígitos
+        /^\d{1,4}\/\d{1,3}$/,                     // Número/año
+    ];
+
+    let patronViejo = false;
+    oldPatterns.forEach((pat) => {
+        if (pat.test(codigoUpper)) patronViejo = true;
+    });
+
+    if (patronViejo) {
+        return { valido: true, mensaje: 'Formato DGRP antiguo válido' };
+    }
+
+    return {
+        valido: false,
+        mensaje: `Formato DGRP electrónico no reconocido: ${codigo}. Formatos esperados: FOLIO 1234, FOLIO 1234/5, o número de 1-8 dígitos.`
+    };
+}
+
+/**
+ * Trazabilidad genealógica de desdoblamientos y reasignaciones catastrales.
+ * Lleva el historial de cómo un identificador catastral (CCC/Padrón) se ha
+ * transformado a través de desdoblamientos, fusiones o cambios administrativos.
+ * @param {Object} datos - Datos del expediente actual
+ * @param {Object} historialPrevio - Historial opcional previo
+ * @returns {Object} Historial actualizado
+ */
+function trazaDesdoblamiento(datos, historialPrevio = null) {
+    const hoy = new Date().toISOString();
+
+    // Estructura base del historial
+    const entrada = {
+        fecha: hoy,
+        accion: 'registro_actual',
+        usuario: datos?.usuario || 'Sistema',
+        codigoAnterior: datos?.codigoAnterior,
+        nuevoCodigo: datos?.codigoNuevo || datos?.codigo,
+        motivo: datos?.motivo || 'Nuevo empadronamiento',
+        tipoOperacion: datos?.tipoOperacion || 'empadronamiento'
+    };
+
+    // Historico previo
+    let historial = [];
+
+    if (historialPrevio && Array.isArray(historialPrevio)) {
+        // Si ya existe historial, agregamos la nueva entrada al inicio
+        historial = [entrada].concat(historialPrevio.slice(0, 20)); // Máx 20 registros
+    } else {
+        // Nuevo historial
+        historial = [entrada];
+    }
+
+    // Agregar metadatos de trazabilidad
+    const resultado = {
+        ...datos,
+        historial: historial,
+        codigoRastreo: datos?.codigoRastreo || `TRACE-${Date.now()}`,
+        genealogico: {
+            origen: datos?.codigoAnterior || datos?.codigo,
+            actual: datos?.codigoNuevo || datos?.codigo,
+            totalDesdoblamientos: historial.length - 1,
+            primeraFecha: historial.length > 0 ? historial[historial.length - 1].fecha : null
+        }
+    };
+
+    return resultado;
+}
+
+/**
+ * Obtener el código anterior en el historial de un expediente.
+ * @param {Object} estadoActual - Estado actual del expediente
+ * @returns {Object} Información del código anterior
+ */
+function obtenerCodigoAnterior(estadoActual) {
+    if (!estadoActual?.historial || estadoActual.historial.length === 0) {
+        return { anterior: null, acumulado: 0 };
+    }
+
+    const historial = estadoActual.historial;
+    const ultimaEntrada = historial[historial.length - 1];
+    const totalRegistros = historial.length;
+
+    // Buscar la entrada que no sea la última (código anterior)
+    const codigoAnterior = historial.slice(0, -1).reduce((acc, actual) => {
+        if (actual.codigoAnterior) return actual.codigoAnterior;
+        return acc;
+    }, null);
+
+    return {
+        anterior: codigoAnterior,
+        acumulado: totalRegistros - 1,
+        ultimaModificacion: ultimaEntrada?.fecha || null
+    };
+}
+
+/**
+ * Validar si un código catastral ha sufrido desdoblamiento previo.
+ * @param {string} codigo - Código a verificar
+ * @param {Array} historial - Historial de transformaciones
+ * @returns {Object} Resultado de la verificación
+ */
+function verificarDesdoblamientoPrevio(codigo, historial) {
+    if (!historial || !Array.isArray(historial) || historial.length === 0) {
+        return { tieneDesdoblamiento: false, codigoAnterior: null };
+    }
+
+    // Verificar si el código actual aparece como "nuevoCodigo" en alguna entrada anterior
+    const tieneDesdoblamiento = historial.some(
+        (entrada) => entrada.nuevoCodigo && entrada.nuevoCodigo.toString().trim() === codigo.toString().trim()
+    );
+
+    const codigoAnterior = tieneDesdoblamiento
+        ? historial.find((e) => e.nuevoCodigo && e.nuevoCodigo.toString().trim() === codigo.toString().trim())
+            .codigoAnterior
+        : null;
+
+    return {
+        tieneDesdoblamiento,
+        codigoAnterior: codigoAnterior || null,
+        totalTransformaciones: historial.length
+    };
+}
+
+/**
+ * Formatear código catastral para visualización amigable.
+ * @param {string} codigo - Código en formato DGRP o CCC
+ * @param {Object} opciones - Opciones de formateo
+ * @returns {Object} Código formateado con metadatos
+ */
+function formatearCodigo(codigo, opciones = {}) {
+    if (!codigo) return { formateado: '', metadata: {} };
+
+    const codigoLimpo = codigo.toString().trim().toUpperCase();
+    const { mostrarGenealogico = true, separador = ' - ' } = opciones;
+
+    const metadata = {
+        tipo: 'desconocido',
+        valido: false,
+        historia: []
+    };
+
+    // Detectar tipo de código
+    if (/^FOLIO\s+\d+/i.test(codigoLimpo)) {
+        metadata.tipo = 'DGRP_folleto';
+        metadata.valido = true;
+    } else if (/^\d{1,8}$/.test(codigoLimpo)) {
+        metadata.tipo = 'CCC_numero';
+        metadata.valido = true;
+    } else if (/^\d{1,4}\/\d{1,3}$/.test(codigoLimpo)) {
+        metadata.tipo = 'CCC_ano';
+        metadata.valido = true;
+    }
+
+    let formateado = codigoLimpo;
+    if (mostrarGenealogico && metadata.tipo !== 'desconocido') {
+        // Agregar indicador de tipo
+        formateado += ` [${metadata.tipo}]`;
+    }
+
+    return {
+        formateado,
+        metadata
+    };
+}
+
+// Exportar funciones del Módulo 2
+export { validarFormatoDGRP, trazaDesdoblamiento, obtenerCodigoAnterior, verificarDesdoblamientoPrevio, formatearCodigo };

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingreso y Medición — SNC_v3</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/modules/surveyModule/surveyModule.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.draw@1.0.4/dist/leaflet.draw.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Toolbar principal -->
+    <header class="mod-header">
+      <div class="mod-header__left">
+        <span class="mod-icon">🏞️</span>
+        <div>
+          <h2>Ingreso y Medición de Parcelas</h2>
+          <p class="mod-sub">Ingresa mediciones de campo, calcula distancias, áreas y ángulos y valida contra las tolerancias CDM.</p>
+        </div>
+      </div>
+      <div class="mod-header__right">
+        <button id="btnLoadSample" class="btn btn--ghost">📦 Cargar muestra</button>
+        <button id="btnSave" class="btn btn--primary">💾 Guardar medición</button>
+      </div>
+    </header>
+
+    <!-- Tabs de herramientas -->
+    <div class="mod-tabs">
+      <button class="tab active" data-tab="ingreso">📥 Ingreso de mediciones</button>
+      <button class="tab" data-tab="visualizar">📍 Ver sobre el mapa</button>
+      <button class="tab" data-tab="validar">✓ Validar</button>
+      <button class="tab" data-tab="historial">📋 Historial</button>
+    </div>
+
+    <!-- Contenido de pestañas -->
+    <div class="mod-content">
+      <!-- INGRESO DE MEDICIONES -->
+      <section id="tab-ingreso" class="tab-panel active">
+        <div class="card">
+          <h3>1. Cargar mediciones</h3>
+          <p class="muted">Sube archivos de campo o ingresa datos manualmente. Formatos admitidos: CSV, GPX, Shapefile.</p>
+          <div class="upload-zone">
+            <label class="upload-zone__label">
+              <input type="file" id="fileInput" accept=".csv,.gpx,.zip" multiple>
+              <span class="upload-zone__text">
+                <span class="icon">📁</span>
+                <strong>Arrastra y suelta</strong> o <span>hacer clic para seleccionar</span>
+              </span>
+              <span class="upload-zone__hint">Formatos admitidos: CSV · GPX · Shapefile (.zip)</span>
+            </label>
+          </div>
+          <div id="uploadStatus" class="muted"></div>
+
+          <h3>2. Ver y ajustar mediciones</h3>
+          <p>Las mediciones se listan aquí. Puedes:</p>
+          <ul class="feature-list">
+            <li>✅ Agregar puntos (lat, lng, altitud, usado)</li>
+            <li>✅ Sumar distancia y área (cálculo en vivo)</li>
+            <li>✅ Editar o eliminar puntos</li>
+            <li>✅ Guardar como medición de parcela</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>3. Configuración de la medición</h3>
+          <div class="fields">
+            <div class="field">
+              <label>Perla (Número o Código)</label>
+              <input type="text" id="parcelaCode" placeholder="Ej. 1234">
+            </div>
+            <div class="field">
+              <label>Municipio</label>
+              <select id="municipio">
+                <option>Asunción</option>
+                <option>Central</option>
+                <option>Nacional</option>
+                <option>Pacífico</option>
+                <option>Capital</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Tipo de suelo / uso</label>
+              <select id="uso">
+                <option>Urban</option>
+                <option>Rural</option>
+                <option>Vía Pública</option>
+                <option>Silvestre</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Tolerancia admisible (≤ 1/10 000 urbano / ≤ 1/5 000 rural)</label>
+              <input type="text" id="tolerancia" value="0.0001">
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btnCalcular" class="btn btn--ghost">🧮 Calcular distancia y área</button>
+            <button id="btnSiguiente" class="btn btn--primary">Siguiente → Validar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Vista previa de medición</h3>
+          <p id="previewResult" class="muted">Los cálculos aparecen aquí una vez que cargues los puntos o haz clic en "Calcular".</p>
+          <div id="previewGrid" class="grid">
+            <div class="grid__row"><span class="muted">Distancia total:</span><strong id="distTotal">—</strong></div>
+            <div class="grid__row"><span class="muted">Área total:</span><strong id="areaTotal">—</strong></div>
+            <div class="grid__row"><span class="muted">Coordenadas inicial:</span><strong id="coordIni">—</strong></div>
+            <div class="grid__row"><span class="muted">Coordenadas final:</span><strong id="coordFin">—</strong></div>
+            <div class="grid__row"><span class="muted">N° de puntos:</span><strong id="puntosN">—</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISUALIZAR -->
+      <section id="tab-visualizar" class="tab-panel">
+        <div id="map" class="map"></div>
+        <div class="card">
+          <h4>Herramientas del mapa</h4>
+          <div class="feature-list">
+            <li>✏️ Dibujar parcela (clic sobre el mapa)</li>
+            <li>📏 Medir distancia y área (botón de medida)</li>
+            <li>🔍 Buscar por código de parcela</li>
+            <li>📍 Navegar al punto en el mapa</li>
+          </div>
+        </div>
+        <div id="mapToolbar" class="card">
+          <div class="toolbar-row">
+            <button id="btnDraw" class="btn btn--secondary">✏️ Dibujar parcela</button>
+            <button id="btnMeasure" class="btn btn--secondary">📏 Medir</button>
+            <button id="btnClear" class="btn btn--ghost">🗑️ Limpiar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VALIDAR -->
+      <section id="tab-validar" class="tab-panel">
+        <div class="card">
+          <h3>Validar medición contra las tolerancias CDM</h3>
+          <p class="muted">Las tolerancias aplican: Urbana ≤ 1/10 000 · Rural ≤ 1/5 000. Se calcula la relación de redondeo para verificar.</p>
+          <div id="validations" class="grid">
+            <div class="grid__row"><span class="muted">Puntos ingresados:</span><strong id="valPuntos">—</strong></div>
+            <div class="grid__row"><span class="muted">Distancia total:</span><strong id="valDist">—</strong></div>
+            <div class="grid__row"><span class="muted">Área:</span><strong id="valArea">—</strong></div>
+            <div class="grid__row"><span class="muted">Uso:</span><strong id="valUso">—</strong></div>
+            <div class="grid__row"><span class="muted">Tolerancia admisible:</span><strong id="valTolerancia">—</strong></div>
+            <div class="grid__row" id="valResultRow"><span class="muted">Resultado:</span><strong id="valResult">—</strong></div>
+            <div class="grid__row" id="valTargetRow"><span class="muted">Objetivo (≤):</span><strong id="valTarget">—</strong></div>
+          </div>
+          <div id="statusBadge" class="status-badge">⏳ Esperando datos…</div>
+          <button id="btnSaveValidated" class="btn btn--primary" disabled>💾 Guardar medición validada</button>
+        </div>
+      </section>
+
+      <!-- HISTORIAL -->
+      <section id="tab-historial" class="tab-panel">
+        <div class="card">
+          <h3>Historial de mediciones</h3>
+          <div id="historialList" class="historial-list">
+            <p class="muted">No hay mediciones guardadas.</p>
+          </div>
+          <button id="btnExportHistorial" class="btn btn--ghost">📥 Exportar historial</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/turf@6.5.0/turf.min.js"></script>
+  <script src="/modules/surveyModule/surveyModule.js"></script>
+</body>
+</html>

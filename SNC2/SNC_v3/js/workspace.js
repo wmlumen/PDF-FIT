@@ -17,9 +17,15 @@ export const Workspace = {
     if (viewEl) viewEl.classList.add('active');
     
     // Actualizar botones de navegación
-    document.querySelectorAll('.header-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.header-tab').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
     const tabBtn = document.getElementById('tab-' + tab);
-    if (tabBtn) tabBtn.classList.add('active');
+    if (tabBtn) {
+      tabBtn.classList.add('active');
+      tabBtn.setAttribute('aria-selected', 'true');
+    }
     
     // Acciones específicas por pestaña
     if (tab === 'map' && window.MapEngine) {

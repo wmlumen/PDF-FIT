@@ -454,29 +454,31 @@ async function loadPiribebuyMap() {
     baseLayers.osm.addTo(adminMap);
     adminMap._sncBaseLayers = baseLayers;
     adminMap.setBaseLayer = function (name) {
+      if (!baseLayers[name]) return false;
       Object.values(baseLayers).forEach(l => adminMap.removeLayer(l));
-      if (baseLayers[name]) baseLayers[name].addTo(adminMap);
+      baseLayers[name].addTo(adminMap);
+      return true;
     };
 
     // Selector de mapa base hamburguesa (flotante derecha-arriba)
     if (!document.getElementById('map-base-selector')) {
       const selector = document.createElement('div');
       selector.id = 'map-base-selector';
-      selector.className = 'map-selector-box absolute right-3 top-3 z-[1000]';
+      selector.className = 'absolute right-3 top-3 z-[1000]';
       selector.setAttribute('aria-label', 'Tipos de mapas');
       selector.innerHTML = `
-        <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
-        <div id="map-base-menu" class="map-base-menu" hidden>
-          <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
-            <span class="map-menu-heading">Mapa base</span>
-            <button onclick="window._adminMap?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
-            <button onclick="window._adminMap?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
-            <button onclick="window._adminMap?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitario" role="radio" aria-checked="false"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
-            <button onclick="window._adminMap?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="SNC" role="radio" aria-checked="false"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
-            <button onclick="window._adminMap?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="Oscuro" role="radio" aria-checked="false"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
-            <button onclick="window._adminMap?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Topográfico" role="radio" aria-checked="false"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
-          </div>
-        </div>`;
+          <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
+          <div id="map-base-menu" class="map-base-menu" hidden>
+            <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+              <span class="map-menu-heading">Mapa base</span>
+              <button type="button" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (por defecto)" role="radio" aria-checked="true"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+              <button type="button" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+              <button type="button" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+              <button type="button" class="map-selector-btn" data-layer="catastro" title="SNC Catastro oficial" role="radio" aria-checked="false"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+              <button type="button" class="map-selector-btn" data-layer="carto_dark" title="Oscuro CartoDB" role="radio" aria-checked="false"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+              <button type="button" class="map-selector-btn" data-layer="topo" title="Topográfico OpenTopoMap" role="radio" aria-checked="false"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
+            </div>
+          </div>`;
       mapContainer.style.position = 'relative';
       mapContainer.appendChild(selector);
       window._adminMap = adminMap;
@@ -512,7 +514,8 @@ async function loadPiribebuyMap() {
           btn.style.opacity = '0.5';
         } else {
           try {
-            const res = await fetch(`/data/municipal/piribebuy/${layer.id}.geojson`);
+            const carpetaCapa = { barrios: 'base', vias: 'base', hidro: 'base', vertedero: 'vertedero', centro: 'vertedero', casco_historico: 'casco' }[layer.id];
+            const res = await fetch(`/data/municipal/piribebuy/${carpetaCapa}/${layer.id}.geojson`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const gj = await res.json();
             const isPoint = gj.features?.some(f => f.geometry?.type === 'Point');
@@ -570,6 +573,7 @@ function setupTabs() {
     btn.addEventListener('click', () => {
       switchTab(btn.dataset.tab);
       if (btn.dataset.tab === 'dependencias') loadDependencias();
+      if (btn.dataset.tab === 'map-layout') initMapLayoutAdminTab();
     });
   });
 }
@@ -732,6 +736,182 @@ async function loadDependencias() {
 // ============================================================
 // INIT PRINCIPAL
 // ============================================================
+
+// ============================================================
+// PANEL DE CONTROL DE DISPOSICIÓN DE MAPAS Y WIDGETS (TAB 9)
+// ============================================================
+let currentLayoutPortal = 'profesional';
+
+export function initMapLayoutAdminTab() {
+  const portalBtns = document.querySelectorAll('#layoutPortalSelector .layout-portal-btn');
+  portalBtns.forEach(btn => {
+    btn.onclick = () => {
+      portalBtns.forEach(b => {
+        b.classList.remove('active', 'bg-amber-500/10', 'border-amber-500/50', 'text-amber-300');
+        b.classList.add('border-gray-800', 'bg-gray-950', 'text-gray-400');
+      });
+      btn.classList.add('active', 'bg-amber-500/10', 'border-amber-500/50', 'text-amber-300');
+      btn.classList.remove('border-gray-800', 'bg-gray-950', 'text-gray-400');
+      currentLayoutPortal = btn.dataset.portal;
+      renderLayoutAdminView();
+    };
+  });
+
+  const btnSave = document.getElementById('btnSaveMapLayout');
+  if (btnSave) {
+    btnSave.onclick = () => {
+      const cfg = readCurrentLayoutConfigFromUI();
+      if (window.MapLayoutManager?.saveLayout) {
+        window.MapLayoutManager.saveLayout(currentLayoutPortal, cfg);
+        showToast(`Disposición guardada exitosamente para ${currentLayoutPortal.toUpperCase()}`, 'success');
+        renderLayoutAdminView();
+      }
+    };
+  }
+
+  const btnSaveGlobal = document.getElementById('btnSaveGlobalLayout');
+  if (btnSaveGlobal) {
+    btnSaveGlobal.onclick = () => {
+      const cfg = readCurrentLayoutConfigFromUI();
+      if (window.MapLayoutManager?.portals) {
+        window.MapLayoutManager.portals.forEach(p => {
+          window.MapLayoutManager.saveLayout(p.id, cfg, false);
+        });
+        localStorage.setItem('snc_map_layout_global', JSON.stringify(cfg));
+        showToast('Disposición global aplicada a TODOS los portales', 'success');
+        renderLayoutAdminView();
+      }
+    };
+  }
+
+  const btnReset = document.getElementById('btnResetMapLayout');
+  if (btnReset) {
+    btnReset.onclick = () => {
+      if (window.MapLayoutManager?.resetLayout) {
+        window.MapLayoutManager.resetLayout(currentLayoutPortal);
+        showToast(`Valores por defecto restaurados para ${currentLayoutPortal.toUpperCase()}`, 'info');
+        renderLayoutAdminView();
+      }
+    };
+  }
+
+  renderLayoutAdminView();
+}
+
+function readCurrentLayoutConfigFromUI() {
+  const catalog = window.MapLayoutManager?.catalog || {};
+  const cfg = {};
+  Object.keys(catalog).forEach(id => {
+    const visInput = document.getElementById(`widget-vis-${id}`);
+    const posSelect = document.getElementById(`widget-pos-${id}`);
+    cfg[id] = {
+      id: id,
+      visible: visInput ? visInput.checked : true,
+      position: posSelect ? posSelect.value : (catalog[id].defaultPosition || 'top-left'),
+      order: catalog[id].defaultOrder || 1
+    };
+  });
+  return cfg;
+}
+
+function renderLayoutAdminView() {
+  const badge = document.getElementById('simulatorPortalBadge');
+  if (badge) {
+    badge.textContent = `Portal: ${currentLayoutPortal.toUpperCase()}`;
+  }
+
+  const catalog = window.MapLayoutManager?.catalog || {};
+  const positions = window.MapLayoutManager?.positions || [];
+  const layout = window.MapLayoutManager?.getLayout ? window.MapLayoutManager.getLayout(currentLayoutPortal) : {};
+
+  // 1. Renderizar lista de widgets en el panel derecho
+  const listEl = document.getElementById('widgetsConfigList');
+  if (listEl) {
+    listEl.innerHTML = Object.values(catalog).map(w => {
+      const itemCfg = layout[w.id] || { visible: w.defaultVisible, position: w.defaultPosition };
+      const isChecked = itemCfg.visible !== false;
+
+      const posOptions = positions.map(p => `
+        <option value="${p.id}" ${itemCfg.position === p.id ? 'selected' : ''}>${p.label}</option>
+      `).join('');
+
+      return `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-950 border border-gray-800 rounded-xl hover:border-gray-700 transition" data-widget-card="${w.id}">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center text-amber-400 text-sm shrink-0">
+              <i class="fas ${w.icon}"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-white">${w.name}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded ${isChecked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}">
+                  ${isChecked ? 'Activo' : 'Oculto'}
+                </span>
+              </div>
+              <p class="text-[10px] text-gray-400">${w.description}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+            <!-- Selector de Posición -->
+            <div class="flex flex-col">
+              <label class="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Ubicación</label>
+              <select id="widget-pos-${w.id}" class="bg-gray-900 border border-gray-700 text-gray-200 text-xs rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+                ${posOptions}
+              </select>
+            </div>
+
+            <!-- Switch Visible -->
+            <div class="flex flex-col items-center">
+              <label class="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-0.5">Visible</label>
+              <label class="relative inline-flex items-center cursor-pointer mt-0.5">
+                <input type="checkbox" id="widget-vis-${w.id}" class="sr-only peer" ${isChecked ? 'checked' : ''}>
+                <div class="w-8 h-4 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Escuchadores de cambio en tiempo real para reflejar en el simulador
+    Object.keys(catalog).forEach(id => {
+      const visInput = document.getElementById(`widget-vis-${id}`);
+      const posSelect = document.getElementById(`widget-pos-${id}`);
+      if (visInput) visInput.onchange = updateSimulatorVisual;
+      if (posSelect) posSelect.onchange = updateSimulatorVisual;
+    });
+  }
+
+  // 2. Actualizar el simulador de cuadrantes visual
+  updateSimulatorVisual();
+}
+
+function updateSimulatorVisual() {
+  const catalog = window.MapLayoutManager?.catalog || {};
+  const currentCfg = readCurrentLayoutConfigFromUI();
+
+  // Limpiar cuadrantes
+  ['top-left', 'top-right', 'left-center', 'right-center', 'bottom-left', 'bottom-right'].forEach(q => {
+    const el = document.querySelector(`#sim-${q} .sim-items`);
+    if (el) el.innerHTML = '';
+  });
+
+  Object.entries(currentCfg).forEach(([id, cfg]) => {
+    if (!cfg.visible) return; // Si está oculto no aparece en la maqueta
+    const meta = catalog[id];
+    if (!meta) return;
+
+    const targetSim = document.querySelector(`#sim-${cfg.position} .sim-items`);
+    if (targetSim) {
+      const badge = document.createElement('span');
+      badge.className = 'text-[9px] px-1.5 py-0.5 rounded font-mono flex items-center gap-1 shadow-sm border border-amber-500/30 bg-amber-500/10 text-amber-300';
+      badge.innerHTML = `<i class="fas ${meta.icon}"></i> <span>${meta.name.split(' ')[0]}</span>`;
+      targetSim.appendChild(badge);
+    }
+  });
+}
+
 export function initAdmin() {
   setupTabs();
   setupModals();

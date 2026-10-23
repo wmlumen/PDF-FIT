@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miembros - SNC v3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #050505; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; }
+    .card { border: 1px solid #1e293b; border-radius: 16px; padding: 20px; background: #0a0a0a; }
+    .btn { background: #111; border: 1px solid #333; border-radius: 12px; padding: 12px 16px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn:hover { background: #1a1a1a; border-color: #555; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger { background: #1a1a1a; border: 1px solid #991b1b; border-radius: 12px; padding: 12px 16px; color: #fca5a5; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-danger:hover { background: #2a1a1a; }
+    .btn-success { background: #1a1a1a; border: 1px solid #166534; border-radius: 12px; padding: 12px 16px; color: #86efac; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-success:hover { background: #1a2a1a; }
+    .btn-admin { background: #1a1a1a; border: 1px solid #92400e; border-radius: 12px; padding: 12px 16px; color: #fcd34d; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-admin:hover { background: #2a1a10; }
+    .input { background: #1e293b; border: 1px solid #333; border-radius: 10px; padding: 10px 12px; color: #fff; width: 100%; }
+    .input:focus { outline: none; border-color: #7dd3fc; }
+    .select { background: #1e293b; border: 1px solid #333; border-radius: 10px; padding: 10px 12px; color: #fff; cursor: pointer; }
+    .select:focus { outline: none; border-color: #7dd3fc; }
+    .table-header { background: #0f172a; border-bottom: 1px solid #1e293b; }
+    .table-row { border-bottom: 1px solid #1e293b; }
+    .table-row:hover { background: #0a0a0a; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    .badge-active { background: #064e3b; color: #6ee7b7; }
+    .badge-suspended { background: #7f1d1d; color: #fca5a5; }
+    .badge-inactive { background: #374151; color: #9ca3af; }
+    .badge-admin { background: #78350f; color: #fcd34d; }
+    .badge-member { background: #1e3a5f; color: #7dd3fc; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #1f2937; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header style="background:#0a0a0a;border-bottom:1px solid #1e293b;padding:14px 0;position:sticky;top:0;z-index:50;">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;background:linear-gradient(to bottom right,#2563eb,#4f46e5);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-landmark" style="color:#fff;font-size:16px;"></i>
+        </div>
+        <h1 style="font-size:18px;font-weight:700;color:#fff;">Miembros - SNC v3</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="backBtn" class="btn" onclick="window.location.href='/admin.html'" style="padding:8px 14px;font-size:14px;">
+          ← Volver al panel
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main style="max-width:1200px;margin:0 auto;padding:24px 20px;">
+    <!-- Error Container -->
+    <div id="members-error" style="display:none;margin-bottom:16px;padding:12px 16px;background:#1a1a1a;border:1px solid #991b1b;border-radius:12px;color:#fca5a5;font-size:14px;"></div>
+
+    <!-- Access Denied -->
+    <div id="access-denied" style="display:none;" class="card" >
+      <div style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">🚫</div>
+        <h2 style="font-size:24px;font-weight:700;color:#fff;margin-bottom:8px;">Acceso Denegado</h2>
+        <p style="color:#94a3b8;margin-bottom:24px;">No tienes permisos de administrador para acceder a esta sección.</p>
+        <a href="/login-directo.html" style="color:#7dd3fc;font-weight:600;text-decoration:none;font-size:16px;">← Ir al inicio de sesión</a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="content" style="display:none;">
+      <!-- Search and Count -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <div style="position:relative;max-width:400px;width:100%;">
+          <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#64748b;"></i>
+          <input type="text" id="search-input" class="input" placeholder="Buscar por email o nombre..." style="padding-left:36px;">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:14px;">
+          <i class="fas fa-users"></i>
+          <span>Total:</span>
+          <span id="members-count" style="color:#fff;font-weight:700;font-size:16px;">0</span>
+          <span>miembros</span>
+        </div>
+      </div>
+
+      <!-- Members Table -->
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <table id="members-table" style="width:100%;border-collapse:collapse;">
+            <thead class="table-header">
+              <tr style="text-align:left;">
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Email</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Nombre</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Plan</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Rol</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Estado</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;">Creado</th>
+                <th style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:1px solid #1e293b;text-align:right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="members-tbody">
+              <tr>
+                <td colspan="7" style="padding:40px;text-align:center;color:#64748b;">
+                  <i class="fas fa-spinner fa-spin" style="font-size:24px;margin-bottom:12px;display:block;"></i>
+                  Cargando miembros...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid #1e293b;color:#64748b;font-size:11px;max-width:1200px;margin:0 auto;padding-left:20px;padding-right:20px;">
+    <span>SNC v3 · Catastro PY Pro</span>
+    <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
+    <span style="display:flex;gap:14px;">
+      <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
+      <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
+    </span>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      const token = localStorage.getItem('snc_token');
+      if (!token) {
+        window.location.href = '/login-directo.html';
+        return;
+      }
+
+      let allMembers = [];
+      let allPlans = [];
+      let currentUser = null;
+
+      const membersTbody = document.getElementById('members-tbody');
+      const membersCount = document.getElementById('members-count');
+      const membersError = document.getElementById('members-error');
+      const searchInput = document.getElementById('search-input');
+      const contentDiv = document.getElementById('content');
+      const accessDeniedDiv = document.getElementById('access-denied');
+
+      function showError(msg) {
+        membersError.textContent = msg;
+        membersError.style.display = 'block';
+        setTimeout(() => { membersError.style.display = 'none'; }, 8000);
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        try {
+          const d = new Date(dateStr);
+          return d.toLocaleDateString('es-PY', { year: 'numeric', month: 'short', day: 'numeric' });
+        } catch (e) {
+          return dateStr;
+        }
+      }
+
+      function getPlanName(planId) {
+        const plan = allPlans.find(p => p.id === planId);
+        return plan ? plan.name : (planId || 'Free');
+      }
+
+      function getRoleBadge(role) {
+        if (role === 'admin') return '<span class="badge badge-admin">Admin</span>';
+        return '<span class="badge badge-member">' + (role || 'Member') + '</span>';
+      }
+
+      function getStatusBadge(status) {
+        if (status === 'suspended') return '<span class="badge badge-suspended">Suspendido</span>';
+        if (status === 'inactive') return '<span class="badge badge-inactive">Inactivo</span>';
+        return '<span class="badge badge-active">Activo</span>';
+      }
+
+      function renderMembers(members) {
+        membersCount.textContent = members.length;
+        if (members.length === 0) {
+          membersTbody.innerHTML = '<tr><td colspan="7" style="padding:40px;text-align:center;color:#64748b;">No se encontraron miembros.</td></tr>';
+          return;
+        }
+
+        membersTbody.innerHTML = members.map(m => {
+          const isSuspended = m.status === 'suspended';
+          const isAdmin = m.role === 'admin';
+          const planOptions = allPlans.map(p => '<option value="' + p.id + '"' + (m.plan === p.id ? ' selected' : '') + '>' + p.name + '</option>').join('');
+
+          return '<tr class="table-row" data-id="' + m.id + '">' +
+            '<td style="padding:12px 16px;font-size:14px;color:#e2e8f0;">' + (m.email || '-') + '</td>' +
+            '<td style="padding:12px 16px;font-size:14px;color:#e2e8f0;">' + (m.name || '-') + '</td>' +
+            '<td style="padding:12px 16px;font-size:14px;color:#94a3b8;">' + getPlanName(m.plan) + '</td>' +
+            '<td style="padding:12px 16px;">' + getRoleBadge(m.role) + '</td>' +
+            '<td style="padding:12px 16px;">' + getStatusBadge(m.status) + '</td>' +
+            '<td style="padding:12px 16px;font-size:13px;color:#64748b;">' + formatDate(m.createdAt) + '</td>' +
+            '<td style="padding:12px 16px;">' +
+              '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' +
+                (isSuspended
+                  ? '<button class="btn-success" style="padding:6px 10px;font-size:12px;" onclick="window._sncActivate(\'' + m.id + '\')">Activar</button>'
+                  : '<button class="btn-danger" style="padding:6px 10px;font-size:12px;" onclick="window._sncSuspend(\'' + m.id + '\')">Suspender</button>'
+                ) +
+                '<select class="select" style="padding:6px 10px;font-size:12px;" onchange="window._sncChangePlan(\'' + m.id + '\', this.value)">' +
+                  '<option value="">Cambiar plan...</option>' +
+                  planOptions +
+                '</select>' +
+                (isAdmin
+                  ? '<button class="btn" style="padding:6px 10px;font-size:12px;" onclick="window._sncRevokeAdmin(\'' + m.id + '\')">Revocar admin</button>'
+                  : '<button class="btn-admin" style="padding:6px 10px;font-size:12px;" onclick="window._sncPromoteAdmin(\'' + m.id + '\')">Promover a admin</button>'
+                ) +
+              '</div>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      function filterMembers() {
+        const query = searchInput.value.toLowerCase().trim();
+        if (!query) {
+          renderMembers(allMembers);
+          return;
+        }
+        const filtered = allMembers.filter(m => {
+          return (m.email && m.email.toLowerCase().includes(query)) ||
+                 (m.name && m.name.toLowerCase().includes(query));
+        });
+        renderMembers(filtered);
+      }
+
+      searchInput.addEventListener('input', filterMembers);
+
+      async function apiFetch(url, options) {
+        options = options || {};
+        options.headers = Object.assign({}, options.headers, {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        });
+        const res = await fetch(url, options);
+        if (res.status === 401) {
+          localStorage.removeItem('snc_token');
+          window.location.href = '/login-directo.html';
+          throw new Error('Token expirado');
+        }
+        return res;
+      }
+
+      async function loadCurrentUser() {
+        try {
+          const res = await apiFetch('/api/auth/me');
+          if (!res.ok) throw new Error('Error al obtener usuario');
+          const data = await res.json();
+          currentUser = data.user;
+          if (currentUser.role !== 'admin') {
+            contentDiv.style.display = 'none';
+            accessDeniedDiv.style.display = 'block';
+            return false;
+          }
+          return true;
+        } catch (e) {
+          showError('Error al verificar permisos: ' + e.message);
+          return false;
+        }
+      }
+
+      async function loadPlans() {
+        try {
+          const res = await fetch('/api/plans');
+          if (res.ok) {
+            allPlans = await res.json();
+          }
+        } catch (e) {
+          console.error('Error cargando planes:', e);
+        }
+      }
+
+      async function loadMembers() {
+        try {
+          const res = await apiFetch('/api/admin/members');
+          if (res.status === 403) {
+            showError('No tienes permisos para ver los miembros.');
+            return;
+          }
+          if (res.status === 404) {
+            showError('Endpoint de miembros no disponible.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al cargar miembros: HTTP ' + res.status);
+            return;
+          }
+          const data = await res.json();
+          allMembers = Array.isArray(data) ? data : (data.members || []);
+          renderMembers(allMembers);
+        } catch (e) {
+          showError('Error al cargar miembros: ' + e.message);
+        }
+      }
+
+      // Action handlers
+      window._sncSuspend = async function(id) {
+        if (!confirm('¿Suspender a este miembro?')) return;
+        try {
+          const res = await apiFetch('/api/admin/members/' + id + '/block', {
+            method: 'POST',
+            body: JSON.stringify({ blocked: true })
+          });
+          if (res.status === 403 || res.status === 404) {
+            showError('No se pudo suspender: endpoint no disponible o sin permisos.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al suspender: HTTP ' + res.status);
+            return;
+          }
+          await loadMembers();
+        } catch (e) {
+          showError('Error al suspender: ' + e.message);
+        }
+      };
+
+      window._sncActivate = async function(id) {
+        if (!confirm('¿Activar a este miembro?')) return;
+        try {
+          const res = await apiFetch('/api/admin/members/' + id + '/block', {
+            method: 'POST',
+            body: JSON.stringify({ blocked: false })
+          });
+          if (res.status === 403 || res.status === 404) {
+            showError('No se pudo activar: endpoint no disponible o sin permisos.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al activar: HTTP ' + res.status);
+            return;
+          }
+          await loadMembers();
+        } catch (e) {
+          showError('Error al activar: ' + e.message);
+        }
+      };
+
+      window._sncChangePlan = async function(id, planId) {
+        if (!planId) return;
+        if (!confirm('¿Cambiar el plan a "' + getPlanName(planId) + '"?')) return;
+        try {
+          const res = await apiFetch('/api/admin/members/' + id + '/stats', {
+            method: 'POST',
+            body: JSON.stringify({ plan: planId })
+          });
+          if (res.status === 403 || res.status === 404) {
+            showError('No se pudo cambiar el plan: endpoint no disponible o sin permisos.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al cambiar plan: HTTP ' + res.status);
+            return;
+          }
+          await loadMembers();
+        } catch (e) {
+          showError('Error al cambiar plan: ' + e.message);
+        }
+      };
+
+      window._sncPromoteAdmin = async function(id) {
+        if (!confirm('¿Promover a este miembro a administrador?')) return;
+        try {
+          const res = await apiFetch('/api/admin/members/' + id + '/role', {
+            method: 'POST',
+            body: JSON.stringify({ role: 'admin' })
+          });
+          if (res.status === 403 || res.status === 404) {
+            showError('No se pudo promover: endpoint no disponible o sin permisos.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al promover: HTTP ' + res.status);
+            return;
+          }
+          await loadMembers();
+        } catch (e) {
+          showError('Error al promover: ' + e.message);
+        }
+      };
+
+      window._sncRevokeAdmin = async function(id) {
+        if (!confirm('¿Revocar permisos de administrador a este miembro?')) return;
+        try {
+          const res = await apiFetch('/api/admin/members/' + id + '/role', {
+            method: 'POST',
+            body: JSON.stringify({ role: 'member' })
+          });
+          if (res.status === 403 || res.status === 404) {
+            showError('No se pudo revocar: endpoint no disponible o sin permisos.');
+            return;
+          }
+          if (!res.ok) {
+            showError('Error al revocar: HTTP ' + res.status);
+            return;
+          }
+          await loadMembers();
+        } catch (e) {
+          showError('Error al revocar: ' + e.message);
+        }
+      };
+
+      // Init
+      (async function init() {
+        const isAdmin = await loadCurrentUser();
+        if (!isAdmin) return;
+        contentDiv.style.display = 'block';
+        await Promise.all([loadPlans(), loadMembers()]);
+      })();
+    })();
+  </script>
+</body>
+</html>

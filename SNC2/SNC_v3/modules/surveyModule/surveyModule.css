@@ -1,0 +1,373 @@
+/* surveyModule.css  —  Estilos del módulo de medición de parcelas */
+
+:root {
+  --color-primary: #1d4ed8;
+  --color-primary-light: #3b82f6;
+  --color-success: #2e7d32;
+  --color-warning: #e65100;
+  --color-danger: #c62828;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-card: #ffffff;
+  --color-bg: #f9fafb;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--color-bg);
+  color: #1f2937;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Encabezado del módulo */
+.mod-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.mod-header__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mod-icon {
+  font-size: 1.6rem;
+}
+
+.mod-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.mod-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.mod-header__right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Pestañas */
+.mod-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.tab.active {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+/* Contenido del módulo */
+.mod-content {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Tarjetas */
+.card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.card p {
+  margin: 0 0 0.6rem;
+  color: #4b5563;
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+/* Selector y campos */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.field input, .field select {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111827;
+  width: 100%;
+}
+
+.field input:focus, .field select:focus {
+  outline: 2px solid #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* Área de subida de archivo */
+.upload-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.upload-zone__label {
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+}
+
+.upload-zone__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.upload-zone__text .icon {
+  font-size: 2rem;
+}
+
+.upload-zone__text strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.upload-zone__hint {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* Grids de preview */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.grid__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.grid__row:last-child {
+  border-bottom: none;
+}
+
+/* Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Botones */
+.btn {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn--secondary {
+  background: #e5e7eb;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-muted);
+  border-color: var(--color-border);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Lista de características */
+.feature-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #4b5563;
+  font-size: 0.88rem;
+}
+
+.feature-list li {
+  margin-bottom: 0.25rem;
+}
+
+/* Historial */
+.historial-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fafafa;
+  padding: 0.75rem;
+}
+
+.historial-list .historial-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.historial-item:last-child {
+  border-bottom: none;
+}
+
+.historial-item .id {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.historial-item .meta {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+/* Logo de la empresa */
+#app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Mensajes de notificación (toast) */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.toast.success { background: #2e7d32; color: #fff; }
+.toast.warning { background: #e65100; color: #fff; }
+.toast.error   { background: #c62828; color: #fff; }
+
+/* Espaciado flex */
+.toast, .field, .card { flex: 1; }

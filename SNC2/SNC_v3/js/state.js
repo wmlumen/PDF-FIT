@@ -66,7 +66,33 @@ class StateManager {
             projectVersions: Array.isArray(saved.projectVersions) ? saved.projectVersions : [],
             pendingCallback: null,
             measureMode: false,
-            splitModeActive: false
+            splitModeActive: false,
+            // Módulo 10: Arquitectura, Seguridad y Base de Datos
+            rbac: {
+                rol: null, // 'admin', 'tecnico', 'revisor', 'municipal', 'consultor'
+                permisos: {}, // Mapa de permisos por recurso
+                departamental: null, // Departamento asignado
+                jurisdiccional: null // Distrito/jurisdicción
+            },
+            mfa: {
+                habilitado: false,
+                metodo: null, // 'totp', 'sms', 'authenticator_app'
+                ultimoVerificacion: null
+            },
+            storage: {
+                tipo: 'local', // 'local', 's3', 'cloudinary'
+                bucket: null,
+                region: null,
+                endpoint: null
+            },
+            api: {
+                baseUrl: isNode ? 'http://localhost:5556' : window.location.origin,
+                token: (isNode ? '' : localStorage.getItem('snc_api_token') || ''),
+                user: (isNode ? null : JSON.parse(localStorage.getItem('snc_api_user') || 'null')),
+                currentProjectId: (isNode ? '' : localStorage.getItem('snc_project_id') || ''),
+                currentExpedienteId: (isNode ? '' : localStorage.getItem('snc_expediente_id') || ''),
+                ultimasConsultas: []
+            }
         };
         
         this._subscribers = new Map();
