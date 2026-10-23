@@ -1,5 +1,5 @@
 import express from 'express';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
@@ -25,7 +25,7 @@ if (DB_BACKEND === 'firestore') {
   logger.debug('[DB] Usando backend SQLite');
 }
 const { dbAPI, migrateFromJson, runJsonMigration } = dbModule;
-import { saveFeaturesBatch, getFeatureContainingPoint } from './cacheDb.js';
+
 import { sendRecoveryEmail, sendWelcomeEmail, sendAdminAlert } from './js/mailer.js';
 import * as redticketPkg from './js/redticket-api.cjs';
 import { verifyWebhook } from './js/redticket-payments.js';
@@ -53,10 +53,7 @@ app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'app
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
   ['/index-municipal.html', 'index-municipal.html'],
-  ['/presentacion.html', 'presentacion.html'],
-  ['/members.html', 'members.html'],
-  ['/geoconverter.html', 'geoconverter.html'],
-  ['/fluxograma.html', 'fluxograma.html'],
+  ['/index-notarial.html', 'index-notarial.html'],
   ['/login-directo.html', 'login-directo.html'],
   ['/register.html', 'register.html'],
   ['/recover.html', 'recover.html'],
@@ -68,10 +65,31 @@ for (const [route, file] of PUBLIC_HTML_FILES) {
   app.get(route, (req, res) => res.sendFile(join(__dirname, file)));
 }
 
+// Municipal app (presentación oficial Ley 3966/2010)
+app.get(['/municipal', '/municipal/', '/municipal/index.html', '/index-municipal.html'], (req, res) => {
+  res.sendFile(join(__dirname, 'municipal', 'index.html'));
+});
+
+// Portal Ciudadano (consulta pública de parcelas catastrales SNC 551/2023)
+app.get(['/ciudadano', '/ciudadano/', '/ciudadano/index.html', '/index-ciudadano.html'], (req, res) => {
+  res.sendFile(join(__dirname, 'ciudadano', 'index.html'));
+});
+
+// Portal Notarial (Escribanías Públicas & Seguridad Inmobiliaria)
+app.get(['/notarial', '/notarial/', '/notarial/index.html', '/Notarial', '/Notarial/', '/Notarial/index.html', '/index-notarial.html'], (req, res) => {
+  res.sendFile(join(__dirname, 'index-notarial.html'));
+});
+
+// Portal Administrador
+app.get(['/admin', '/admin/', '/admin/index.html'], (req, res) => {
+  res.sendFile(join(__dirname, 'admin', 'index.html'));
+});
+
 // Único dataset local requerido por la validación geográfica del frontend.
 app.get('/data/DISTRITOS_PY_CNPV2022.geojson', (req, res) => {
   res.sendFile(join(__dirname, 'data', 'DISTRITOS_PY_CNPV2022.geojson'));
 });
+app.use('/data/piribebuy', express.static(join(__dirname, 'data', 'piribebuy'), STATIC_OPTIONS));
 
 // Dependencias del frontend servidas localmente (sin depender de CDNs).
 // Whitelist explícita: nunca se sirve node_modules/ completo.
@@ -84,6 +102,7 @@ const VENDOR_FILES = new Map([
   ['/vendor/xlsx.mjs', 'node_modules/xlsx/xlsx.mjs'],
   ['/vendor/jszip.min.js', 'node_modules/jszip/dist/jszip.min.js'],
   ['/vendor/jspdf.umd.min.js', 'node_modules/jspdf/dist/jspdf.umd.min.js'],
+  ['/vendor/jspdf.plugin.autotable.min.js', 'node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js'],
   ['/vendor/shpwrite.js', 'node_modules/shp-write/shpwrite.js'],
   ['/vendor/dxf-parser.js', 'node_modules/dxf-parser/dist/dxf-parser.js'],
   ['/vendor/dom-to-image.min.js', 'node_modules/dom-to-image/dist/dom-to-image.min.js'],
@@ -304,9 +323,164 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Pilar 2: Endpoint soberano de teselas vectoriales (R-Tree, SQLite, offline-capable)
+// GET /api/v3/catastro/vector-view?minX=&minY=&maxX=&maxY=
+// Devuelve FeatureCollection de parcelas colindantes con el bbox visible del mapa.
+app.get('/api/v3/catastro/vector-view', async (req, res) => {
+  try {
+    let { minX, minY, maxX, maxY } = req.query;
+    minX = Number(minX);
+    minY = Number(minY);
+    maxX = Number(maxX);
+    maxY = Number(maxY);
+    if (Number.isNaN(minX) || Number.isNaN(minY) || Number.isNaN(maxX) || Number.isNaN(maxY)) {
+      return res.status(400).json({ error: 'Faltan o son inválidos los parámetros minX, minY, maxX, maxY' });
+    }
+    // Uso del índice R-Tree para búsqueda ultra-rápida (< 3ms)
+    const { db } = await import('/c/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3/cacheDb.js');
+    const rows = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT id, padron, distrito, zona, mz, lote, geojson,
+                (maxX - minX) AS widthM, (maxY - minY) AS heightM
+         FROM idx_parcelas_geometria
+         WHERE minX <= ? AND maxX >= ? AND minY <= ? AND maxY >= ?
+         LIMIT 3000`,
+        [maxX, minX, maxY, minY],
+        (err, rows) => err ? reject(err) : resolve(rows)
+      );
+    });
+    const features = rows.map(r => ({
+      type: 'Feature',
+      id: r.id,
+      properties: {
+        id: r.id,
+        padron: r.padron,
+        distrito: r.distrito,
+        zona: r.zona,
+        mz: r.mz,
+        lote: r.lote,
+        widthM: r.widthM,
+        heightM: r.heightM
+      },
+      geometry: JSON.parse(r.geojson).geometry
+    }));
+    return res.json({ type: 'FeatureCollection', features, count: features.length });
+  } catch (e) {
+    logger.error('vector-view error', e);
+    return res.status(500).json({ error: 'Error consultando teselas', detail: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINTS MAG PARAGUAY - Capas Agropecuarias y Trazabilidad (Ciclo 15 días)
+// ==========================================
+let magManagerInstance = null;
+async function getMagManager() {
+  if (!magManagerInstance) {
+    const { db } = await import('/c/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3/cacheDb.js');
+    const { MagSyncManager } = await import('./magSync.js');
+    magManagerInstance = new MagSyncManager(db);
+  }
+  return magManagerInstance;
+}
+
+app.get('/api/v3/mag/catalog', async (req, res) => {
+  try {
+    const manager = await getMagManager();
+    const catalog = await manager.getCatalog();
+    res.json(catalog);
+  } catch (e) {
+    logger.error('Error obteniendo catálogo MAG:', e);
+    res.status(500).json({ error: 'Error obteniendo catálogo MAG', detail: e.message });
+  }
+});
+
+app.post('/api/v3/mag/sync', async (req, res) => {
+  try {
+    const manager = await getMagManager();
+    const results = await manager.syncAll(true);
+    res.json({ ok: true, cycleDays: 15, updated: results.length, layers: results });
+  } catch (e) {
+    logger.error('Error sincronizando capas MAG:', e);
+    res.status(500).json({ error: 'Error sincronizando capas MAG', detail: e.message });
+  }
+});
+
 for (const plan of Object.values(PLANS)) {
   dbAPI.plans.upsert(plan).catch(error => logger.error('plan seed error', error));
 }
+
+// ==================== ENDPOINTS MUNICIPALES (PORTAL CIUDADANO / PUBLICACIÓN) ====================
+app.get('/api/municipal/:muniId/info', (req, res) => {
+  const muniId = String(req.params.muniId || '').trim().toLowerCase();
+  if (!/^[a-z0-9_-]+$/.test(muniId)) {
+    return res.status(400).json({ ok: false, error: 'Identificador municipal inválido' });
+  }
+  const infoPath = join(__dirname, 'data', 'municipal', muniId, 'info.json');
+  if (!existsSync(infoPath)) {
+    return res.status(404).json({ ok: false, error: 'Municipalidad no encontrada o sin datos publicados' });
+  }
+  try {
+    const raw = readFileSync(infoPath, 'utf8');
+    const info = JSON.parse(raw);
+    return res.json({ ok: true, data: info });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: 'Error al leer metadatos municipales' });
+  }
+});
+
+app.get('/api/municipal/:muniId/parcelas', (req, res) => {
+  const muniId = String(req.params.muniId || '').trim().toLowerCase();
+  if (!/^[a-z0-9_-]+$/.test(muniId)) {
+    return res.status(400).json({ ok: false, error: 'Identificador municipal inválido' });
+  }
+  const parcelasPath = join(__dirname, 'data', 'municipal', muniId, 'parcelas.geojson');
+  if (!existsSync(parcelasPath)) {
+    return res.status(404).json({ ok: false, error: 'Parcelas no disponibles para esta municipalidad' });
+  }
+  res.setHeader('Content-Type', 'application/json');
+  return res.sendFile(parcelasPath);
+});
+
+app.post('/api/municipal/:muniId/publicar', authMiddleware, (req, res) => {
+  const muniId = String(req.params.muniId || '').trim().toLowerCase();
+  if (!/^[a-z0-9_-]+$/.test(muniId)) {
+    return res.status(400).json({ ok: false, error: 'Identificador municipal inválido' });
+  }
+  const geojson = req.body;
+  if (!geojson || geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
+    return res.status(400).json({ ok: false, error: 'El cuerpo debe ser un FeatureCollection GeoJSON válido' });
+  }
+  const muniDir = join(__dirname, 'data', 'municipal', muniId);
+  if (!existsSync(muniDir)) {
+    mkdirSync(muniDir, { recursive: true });
+  }
+  const parcelasPath = join(muniDir, 'parcelas.geojson');
+  writeFileSync(parcelasPath, JSON.stringify(geojson, null, 2), 'utf8');
+
+  // Actualizar o crear info.json
+  const infoPath = join(muniDir, 'info.json');
+  let info = {
+    id: muniId,
+    nombre: `Municipalidad de ${muniId.charAt(0).toUpperCase() + muniId.slice(1)}`,
+    actualizado: new Date().toISOString().slice(0, 10),
+    fuente: 'Dirección de Catastro Municipal'
+  };
+  if (existsSync(infoPath)) {
+    try {
+      info = JSON.parse(readFileSync(infoPath, 'utf8'));
+      info.actualizado = new Date().toISOString().slice(0, 10);
+    } catch {}
+  }
+  writeFileSync(infoPath, JSON.stringify(info, null, 2), 'utf8');
+
+  return res.json({
+    ok: true,
+    message: 'Datos catastrales municipales publicados exitosamente',
+    featuresCount: geojson.features.length,
+    actualizado: info.actualizado
+  });
+});
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
@@ -1154,6 +1328,7 @@ app.get('/api/postgis/analisis-espacial', authMiddleware, async (req, res) => {
   }
 });
 
+
 app.get('/api/entorno', authMiddleware, async (req, res) => {
   try {
     const { lat, lng } = req.query;
@@ -1180,6 +1355,101 @@ app.get('/api/entorno', authMiddleware, async (req, res) => {
   } catch (error) {
     logger.error('Error en /api/entorno:', error.message);
     res.status(500).json({ error: 'Error consultando WFS' });
+  }
+});
+
+const spatialIdentifyCache = new Map();
+app.get('/api/spatial-identify', async (req, res) => {
+  try {
+    const { lat, lng, noGeom } = req.query;
+    if (!lat || !lng) return res.status(400).json({ ok: false, error: 'Faltan parámetros lat, lng' });
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    if (isNaN(parsedLat) || isNaN(parsedLng)) return res.status(400).json({ ok: false, error: 'Coordenadas inválidas' });
+
+    const cacheKey = `${parsedLat.toFixed(4)},${parsedLng.toFixed(4)}_${noGeom || '0'}`;
+    if (spatialIdentifyCache.has(cacheKey)) {
+      return res.json(spatialIdentifyCache.get(cacheKey));
+    }
+
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execFileAsync = promisify(execFile);
+
+    const scriptPath = join(__dirname, 'scripts', 'spatial_identify.py');
+    const args = ['--lat', String(parsedLat), '--lng', String(parsedLng)];
+    if (noGeom === 'true' || noGeom === '1') args.push('--no-geom');
+
+    const { stdout } = await execFileAsync('python', [scriptPath, ...args], { timeout: 10000 });
+    const data = JSON.parse(stdout);
+
+    if (spatialIdentifyCache.size > 500) spatialIdentifyCache.clear();
+    spatialIdentifyCache.set(cacheKey, data);
+
+    res.json(data);
+  } catch (error) {
+    logger.error('Error en /api/spatial-identify:', error.message);
+    res.status(500).json({ ok: false, error: error.message });
+  }
+});
+
+app.get('/api/resolve-maps-url', async (req, res) => {
+  try {
+    const rawUrl = req.query.url;
+    if (!rawUrl) return res.status(400).json({ ok: false, error: 'Falta parámetro url' });
+    let targetUrl = String(rawUrl).trim();
+
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      return res.status(400).json({ ok: false, error: 'URL no válida' });
+    }
+
+    if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(targetUrl)) {
+      try {
+        const response = await fetch(targetUrl, {
+          redirect: 'manual',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        const loc = response.headers.get('location');
+        if (loc) {
+          targetUrl = loc;
+        } else if (response.status >= 300 && response.status < 400) {
+          const r2 = await fetch(targetUrl, { redirect: 'follow' });
+          targetUrl = r2.url;
+        }
+      } catch (fetchErr) {
+        logger.warn('Error resolviendo redirect de Google Maps:', fetchErr.message);
+      }
+    }
+
+    const dLat = targetUrl.match(/!3d(-?\d+(?:\.\d+)?)/);
+    const dLng = targetUrl.match(/!4d(-?\d+(?:\.\d+)?)/);
+    const atMatch = targetUrl.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    const qMatch = targetUrl.match(/[?&](?:q|ll|query)=(-?\d+(?:\.\d+)?)[,+](-?\d+(?:\.\d+)?)/);
+    const placeMatch = targetUrl.match(/\/place\/([^/@?]+)/);
+    const label = placeMatch ? decodeURIComponent(placeMatch[1].replace(/\+/g, ' ')) : 'Ubicación Google Maps';
+
+    let lat = null, lng = null;
+    if (dLat && dLng) {
+      lat = parseFloat(dLat[1]);
+      lng = parseFloat(dLng[1]);
+    } else if (qMatch) {
+      lat = parseFloat(qMatch[1]);
+      lng = parseFloat(qMatch[2]);
+    } else if (atMatch) {
+      lat = parseFloat(atMatch[1]);
+      lng = parseFloat(atMatch[2]);
+    }
+
+    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+      return res.json({ ok: true, lat, lng, label, resolvedUrl: targetUrl });
+    }
+
+    return res.status(422).json({ ok: false, error: 'No se pudieron extraer coordenadas del enlace', targetUrl });
+  } catch (error) {
+    logger.error('Error en /api/resolve-maps-url:', error.message);
+    res.status(500).json({ ok: false, error: error.message });
   }
 });
 

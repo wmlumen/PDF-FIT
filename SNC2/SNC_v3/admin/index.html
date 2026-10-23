@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SNC v3</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #1f2937; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold">Panel de Administración SNC v3</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span id="userEmail" class="text-sm text-gray-400 hidden sm:block"></span>
+        <button id="logoutBtn" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- Alert Container -->
+    <div id="alertContainer" class="mb-6"></div>
+
+    <!-- Tabs Navigation -->
+    <nav class="mb-6 border-b border-gray-800 overflow-x-auto scrollbar-thin" aria-label="Secciones de administración">
+      <ul class="flex flex-nowrap gap-1 -mb-px min-w-max" role="tablist">
+        <li role="presentation">
+          <button role="tab" data-tab="dashboard" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="true">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13h16M4 17h16M4 7h16"/></svg>
+            Panel
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="plans" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Planes
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="finance" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Finanzas
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="members" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0v6v-6z"/></svg>
+            Miembros
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="ips" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            IPs
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="audit" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            Auditoría
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="fiscalizacion" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 9c2-2 4.5-3.5 7-7 2.5 3.5 5 5 7 7 1 1 2 1.5 3 1.5s1-1 2-1.5c2-2 4.5-4.5 7-7 1-1 1-2.5 0-4z"/></svg>
+            Fiscalización
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="ambiental" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Ambiental
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="dictamenes" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Dictámenes
+          </button>
+        </li>
+        <li role="presentation">
+          <button role="tab" data-tab="expedientes" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Expedientes
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Tab Panels -->
+    <div class="tab-panels">
+      <!-- Dashboard / Panel -->
+      <section role="tabpanel" id="panel-dashboard" class="tab-panel active" aria-labelledby="tab-dashboard">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Municipios Activos</p>
+            <p id="dashMunicipalities" class="text-2xl font-bold text-white mt-1">--</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Profesionales / Agrimensores</p>
+            <p id="dashProfessionals" class="text-2xl font-bold text-amber-400 mt-1">--</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Expedientes Procesados</p>
+            <p id="dashExpedientes" class="text-2xl font-bold text-blue-400 mt-1">--</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Volumen Financiero (PYG)</p>
+            <p id="dashFinance" class="text-2xl font-bold text-green-400 mt-1">--</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Miembros -->
+      <section role="tabpanel" id="panel-members" class="tab-panel hidden" aria-labelledby="tab-members">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div class="relative max-w-md w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="memberSearch" placeholder="Buscar por nombre o email..." class="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <select id="roleFilter" class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Todos los roles</option>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="professional">Professional</option>
+              <option value="technician">Technician</option>
+              <option value="member">Member</option>
+              <option value="viewer">Viewer</option>
+            </select>
+            <select id="statusFilter" class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Todos los estados</option>
+              <option value="active">Activo</option>
+              <option value="suspended">Suspendido</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+            <button id="createMemberBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              Nuevo
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
+          <table class="w-full" role="grid">
+            <thead class="bg-gray-800/50">
+              <tr class="text-left text-sm text-gray-400">
+                <th class="px-4 py-3 font-medium">Usuario</th>
+                <th class="px-4 py-3 font-medium">Plan</th>
+                <th class="px-4 py-3 font-medium">Rol</th>
+                <th class="px-4 py-3 font-medium">Estado</th>
+                <th class="px-4 py-3 font-medium">Proyectos</th>
+                <th class="px-4 py-3 font-medium">Límite</th>
+                <th class="px-4 py-3 font-medium">Creado</th>
+                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="membersTable" class="divide-y divide-gray-800 scrollbar-thin max-h-[600px]">
+              <tr><td colspan="8" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="membersPagination" class="flex items-center justify-between mt-4 text-sm text-gray-500 hidden">
+          <span id="paginationInfo"></span>
+          <div class="flex gap-2">
+            <button id="prevPage" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+            <button id="nextPage" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Planes -->
+      <section role="tabpanel" id="panel-plans" class="tab-panel hidden" aria-labelledby="tab-plans">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Planes y Suscripciones</h2>
+          <button id="createPlanBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors flex items-center gap-2 self-start">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Plan
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
+          <table class="w-full" role="grid">
+            <thead class="bg-gray-800/50">
+              <tr class="text-left text-sm text-gray-400">
+                <th class="px-4 py-3 font-medium">ID</th>
+                <th class="px-4 py-3 font-medium">Nombre</th>
+                <th class="px-4 py-3 font-medium">Tipo</th>
+                <th class="px-4 py-3 font-medium">Precio</th>
+                <th class="px-4 py-3 font-medium">Proyectos</th>
+                <th class="px-4 py-3 font-medium">Expedientes</th>
+                <th class="px-4 py-3 font-medium">Watermark</th>
+                <th class="px-4 py-3 font-medium">Activo</th>
+                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="plansTable" class="divide-y divide-gray-800">
+              <tr><td colspan="9" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Finanzas -->
+      <section role="tabpanel" id="panel-finance" class="tab-panel hidden" aria-labelledby="tab-finance">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Resumen Financiero</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Total Transacciones</p>
+            <p id="finTotalTx" class="text-2xl font-bold text-white mt-1">-</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Pagadas</p>
+            <p id="finPaidTx" class="text-2xl font-bold text-green-400 mt-1">-</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Pendientes</p>
+            <p id="finPendingTx" class="text-2xl font-bold text-yellow-400 mt-1">-</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <p class="text-sm text-gray-400">Fees Proveedor</p>
+            <p id="finFees" class="text-2xl font-bold text-gray-300 mt-1">-</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
+          <table class="w-full" role="grid">
+            <thead class="bg-gray-800/50">
+              <tr class="text-left text-sm text-gray-400">
+                <th class="px-4 py-3 font-medium">ID</th>
+                <th class="px-4 py-3 font-medium">Usuario</th>
+                <th class="px-4 py-3 font-medium">Plan</th>
+                <th class="px-4 py-3 font-medium">Monto</th>
+                <th class="px-4 py-3 font-medium">Moneda</th>
+                <th class="px-4 py-3 font-medium">Estado</th>
+                <th class="px-4 py-3 font-medium">Proveedor</th>
+                <th class="px-4 py-3 font-medium">Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="financeTable" class="divide-y divide-gray-800">
+              <tr><td colspan="8" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- IPs -->
+      <section role="tabpanel" id="panel-ips" class="tab-panel hidden" aria-labelledby="tab-ips">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Gestión y Bloqueo de IPs</h2>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          <p class="text-gray-400 text-sm">Control de acceso por direcciones IP y restricciones de seguridad perimetral.</p>
+        </div>
+      </section>
+
+      <!-- Auditoría -->
+      <section role="tabpanel" id="panel-audit" class="tab-panel hidden" aria-labelledby="tab-audit">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Auditoría y Monitoreo</h2>
+          <div class="flex gap-2">
+            <button id="refreshAudit" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Refrescar</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Logs de Errores del Backend</h3>
+            <div id="errorLogs" class="max-h-[400px] overflow-y-auto scrollbar-thin">
+              <p class="text-gray-500 text-sm">Cargando logs...</p>
+            </div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Trazabilidad de Accesos (Últimos 20)</h3>
+            <div id="auditLogs" class="max-h-[400px] overflow-y-auto scrollbar-thin">
+              <p class="text-gray-500 text-sm">Cargando trazabilidad...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fiscalización -->
+      <section role="tabpanel" id="panel-fiscalizacion" class="tab-panel hidden" aria-labelledby="tab-fiscalizacion">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Fiscalización Tributaria y Anti-Prescripción</h2>
+          <div class="flex gap-2">
+            <select id="fiscalizacionMunicipio" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Seleccionar municipio</option>
+            </select>
+            <button id="refreshFiscalizacion" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Actualizar Mapa</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Mapa de Morosidad por Semáforo</h3>
+            <div id="fiscalizacionMap" class="w-full h-[400px] rounded-lg border border-gray-800 bg-gray-950 flex items-center justify-center text-gray-500">Mapa SIG / PostGIS</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Alertas de Prescripción (Ley 125/91)</h3>
+            <div id="prescripcionAlerts" class="max-h-[400px] overflow-y-auto scrollbar-thin">
+              <p class="text-gray-500 text-sm">Cargando alertas...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h4 class="text-sm font-semibold text-gray-400 mb-2">Fugas Catastrales</h4>
+            <p id="fugasCount" class="text-2xl font-bold text-gray-200">0</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h4 class="text-sm font-semibold text-gray-400 mb-2">Morosidad Alta (Rojo)</h4>
+            <p id="morosidadAltoCount" class="text-2xl font-bold text-[#ef4444]">0</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h4 class="text-sm font-semibold text-gray-400 mb-2">Morosidad Media (Naranja)</h4>
+            <p id="morosidadMedioCount" class="text-2xl font-bold text-[#f97316]">0</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ambiental -->
+      <section role="tabpanel" id="panel-ambiental" class="tab-panel hidden" aria-labelledby="tab-ambiental">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Validación Ambiental y Servidumbres (Ley 3239/07)</h2>
+          <div class="flex gap-2">
+            <select id="ambienteMunicipio" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Seleccionar municipio</option>
+            </select>
+            <button id="refreshAmbiente" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Verificar</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Cruce con Cursos Hídricos (30m)</h3>
+            <div id="ambienteMap" class="w-full h-[400px] rounded-lg border border-gray-800 bg-gray-950 flex items-center justify-center text-gray-500">Visor Topológico Hídrico</div>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-400 mb-4">Resultados de Validación</h3>
+            <div id="ambienteResultados" class="max-h-[400px] overflow-y-auto scrollbar-thin">
+              <p class="text-gray-500 text-sm">Cargando resultados...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dictámenes -->
+      <section role="tabpanel" id="panel-dictamenes" class="tab-panel hidden" aria-labelledby="tab-dictamenes">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Dictámenes e Informes Legales</h2>
+          <div class="flex flex-wrap gap-2">
+            <select id="dictamenType" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="A">Informe A - Pre-validación</option>
+              <option value="B">Informe B - Dictamen Pericial</option>
+            </select>
+            <select id="dictamenProject" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Seleccionar proyecto</option>
+            </select>
+            <button id="generarDictamenBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Generar Documento</button>
+          </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-400 mb-4">Estado de Dictámenes Generados</h3>
+          <div id="dictamenList" class="max-h-[400px] overflow-y-auto scrollbar-thin">
+            <p class="text-gray-500 text-sm">Cargando estado...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Expedientes -->
+      <section role="tabpanel" id="panel-expedientes" class="tab-panel hidden" aria-labelledby="tab-expedientes">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-lg font-semibold">Interoperabilidad y Gestión de Expedientes (B2B2G)</h2>
+          <div class="flex gap-2">
+            <select id="expedienteFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="">Todos los estados</option>
+              <option value="En revisión">En revisión</option>
+              <option value="Observado">Observado</option>
+              <option value="Aprobado">Aprobado</option>
+              <option value="Rechazado">Rechazado</option>
+            </select>
+            <button id="refreshExpedientes" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
+          <table class="w-full" role="grid">
+            <thead class="bg-gray-800/50">
+              <tr class="text-left text-sm text-gray-400">
+                <th class="px-4 py-3 font-medium">Expediente</th>
+                <th class="px-4 py-3 font-medium">Municipio</th>
+                <th class="px-4 py-3 font-medium">Profesional</th>
+                <th class="px-4 py-3 font-medium">Estado</th>
+                <th class="px-4 py-3 font-medium">Fecha</th>
+                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="expedientesTable" class="divide-y divide-gray-800">
+              <tr><td colspan="6" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <!-- Member Modal -->
+  <div id="memberModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between p-4 border-b border-gray-800">
+        <h3 id="memberModalTitle" class="text-lg font-semibold">Nuevo Miembro</h3>
+        <button id="closeMemberModal" class="p-2 text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <form id="memberForm" class="p-4 space-y-4">
+        <input type="hidden" id="memberId">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
+          <input type="text" id="memberName" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+          <input type="email" id="memberEmail" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
+          <input type="password" id="memberPassword" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" autocomplete="new-password">
+          <p id="passwordHint" class="text-xs text-gray-500 mt-1 hidden">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Rol</label>
+            <select id="memberRole" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="member">Member</option>
+              <option value="technician">Technician</option>
+              <option value="professional">Professional</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+            <select id="memberStatus" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="active">Activo</option>
+              <option value="suspended">Suspendido</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Plan</label>
+          <select id="memberPlan" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <option value="free">Free</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
+          <button type="button" id="cancelMemberModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Plan Modal -->
+  <div id="planModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between p-4 border-b border-gray-800">
+        <h3 id="planModalTitle" class="text-lg font-semibold">Nuevo Plan</h3>
+        <button id="closePlanModal" class="p-2 text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <form id="planForm" class="p-4 space-y-4">
+        <input type="hidden" id="planId">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">ID del Plan</label>
+          <input type="text" id="planIdInput" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" pattern="^[a-z][a-z0-9_-]{1,31}$" title="Solo minúsculas, números, guiones y guiones bajos. Debe empezar con letra.">
+          <p class="text-xs text-gray-500 mt-1">Solo minúsculas, números, guiones y guiones bajos. Máx 32 chars.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
+          <input type="text" id="planName" required maxlength="80" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+            <select id="planType" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Moneda</label>
+            <select id="planCurrency" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+              <option value="PYG">PYG</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Precio</label>
+          <input type="number" id="planPrice" required min="0" step="0.01" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Proyectos</label>
+            <input type="number" id="planLimitProjects" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Expedientes</label>
+            <input type="number" id="planLimitExpedientes" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Exportaciones/día</label>
+            <input type="number" id="planLimitExports" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Consultas/día</label>
+            <input type="number" id="planLimitConsultas" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" id="planWatermark" class="w-4 h-4 text-amber-600 border-gray-700 rounded focus:ring-amber-500">
+          <label class="text-sm text-gray-300">Watermark en exportaciones</label>
+        </div>
+        <div class="flex items-center gap-3">
+          <input type="checkbox" id="planActive" checked class="w-4 h-4 text-amber-600 border-gray-700 rounded focus:ring-amber-500">
+          <label class="text-sm text-gray-300">Plan activo</label>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
+          <button type="button" id="cancelPlanModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <script type="module">
+    import { initAdmin } from '/js/app-admin.js';
+    initAdmin();
+  </script>
+</body>
+</html>
