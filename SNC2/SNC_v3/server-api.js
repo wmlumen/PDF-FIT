@@ -52,7 +52,6 @@ app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'app
 
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
-  ['/index-municipal.html', 'index-municipal.html'],
   ['/index-notarial.html', 'index-notarial.html'],
   ['/login-directo.html', 'login-directo.html'],
   ['/register.html', 'register.html'],
@@ -1989,21 +1988,11 @@ app.get('/', (req, res) => {
   res.send(readFileSync(join(__dirname, 'index.html'), 'utf8'));
 });
 
-// admin.html se sirve SIEMPRE como HTML. La autenticación la valida el
-// propio cliente (admin.html verifica el token en localStorage y redirige
-// si no hay sesión o si el rol no es admin). Exigir el header Authorization
-// aquí rompía el acceso directo por URL, ya que el navegador no lo envía
-// al escribir la dirección (respondía JSON {"error":"Token requerido"}).
-app.get('/admin.html', (req, res) => {
-  res.type('text/html');
-  res.send(readFileSync(join(__dirname, 'admin.html'), 'utf8'));
-});
-
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API no encontrada' });
   }
-  const blocked = ['/admin.html'];
+  const blocked = ['/admin/members.html'];
   const protectedPrefixes = ['/data/', '/backup/', '/docs/', '/tests/', '/node_modules/', '/.git/', '/.agents/', '/.codex/'];
   if (blocked.includes(req.path.toLowerCase()) || protectedPrefixes.some(prefix => req.path.toLowerCase().startsWith(prefix)) || extname(req.path)) {
     return res.status(404).type('text/plain').send('Recurso no encontrado');
