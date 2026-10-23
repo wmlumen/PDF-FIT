@@ -396,6 +396,133 @@
   }
 
   /* ================================================================
+     SEARCH
+     ================================================================ */
+  .search-container {
+    position: relative;
+    z-index: 100;
+    margin-bottom: 1.6rem;
+    padding: 0 2.5rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.9rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .search-wrap svg {
+    flex: 0 0 16px;
+    color: var(--muted);
+  }
+  .search-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: transparent;
+  }
+  .search-wrap input::placeholder {
+    color: var(--muted);
+  }
+  .search-wrap kbd {
+    flex: 0 0 22px;
+    height: 22px;
+    font-size: 0.7rem;
+    font-family: var(--mono-stack);
+    color: var(--muted);
+    background: var(--line-soft);
+    border-radius: 3px;
+    text-align: center;
+    border: 1px solid var(--line);
+  }
+  .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin: 0;
+    max-height: 420px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  .search-results .result-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .search-results .result-item:hover {
+    background: var(--accent-light);
+  }
+  .search-results .result-item:last-child {
+    border-bottom: none;
+  }
+  .search-results .result-item .num {
+    flex: 0 0 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-results .result-item .section-title {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .search-results .result-item .section-title mark {
+    background: #fde68a;
+    color: #92400e;
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+  .search-results .result-item .section-title mark.next {
+    background: #818cf8;
+    color: #1e1b4b;
+  }
+  .search-results .result-item .section-title .l2 {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .search-results .empty {
+    padding: 1.2rem 0.85rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  .search-no-results {
+    display: none;
+  }
+  .search-loading {
+    display: none;
+    padding: 0.85rem 0.85rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  /* ===============================================================
      IMPRESIÓN / PDF
      Nota: los margin boxes (@bottom-center, @bottom-right) son
      Paged Media CSS Nivel 3 y Chromium NO los renderiza nativamente.
@@ -472,8 +599,163 @@
     });
   })();
 </script>
+<script>
+  (function() {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    const searchKbd = document.getElementById('search-kbd');
+    const searchContainer = document.getElementById('search-container');
+    let searchDebounce = null;
+
+    // Collect all searchable sections (headings with ids)
+    const searchableSections = [];
+    document.querySelectorAll('main[id], h2[id], h3[id], h4[id]').forEach(el => {
+      const id = el.id;
+      if (!id) return;
+      const text = el.textContent.trim();
+      const level = el.tagName.toLowerCase();
+      searchableSections.push({ id, text, level });
+    });
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlight(text, query, isSubheading = false) {
+      if (!query) return escapeHtml(text);
+      const escaped = escapeHtml(text);
+      const parts = escaped.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+      return parts.map((part, i) => {
+        if (part === query) {
+          return isSubheading ?
+            `<span class="next">${part}</span>` :
+            `<mark>${part}</mark>`;
+        }
+        return part;
+      }).join('');
+    }
+
+    function doSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        searchResults.innerHTML = '';
+        searchResults.style.display = 'none';
+        searchContainer.classList.remove('search-active');
+        searchContainer.classList.add('search-empty');
+        return;
+      }
+
+      const results = searchableSections.filter(s =>
+        s.text.toLowerCase().includes(q)
+      );
+
+      if (results.length === 0) {
+        searchResults.innerHTML = `<div class="empty">No se encontraron resultados para "<strong>${escapeHtml(query)}</strong>"</div>`;
+        searchResults.style.display = 'block';
+        searchContainer.classList.remove('search-empty');
+        searchContainer.classList.add('search-active');
+        return;
+      }
+
+      const items = results.slice(0, 50).map((s, i) => {
+        const displayText = s.level === 'h2' ? s.text :
+                           s.level === 'h3' ? s.text :
+                           s.text;
+        const levelLabel = s.level === 'h2' ? 'Nivel 2' :
+                          s.level === 'h3' ? 'Nivel 3' : 'Nivel 4';
+        const isH2 = s.level === 'h2';
+        return `
+          <div class="result-item" data-id="${escapeHtml(s.id)}">
+            <div class="num">${i + 1}</div>
+            <div class="section-title">
+              ${isH2 ? `<span class="l2">${escapeHtml(s.id.replace('s','')})</span> ` : ''}
+              ${highlight(displayText, q, isH2)}
+            </div>
+            <span class="l2" style="color:var(--muted);font-size:0.75rem;">${levelLabel}</span>
+          </div>
+        `;
+      }).join('');
+
+      searchResults.innerHTML = items;
+      searchResults.style.display = 'block';
+      searchContainer.classList.remove('search-empty');
+      searchContainer.classList.add('search-active');
+
+      // Click handler for results
+      searchResults.querySelectorAll('.result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const targetId = item.dataset.id;
+          const target = document.getElementById(targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Highlight active section
+            document.querySelectorAll('.search-results .result-item').forEach(r => r.style.background = '');
+            item.style.background = 'var(--accent-light)';
+            searchInput.value = '';
+            searchResults.innerHTML = '';
+            searchResults.style.display = 'none';
+            searchContainer.classList.add('search-empty');
+            // Reset search state but keep results hidden
+            setTimeout(() => {
+              searchContainer.classList.remove('search-active');
+            }, 100);
+          }
+        });
+      });
+    }
+
+    // Debounced search
+    function debounce(fn, delay) {
+      return function(...args) {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => fn.apply(this, args), delay);
+      };
+    }
+
+    searchInput.addEventListener('input', debounce((e) => doSearch(e.target.value), 150));
+    searchInput.addEventListener('focus', () => {
+      if (searchInput.value.trim()) {
+        searchContainer.classList.add('search-active');
+      }
+    });
+    searchInput.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (!searchInput.value.trim()) {
+          searchContainer.classList.remove('search-active');
+        }
+      }, 200);
+    });
+    searchKbd.addEventListener('click', () => {
+      searchInput.focus();
+    });
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchResults.innerHTML = '';
+        searchResults.style.display = 'none';
+        searchContainer.classList.add('search-empty');
+        searchContainer.classList.remove('search-active');
+        searchInput.blur();
+      }
+      if (e.key === 'Enter' && searchResults.querySelector('.result-item')) {
+        const first = searchResults.querySelector('.result-item');
+        if (first) first.click();
+      }
+    });
+  })();
+</script>
 </head>
 <body>
+
+<!-- ===================== SEARCH BOX ===================== -->
+<div id="search-container" class="search-container">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="Buscar en el manual..." autocomplete="off" spellcheck="false">
+    <kbd id="search-kbd">Esc</kbd>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
 
 <!-- ===================== SIDEBAR DE NAVEGACIÓN ===================== -->
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -1385,6 +1667,90 @@
     <tr><td><strong>UTM 21S / 20S</strong></td><td>Universal Transverse Mercator Huso 21 Sur (Paraguay Oriental, EPSG:32721) y Huso 20 Sur (Chaco Occidental, EPSG:32720).</td></tr>
     <tr><td><strong>VEP (MEF)</strong></td><td>Vías a la Sustentabilidad / Proyecto Ciudades Sustentables del Ministerio de Economía y Finanzas para Catastro Multifinalitario.</td></tr>
     <tr><td><strong>Ochava</strong></td><td>Chaflán que se corta en la esquina de dos calzadas para facilitar la visual y el giro de vehículos (mínimo 3 metros en esquinas a 90°).</td></tr>
+  </table>
+
+    <!-- ===================== 13. ROLES Y PERFILES ===================== -->
+  <h2 class="sec" id="s13">13. Roles, Perfiles y Matriz de Permisos</h2>
+
+  <h3 id="s13-1">13.1 Super Administrador vs. Administrador de Servicio</h3>
+  <table>
+    <tr><th>Característica</th><th>⭐ Super Administrador SIG</th><th>📐 Administrador de Servicio</th></tr>
+    <tr><td><strong>Foco</strong></td><td>Hardware, BD global, seguridad del sistema.</td><td>Mapa web, calidad del dato, experiencia del usuario.</td></tr>
+    <tr><td><strong>Acceso</strong></td><td>Servidores, nube, BD SDE, <code>server-api.js</code>.</td><td>Portal web (<code>/admin</code>, <code>/municipal</code>), QGIS.</td></tr>
+    <tr><td><strong>Acción crítica</strong></td><td>Reiniciar servicio caído, mantener BD, rotar credenciales.</td><td>Actualizar capa, cambiar simbología, publicar mapa.</td></tr>
+    <tr><td><strong>En SNC_v3</strong></td><td><code>super_admin</code> → panel completo sin filtros.</td><td>Dependencia municipal → <code>/municipal</code> filtrado.</td></tr>
+  </table>
+
+  <h3 id="s13-2">13.2 Perfil del Super Administrador (3 Pilares)</h3>
+
+  <h4>💻 Pilar 1 — Arquitectura Técnica y Servidores</h4>
+  <ul>
+    <li><strong>Entornos Enterprise:</strong> GeoServer, QGIS Server, Firebase Hosting y sus dependencias.</li>
+    <li><strong>Automatización:</strong> Scripts para respaldos, logs, usuarios masivos y ETLs vectoriales.</li>
+    <li><strong>Infraestructura:</strong> Servidores, redes, balanceadores, cloud (AWS/Azure).</li>
+  </ul>
+
+  <h4>🗄️ Pilar 2 — Bases de Datos Geoespaciales</h4>
+  <ul>
+    <li><strong>Administración:</strong> PostgreSQL/PostGIS, SQLite, conexiones WFS/WMS.</li>
+    <li><strong>Versiones geográficas:</strong> Flujos multiusuario que evitan conflictos de topología.</li>
+    <li><strong>Rendimiento:</strong> Indexación espacial, compresión, estadísticas para cargas en ms.</li>
+  </ul>
+
+  <h4>🔒 Pilar 3 — Seguridad, Roles y Gobernanza</h4>
+  <ul>
+    <li><strong>Matriz de permisos:</strong> Principio de menor privilegio (Editores, Visualizadores, Creadores).</li>
+    <li><strong>Identidades:</strong> LDAP, SAML, OAuth (Single Sign-On).</li>
+    <li><strong>Auditoría:</strong> Monitoreo de recursos, servicios caídos, cambios críticos.</li>
+  </ul>
+
+  <div class="note"><b>En SNC_v3:</b> <code>super_admin</code> accede a todo sin filtros: panel <code>/admin</code> completo, gestión de usuarios de todas las dependencias, planes e infraestructura.</div>
+
+  <h3 id="s13-3">13.3 Perfil del Administrador de Servicio (3 Pilares)</h3>
+  <p>No toca el servidor. Es responsable de que su área (Catastro, Ambiental, Planificación, etc.) funcione perfectamente:</p>
+
+  <h4>🎨 Pilar 1 — Diseño, Simbología y Rendimiento</h4>
+  <ul>
+    <li><strong>Optimización:</strong> Rangos de escala, simplificación de geometrías, mapas ligeros.</li>
+    <li><strong>Simbología:</strong> Claridad visual + identidad corporativa municipal.</li>
+    <li><strong>Pop-ups:</strong> Alias claros (<code>COD_PRED_2026</code> → "Código de Predio").</li>
+  </ul>
+
+  <h4>🔄 Pilar 2 — Publicación y Mantenimiento (ETL)</h4>
+  <ul>
+    <li><strong>Capacidades:</strong> Solo lectura (Map Service) o editable desde campo (Feature Service).</li>
+    <li><strong>Actualizaciones:</strong> Rutinas automáticas diarias/semanales con nuevos datos.</li>
+  </ul>
+
+  <h4>👥 Pilar 3 — Contenido y Permisos del Grupo</h4>
+  <ul>
+    <li><strong>Grupos:</strong> "Infraestructura Crítica" solo para "Ingenieros de Operaciones".</li>
+    <li><strong>Gobernanza:</strong> Sin duplicados ni capas obsoletas o de prueba.</li>
+  </ul>
+
+  <h3 id="s13-4">13.4 Jerarquía de Dependencias Municipales</h3>
+  <table>
+    <tr><th>Dependencia</th><th>Padre</th><th>Secciones en /municipal</th><th>Dictámenes</th></tr>
+    <tr><td>⭐ Super Admin</td><td>—</td><td>TODAS sin filtros</td><td>✅</td></tr>
+    <tr><td>📜 Notarial</td><td>—</td><td>Estado + Capas</td><td>❌</td></tr>
+    <tr><td>🏛️ Junta Municipal</td><td>—</td><td>Estado + Capas</td><td>❌</td></tr>
+    <tr><td>📐 Catastro</td><td>Junta</td><td>TODO + fracc., balance, loteo, ambiental, simb.</td><td>✅</td></tr>
+    <tr><td>🌿 Ambiental</td><td>Junta</td><td>Estado + Capas + Restricciones</td><td>❌</td></tr>
+    <tr><td>📏 Planificación</td><td>Junta</td><td>Estado + fracc., balance, loteo</td><td>❌</td></tr>
+    <tr><td>🚧 Obras/Vialidad</td><td>Junta</td><td>Estado + Capas + Loteo</td><td>❌</td></tr>
+    <tr><td>🎓 Educación</td><td>Junta</td><td>Estado + Capas (consulta)</td><td>❌</td></tr>
+    <tr><td>🏺 Patrimonio</td><td>Junta</td><td>Estado + Capas (consulta)</td><td>❌</td></tr>
+  </table>
+
+  <div class="tip"><b>Multi-departamento:</b> El campo <code>department</code> acepta comas (ej.: <code>catastro,obras</code>). El usuario ve la unión de secciones y un badge por cada dependencia.</div>
+
+  <h3 id="s13-5">13.5 Matriz de Accesos por Portal</h3>
+  <table>
+    <tr><th>Rol</th><th>/ (Central)</th><th>/municipal</th><th>/ciudadano</th><th>/notarial</th><th>/admin</th></tr>
+    <tr><td>super_admin</td><td>✅</td><td>✅ Sin filtros</td><td>✅</td><td>✅</td><td>✅ Completo</td></tr>
+    <tr><td>admin</td><td>✅</td><td>✅ Sin filtros</td><td>✅</td><td>✅</td><td>✅ Su área</td></tr>
+    <tr><td>manager</td><td>✅</td><td>⚠️ Filtrado</td><td>✅</td><td>✅</td><td>❌</td></tr>
+    <tr><td>member</td><td>✅ Básico</td><td>❌</td><td>✅</td><td>✅</td><td>❌</td></tr>
   </table>
 
   <div class="footer-note">
