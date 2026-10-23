@@ -134,6 +134,38 @@ npm test
 
 ---
 
+## 3.1 Estructura de Datos (`data/`) — Regla Obligatoria
+
+**Todo archivo de datos (`.geojson`, `.csv`, `.xlsx`, `.db`, `.shp`, `.sqlite`) DEBE vivir dentro de `data/`.** Ningún dato puede quedar en la raíz del proyecto ni en carpetas de build (`dist/`, `public/`).
+
+```
+data/
+├── 1.Paraguay/              # SHP nacionales (3.5 GB, 1607 archivos)
+├── 2.Municipal/             # Datos municipales + plantilla oficial SNC 551/2023
+├── 3.Usuario/               # Datos cargados por usuarios (vacío)
+├── 4.Prueba/                # Datos de test y muestras
+├── municipal/               # Publicaciones municipales (info.json + parcelas.geojson)
+├── piribebuy/               # Capas de Piribebuy convertidas de SHP (11 archivos, 2.1 MB)
+│   ├── barrios.geojson      # 34 barrios
+│   ├── vias.geojson         # 2171 vías
+│   ├── hidro.geojson        # 110 cursos de agua
+│   ├── vertedero*.geojson   # 4 capas de vertedero (incluye buffers 500m/1000m)
+│   ├── casco_historico.geojson
+│   └── centro.geojson
+├── DISTRITOS_PY_CNPV2022.geojson  # 40 MB — distritos oficiales CNPV 2022
+├── distritos_py_light.geojson     # versión ligera (865 KB)
+├── snc.sqlite                # Base de datos del sistema (users, projects, expedientes)
+├── catastro_cache.db         # Cache WMS/WFS del catastro
+└── readme.txt                # Registro local de tareas (no subir a git)
+```
+
+**Reglas:**
+- Los GeoJSON de `piribebuy/` se regeneran con `node scripts/convert-piribebuy.mjs` (fuente: SHP externos).
+- Los logs (`db.log`, `cacheDb.log`) los escribe el servidor en ejecución; no eliminar mientras corre.
+- `dist/` y `public/` son artefactos de build: NO deben contener copias de datos de `data/`.
+
+---
+
 ## 4. Consulta RÃ¡pida de Estado
 Para ver quÃ© agentes estÃ¡n activos, quÃ© archivos estÃ¡n bloqueados y quÃ© errores siguen abiertos:
 ```bash
