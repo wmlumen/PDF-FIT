@@ -245,20 +245,20 @@
       <!-- SELECTOR DE MAPA BASE FLOTANTE -->
       <div id="map-base-selector" class="map-selector-box absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
         <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
-        <div id="map-base-menu" class="map-base-menu" hidden>
-          <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
-            <span class="map-menu-heading">Mapa base</span>
-            <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
-            <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="SatÃ©lite ESRI" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite" aria-hidden="true"></i><span>SatÃ©lite ESRI</span></button>
-            <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Curvas de nivel" role="radio" aria-checked="false" aria-label="Mapa curvas de nivel"><i class="fas fa-mountain-sun" aria-hidden="true"></i><span>Curvas de nivel</span></button>
-            <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="Catastro SNC" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>Catastro SNC</span></button>
-            <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM" role="radio" aria-checked="false" aria-label="Mapa Humanitarian OSM"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitarian OSM</span></button>
+                  <div id="map-base-menu" class="map-base-menu" hidden>
+            <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+              <span class="map-menu-heading">Mapa base</span>
+              <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (Por defecto)" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false" aria-label="Mapa satelital Esri"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Humanitario"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="SNC Catastro Oficial" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="Oscuro OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Oscuro"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Topográfico OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Topográfico"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
+            </div>
           </div>
-        </div>
-      </div>
 
       <!-- BOTONERA FLOTANTE DE HERRAMIENTAS -->
-      <div id="map-tools" class="operational-section absolute right-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
+      <div id="map-tools" class="operational-section absolute left-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
         <button onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 text-white shadow hover:bg-slate-800" title="Medir distancia o frentes" aria-label="Medir distancia">
           <i class="fas fa-ruler"></i>
         </button>

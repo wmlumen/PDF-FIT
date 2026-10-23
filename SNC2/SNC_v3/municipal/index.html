@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -509,20 +509,20 @@
           <!-- SELECTOR DE MAPA BASE FLOTANTE -->
           <div id="map-base-selector" class="map-selector-box absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
             <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
-            <div id="map-base-menu" class="map-base-menu" hidden>
-              <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
-                <span class="map-menu-heading">Mapa base</span>
-                <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
-                <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="SatÃ©lite ESRI" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite" aria-hidden="true"></i><span>SatÃ©lite ESRI</span></button>
-                <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Curvas de nivel" role="radio" aria-checked="false" aria-label="Mapa curvas de nivel"><i class="fas fa-mountain-sun" aria-hidden="true"></i><span>Curvas de nivel</span></button>
-                <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="Catastro SNC" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>Catastro SNC</span></button>
-                <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM" role="radio" aria-checked="false" aria-label="Mapa Humanitarian OSM"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitarian OSM</span></button>
-              </div>
+                      <div id="map-base-menu" class="map-base-menu" hidden>
+            <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+              <span class="map-menu-heading">Mapa base</span>
+              <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap (Por defecto)" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false" aria-label="Mapa satelital Esri"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitario OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Humanitario"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="SNC Catastro Oficial" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="Oscuro OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Oscuro"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+              <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Topográfico OpenStreetMap" role="radio" aria-checked="false" aria-label="Mapa Topográfico"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
             </div>
           </div>
 
           <!-- MAP TOOLS MUNICIPALES -->
-          <div id="map-tools" class="operational-section absolute right-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
+          <div id="map-tools" class="operational-section absolute left-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
             <button id="map-tool-edit-vertices" data-requires-geometry onclick="window.MapEngine?.toggleVertexEdit()" class="map-selector-btn bg-emerald-700 border border-emerald-600 shadow hover:bg-emerald-600 text-white" title="Editar vÃ©rtices con ajuste topolÃ³gico" aria-label="Editar vÃ©rtices"><i class="fas fa-bezier-curve"></i></button>
             <button id="map-edit-commit" onclick="window.MapEngine?.commitVertexEdit()" class="map-selector-btn hidden bg-green-600 border border-green-500 shadow hover:bg-green-500 text-white" title="Confirmar ediciÃ³n" aria-label="Confirmar ediciÃ³n"><i class="fas fa-check"></i></button>
             <button id="map-edit-cancel" onclick="window.MapEngine?.cancelVertexEdit()" class="map-selector-btn hidden bg-red-700 border border-red-600 shadow hover:bg-red-600 text-white" title="Cancelar ediciÃ³n" aria-label="Cancelar ediciÃ³n"><i class="fas fa-xmark"></i></button>
@@ -795,7 +795,7 @@
   <input id="sncReferenceLayerToggle" type="checkbox" class="hidden">
   <span id="session-user" class="hidden">Sin sesiÃ³n</span>
   <div id="session-actions" class="hidden"></div>
-  <select id="map-base-selector" class="hidden"></select>
+  <select id="map-base-selector-fallback" class="hidden"></select>
   <div id="map-tool-edit-vertices" class="hidden"></div>
   <div id="map-tool-number-parcels" class="hidden"></div>
   <div id="map-tool-undo" class="hidden"></div>

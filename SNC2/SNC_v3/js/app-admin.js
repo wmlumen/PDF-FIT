@@ -437,12 +437,18 @@ async function loadPiribebuyMap() {
       satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri', maxZoom: 19,
       }),
-      topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17,
+      humanitarian: L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        attribution: '© Humanitarian OSM', maxZoom: 19,
       }),
       catastro: L.tileLayer.wms('https://www.catastro.gov.py/geoserver/ows', {
         layers: 'snc:parcelas_activas', format: 'image/png8', transparent: true,
         CRS: 'CRS:84', attribution: '© SNC Paraguay',
+      }),
+      carto_dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap, © CARTO', maxZoom: 19,
+      }),
+      topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17,
       }),
     };
     baseLayers.osm.addTo(adminMap);
@@ -456,19 +462,27 @@ async function loadPiribebuyMap() {
     if (!document.getElementById('map-base-selector')) {
       const selector = document.createElement('div');
       selector.id = 'map-base-selector';
-      selector.className = 'absolute right-3 top-3 z-[1000]';
+      selector.className = 'map-selector-box absolute right-3 top-3 z-[1000]';
       selector.setAttribute('aria-label', 'Tipos de mapas');
       selector.innerHTML = `
-        <button id="map-base-menu-toggle" class="bg-gray-900 border border-gray-700 text-gray-300 hover:text-white rounded-lg px-3 py-2 shadow-lg" type="button" aria-expanded="false" title="Tipos de mapas"><i class="fas fa-bars"></i></button>
-        <div id="map-base-menu" class="hidden bg-gray-900 border border-gray-700 rounded-lg shadow-xl mt-1 p-1 flex flex-col gap-1 absolute right-0 top-full" role="radiogroup" aria-label="Mapa base">
-          <button onclick="window._adminMap?.setBaseLayer('osm')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-blue-400" data-layer="osm">OpenStreetMap</button>
-          <button onclick="window._adminMap?.setBaseLayer('satellite')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-gray-300" data-layer="satellite">Satélite ESRI</button>
-          <button onclick="window._adminMap?.setBaseLayer('topo')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-gray-300" data-layer="topo">Curvas de nivel</button>
-          <button onclick="window._adminMap?.setBaseLayer('catastro')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-amber-400" data-layer="catastro">Catastro SNC</button>
+        <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
+        <div id="map-base-menu" class="map-base-menu" hidden>
+          <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+            <span class="map-menu-heading">Mapa base</span>
+            <button onclick="window._adminMap?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+            <button onclick="window._adminMap?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="Satélite Esri" role="radio" aria-checked="false"><i class="fas fa-satellite" aria-hidden="true"></i><span>Satélite Esri</span></button>
+            <button onclick="window._adminMap?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitario" role="radio" aria-checked="false"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitario</span></button>
+            <button onclick="window._adminMap?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="SNC" role="radio" aria-checked="false"><i class="fas fa-landmark" aria-hidden="true"></i><span>SNC</span></button>
+            <button onclick="window._adminMap?.setBaseLayer('carto_dark')" class="map-selector-btn" data-layer="carto_dark" title="Oscuro" role="radio" aria-checked="false"><i class="fas fa-moon" aria-hidden="true"></i><span>Oscuro</span></button>
+            <button onclick="window._adminMap?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Topográfico" role="radio" aria-checked="false"><i class="fas fa-mountain" aria-hidden="true"></i><span>Topográfico</span></button>
+          </div>
         </div>`;
       mapContainer.style.position = 'relative';
       mapContainer.appendChild(selector);
       window._adminMap = adminMap;
+      if (typeof window.BasemapMenu?.init === 'function') {
+        window.BasemapMenu.init();
+      }
     }
   }
 
