@@ -605,7 +605,7 @@
       </div>
 
       <!-- MODEL VIEW: Vista de Modelo de Datos (paradigma Power BI Model View) -->
-      <div class="main-view" id="view-modelo" role="tabpanel" aria-labelledby="tab-modelo" hidden>
+      <div class="main-view" id="view-modelo" role="tabpanel" aria-labelledby="tab-modelo">
         <div class="flex-1 overflow-auto bg-slate-900 p-6">
           <div class="mb-5">
             <h2 class="text-xl font-bold text-white"><i class="fas fa-diagram-project mr-2 text-cyan-400"></i>Vista de Modelo de Datos</h2>
@@ -2444,5 +2444,109 @@ import OverviewMap from '/js/overviewMap.js';
   </div>
   <script src="/js/mapLayoutManager.js"></script>
   <script src="/js/basemapMenu.js"></script>
+
+  <!-- WORKSPACE: navegación entre vistas (tab switching) -->
+  <script>
+  (function() {
+    'use strict';
+    const Workspace = {
+      currentTab: 'map',
+      switchTab(tab) {
+        this.currentTab = tab;
+        document.querySelectorAll('.main-view').forEach(v => {
+          v.classList.remove('active');
+          v.hidden = true;
+        });
+        const viewEl = document.getElementById('view-' + tab);
+        if (viewEl) { viewEl.classList.add('active'); viewEl.hidden = false; }
+        document.querySelectorAll('.header-tab').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        const tabBtn = document.getElementById('tab-' + tab);
+        if (tabBtn) { tabBtn.classList.add('active'); tabBtn.setAttribute('aria-selected', 'true'); }
+        if (tab === 'map' && window.MapEngine) {
+          setTimeout(() => window.MapEngine.invalidateSize?.(), 100);
+        }
+        // Hook: vista modelo
+        if (tab === 'modelo' && window.updateEntityCounts) window.updateEntityCounts();
+        // Hook: KPIs
+        if (tab === 'map' && window.updateKpiStrip) setTimeout(window.updateKpiStrip, 150);
+      }
+    };
+    window.Workspace = Workspace;
+  })();
+  </script>
+
+  <!-- KPI STRIP + VISTA MODELO: métricas del proyecto y contadores de entidades -->
+  <script>
+  (function initKpiAndModel() {
+    'use strict';
+
+    // ---------- KPI STRIP ----------
+    function updateKpiStrip() {
+      const geojson = window.State?.get?.('geojson');
+      const features = geojson?.features || [];
+      let totalArea = 0, totalVertices = 0;
+      features.forEach(f => {
+        if (f.geometry?.coordinates?.[0]) {
+          totalVertices += f.geometry.coordinates[0].length;
+          if (window.turf?.area) { try { totalArea += window.turf.area(f); } catch (e) { /* geometría inválida */ } }
+        }
+      });
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('kpi-parcelas', String(features.length));
+      set('kpi-area', totalArea >= 10000 ? (totalArea / 10000).toFixed(2) + ' ha' : Math.round(totalArea) + ' m²');
+      set('kpi-vertices', String(totalVertices));
+      const val = window.State?.get?.('validationResults') || window.State?.get?.('validation');
+      if (val?.apto !== undefined) {
+        const ok = document.getElementById('kpi-validacion');
+        if (ok) {
+          ok.textContent = val.apto ? '✅ Apto' : '⚠️ Observado';
+          ok.className = 'text-xs font-bold ' + (val.apto ? 'text-emerald-400' : 'text-amber-400');
+        }
+      }
+    }
+    window.updateKpiStrip = updateKpiStrip;
+
+    // ---------- VISTA MODELO: contadores ----------
+    async function updateEntityCounts() {
+      const geojson = window.State?.get?.('geojson');
+      const parcelas = geojson?.features?.length || 0;
+      const elP = document.getElementById('er-count-parcelas');
+      if (elP) elP.textContent = parcelas + ' feature' + (parcelas === 1 ? '' : 's');
+      const token = localStorage.getItem('snc_api_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/members', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const members = await res.json();
+        const users = Array.isArray(members) ? members.length : (members.data?.length || 0);
+        const elU = document.getElementById('er-count-users');
+        if (elU) elU.textContent = users + ' usuario' + (users === 1 ? '' : 's');
+      } catch (e) { /* sin sesión: contadores quedan en "—" */ }
+    }
+    window.updateEntityCounts = updateEntityCounts;
+
+    // Actualizar KPIs al cargar y tras validación
+    window.addEventListener('load', () => setTimeout(updateKpiStrip, 1200));
+    const originalLoad = window.MapEngine?.loadGeoJSON;
+    if (originalLoad) {
+      window.MapEngine.loadGeoJSON = function (...args) {
+        const r = originalLoad.apply(this, args);
+        setTimeout(updateKpiStrip, 200);
+        return r;
+      };
+    }
+    const originalValidate = window.App?.validate;
+    if (originalValidate) {
+      window.App.validate = function (...args) {
+        const r = originalValidate.apply(this, args);
+        if (r?.then) r.then(() => setTimeout(updateKpiStrip, 300));
+        return r;
+      };
+    }
+  })();
+  </script>
 </body>
 </html>
