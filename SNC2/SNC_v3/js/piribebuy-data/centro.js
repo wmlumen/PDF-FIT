@@ -1,1 +1,0 @@
-export default {"type":"FeatureCollection","features":[{"id":"0","type":"Feature","properties":{"Id":0,"X":499209,"Y":7184763},"geometry":{"type":"Point","coordinates":[-57.00786345289872,-25.45415224776208]}}]};

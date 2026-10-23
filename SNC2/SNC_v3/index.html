@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catastro PY Pro v5.0 - SNC 551/2023</title>
-  <meta name="description" content="Sistema de validaciÃ³n catastral segÃºn ResoluciÃ³n SNC NÂ° 551/2023">
+  <meta name="description" content="Sistema de validación catastral según Resolución SNC N° 551/2023">
   <meta name="theme-color" content="#1e293b">
   
-  <!-- Preconnect para recursos crÃ­ticos -->
+  <!-- Preconnect para recursos críticos -->
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   
-  <!-- Preload crÃ­tico: CSS y entry point -->
+  <!-- Preload crítico: CSS y entry point -->
   <link rel="preload" as="style" href="/css/styles.css">
   <link rel="modulepreload" href="/js/app.js">
   
@@ -41,7 +41,7 @@
   <body class="bg-slate-950 text-slate-200 h-screen overflow-hidden">
 
   <!-- LOADING SCREEN -->
-  <div id="loading" role="status" aria-label="Cargando aplicaciÃ³n">
+  <div id="loading" role="status" aria-label="Cargando aplicación">
     <div class="spinner"></div>
     <div class="text-xl font-bold">Catastro PY Pro</div>
     <div class="text-sm text-slate-400 uppercase tracking-widest">SNC 551/2023</div>
@@ -88,7 +88,7 @@
     </div>
 
     <!-- NAV TABS -->
-    <nav id="header-navigation" class="flex items-center gap-1" role="tablist" aria-label="NavegaciÃ³n principal">
+    <nav id="header-navigation" class="flex items-center gap-1" role="tablist" aria-label="Navegación principal">
       <button class="header-tab header-icon-btn active" id="tab-map" role="tab" aria-selected="true" aria-controls="view-map" onclick="window.Workspace?.switchTab('map')" data-tooltip="Mapa" aria-label="Mapa"><i class="fas fa-map"></i></button>
       <button class="header-tab header-icon-btn" id="tab-import" role="tab" aria-selected="false" aria-controls="view-import" onclick="window.Workspace?.switchTab('import')" data-tooltip="Importar archivos" aria-label="Importar archivos"><i class="fas fa-file-import"></i></button>
       <button class="header-tab header-icon-btn" id="tab-data" role="tab" aria-selected="false" aria-controls="view-data" onclick="window.Workspace?.switchTab('data')" data-tooltip="Datos Excel" aria-label="Datos Excel"><i class="fas fa-table"></i></button>
@@ -108,12 +108,12 @@
       <button id="btn-project-delete" data-requires-work onclick="window.LocalActions?.deleteProject()" class="btn-tool header-icon-btn" data-tooltip="Eliminar proyecto" aria-label="Eliminar proyecto"><i class="fas fa-trash"></i></button>
       <span id="separator-validation-project" class="header-action-separator" aria-hidden="true"></span>
       <button id="btn-project-validate" data-requires-work onclick="window.App?.validate()" class="btn-tool header-icon-btn" data-tooltip="Validar expediente" aria-label="Validar expediente"><i class="fas fa-check-circle"></i></button>
-      <button id="btn-project-audit" data-requires-work onclick="window.App?.certify()" class="btn-tool header-icon-btn" data-tooltip="Generar auditorÃ­a" aria-label="Generar auditorÃ­a"><i class="fas fa-clipboard-check"></i></button>
+      <button id="btn-project-audit" data-requires-work onclick="window.App?.certify()" class="btn-tool header-icon-btn" data-tooltip="Generar auditoría" aria-label="Generar auditoría"><i class="fas fa-clipboard-check"></i></button>
       <span id="separator-project-export" class="header-action-separator" aria-hidden="true"></span>
       <button id="exportBtn" data-requires-work onclick="window.App?.exportSHP()" class="btn-tool header-icon-btn" data-tooltip="Exportar expediente SHP ZIP" aria-label="Exportar expediente SHP ZIP"><i class="fas fa-file-zipper"></i></button>
       <button id="exportGeoJSONBtn" data-requires-work onclick="window.App?.exportGeoJSON()" class="btn-tool header-icon-btn" data-tooltip="Exportar GeoJSON" aria-label="Exportar GeoJSON"><i class="fas fa-code"></i></button>
       <button id="exportKMLBtn" data-requires-work onclick="window.App?.exportKML()" class="btn-tool header-icon-btn" data-tooltip="Exportar KML" aria-label="Exportar KML"><i class="fas fa-earth-americas"></i></button>
-      <button id="exportProfessionalBtn" data-requires-work onclick="window.App?.exportProfessionalReport()" class="btn-tool header-icon-btn" style="background: linear-gradient(135deg, #059669, #047857);" data-tooltip="Certificado Preventivo de Aptitud (PDF + DOCX)" aria-label="Generar Certificado Preventivo de Aptitud y DiagnÃ³stico Integral"><i class="fas fa-certificate"></i></button>
+      <button id="exportProfessionalBtn" data-requires-work onclick="window.App?.exportProfessionalReport()" class="btn-tool header-icon-btn" style="background: linear-gradient(135deg, #059669, #047857);" data-tooltip="Certificado Preventivo de Aptitud (PDF + DOCX)" aria-label="Generar Certificado Preventivo de Aptitud y Diagnóstico Integral"><i class="fas fa-certificate"></i></button>
       <span id="separator-export-utilities" class="header-action-separator" aria-hidden="true"></span>
       <button onclick="window.App?.openPlans()" class="btn-tool header-icon-btn" data-tooltip="Planes" aria-label="Planes"><i class="fas fa-gem"></i></button>
       <button id="btn-pout-module" onclick="window.openPoutModule?.()" class="btn-tool header-icon-btn" data-tooltip="Módulo POUT Municipal" aria-label="Módulo POUT Municipal" title="Módulo POUT Municipal">
@@ -126,25 +126,25 @@
       <button id="btn-geoportales-center" onclick="window.openGeoportalesModal()" class="btn-tool header-icon-btn" data-tooltip="Directorio Modular de Geoportales" aria-label="Directorio Modular de Geoportales" title="Directorio Modular de Geoportales">
         <i class="fas fa-earth-americas text-emerald-400"></i>
       </button>
-      <button id="btn-escribania-tools" onclick="window.openEscribaniaModal()" class="btn-tool header-icon-btn" data-tooltip="Herramientas Notariales y EscribanÃ­a" aria-label="Herramientas Notariales y EscribanÃ­a" title="Herramientas Notariales y EscribanÃ­a">
+      <button id="btn-escribania-tools" onclick="window.openEscribaniaModal()" class="btn-tool header-icon-btn" data-tooltip="Herramientas Notariales y Escribanía" aria-label="Herramientas Notariales y Escribanía" title="Herramientas Notariales y Escribanía">
         <i class="fas fa-stamp text-amber-300"></i>
       </button>
-      <a href="/notarial/" class="btn-tool header-icon-btn" data-tooltip="Portal Notarial y EscribanÃ­as" aria-label="Portal Notarial y EscribanÃ­as" title="Portal Notarial y EscribanÃ­as">
+      <a href="/notarial/" class="btn-tool header-icon-btn" data-tooltip="Portal Notarial y Escribanías" aria-label="Portal Notarial y Escribanías" title="Portal Notarial y Escribanías">
         <i class="fas fa-file-signature text-amber-400"></i>
       </a>
       <button id="btn-snc-seguimiento" onclick="window.openSncSeguimiento()" class="btn-tool header-icon-btn" data-tooltip="Seguimiento de Expediente SNC (Mesa de Entrada)" aria-label="Seguimiento de Expedientes Catastro SNC" title="Seguimiento de Expediente SNC">
         <i class="fas fa-file-waveform text-amber-400"></i>
       </button>
-      <button id="btn-run-entradas" onclick="window.openRunEntradas()" class="btn-tool header-icon-btn" data-tooltip="Mesa de Entrada RUN / DGRP (Registros PÃºblicos)" aria-label="Consulta de Entradas Registrales RUN DGRP" title="Mesa de Entrada RUN / DGRP">
+      <button id="btn-run-entradas" onclick="window.openRunEntradas()" class="btn-tool header-icon-btn" data-tooltip="Mesa de Entrada RUN / DGRP (Registros Públicos)" aria-label="Consulta de Entradas Registrales RUN DGRP" title="Mesa de Entrada RUN / DGRP">
         <i class="fas fa-scale-balanced text-cyan-400"></i>
       </button>
       <button id="btn-run-formularios" onclick="window.openRunFormularios()" class="btn-tool header-icon-btn" data-tooltip="Formularios Registrales y Catastrales RUN" aria-label="Formularios Registrales y Catastrales RUN" title="Formularios Registrales RUN">
         <i class="fas fa-file-lines text-pink-400"></i>
       </button>
-      <button id="btn-header-auth" onclick="window.AuthModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Iniciar SesiÃ³n" aria-label="Iniciar SesiÃ³n" title="Iniciar SesiÃ³n">
+      <button id="btn-header-auth" onclick="window.AuthModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Iniciar Sesión" aria-label="Iniciar Sesión" title="Iniciar Sesión">
         <i class="fas fa-arrow-right-to-bracket text-indigo-400"></i>
       </button>
-      <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinaciÃ³n de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
+      <button id="theme-toggle" onclick="window.App?.cycleTheme()" class="btn-tool header-icon-btn" data-tooltip="Tema: actual" aria-label="Cambiar combinación de color" title="Tema: actual"><i class="fas fa-palette"></i></button>
     </div>
   </header>
 <script>
@@ -300,11 +300,11 @@
                 <span id="sncLayerStatus" class="block text-[9px] text-slate-500 font-semibold mt-1 px-1.5 py-0.5 rounded bg-slate-800 w-fit">Capa remota: desactivada</span>
               </span>
             </label>
-            <p id="sncReferenceLayerNotice" class="pl-1 text-[8px] leading-relaxed text-slate-500">Habilitar solo en la versiÃ³n paga.</p>
+            <p id="sncReferenceLayerNotice" class="pl-1 text-[8px] leading-relaxed text-slate-500">Habilitar solo en la versión paga.</p>
           </div>
           <p class="mt-1 pl-1 text-[8px] leading-relaxed text-slate-500">
-            Solo referencia visual. No descarga ni consulta atributos; no se usa para cÃ¡lculo, validaciÃ³n, certificaciÃ³n o exportaciÃ³n.
-            <a class="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-md border border-slate-700 transition" href="https://www.catastro.gov.py/visor/?snc=geo" target="_blank" rel="noopener noreferrer" title="Abre el visor oficial en una nueva pestaÃ±a">
+            Solo referencia visual. No descarga ni consulta atributos; no se usa para cálculo, validación, certificación o exportación.
+            <a class="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-md border border-slate-700 transition" href="https://www.catastro.gov.py/visor/?snc=geo" target="_blank" rel="noopener noreferrer" title="Abre el visor oficial en una nueva pestaña">
               <i class="fas fa-external-link-alt"></i> Abrir visor oficial
             </a>
           </p>
@@ -336,9 +336,9 @@
         <!-- QUICK ACTIONS -->
         <section class="space-y-3" aria-labelledby="actions-title">
           <h3 id="actions-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center">
-            <i class="fas fa-bolt mr-2"></i> Acciones RÃ¡pidas
+            <i class="fas fa-bolt mr-2"></i> Acciones Rápidas
           </h3>
-          <button onclick="window.Workspace?.switchTab('import')" class="w-full p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all" title="Ir a la pantalla de ImportaciÃ³n">
+          <button onclick="window.Workspace?.switchTab('import')" class="w-full p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all" title="Ir a la pantalla de Importación">
             <i class="fas fa-file-import text-lg"></i> Importar Archivos
           </button>
         </section>
@@ -390,7 +390,7 @@
           <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
             <div>
               <p class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Parcela seleccionada</p>
-              <h3 id="parcel-inspector-title" class="mt-1 truncate text-sm font-bold text-white">Sin selecciÃ³n</h3>
+              <h3 id="parcel-inspector-title" class="mt-1 truncate text-sm font-bold text-white">Sin selección</h3>
             </div>
             <button onclick="this.closest('aside').classList.add('hidden'); window.MapEngine?.closeParcelInspector?.()" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-red-500/50 bg-red-950/60 text-red-300" title="Cerrar parcela seleccionada" aria-label="Cerrar parcela seleccionada">
               <i class="fas fa-times"></i>
@@ -400,21 +400,21 @@
             <div id="lote-inspector-content" class="space-y-3">
               <div class="p-2 bg-slate-900 rounded-lg">
                 <p class="text-[9px] text-slate-500 uppercase">Superficie</p>
-                <p id="lote-area" class="text-sm font-bold text-white">â€” mÂ²</p>
+                <p id="lote-area" class="text-sm font-bold text-white">— m²</p>
                 <p id="lote-area-status" class="text-[10px] font-bold"></p>
               </div>
               <div class="p-2 bg-slate-900 rounded-lg">
                 <p class="text-[9px] text-slate-500 uppercase">Frente estimado</p>
-                <p id="lote-frente" class="text-sm font-bold text-white">â€” m</p>
+                <p id="lote-frente" class="text-sm font-bold text-white">— m</p>
                 <p id="lote-frente-status" class="text-[10px] font-bold"></p>
               </div>
               <div class="p-2 bg-slate-900 rounded-lg">
                 <p class="text-[9px] text-slate-500 uppercase">Uso / Destino</p>
-                <p id="lote-uso" class="text-sm font-bold text-white">â€”</p>
+                <p id="lote-uso" class="text-sm font-bold text-white">—</p>
               </div>
               <div class="p-2 bg-slate-900 rounded-lg">
                 <p class="text-[9px] text-slate-500 uppercase">Cumplimiento</p>
-                <p id="lote-cumplimiento" class="text-sm font-bold">â€”</p>
+                <p id="lote-cumplimiento" class="text-sm font-bold">—</p>
               </div>
             </div>
           </div>
@@ -442,28 +442,28 @@
         <!-- MAP TOOLS -->
         <div id="map-tools" class="operational-section absolute left-3 top-1/2 z-[1000] flex -translate-y-1/2 flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
           <div class="hidden w-full h-px bg-slate-700/60"></div>
-          <button id="map-tool-edit-vertices" data-requires-geometry onclick="window.MapEngine?.toggleVertexEdit()" class="map-selector-btn bg-emerald-700 border border-emerald-600 shadow hover:bg-emerald-600 text-white" title="Editar vÃ©rtices con ajuste topolÃ³gico" aria-label="Editar vÃ©rtices"><i class="fas fa-bezier-curve"></i></button>
-          <button id="map-edit-commit" onclick="window.MapEngine?.commitVertexEdit()" class="map-selector-btn hidden bg-green-600 border border-green-500 shadow hover:bg-green-500 text-white" title="Confirmar ediciÃ³n" aria-label="Confirmar ediciÃ³n"><i class="fas fa-check"></i></button>
-          <button id="map-edit-cancel" onclick="window.MapEngine?.cancelVertexEdit()" class="map-selector-btn hidden bg-red-700 border border-red-600 shadow hover:bg-red-600 text-white" title="Cancelar ediciÃ³n" aria-label="Cancelar ediciÃ³n"><i class="fas fa-xmark"></i></button>
+          <button id="map-tool-edit-vertices" data-requires-geometry onclick="window.MapEngine?.toggleVertexEdit()" class="map-selector-btn bg-emerald-700 border border-emerald-600 shadow hover:bg-emerald-600 text-white" title="Editar vértices con ajuste topológico" aria-label="Editar vértices"><i class="fas fa-bezier-curve"></i></button>
+          <button id="map-edit-commit" onclick="window.MapEngine?.commitVertexEdit()" class="map-selector-btn hidden bg-green-600 border border-green-500 shadow hover:bg-green-500 text-white" title="Confirmar edición" aria-label="Confirmar edición"><i class="fas fa-check"></i></button>
+          <button id="map-edit-cancel" onclick="window.MapEngine?.cancelVertexEdit()" class="map-selector-btn hidden bg-red-700 border border-red-600 shadow hover:bg-red-600 text-white" title="Cancelar edición" aria-label="Cancelar edición"><i class="fas fa-xmark"></i></button>
           <div id="map-edit-settings" class="hidden map-edit-settings">
             <label for="map-snap-tolerance">Snapping (m)</label>
             <input id="map-snap-tolerance" type="number" min="0.01" max="100" step="0.01" value="0.50">
             <div class="grid grid-cols-3 gap-1">
-              <button id="map-edit-mode-move" type="button" onclick="window.MapEngine?.setVertexEditMode('move')" class="active" title="Mover vÃ©rtices"><i class="fas fa-up-down-left-right"></i></button>
-              <button id="map-edit-mode-add" type="button" onclick="window.MapEngine?.setVertexEditMode('add')" title="Agregar vÃ©rtice sobre un segmento"><i class="fas fa-plus"></i></button>
-              <button id="map-edit-mode-delete" type="button" onclick="window.MapEngine?.setVertexEditMode('delete')" title="Eliminar vÃ©rtice"><i class="fas fa-minus"></i></button>
+              <button id="map-edit-mode-move" type="button" onclick="window.MapEngine?.setVertexEditMode('move')" class="active" title="Mover vértices"><i class="fas fa-up-down-left-right"></i></button>
+              <button id="map-edit-mode-add" type="button" onclick="window.MapEngine?.setVertexEditMode('add')" title="Agregar vértice sobre un segmento"><i class="fas fa-plus"></i></button>
+              <button id="map-edit-mode-delete" type="button" onclick="window.MapEngine?.setVertexEditMode('delete')" title="Eliminar vértice"><i class="fas fa-minus"></i></button>
             </div>
           </div>
-          <button id="map-tool-undo" data-requires-geometry onclick="window.MapEngine?.undoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Deshacer ediciÃ³n (Ctrl+Z)" aria-label="Deshacer ediciÃ³n" disabled><i class="fas fa-rotate-left"></i></button>
-          <button id="map-tool-redo" data-requires-geometry onclick="window.MapEngine?.redoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Rehacer ediciÃ³n (Ctrl+Y)" aria-label="Rehacer ediciÃ³n" disabled><i class="fas fa-rotate-right"></i></button>
-          <button onclick="window.CogoUI?.open()" class="map-selector-btn bg-cyan-700 border border-cyan-600 shadow hover:bg-cyan-600 text-white" title="ConstrucciÃ³n COGO" aria-label="ConstrucciÃ³n COGO"><i class="fas fa-compass-drafting"></i></button>
-          <button data-requires-geometry onclick="window.TopologyRepairUI?.open()" class="map-selector-btn bg-amber-700 border border-amber-600 shadow hover:bg-amber-600 text-white" title="CorrecciÃ³n topolÃ³gica asistida" aria-label="CorrecciÃ³n topolÃ³gica asistida"><i class="fas fa-wand-magic-sparkles"></i></button>
+          <button id="map-tool-undo" data-requires-geometry onclick="window.MapEngine?.undoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Deshacer edición (Ctrl+Z)" aria-label="Deshacer edición" disabled><i class="fas fa-rotate-left"></i></button>
+          <button id="map-tool-redo" data-requires-geometry onclick="window.MapEngine?.redoGeometryEdit()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Rehacer edición (Ctrl+Y)" aria-label="Rehacer edición" disabled><i class="fas fa-rotate-right"></i></button>
+          <button onclick="window.CogoUI?.open()" class="map-selector-btn bg-cyan-700 border border-cyan-600 shadow hover:bg-cyan-600 text-white" title="Construcción COGO" aria-label="Construcción COGO"><i class="fas fa-compass-drafting"></i></button>
+          <button data-requires-geometry onclick="window.TopologyRepairUI?.open()" class="map-selector-btn bg-amber-700 border border-amber-600 shadow hover:bg-amber-600 text-white" title="Corrección topológica asistida" aria-label="Corrección topológica asistida"><i class="fas fa-wand-magic-sparkles"></i></button>
           <button data-requires-geometry onclick="window.GeoprocessingUI?.open()" class="map-selector-btn bg-violet-700 border border-violet-600 shadow hover:bg-violet-600 text-white" title="Geoprocesamiento" aria-label="Geoprocesamiento"><i class="fas fa-diagram-project"></i></button>
-          <button id="map-tool-split" data-requires-geometry onclick="window.MapEngine?.toggleSplitMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Subdividir polÃ­gono (Corte)"><i class="fas fa-cut"></i></button>
+          <button id="map-tool-split" data-requires-geometry onclick="window.MapEngine?.toggleSplitMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Subdividir polígono (Corte)"><i class="fas fa-cut"></i></button>
           <button id="map-tool-measure" data-requires-geometry onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Medir y acotar distancia"><i class="fas fa-ruler"></i></button>
-          <button id="map-tool-osnap" onclick="window.MapEngine?.toggleOsnap()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-amber-400" title="Osnap / Refent (F3): Anclaje a vÃ©rtices, centros e intersecciones" aria-label="Osnap F3"><i class="fas fa-bolt"></i></button>
+          <button id="map-tool-osnap" onclick="window.MapEngine?.toggleOsnap()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-amber-400" title="Osnap / Refent (F3): Anclaje a vértices, centros e intersecciones" aria-label="Osnap F3"><i class="fas fa-bolt"></i></button>
           <button id="map-tool-osnap-tracking" onclick="window.MapEngine?.toggleOsnapTracking()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-cyan-400" title="Osnap Tracking (F11): Rastreo vectorial y cotas proyectadas" aria-label="Osnap Tracking F11"><i class="fas fa-drafting-compass"></i></button>
-          <button id="map-tool-convert" data-requires-geometry onclick="window.MapEngine?.convertPointsToPolygon()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Convertir puntos a polÃ­gono"><i class="fas fa-draw-polygon"></i></button>
+          <button id="map-tool-convert" data-requires-geometry onclick="window.MapEngine?.convertPointsToPolygon()" class="map-selector-btn bg-slate-900/90 border border-slate-700 shadow hover:bg-slate-700 text-white" title="Convertir puntos a polígono"><i class="fas fa-draw-polygon"></i></button>
           <button id="map-tool-number-parcels" data-requires-geometry onclick="window.MapEngine?.toggleParcelNumberAssignment()" class="map-selector-btn hidden bg-yellow-400 border border-yellow-300 shadow text-slate-950" title="Asignar orden de parcelas" aria-label="Asignar orden de parcelas"><span class="text-lg font-black">#</span></button>
           <button onclick="document.getElementById('input-geo-import')?.click()" class="map-selector-btn bg-blue-600 border border-blue-500 shadow hover:bg-blue-500 text-white" title="Alzar archivo" aria-label="Alzar archivo"><i class="fas fa-upload"></i></button>
           <button id="map-tool-environment" data-requires-geometry onclick="window.MapEngine?.downloadEnvironmentCache()" class="map-selector-btn bg-indigo-600 border border-indigo-500 shadow hover:bg-indigo-500 text-white" title="Descargar Parcelas Vecinas (1000m)"><i class="fas fa-cloud-download-alt"></i></button>
@@ -484,7 +484,7 @@
           <div class="grid grid-cols-2 gap-6 mb-6">
             <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
               <h3 class="text-sm font-bold text-slate-300 mb-4 flex items-center">
-                <i class="fas fa-drafting-compass mr-2 text-purple-500"></i> GeometrÃ­a
+                <i class="fas fa-drafting-compass mr-2 text-purple-500"></i> Geometría
               </h3>
               <div id="dropzone-geo-import"
                    class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-emerald-500 hover:bg-emerald-500/10 cursor-pointer transition min-h-[150px] flex flex-col justify-center"
@@ -494,9 +494,9 @@
                    onclick="document.getElementById('input-geo-import')?.click()">
                 <input type="file" id="input-geo-import" hidden multiple accept=".shp,.dxf,.kml,.kmz,.geojson,.json,.zip,.csv,.txt" onchange="window.App?.handleFiles?.(event.target.files, 'geo'); event.target.value=''">
                 <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-3"></i>
-                <p class="text-sm font-semibold text-slate-400 mb-2">Arrastra archivo de geometrÃ­a</p>
+                <p class="text-sm font-semibold text-slate-400 mb-2">Arrastra archivo de geometría</p>
                 <p class="text-xs text-slate-500">SHP, DXF, KML, KMZ, GeoJSON, ZIP, CSV (coordenadas)</p>
-                <p id="geo-file-name-import" class="text-xs text-emerald-400 mt-3 font-bold">NingÃºn archivo cargado</p>
+                <p id="geo-file-name-import" class="text-xs text-emerald-400 mt-3 font-bold">Ningún archivo cargado</p>
               </div>
             </div>
 
@@ -510,7 +510,7 @@
                 <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-3"></i>
                 <p class="text-sm font-semibold text-slate-400 mb-2">Arrastra planilla de datos</p>
                 <p class="text-xs text-slate-500">XLSX, CSV (15 campos del Anexo SNC 551/2023)</p>
-                <p id="data-file-name-import" class="text-xs text-blue-400 mt-3 font-bold">NingÃºn archivo cargado</p>
+                <p id="data-file-name-import" class="text-xs text-blue-400 mt-3 font-bold">Ningún archivo cargado</p>
               </div>
             </div>
           </div>
@@ -521,7 +521,7 @@
               <button onclick="window.App?.loadSample?.('points')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 flex items-center gap-2" title="Cargar puntos de prueba">
                 <i class="fas fa-map-marker-alt text-purple-500"></i> puntos_cordenadas.csv
               </button>
-              <button onclick="window.App?.loadSample?.('polygons')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 flex items-center gap-2" title="Cargar polÃ­gonos de prueba">
+              <button onclick="window.App?.loadSample?.('polygons')" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 flex items-center gap-2" title="Cargar polígonos de prueba">
                 <i class="fas fa-draw-polygon text-blue-500"></i> poligonos_z20.csv
               </button>
             </div>
@@ -548,7 +548,7 @@
             <table class="w-full text-left text-sm border-collapse">
               <thead id="data-table-head" class="bg-slate-800 sticky top-0">
                 <tr>
-                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">PadrÃ³n</th>
+                  <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Padrón</th>
                   <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Propietario</th>
                   <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Superficie</th>
                   <th class="p-3 font-semibold text-slate-400 uppercase text-xs">Distrito</th>
@@ -566,14 +566,14 @@
       <!-- AUDIT VIEW -->
       <div class="main-view" id="view-audit" role="tabpanel" aria-labelledby="tab-audit" hidden>
         <div class="flex-1 overflow-auto p-6 bg-slate-900">
-          <h2 class="text-xl font-bold mb-4">Resultados aprobados de validaciÃ³n</h2>
+          <h2 class="text-xl font-bold mb-4">Resultados aprobados de validación</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="audit-results">
             <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 border-l-4 border-l-slate-500">
               <div class="flex justify-between items-start mb-2">
                 <h4 class="font-bold text-slate-200">Estado General</h4>
                 <span class="bg-slate-700 text-slate-400 text-[10px] px-2 py-1 rounded-full font-bold">PENDIENTE</span>
               </div>
-              <p class="text-xs text-slate-500">Ejecute la validaciÃ³n para ver el resultado</p>
+              <p class="text-xs text-slate-500">Ejecute la validación para ver el resultado</p>
             </div>
           </div>
         </div>
@@ -582,24 +582,24 @@
       <div class="main-view" id="view-lineage" role="tabpanel" aria-labelledby="tab-lineage" hidden>
         <div class="flex-1 overflow-auto bg-slate-900 p-6">
           <div class="mb-5"><h2 class="text-xl font-bold text-white">Historial y linaje parcelario</h2><p class="text-xs text-slate-400">Actos que crean, transforman o retiran parcelas del expediente</p></div>
-          <div id="lineage-empty" class="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">AÃºn no existen actos parcelarios registrados.</div>
+          <div id="lineage-empty" class="rounded-xl border border-dashed border-slate-700 p-8 text-center text-sm text-slate-500">Aún no existen actos parcelarios registrados.</div>
           <div class="overflow-hidden rounded-xl border border-slate-800">
-            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">OperaciÃ³n</th><th class="p-3">Origen</th><th class="p-3">Resultado</th><th class="p-3">Documento</th><th class="p-3">Usuario</th><th class="p-3">Fecha</th></tr></thead><tbody id="lineage-table-body"></tbody></table>
+            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">Operación</th><th class="p-3">Origen</th><th class="p-3">Resultado</th><th class="p-3">Documento</th><th class="p-3">Usuario</th><th class="p-3">Fecha</th></tr></thead><tbody id="lineage-table-body"></tbody></table>
           </div>
         </div>
       </div>
 
       <div class="main-view" id="view-versions" role="tabpanel" aria-labelledby="tab-versions" hidden>
         <div class="flex-1 overflow-auto bg-slate-900 p-6">
-          <div class="mb-5"><h2 class="text-xl font-bold text-white">Control de versiones</h2><p class="text-xs text-slate-400">Capturas transaccionales, revisiÃ³n y aprobaciÃ³n de cambios del expediente</p></div>
+          <div class="mb-5"><h2 class="text-xl font-bold text-white">Control de versiones</h2><p class="text-xs text-slate-400">Capturas transaccionales, revisión y aprobación de cambios del expediente</p></div>
           <div class="mb-5 flex flex-wrap gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-            <input id="version-message" class="min-w-[280px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" maxlength="240" placeholder="DescripciÃ³n del cambio">
-            <button onclick="window.VersioningUI?.create()" class="rounded-lg bg-cyan-700 px-4 py-2 text-xs font-bold text-white hover:bg-cyan-600"><i class="fas fa-camera mr-2"></i>Crear versiÃ³n</button>
-            <button onclick="window.VersioningUI?.compareLatest()" class="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-white hover:bg-slate-600"><i class="fas fa-code-compare mr-2"></i>Comparar Ãºltimas</button>
+            <input id="version-message" class="min-w-[280px] flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" maxlength="240" placeholder="Descripción del cambio">
+            <button onclick="window.VersioningUI?.create()" class="rounded-lg bg-cyan-700 px-4 py-2 text-xs font-bold text-white hover:bg-cyan-600"><i class="fas fa-camera mr-2"></i>Crear versión</button>
+            <button onclick="window.VersioningUI?.compareLatest()" class="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-white hover:bg-slate-600"><i class="fas fa-code-compare mr-2"></i>Comparar últimas</button>
           </div>
           <div id="version-comparison" class="mb-4 rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-300">Seleccione comparar cuando existan al menos dos versiones.</div>
           <div class="overflow-hidden rounded-xl border border-slate-800">
-            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">VersiÃ³n</th><th class="p-3">DescripciÃ³n</th><th class="p-3">Autor</th><th class="p-3">Estado</th><th class="p-3">Fecha</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="versions-table-body"></tbody></table>
+            <table class="w-full text-left"><thead class="bg-slate-800 text-[10px] uppercase text-slate-400"><tr><th class="p-3">Versión</th><th class="p-3">Descripción</th><th class="p-3">Autor</th><th class="p-3">Estado</th><th class="p-3">Fecha</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="versions-table-body"></tbody></table>
           </div>
         </div>
       </div>
@@ -728,14 +728,14 @@
   <div id="readmeModal" class="fixed inset-0 bg-black/70 z-[3000] hidden items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="readmeTitle">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-[600px] max-h-[80vh] overflow-hidden">
       <div class="p-4 border-b border-slate-800 flex justify-between items-center">
-        <h2 id="readmeTitle" class="text-lg font-bold">ðŸ“– Manual - Res. SNC NÂ° 551/2023</h2>
-        <button onclick="closeReadme()" class="text-slate-500 hover:text-white text-xl" aria-label="Cerrar">âœ•</button>
+        <h2 id="readmeTitle" class="text-lg font-bold">ðŸ“– Manual - Res. SNC N° 551/2023</h2>
+        <button onclick="closeReadme()" class="text-slate-500 hover:text-white text-xl" aria-label="Cerrar">✕</button>
       </div>
       <div class="p-6 overflow-y-auto max-h-[60vh]">
-        <h3 class="text-emerald-500 font-bold mb-2">ðŸš€ GuÃ­a Paso a Paso</h3>
+        <h3 class="text-emerald-500 font-bold mb-2">ðŸš€ Guía Paso a Paso</h3>
         <ol class="list-decimal list-inside space-y-2 text-sm text-slate-300 mb-4">
-          <li>Prepare sus archivos: DXF/KML (geometrÃ­a) y Excel (atributos)</li>
-          <li>Cargue la geometrÃ­a en el panel lateral</li>
+          <li>Prepare sus archivos: DXF/KML (geometría) y Excel (atributos)</li>
+          <li>Cargue la geometría en el panel lateral</li>
           <li>Cargue los datos en formato Excel</li>
           <li>Presione "VALIDAR" para revisar errores y advertencias</li>
           <li>Presione "AUDITAR" para generar el PDF y el expediente ZIP</li>
@@ -748,7 +748,7 @@
   <div id="validationModal" class="fixed inset-0 z-[4000] items-center justify-center bg-black/70 p-4" style="display:none" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-        <h2 id="modalTitle" class="text-lg font-bold text-white">Resultado de validaciÃ³n</h2>
+        <h2 id="modalTitle" class="text-lg font-bold text-white">Resultado de validación</h2>
         <button onclick="window.App?.closeModal()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
       </div>
       <div id="modalBody" class="overflow-y-auto p-5 text-slate-700"></div>
@@ -768,8 +768,8 @@
             <i class="fas fa-user-lock"></i>
           </div>
           <div>
-            <h2 id="login-title" class="text-base font-bold text-white">Iniciar SesiÃ³n</h2>
-            <p class="text-[11px] text-slate-400">Catastro PY Pro â€” SNC 551/2023</p>
+            <h2 id="login-title" class="text-base font-bold text-white">Iniciar Sesión</h2>
+            <p class="text-[11px] text-slate-400">Catastro PY Pro — SNC 551/2023</p>
           </div>
         </div>
         <button type="button" onclick="window.AuthModal?.close()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
@@ -782,7 +782,7 @@
 
       <form id="login-form" novalidate class="space-y-4">
         <div>
-          <label for="username" class="block text-xs font-semibold text-slate-300 mb-1">Usuario o Correo ElectrÃ³nico</label>
+          <label for="username" class="block text-xs font-semibold text-slate-300 mb-1">Usuario o Correo Electrónico</label>
           <div class="relative flex items-center">
             <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-envelope"></i></span>
             <input type="email" id="username" name="username" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="profesional@ejemplo.com" autocomplete="username" inputmode="email" required aria-required="true" aria-invalid="false">
@@ -792,13 +792,13 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label for="password" class="block text-xs font-semibold text-slate-300">ContraseÃ±a</label>
-            <a href="#" onclick="alert('Contacte al soporte: informes@snccatastro.gob.py'); return false;" class="text-[10px] text-indigo-400 hover:underline">Â¿Olvidaste tu contraseÃ±a?</a>
+            <label for="password" class="block text-xs font-semibold text-slate-300">Contraseña</label>
+            <a href="#" onclick="alert('Contacte al soporte: informes@snccatastro.gob.py'); return false;" class="text-[10px] text-indigo-400 hover:underline">¿Olvidaste tu contraseña?</a>
           </div>
           <div class="relative flex items-center">
             <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-lock"></i></span>
-            <input type="password" id="password" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required aria-required="true" aria-invalid="false">
-            <button type="button" id="btn-toggle-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseÃ±a" aria-pressed="false">
+            <input type="password" id="password" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="••••••••••••" autocomplete="current-password" required aria-required="true" aria-invalid="false">
+            <button type="button" id="btn-toggle-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseña" aria-pressed="false">
               <i id="icon-eye-show" class="fas fa-eye text-xs"></i>
               <i id="icon-eye-hide" class="fas fa-eye-slash text-xs hidden"></i>
             </button>
@@ -836,7 +836,7 @@
               Directorio de Geoportales e Interoperabilidad Territorial
               <span class="text-[10px] font-semibold uppercase tracking-wider bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-800">SNC 551/2023</span>
             </h2>
-            <p class="text-xs text-slate-400">IntegraciÃ³n de servicios geoespaciales gubernamentales y mÃ³dulos territoriales</p>
+            <p class="text-xs text-slate-400">Integración de servicios geoespaciales gubernamentales y módulos territoriales</p>
           </div>
         </div>
         <button type="button" onclick="window.closeGeoportalesModal()" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition" title="Cerrar"><i class="fas fa-xmark text-sm"></i></button>
@@ -845,24 +845,24 @@
       <!-- Content Grid -->
       <div class="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar text-xs">
         
-        <!-- MÃ“DULO 4: CATASTRO MUNICIPAL MULTIFINALITARIO -->
+        <!-- MÓDULO 4: CATASTRO MUNICIPAL MULTIFINALITARIO -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 font-bold text-[10px] border border-blue-800">MÃ“DULO 4</span>
-              <h3 class="font-bold text-white text-sm">Catastro Municipal Multifinalitario (Pilar / AsunciÃ³n / Ley 3966)</h3>
+              <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 font-bold text-[10px] border border-blue-800">MÓDULO 4</span>
+              <h3 class="font-bold text-white text-sm">Catastro Municipal Multifinalitario (Pilar / Asunción / Ley 3966)</h3>
             </div>
             <div class="flex items-center gap-2">
               <a href="https://pilar.gov.py/direccion-de-obras-planificacion-urbana-y-catastro/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 bg-blue-950/60 border border-blue-800/80 px-2.5 py-1 rounded-lg transition">
                 <i class="fas fa-up-right-from-square"></i> Pilar Catastro
               </a>
               <a href="https://www.asuncion.gov.py/catastro/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 bg-blue-950/60 border border-blue-800/80 px-2.5 py-1 rounded-lg transition">
-                <i class="fas fa-up-right-from-square"></i> AsunciÃ³n Catastro
+                <i class="fas fa-up-right-from-square"></i> Asunción Catastro
               </a>
             </div>
           </div>
           <p class="text-slate-300 mb-3">
-            GestiÃ³n fÃ­sica, econÃ³mica y jurÃ­dica: Planta de Valores de la Tierra y ConstrucciÃ³n, CÃ¡lculo de Impuestos Inmobiliarios, Fichas Catastrales, ConformaciÃ³n Parcelaria, y Cuidado de Ãreas Verdes / Espacios PÃºblicos.
+            Gestión física, económica y jurídica: Planta de Valores de la Tierra y Construcción, Cálculo de Impuestos Inmobiliarios, Fichas Catastrales, Conformación Parcelaria, y Cuidado de Áreas Verdes / Espacios Públicos.
           </p>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
@@ -871,20 +871,20 @@
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
               <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">Tasa Inmobiliaria</span>
-              <span class="text-white font-medium">1.0% + RÃ©gimen BaldÃ­os</span>
+              <span class="text-white font-medium">1.0% + Régimen Baldíos</span>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-              <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">ConvalidaciÃ³n</span>
+              <span class="text-slate-400 text-[10px] block font-semibold mb-0.5">Convalidación</span>
               <span class="text-white font-medium">Registro Inmobiliario</span>
             </div>
           </div>
         </div>
 
-        <!-- MÃ“DULO 5: LOTEAMIENTOS Y EXPANSIÃ“N URBANA -->
+        <!-- MÓDULO 5: LOTEAMIENTOS Y EXPANSIÓN URBANA -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-pink-950 text-pink-400 font-bold text-[10px] border border-pink-800">MÃ“DULO 5</span>
+              <span class="px-2 py-0.5 rounded bg-pink-950 text-pink-400 font-bold text-[10px] border border-pink-800">MÓDULO 5</span>
               <h3 class="font-bold text-white text-sm">Geoportal de Loteamientos y Fraccionamientos</h3>
             </div>
             <a href="https://loteamientos.com/mapa-catastral" target="_blank" rel="noopener noreferrer" class="text-[11px] text-pink-400 hover:text-pink-300 flex items-center gap-1 bg-pink-950/60 border border-pink-800/80 px-2.5 py-1 rounded-lg transition">
@@ -892,7 +892,7 @@
             </a>
           </div>
           <p class="text-slate-300 mb-3">
-            Mosaico cartogrÃ¡fico de fraccionamientos aprobados en desarrollo. Control de cesiÃ³n obligatoria de plazas y edificios pÃºblicos (7% del Ã¡rea segÃºn Ley 3966 Art. 235) y perfiles viales.
+            Mosaico cartográfico de fraccionamientos aprobados en desarrollo. Control de cesión obligatoria de plazas y edificios públicos (7% del área según Ley 3966 Art. 235) y perfiles viales.
           </p>
           <div class="flex items-center gap-2">
             <button type="button" onclick="window.LoteamientosModule?.abrirGeoportal()" class="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white font-semibold flex items-center gap-1.5 transition">
@@ -901,12 +901,12 @@
           </div>
         </div>
 
-        <!-- MÃ“DULO 7: GEOPORTAL AMBIENTAL E HIDROLÃ“GICO (MADES) -->
+        <!-- MÓDULO 7: GEOPORTAL AMBIENTAL E HIDROLÓGICO (MADES) -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px] border border-emerald-800">MÃ“DULO 7</span>
-              <h3 class="font-bold text-white text-sm">Geoportal Ambiental e HidrolÃ³gico (MADES - SIAM & SIAGUA)</h3>
+              <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px] border border-emerald-800">MÓDULO 7</span>
+              <h3 class="font-bold text-white text-sm">Geoportal Ambiental e Hidrológico (MADES - SIAM & SIAGUA)</h3>
             </div>
             <div class="flex items-center gap-2">
               <a href="https://apps.mades.gov.py/siam/portal/mapas" target="_blank" rel="noopener noreferrer" class="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-1 rounded-lg transition">
@@ -918,7 +918,7 @@
             </div>
           </div>
           <p class="text-slate-300 mb-3">
-            SuperposiciÃ³n de Ãreas Silvestres Protegidas (SINASIP - Ley 352/94), servidumbres de cursos de agua (Franja protectora de 30m - Ley 3239/07) y alertas de inundabilidad con cachÃ© de contingencia offline.
+            Superposición de Áreas Silvestres Protegidas (SINASIP - Ley 352/94), servidumbres de cursos de agua (Franja protectora de 30m - Ley 3239/07) y alertas de inundabilidad con caché de contingencia offline.
           </p>
           <div class="flex flex-wrap items-center gap-2">
             <button type="button" onclick="window.MadesService?.toggleMadesLayer(window.MapEngine?.getMap(), 'sinasip', true)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
@@ -930,44 +930,44 @@
           </div>
         </div>
 
-        <!-- MÃ“DULO 8: GEOPORTAL AGROPECUARIO MAG (15 DÃAS) -->
+        <!-- MÓDULO 8: GEOPORTAL AGROPECUARIO MAG (15 DÍAS) -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 font-bold text-[10px] border border-amber-800">MÃ“DULO 8</span>
-              <h3 class="font-bold text-white text-sm">Geoportal Agropecuario (MAG ArcGIS Server - Ciclo 15 DÃ­as)</h3>
+              <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 font-bold text-[10px] border border-amber-800">MÓDULO 8</span>
+              <h3 class="font-bold text-white text-sm">Geoportal Agropecuario (MAG ArcGIS Server - Ciclo 15 Días)</h3>
             </div>
             <a href="https://portal.gis.mag.gov.py/arcgis/home/" target="_blank" rel="noopener noreferrer" class="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-amber-950/60 border border-amber-800/80 px-2.5 py-1 rounded-lg transition">
               <i class="fas fa-up-right-from-square"></i> Portal MAG
             </a>
           </div>
           <p class="text-slate-300 mb-2">
-            Servicios ArcGIS REST de cobertura y uso de la tierra, cultivos temporales para certificaciÃ³n de no deforestaciÃ³n (EUDR 2020) y cultivos permanentes.
+            Servicios ArcGIS REST de cobertura y uso de la tierra, cultivos temporales para certificación de no deforestación (EUDR 2020) y cultivos permanentes.
           </p>
           <div class="text-[11px] text-slate-400 flex items-center gap-2">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>SincronizaciÃ³n quincenal automÃ¡tica activa con cachÃ© SQLite local.</span>
+            <span>Sincronización quincenal automática activa con caché SQLite local.</span>
           </div>
         </div>
 
-        <!-- MÃ“DULO 9 & 10: SERVICIOS REGISTRALES NACIONALES -->
+        <!-- MÓDULO 9 & 10: SERVICIOS REGISTRALES NACIONALES -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 font-bold text-[10px] border border-indigo-800">MÃ“DULO 9</span>
+              <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 font-bold text-[10px] border border-indigo-800">MÓDULO 9</span>
               <a href="https://www.catastro.gov.py/servicio-linea/#!/consulta-publica/seguimiento-legacy" target="_blank" rel="noopener noreferrer" class="text-[10px] text-indigo-400 hover:underline">Abrir SNC</a>
             </div>
             <h4 class="font-bold text-white mb-1">Seguimiento de Expedientes Catastro SNC</h4>
-            <p class="text-slate-400 text-[11px]">Consulta pÃºblica en lÃ­nea del estado de trÃ¡mites catastrales y dictÃ¡menes tÃ©cnicos.</p>
+            <p class="text-slate-400 text-[11px]">Consulta pública en línea del estado de trámites catastrales y dictámenes técnicos.</p>
           </div>
 
           <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 font-bold text-[10px] border border-cyan-800">MÃ“DULO 10</span>
+              <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 font-bold text-[10px] border border-cyan-800">MÓDULO 10</span>
               <a href="https://run.gov.py/mes/consulta_entradas.php" target="_blank" rel="noopener noreferrer" class="text-[10px] text-cyan-400 hover:underline">Abrir RUN / DGRP</a>
             </div>
             <h4 class="font-bold text-white mb-1">Mesa de Entrada Registral RUN / DGRP</h4>
-            <p class="text-slate-400 text-[11px]">ValidaciÃ³n registral de fincas, matrÃ­culas y detecciÃ³n de medidas cautelares.</p>
+            <p class="text-slate-400 text-[11px]">Validación registral de fincas, matrículas y detección de medidas cautelares.</p>
           </div>
         </div>
 
@@ -975,14 +975,14 @@
 
       <!-- Footer -->
       <div class="border-t border-slate-800 px-6 py-3 bg-slate-950/80 flex items-center justify-between">
-        <span class="text-[11px] text-slate-500">Catastro PY Pro â€” Interoperabilidad GeogrÃ¡fica Multimodular</span>
+        <span class="text-[11px] text-slate-500">Catastro PY Pro — Interoperabilidad Geográfica Multimodular</span>
         <button type="button" onclick="window.closeGeoportalesModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">Cerrar</button>
       </div>
     </div>
   </div>
 
   
-  <!-- MODAL: HERRAMIENTAS PARA ESCRIBANÃAS Y DUE DILIGENCE INMOBILIARIO -->
+  <!-- MODAL: HERRAMIENTAS PARA ESCRIBANÍAS Y DUE DILIGENCE INMOBILIARIO -->
   <div id="escribaniaModal" class="fixed inset-0 z-[4350] hidden items-center justify-center bg-black/80 backdrop-blur-md p-4" role="dialog" aria-modal="true" aria-labelledby="escribania-title">
     <div class="w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col">
       <!-- Header -->
@@ -993,10 +993,10 @@
           </div>
           <div>
             <h2 id="escribania-title" class="text-base font-bold text-white flex items-center gap-2">
-              MÃ³dulo Notarial y Due Diligence Inmobiliario
-              <span class="text-[10px] font-semibold uppercase tracking-wider bg-amber-950 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800">EscribanÃ­as PY</span>
+              Módulo Notarial y Due Diligence Inmobiliario
+              <span class="text-[10px] font-semibold uppercase tracking-wider bg-amber-950 text-amber-300 px-2 py-0.5 rounded-full border border-amber-800">Escribanías PY</span>
             </h2>
-            <p class="text-xs text-slate-400">Herramientas tÃ©cnicas, jurÃ­dicas y arancelarias para la formalizaciÃ³n de escrituras pÃºblicas</p>
+            <p class="text-xs text-slate-400">Herramientas técnicas, jurídicas y arancelarias para la formalización de escrituras públicas</p>
           </div>
         </div>
         <button type="button" onclick="window.closeEscribaniaModal()" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition" title="Cerrar"><i class="fas fa-xmark text-sm"></i></button>
@@ -1005,7 +1005,7 @@
       <!-- Content -->
       <div class="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar text-xs">
         
-        <!-- SECCIÃ“N 1: CALCULADORA NOTARIAL DE TRANSFERENCIA -->
+        <!-- SECCIÓN 1: CALCULADORA NOTARIAL DE TRANSFERENCIA -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
@@ -1024,7 +1024,7 @@
             </div>
             <div class="flex items-end">
               <button type="button" onclick="window.calcularLiquidacionNotarialUI()" class="w-full h-9 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition">
-                <i class="fas fa-coins"></i> Calcular LiquidaciÃ³n
+                <i class="fas fa-coins"></i> Calcular Liquidación
               </button>
             </div>
           </div>
@@ -1034,7 +1034,7 @@
               <div><span class="text-slate-400 block">Tasa Judicial DGRP (0.8%):</span> <strong id="res-tasa-dgrp" class="text-white">Gs. 960.000</strong></div>
               <div><span class="text-slate-400 block">Imp. Transferencia Muni (0.2%):</span> <strong id="res-imp-muni" class="text-white">Gs. 240.000</strong></div>
               <div><span class="text-slate-400 block">Honorarios Notariales (1.5%+IVA):</span> <strong id="res-honorarios" class="text-white">Gs. 1.980.000</strong></div>
-              <div><span class="text-slate-400 block">RetenciÃ³n IRP DNIT (2.4%):</span> <strong id="res-irp" class="text-white">Gs. 2.880.000</strong></div>
+              <div><span class="text-slate-400 block">Retención IRP DNIT (2.4%):</span> <strong id="res-irp" class="text-white">Gs. 2.880.000</strong></div>
             </div>
             <div class="pt-2 border-t border-slate-800 flex items-center justify-between font-bold text-xs text-amber-300">
               <span>Total Estimado de Gastos de Transferencia:</span>
@@ -1043,11 +1043,11 @@
           </div>
         </div>
 
-        <!-- SECCIÃ“N 2: DUE DILIGENCE INMOBILIARIO & SEMÃFORO DE RIESGO -->
+        <!-- SECCIÓN 2: DUE DILIGENCE INMOBILIARIO & SEMÁFORO DE RIESGO -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
-              <i class="fas fa-shield-halved text-emerald-400"></i> Matriz de Due Diligence y Seguridad de TÃ­tulo (SemÃ¡foro Notarial)
+              <i class="fas fa-shield-halved text-emerald-400"></i> Matriz de Due Diligence y Seguridad de Título (Semáforo Notarial)
             </h3>
             <button type="button" onclick="window.ejecutarDueDiligenceNotarialUI()" class="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
               <i class="fas fa-play text-emerald-400"></i> Auditar Parcela Actual
@@ -1063,30 +1063,30 @@
             </div>
             <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
               <span class="text-slate-400 text-[10px] block font-semibold">Concordancia de Superficie</span>
-              <span class="text-white font-medium">Plano vs TÃ­tulo: Î” &lt; 1.5% (Tolerancia Ok)</span>
+              <span class="text-white font-medium">Plano vs Título: Î” &lt; 1.5% (Tolerancia Ok)</span>
             </div>
             <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
-              <span class="text-slate-400 text-[10px] block font-semibold">RestricciÃ³n Ambiental</span>
-              <span class="text-white font-medium">Sin afectaciÃ³n SINASIP / Faja 30m</span>
+              <span class="text-slate-400 text-[10px] block font-semibold">Restricción Ambiental</span>
+              <span class="text-white font-medium">Sin afectación SINASIP / Faja 30m</span>
             </div>
           </div>
         </div>
 
-        <!-- SECCIÃ“N 3: GENERADOR DE MINUTA NOTARIAL DE LINDEROS TÃ‰CNICOS -->
+        <!-- SECCIÓN 3: GENERADOR DE MINUTA NOTARIAL DE LINDEROS TÉCNICOS -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
-              <i class="fas fa-file-contract text-indigo-400"></i> ClÃ¡usula TÃ©cnica de Linderos para el Protocolo Notarial
+              <i class="fas fa-file-contract text-indigo-400"></i> Cláusula Técnica de Linderos para el Protocolo Notarial
             </h3>
             <button type="button" onclick="window.copiarMinutaNotarialUI()" class="px-2.5 py-1 rounded bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 flex items-center gap-1 transition">
               <i class="fas fa-copy"></i> Copiar Texto
             </button>
           </div>
-          <p class="text-slate-400 text-[11px] mb-2">RedacciÃ³n automatizada conforme a la ResoluciÃ³n SNC NÂº 551/2023 con coordenadas UTM Zona 21S.</p>
-          <textarea id="notary-minuta-text" readonly class="w-full h-24 p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] resize-none focus:outline-none focus:border-indigo-500" placeholder="Cargue una parcela para autogenerar la clÃ¡usula notarial..."></textarea>
+          <p class="text-slate-400 text-[11px] mb-2">Redacción automatizada conforme a la Resolución SNC Nº 551/2023 con coordenadas UTM Zona 21S.</p>
+          <textarea id="notary-minuta-text" readonly class="w-full h-24 p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] resize-none focus:outline-none focus:border-indigo-500" placeholder="Cargue una parcela para autogenerar la cláusula notarial..."></textarea>
         </div>
 
-        <!-- SECCIÃ“N 4: PARÃMETROS URBANÃSTICOS (FOS / FOT / SERVICIOS) -->
+        <!-- SECCIÓN 4: PARÁMETROS URBANÍSTICOS (FOS / FOT / SERVICIOS) -->
         <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-bold text-white text-sm flex items-center gap-2">
@@ -1096,15 +1096,15 @@
           </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-              <span class="text-slate-400 block font-semibold">FOS MÃ¡x (OcupaciÃ³n):</span>
+              <span class="text-slate-400 block font-semibold">FOS Máx (Ocupación):</span>
               <strong class="text-white">60% en Planta Baja</strong>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-              <span class="text-slate-400 block font-semibold">FOT MÃ¡x (Total Edificable):</span>
-              <strong class="text-white">1.2x a 2.5x Ãrea Terreno</strong>
+              <span class="text-slate-400 block font-semibold">FOT Máx (Total Edificable):</span>
+              <strong class="text-white">1.2x a 2.5x Área Terreno</strong>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
-              <span class="text-slate-400 block font-semibold">EnergÃ­a ElÃ©ctrica ANDE:</span>
+              <span class="text-slate-400 block font-semibold">Energía Eléctrica ANDE:</span>
               <strong class="text-emerald-400"><i class="fas fa-check-circle"></i> Red Inmediata (&lt;50m)</strong>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
@@ -1118,7 +1118,7 @@
 
       <!-- Footer -->
       <div class="border-t border-slate-800 px-6 py-3 bg-slate-950/80 flex items-center justify-between">
-        <span class="text-[11px] text-slate-500">MÃ³dulo de Seguridad Notarial â€” Colegios de Escribanos del Paraguay & SNC</span>
+        <span class="text-[11px] text-slate-500">Módulo de Seguridad Notarial — Colegios de Escribanos del Paraguay & SNC</span>
         <button type="button" onclick="window.closeEscribaniaModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">Cerrar</button>
       </div>
     </div>
@@ -1142,7 +1142,7 @@
   <div id="profileModal" class="fixed inset-0 z-[4100] hidden items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
     <div class="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4"><h2 id="profileTitle" class="text-lg font-bold text-white">Mi perfil y plan</h2><button onclick="window.App?.closeProfile()" class="rounded p-2 text-slate-400 hover:bg-slate-800"><i class="fas fa-times"></i></button></div>
-      <div class="space-y-4 p-5"><div class="grid grid-cols-2 gap-3"><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Plan actual</span><strong id="profile-plan" class="mt-1 block text-white">â€”</strong></div><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Estado</span><strong id="profile-status" class="mt-1 block text-emerald-400">â€”</strong></div></div><label class="block text-xs text-slate-400">Nombre<input id="profile-name" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white"></label><div><h3 class="mb-2 text-xs font-bold uppercase text-slate-400">Pagos recientes</h3><div id="profile-payments" class="max-h-40 space-y-2 overflow-y-auto text-xs text-slate-300">Sin pagos registrados.</div></div></div>
+      <div class="space-y-4 p-5"><div class="grid grid-cols-2 gap-3"><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Plan actual</span><strong id="profile-plan" class="mt-1 block text-white">—</strong></div><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Estado</span><strong id="profile-status" class="mt-1 block text-emerald-400">—</strong></div></div><label class="block text-xs text-slate-400">Nombre<input id="profile-name" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white"></label><div><h3 class="mb-2 text-xs font-bold uppercase text-slate-400">Pagos recientes</h3><div id="profile-payments" class="max-h-40 space-y-2 overflow-y-auto text-xs text-slate-300">Sin pagos registrados.</div></div></div>
       <div class="flex flex-wrap justify-end gap-2 border-t border-slate-800 px-5 py-4"><button onclick="window.App?.openPlans()" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white">Renovar o ampliar plan</button><button onclick="window.App?.saveProfile()" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white">Guardar perfil</button></div>
     </div>
   </div>
@@ -1152,20 +1152,20 @@
     <div class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
         <div>
-          <h2 id="certificationTitle" class="text-lg font-bold text-white">AuditorÃ­a de Cumplimiento</h2>
+          <h2 id="certificationTitle" class="text-lg font-bold text-white">Auditoría de Cumplimiento</h2>
           <p id="certificationMeta" class="text-[11px] text-slate-400 mt-1"></p>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="window.App?.printCertification()" class="rounded bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700">ðŸ–¨ï¸ Imprimir</button>
+          <button onclick="window.App?.printCertification()" class="rounded bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700">ðŸ–¨️ Imprimir</button>
           <button onclick="window.App?.closeCertification()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
         </div>
       </div>
       <div id="certificationBody" class="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-800">
         <div class="p-4">
-          <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Plano de AuditorÃ­a</div>
+          <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Plano de Auditoría</div>
           <div class="relative h-[420px] w-full rounded-xl border border-slate-700 bg-slate-950 overflow-hidden">
             <canvas id="certCanvas" class="h-full w-full"></canvas>
-            <div class="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-black/60 px-2 py-1 text-[10px] font-mono text-slate-300">Fondo parcelario + polÃ­gono certificado</div>
+            <div class="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-black/60 px-2 py-1 text-[10px] font-mono text-slate-300">Fondo parcelario + polígono certificado</div>
           </div>
         </div>
       </div>
@@ -1174,16 +1174,16 @@
 
   <!-- FOOTER -->
   <footer style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 24px;border-top:1px solid #1e293b;color:#64748b;font-size:11px;">
-    <span>SNC v3 Â· Catastro PY Pro</span>
-    <span>Herramienta de apoyo tÃ©cnico. La validaciÃ³n oficial corresponde a la autoridad competente.</span>
+    <span>SNC v3 · Catastro PY Pro</span>
+    <span>Herramienta de apoyo técnico. La validación oficial corresponde a la autoridad competente.</span>
     <span style="display:flex;gap:14px;">
-      <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">TÃ©rminos</a>
+      <a href="/terms.html" style="color:#94a3b8;text-decoration:none;">Términos</a>
       <a href="/privacy.html" style="color:#94a3b8;text-decoration:none;">Privacidad</a>
     </span>
   </footer>
 
-  <!-- ENTRY POINT - Vite injecta automÃ¡ticamente en dev, en build inyecta script/modulepreload -->
-  <!-- LibrerÃ­as GIS globales: los mÃ³dulos usan `L`, `proj4` y `turf` como globales -->
+  <!-- ENTRY POINT - Vite injecta automáticamente en dev, en build inyecta script/modulepreload -->
+  <!-- Librerías GIS globales: los módulos usan `L`, `proj4` y `turf` como globales -->
   <script src="/vendor/leaflet.js"></script>
   <script src="/vendor/proj4.js"></script>
   <script src="/vendor/turf.min.js"></script>
@@ -1197,7 +1197,7 @@
   <script src="/vendor/dxf-parser.js"></script>
   <script>window.dxfParser = new window.DxfParser();</script>
   <script type="module">
-    // QR solo si hay red; sin Ã©l el certificado omite el cÃ³digo QR.
+    // QR solo si hay red; sin él el certificado omite el código QR.
     try {
       const m = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm');
       window.QRCode = m;
@@ -1219,7 +1219,7 @@
   window.showReadme = showReadme;
   window.closeReadme = closeReadme;
 
-  // Abrir catastro oficial en nueva pestaÃ±a
+  // Abrir catastro oficial en nueva pestaña
   window.openCatastro = () => {
     window.open('https://www.catastro.gov.py/visor/?snc=geo', '_blank', 'noopener,noreferrer');
     window.showToast?.('Abriendo visor oficial del Catastro', 'info');
@@ -1247,7 +1247,7 @@
     if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
   };
 
-  // Control de Modal de EscribanÃ­as y Due Diligence
+  // Control de Modal de Escribanías y Due Diligence
   window.openEscribaniaModal = () => {
     const modal = document.getElementById('escribaniaModal');
     if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
@@ -1260,7 +1260,7 @@
   // Acceso directo a formularios registrales del RUN
   window.openRunFormularios = () => {
     window.open('https://run.gov.py/edgrp_apk/formularios_registrales_run.php', '_blank', 'noopener,noreferrer');
-    window.showToast?.('Abriendo CatÃ¡logo de Formularios Registrales RUN', 'info');
+    window.showToast?.('Abriendo Catálogo de Formularios Registrales RUN', 'info');
   };
 
   </script>
@@ -1295,7 +1295,7 @@ import OverviewMap from '/js/overviewMap.js';
 
   document.getElementById('piribebuy-export-crs')?.addEventListener('change', () => {
     const v = exportCrs();
-    window.showToast?.(`ProyecciÃ³n de exportaciÃ³n: ${CRS_LABEL(v)}`, 'info');
+    window.showToast?.(`Proyección de exportación: ${CRS_LABEL(v)}`, 'info');
   });
 
   /**
@@ -1411,13 +1411,13 @@ import OverviewMap from '/js/overviewMap.js';
   window.addEventListener('snc:layers-changed', () => updateLayerControlPanel());
   document.getElementById('piribebuy-crs-refresh')?.addEventListener('click', () => {
     renderCrsReport(true);
-    window.showToast?.('DiagnÃ³stico de proyecciÃ³n actualizado', 'info');
+    window.showToast?.('Diagnóstico de proyección actualizado', 'info');
   });
 
   // Informe inicial
   setTimeout(renderCrsReport, 2500);
 
-  // â”€â”€â”€ Alternar visibilidad de capas de referencia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Alternar visibilidad de capas de referencia ────────────────────────────
   function toggleLayersSection() {
     const section = document.getElementById('reference-layers-section');
     const btn = document.getElementById('layers-toggle-btn');
@@ -1434,15 +1434,15 @@ import OverviewMap from '/js/overviewMap.js';
     }
   }
 
-  // â”€â”€â”€ JerarquÃ­a de capas (z-order) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Jerarquía de capas (z-order) ──────────────────────────────────────────────
   // Define el orden de apilamiento de capas en el mapa, de abajo hacia arriba.
-  // Cada nivel es un nÃºmero determinÃ­stico. Las capas se dibujan en ese orden.
+  // Cada nivel es un número determinístico. Las capas se dibujan en ese orden.
   // 0 = Mapa Base (capas de fondo, siempre visibles)
-  // 10 = Nacional (Paraguay:_distratos, vÃ­as, hidrografÃ­a oficial)
-  // 20 = MADES (geoportal ambiental/hidrolÃ³gico: SINASIP, cauces, reservas)
+  // 10 = Nacional (Paraguay:_distratos, vías, hidrografía oficial)
+  // 20 = MADES (geoportal ambiental/hidrológico: SINASIP, cauces, reservas)
   // 30 = Municipio (geoportal municipal: cesiones, perfiles viales, urbanismo)
   // 40 = Usuario (capas propias del usuario: parcelas expeditas, capas editadas)
-  // 50 = SuperposiciÃ³n (etiquetas, marker, lÃ­nea de transiciÃ³n, annotate)
+  // 50 = Superposición (etiquetas, marker, línea de transición, annotate)
   const LAYER_ZORDER = {
     BASE_MAP: 0,
     NATIONAL: 10,
@@ -1452,7 +1452,7 @@ import OverviewMap from '/js/overviewMap.js';
     OVERLAY: 50
   };
 
-  // Mapeo de categorÃ­as de capas a su nivel z-order
+  // Mapeo de categorías de capas a su nivel z-order
   function getLayerZOrder(category) {
     const categories = {
       baseMap: LAYER_ZORDER.BASE_MAP,
@@ -1465,8 +1465,8 @@ import OverviewMap from '/js/overviewMap.js';
     return categories[category] || LAYER_ZORDER.USER;
   }
 
-  // â”€â”€â”€ Ordenamiento de capas por z-order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Ordena un array de capas (Leaflet layers) por su categorÃ­a de z-order.
+  // ─── Ordenamiento de capas por z-order ───────────────────────────────────────
+  // Ordena un array de capas (Leaflet layers) por su categoría de z-order.
   // Usado para insertar capas en el mapa en el orden correcto.
   function sortLayersByZOrder(layers) {
     return layers.sort((a, b) => {
@@ -1476,7 +1476,7 @@ import OverviewMap from '/js/overviewMap.js';
     });
   }
 
-  // â”€â”€â”€ Obtiene o crea una capa con categorÃ­a de z-order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Obtiene o crea una capa con categoría de z-order ─────────────────────
   function getOrCreateLayerWithZOrder(layer, category) {
     layer.zCategory = category || getLayerZOrder('user');
     return layer;
@@ -1498,9 +1498,9 @@ import OverviewMap from '/js/overviewMap.js';
     LayerManager.reset();
     // Capas base (para el modo "Origen" y para que la leyenda las excluya).
     LayerManager.registerLayer({ id: 'basemap', title: 'Mapa base', sourceType: 'basemap', visible: true });
-    // El mapa base SÃ figura en la leyenda unificada del mapa (antes se
-    // ocultaba porque la leyenda vivÃ­a en el panel de contenido y solo
-    // listaba capas temÃ¡ticas). Se puede quitar con la X o desde Propiedades.
+    // El mapa base SÍ figura en la leyenda unificada del mapa (antes se
+    // ocultaba porque la leyenda vivía en el panel de contenido y solo
+    // listaba capas temáticas). Se puede quitar con la X o desde Propiedades.
     LayerManager.get('basemap').legend.hideInLegend = false;
 
     LayerManager.registerGroup({ id: 'g_piri', title: 'Municipio' });
@@ -2193,11 +2193,11 @@ import OverviewMap from '/js/overviewMap.js';
 
 
   /**
-   * Espera a que el mapa estÃ© realmente listo, en vez de dormir un tiempo fijo.
+   * Espera a que el mapa esté realmente listo, en vez de dormir un tiempo fijo.
    *
-   * Antes se usaba `setTimeout(..., 2600)`: si el mapa tardaba mÃ¡s, el panel
-   * se montaba sin mapa y las capas no cargaban; si tardaba menos, se perdÃ­an
-   * 2.6 s de arranque. AcÃ¡ se sondea cada 100 ms y se arranca en cuanto hay
+   * Antes se usaba `setTimeout(..., 2600)`: si el mapa tardaba más, el panel
+   * se montaba sin mapa y las capas no cargaban; si tardaba menos, se perdían
+   * 2.6 s de arranque. Acá se sondea cada 100 ms y se arranca en cuanto hay
    * mapa (con un tope de 15 s para no colgarse si algo falla).
    */
   function whenMapReady() {
@@ -2214,12 +2214,12 @@ import OverviewMap from '/js/overviewMap.js';
 
   whenMapReady().then(listo => {
     if (!listo) {
-      console.warn('El mapa no quedÃ³ listo en 15 s; se monta el panel igual.');
+      console.warn('El mapa no quedó listo en 15 s; se monta el panel igual.');
     }
     buildLayerTree();
     updateLayerControlPanel();
     // Leyenda unificada DENTRO del mapa (abajo a la izquierda): fusiona el
-    // antiguo "ðŸ“ Capas Activas" con la secciÃ³n "Leyenda" del panel.
+    // antiguo "ðŸ“ Capas Activas" con la sección "Leyenda" del panel.
     MapLegend.mount(document.getElementById('view-map'), {
       getActiveLayers: legendLayers,
       onZoomLayer: (id) => {
@@ -2235,8 +2235,8 @@ import OverviewMap from '/js/overviewMap.js';
     loadVisibleLayers();
   });
 
-  // â”€â”€â”€ Tabla de atributos (spec Â§3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Se abre desde el menÃº contextual de una capa ("Abrir tabla de atributos").
+  // ─── Tabla de atributos (spec §3) ───────────────────────────────────────────
+  // Se abre desde el menú contextual de una capa ("Abrir tabla de atributos").
   // El evento lo emite js/layerPanel.js.
   window.addEventListener('snc:open-attribute-table', async (e) => {
     const layerId = e.detail?.layerId;
@@ -2248,7 +2248,7 @@ import OverviewMap from '/js/overviewMap.js';
       features = window.State?.get?.('geojson')?.features || [];
     }
     if (!features.length) {
-      // Si la capa no estÃ¡ activa, se activa y se reintenta una vez.
+      // Si la capa no está activa, se activa y se reintenta una vez.
       await window.MapEngine?.togglePiribebuyLayer?.(layerId, true);
       await new Promise(r => setTimeout(r, 900));
       features = window.MapEngine?.getPiribebuyFeatures?.(layerId) || [];
@@ -2277,7 +2277,7 @@ import OverviewMap from '/js/overviewMap.js';
         },
         onFilterChanged: () => {},
         onPageSizeChanged: (n) => {
-          // Persistir las filas por pÃ¡gina en la config de la capa.
+          // Persistir las filas por página en la config de la capa.
           if (node) LayerManager.setTableConfig(layerId, { pageSize: n });
         },
         onColumnsChanged: (hidden, order) => {
@@ -2297,7 +2297,7 @@ import OverviewMap from '/js/overviewMap.js';
           }
           const childFeatures = window.MapEngine?.getPiribebuyFeatures?.(childId) || [];
           if (!childFeatures.length) {
-            showToast('Los registros relacionados no estÃ¡n disponibles', 'warning');
+            showToast('Los registros relacionados no están disponibles', 'warning');
             return;
           }
           AttributeTableUI.openRelated({
@@ -2308,14 +2308,14 @@ import OverviewMap from '/js/overviewMap.js';
             label: LayerManager.get(childId)?.title || childId
           });
         },
-        onRelatedClose: () => { showToast('VolviÃ³ a la tabla principal', 'info'); }
+        onRelatedClose: () => { showToast('Volvió a la tabla principal', 'info'); }
       }
     });
     showToast(`Tabla de atributos: ${features.length} registro(s)`, 'info');
   });
   </script>
 
-  <!-- DIAGNÃ“STICO TEMPORAL: muestra cualquier error JS en pantalla -->
+  <!-- DIAGNÓSTICO TEMPORAL: muestra cualquier error JS en pantalla -->
   <script>
   (function(){
     function show(msg){
@@ -2338,21 +2338,21 @@ import OverviewMap from '/js/overviewMap.js';
   })();
   </script>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       MODALES DE HERRAMIENTAS (COGO Â· TOPOLOGÃA Â· GEOPROCESAMIENTO)
-       Estos tres mÃ³dulos estaban cableados en el toolbar pero su markup
-       no existÃ­a en el DOM: COGO fallaba en silencio (optional chaining)
-       y TopologÃ­a/Geoprocesamiento lanzaban TypeError al abrir.
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <!-- ══════════════════════════════════════════════════════════════
+       MODALES DE HERRAMIENTAS (COGO · TOPOLOGÍA · GEOPROCESAMIENTO)
+       Estos tres módulos estaban cableados en el toolbar pero su markup
+       no existía en el DOM: COGO fallaba en silencio (optional chaining)
+       y Topología/Geoprocesamiento lanzaban TypeError al abrir.
+       ══════════════════════════════════════════════════════════════ -->
 
-  <!-- â”€â”€ COGO: construcciÃ³n por rumbo y distancia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── COGO: construcción por rumbo y distancia ─────────────────── -->
   <div id="cogo-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="cogo-title">
     <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
         <h3 id="cogo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
-          <i class="fas fa-drafting-compass text-blue-400"></i> ConstrucciÃ³n COGO
+          <i class="fas fa-drafting-compass text-blue-400"></i> Construcción COGO
         </h3>
-        <button type="button" onclick="CogoUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">Ã—</button>
+        <button type="button" onclick="CogoUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
       </div>
       <div class="p-5 space-y-4">
         <div class="grid grid-cols-2 gap-3">
@@ -2363,8 +2363,8 @@ import OverviewMap from '/js/overviewMap.js';
             <input id="cogo-north" type="number" step="0.001" value="0" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
           </label>
         </div>
-        <label class="block text-xs text-slate-400">Tramos (rumbo y distancia por lÃ­nea â€” ej. "N 45Â°30'00\" E, 120.50")
-          <textarea id="cogo-courses" rows="4" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono text-slate-100 focus:border-blue-500 focus:outline-none" placeholder="N 45Â°30'00&quot; E, 120.50&#10;S 0Â°00'00&quot; E, 80.00&#10;S 45Â°30'00&quot; W, 120.50"></textarea>
+        <label class="block text-xs text-slate-400">Tramos (rumbo y distancia por línea — ej. "N 45°30'00\" E, 120.50")
+          <textarea id="cogo-courses" rows="4" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono text-slate-100 focus:border-blue-500 focus:outline-none" placeholder="N 45°30'00&quot; E, 120.50&#10;S 0°00'00&quot; E, 80.00&#10;S 45°30'00&quot; W, 120.50"></textarea>
         </label>
         <div class="grid grid-cols-2 gap-3 items-end">
           <label class="text-xs text-slate-400">Tolerancia de cierre (m)
@@ -2380,17 +2380,17 @@ import OverviewMap from '/js/overviewMap.js';
     </div>
   </div>
 
-  <!-- â”€â”€ CorrecciÃ³n topolÃ³gica â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── Corrección topológica ────────────────────────────────────── -->
   <div id="topology-repair-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="topo-title">
     <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
         <h3 id="topo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
-          <i class="fas fa-wand-magic-sparkles text-amber-400"></i> CorrecciÃ³n topolÃ³gica asistida
+          <i class="fas fa-wand-magic-sparkles text-amber-400"></i> Corrección topológica asistida
         </h3>
-        <button type="button" onclick="TopologyRepairUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">Ã—</button>
+        <button type="button" onclick="TopologyRepairUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
       </div>
       <div class="p-5 space-y-4">
-        <p class="text-xs text-slate-400">Se analizan las geometrÃ­as del expediente y se proponen reparaciones deterministas (snap de vÃ©rtices, cierre de anillos, eliminaciÃ³n de duplicados).</p>
+        <p class="text-xs text-slate-400">Se analizan las geometrías del expediente y se proponen reparaciones deterministas (snap de vértices, cierre de anillos, eliminación de duplicados).</p>
         <ul id="topology-repair-list" class="space-y-2 max-h-56 overflow-y-auto text-xs text-slate-300"></ul>
         <p id="topology-repair-unresolved" class="text-xs text-amber-300"></p>
         <div class="flex justify-end gap-2 pt-1">
@@ -2401,21 +2401,21 @@ import OverviewMap from '/js/overviewMap.js';
     </div>
   </div>
 
-  <!-- â”€â”€ Geoprocesamiento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── Geoprocesamiento ──────────────────────────────────────────── -->
   <div id="geoprocessing-modal" class="hidden fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="geo-title">
     <div class="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-950/60">
         <h3 id="geo-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
           <i class="fas fa-diagram-project text-blue-400"></i> Geoprocesamiento
         </h3>
-        <button type="button" onclick="GeoprocessingUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">Ã—</button>
+        <button type="button" onclick="GeoprocessingUI.close()" class="text-slate-400 hover:text-white text-lg leading-none" aria-label="Cerrar">×</button>
       </div>
       <div class="p-5 space-y-4">
         <div class="grid grid-cols-2 gap-3">
-          <label class="block text-xs text-slate-400">OperaciÃ³n
+          <label class="block text-xs text-slate-400">Operación
             <select id="geoprocess-operation" class="mt-1 w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:border-blue-500 focus:outline-none">
-              <option value="intersect">IntersecciÃ³n</option>
-              <option value="union">UniÃ³n</option>
+              <option value="intersect">Intersección</option>
+              <option value="union">Unión</option>
               <option value="buffer">Buffer</option>
               <option value="difference">Diferencia</option>
               <option value="select-intersect">Seleccionar intersectantes</option>

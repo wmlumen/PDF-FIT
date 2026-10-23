@@ -1,6 +1,6 @@
 ﻿/**
  * Entry Point Ciudadano - Ciudadano PY Pro (SNC 551/2023)
- * Portal pÃºblico para consulta de parcelas e inmuebles catastrales
+ * Portal público para consulta de parcelas e inmuebles catastrales
  */
 
 import { App } from './app/index.js';
@@ -46,7 +46,7 @@ const LocalActions = {
 window.LocalActions = LocalActions;
 
 /**
- * Muestra y completa la informaciÃ³n de la parcela en el inspector ciudadano
+ * Muestra y completa la información de la parcela en el inspector ciudadano
  */
 export function updateCiudadanoInspector(feature) {
   const inspector = document.getElementById('parcel-inspector');
@@ -65,7 +65,7 @@ export function updateCiudadanoInspector(feature) {
   const uso = props.USO_SUELO || props.DESTINO || props.TIPO_LOTE || props.Categoria || 'Residencial / Urbano';
 
   // Obtener centroide
-  let centroideText = 'â€”';
+  let centroideText = '—';
   if (typeof turf !== 'undefined' && feature.geometry) {
     try {
       const c = turf.centroid(feature);
@@ -79,14 +79,14 @@ export function updateCiudadanoInspector(feature) {
     if (el) el.textContent = val;
   };
 
-  setText('parcel-inspector-title', `Inmueble PadrÃ³n NÂº ${padron}`);
+  setText('parcel-inspector-title', `Inmueble Padrón Nº ${padron}`);
   setText('lote-codigo', padron);
   setText('lote-propietario', propietario);
-  setText('lote-area', `${formatNumber(areaM2, 2)} mÂ² ${areaM2 >= 10000 ? '(' + (areaM2/10000).toFixed(4) + ' ha)' : ''}`);
+  setText('lote-area', `${formatNumber(areaM2, 2)} m² ${areaM2 >= 10000 ? '(' + (areaM2/10000).toFixed(4) + ' ha)' : ''}`);
   setText('lote-uso', uso);
   setText('lote-coords', centroideText);
 
-  // Consulta espacial automÃ¡tica (Departamento, Distrito, Barrio) si hay coordenadas
+  // Consulta espacial automática (Departamento, Distrito, Barrio) si hay coordenadas
   if (typeof turf !== 'undefined' && feature.geometry) {
     try {
       const centroid = turf.centroid(feature);
@@ -97,11 +97,11 @@ export function updateCiudadanoInspector(feature) {
           .then(data => {
             if (!data || !data.ok) return;
             const ubicacionParts = [];
-            if (data.barrio) ubicacionParts.push(`BÂº ${data.barrio}`);
+            if (data.barrio) ubicacionParts.push(`Bº ${data.barrio}`);
             if (data.distrito) ubicacionParts.push(data.distrito);
             if (data.departamento) ubicacionParts.push(data.departamento);
             if (ubicacionParts.length) {
-              setText('lote-ubicacion', ubicacionParts.join(' Â· '));
+              setText('lote-ubicacion', ubicacionParts.join(' · '));
             }
           })
           .catch(() => {});
@@ -111,10 +111,10 @@ export function updateCiudadanoInspector(feature) {
 
   currentSelectedCitizenFeature = feature;
 
-  // CÃ¡lculo de simulaciÃ³n tributaria (Ley 5513/2015)
-  const valFiscalBaseM2 = 45000; // Valor referencial de zona urbana en Gs. / mÂ²
+  // Cálculo de simulación tributaria (Ley 5513/2015)
+  const valFiscalBaseM2 = 45000; // Valor referencial de zona urbana en Gs. / m²
   const valFiscalTotal = Math.round(areaM2 * valFiscalBaseM2);
-  const impuestoAnual = Math.round(valFiscalTotal * 0.01); // 1% segÃºn Ley 5513/15
+  const impuestoAnual = Math.round(valFiscalTotal * 0.01); // 1% según Ley 5513/15
   const tasasServicios = 65000; // Tasas fijas anuales de aseo y mantenimiento
   const totalTributoAnual = impuestoAnual + tasasServicios;
 
@@ -127,18 +127,18 @@ export function updateCiudadanoInspector(feature) {
 }
 
 /**
- * Busca un inmueble por Cta. Cte., PadrÃ³n, o CÃ³digo y vuela a Ã©l
+ * Busca un inmueble por Cta. Cte., Padrón, o Código y vuela a él
  */
 export async function flyToParcel(queryText) {
   const inputEl = document.getElementById('parcel-search-input');
   const query = (queryText || inputEl?.value || '').trim().toUpperCase();
 
   if (!query) {
-    showToast('Ingrese un padrÃ³n, cÃ³digo o cuenta catastral a buscar', 'warning');
+    showToast('Ingrese un padrón, código o cuenta catastral a buscar', 'warning');
     return;
   }
 
-  // 1. Buscar en las geometrÃ­as cargadas en el mapa
+  // 1. Buscar en las geometrías cargadas en el mapa
   const geojson = State.get('geojson');
   let matchedFeature = null;
 
@@ -167,24 +167,24 @@ export async function flyToParcel(queryText) {
     return;
   }
 
-  // 2. Si no coincide con un padrÃ³n local, evaluar si son coordenadas o enlace Google Maps
+  // 2. Si no coincide con un padrón local, evaluar si son coordenadas o enlace Google Maps
   if (window.CoordLocator?.parseCoordinateInput) {
     const parseRes = await window.CoordLocator.parseCoordinateInput(query);
     if (parseRes && parseRes.ok) {
       window.CoordLocator.locateOnMap(parseRes.lat, parseRes.lng, parseRes.label || query);
-      showToast('UbicaciÃ³n localizada por coordenadas', 'success');
+      showToast('Ubicación localizada por coordenadas', 'success');
       return;
     }
   }
 
-  showToast(`No se encontrÃ³ el inmueble o padrÃ³n "${query}". Pruebe con el demo.`, 'info');
+  showToast(`No se encontró el inmueble o padrón "${query}". Pruebe con el demo.`, 'info');
 }
 
 /**
  * Carga loteamiento demo para consulta ciudadana
  */
 App.loadSampleCiudadano = async function() {
-  showToast('Cargando parcelas catastrales de demostraciÃ³n...', 'info');
+  showToast('Cargando parcelas catastrales de demostración...', 'info');
   try {
     const resp = await fetch('/data/municipal/piribebuy/sample_fraccionamiento_municipal.geojson');
     if (!resp.ok) throw new Error('No se pudo cargar el archivo demo');
@@ -208,13 +208,13 @@ App.loadSampleCiudadano = async function() {
   }
 };
 
-// Exportar Ficha Parcelaria y Boleta Catastral Oficial Ciudadana (1 pÃ¡gina en PDF)
+// Exportar Ficha Parcelaria y Boleta Catastral Oficial Ciudadana (1 página en PDF)
 App.exportFichaCiudadana = async function() {
   const geojson = State.get('geojson');
   const feature = currentSelectedCitizenFeature || geojson?.features?.[0];
 
   if (!feature) {
-    showToast('Seleccione un inmueble en el mapa o busque un padrÃ³n para descargar su ficha', 'warning');
+    showToast('Seleccione un inmueble en el mapa o busque un padrón para descargar su ficha', 'warning');
     return;
   }
 
@@ -222,7 +222,7 @@ App.exportFichaCiudadana = async function() {
 
   try {
     if (!window.jspdf?.jsPDF) {
-      throw new Error('LibrerÃ­a jsPDF no disponible en navegador');
+      throw new Error('Librería jsPDF no disponible en navegador');
     }
 
     const { jsPDF } = window.jspdf;
@@ -239,8 +239,8 @@ App.exportFichaCiudadana = async function() {
 
     const areaM2 = parseFloat(props.AREA_M2 || props.SUP_SIG_M2 || metrics.areaM2 || 0);
     const padron = props.PADRON || props.CODIGO || props.CTA_CTE || props.ID || 'S/D';
-    const ctaCte = props.CTA_CTE || props.PADRON || 'â€”';
-    const finca = props.FINCA || props.MATRICULA || 'â€”';
+    const ctaCte = props.CTA_CTE || props.PADRON || '—';
+    const finca = props.FINCA || props.MATRICULA || '—';
     const titular = props.PROPIETARIO || props.Propietari || props.TITULAR || props.NOMBRE || 'Titular / Propietario Declarado';
     const uso = props.USO_SUELO || props.DESTINO || props.TIPO_LOTE || props.Categoria || 'Residencial / Urbano';
     const dpto = props.DEPARTAMEN || 'CORDILLERA';
@@ -248,7 +248,7 @@ App.exportFichaCiudadana = async function() {
     const lugar = props.LUGAR || props.BARRIO || 'Casco Urbano';
 
     // Centroide y coordenadas
-    let coordStr = 'â€”';
+    let coordStr = '—';
     let latNum = 0, lngNum = 0;
     if (typeof turf !== 'undefined' && feature.geometry) {
       try {
@@ -267,16 +267,16 @@ App.exportFichaCiudadana = async function() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('REPÃšBLICA DEL PARAGUAY â€¢ SERVICIO NACIONAL DE CATASTRO', pageWidth / 2, 9, { align: 'center' });
+    doc.text('REPÚBLICA DEL PARAGUAY • SERVICIO NACIONAL DE CATASTRO', pageWidth / 2, 9, { align: 'center' });
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('MUNICIPALIDAD DE ' + dist.toUpperCase() + ' â€¢ GEOPORTAL DE CONSULTA CIUDADANA', pageWidth / 2, 15, { align: 'center' });
+    doc.text('MUNICIPALIDAD DE ' + dist.toUpperCase() + ' • GEOPORTAL DE CONSULTA CIUDADANA', pageWidth / 2, 15, { align: 'center' });
     doc.setFontSize(7.5);
-    doc.text('ResoluciÃ³n SNC NÂº 551/2023 â€¢ Ley OrgÃ¡nica Municipal NÂº 3966/2010', pageWidth / 2, 20, { align: 'center' });
+    doc.text('Resolución SNC Nº 551/2023 • Ley Orgánica Municipal Nº 3966/2010', pageWidth / 2, 20, { align: 'center' });
 
     let y = 30;
 
-    // TÃ­tulo de la Ficha
+    // Título de la Ficha
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
@@ -286,16 +286,16 @@ App.exportFichaCiudadana = async function() {
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 116, 139);
-    doc.text('Constancia Informativa de UbicaciÃ³n, Superficie y Estado Tributario Estimado', pageWidth / 2, y, { align: 'center' });
+    doc.text('Constancia Informativa de Ubicación, Superficie y Estado Tributario Estimado', pageWidth / 2, y, { align: 'center' });
 
     y += 4;
 
-    // 2. Tabla IdentificaciÃ³n Inmueble
+    // 2. Tabla Identificación Inmueble
     const infoData = [
-      ['PadrÃ³n / CÃ³digo Catastral', String(padron), 'Cuenta Corriente Catastral', String(ctaCte)],
-      ['Finca / MatrÃ­cula NÂº', String(finca), 'Titular Registrado', String(titular)],
+      ['Padrón / Código Catastral', String(padron), 'Cuenta Corriente Catastral', String(ctaCte)],
+      ['Finca / Matrícula Nº', String(finca), 'Titular Registrado', String(titular)],
       ['Departamento / Distrito', dpto + ' / ' + dist, 'Barrio / Localidad', lugar],
-      ['Destino / Uso del Suelo', String(uso), 'Fecha de ExpediciÃ³n', new Date().toLocaleDateString('es-PY')]
+      ['Destino / Uso del Suelo', String(uso), 'Fecha de Expedición', new Date().toLocaleDateString('es-PY')]
     ];
 
     doc.autoTable({
@@ -315,7 +315,7 @@ App.exportFichaCiudadana = async function() {
 
     y = doc.lastAutoTable.finalY + 6;
 
-    // 3. Captura del mapa o croquis satelital si domtoimage estÃ¡ disponible
+    // 3. Captura del mapa o croquis satelital si domtoimage está disponible
     let mapCaptured = false;
     const mapContainer = document.getElementById('map');
     if (window.domtoimage && mapContainer) {
@@ -331,7 +331,7 @@ App.exportFichaCiudadana = async function() {
     const boxX = mapCaptured ? 108 : 14;
     const boxW = mapCaptured ? pageWidth - 122 : pageWidth - 28;
 
-    // Cuadro de Dimensiones FÃ­sicas y GeorreferenciaciÃ³n
+    // Cuadro de Dimensiones Físicas y Georreferenciación
     doc.setFillColor(248, 250, 252);
     doc.roundedRect(boxX, y, boxW, 52, 2, 2, 'F');
     doc.setDrawColor(203, 213, 225);
@@ -340,17 +340,17 @@ App.exportFichaCiudadana = async function() {
     doc.setTextColor(67, 56, 202);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('DATOS FÃSICOS Y GEODÃ‰SICOS', boxX + 4, y + 6);
+    doc.text('DATOS FÍSICOS Y GEODÉSICOS', boxX + 4, y + 6);
 
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
     doc.text('Superficie Calculada:', boxX + 4, y + 13);
     doc.setFont('helvetica', 'bold');
-    doc.text(areaM2.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' mÂ² ' + (areaM2 >= 10000 ? '(' + (areaM2 / 10000).toFixed(4) + ' ha)' : ''), boxX + 36, y + 13);
+    doc.text(areaM2.toLocaleString('es-PY', { minimumFractionDigits: 2 }) + ' m² ' + (areaM2 >= 10000 ? '(' + (areaM2 / 10000).toFixed(4) + ' ha)' : ''), boxX + 36, y + 13);
 
     doc.setFont('helvetica', 'normal');
-    doc.text('PerÃ­metro Estimado:', boxX + 4, y + 20);
+    doc.text('Perímetro Estimado:', boxX + 4, y + 20);
     doc.setFont('helvetica', 'bold');
     doc.text((metrics.perimeterM || 0).toFixed(2) + ' metros', boxX + 36, y + 20);
 
@@ -372,11 +372,11 @@ App.exportFichaCiudadana = async function() {
 
     y += 58;
 
-    // 4. SecciÃ³n Tributaria Estimada (Ley NÂº 5513/2015)
+    // 4. Sección Tributaria Estimada (Ley Nº 5513/2015)
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('LIQUIDACIÃ“N TRIBUTARIA MUNICIPAL ESTIMADA (LEY NÂº 5513/2015)', 14, y);
+    doc.text('LIQUIDACIÓN TRIBUTARIA MUNICIPAL ESTIMADA (LEY Nº 5513/2015)', 14, y);
 
     y += 3;
 
@@ -387,15 +387,15 @@ App.exportFichaCiudadana = async function() {
     const totalTributoAnual = impuestoAnual + tasasServicios;
 
     const tributosData = [
-      ['ValuaciÃ³n Fiscal de la Tierra', areaM2.toFixed(2) + ' mÂ² Ã— Gs. 45.000 / mÂ²', 'Base Imponible Municipal', 'Gs. ' + valFiscalTotal.toLocaleString('es-PY')],
-      ['Impuesto Inmobiliario Urbano', '1.00% anual sobre ValuaciÃ³n Fiscal', 'Ley 5513/15 Art. 151', 'Gs. ' + impuestoAnual.toLocaleString('es-PY')],
-      ['Tasas de Barrido, Limpieza y Mantenimiento', 'Tarifa fija anual por recolecciÃ³n', 'Ordenanza Tributaria', 'Gs. ' + tasasServicios.toLocaleString('es-PY')],
+      ['Valuación Fiscal de la Tierra', areaM2.toFixed(2) + ' m² × Gs. 45.000 / m²', 'Base Imponible Municipal', 'Gs. ' + valFiscalTotal.toLocaleString('es-PY')],
+      ['Impuesto Inmobiliario Urbano', '1.00% anual sobre Valuación Fiscal', 'Ley 5513/15 Art. 151', 'Gs. ' + impuestoAnual.toLocaleString('es-PY')],
+      ['Tasas de Barrido, Limpieza y Mantenimiento', 'Tarifa fija anual por recolección', 'Ordenanza Tributaria', 'Gs. ' + tasasServicios.toLocaleString('es-PY')],
       ['TOTAL ESTIMADO A TRIBUTAR', 'Ejercicio Fiscal 2026', 'Total Anual Proyectado', 'Gs. ' + totalTributoAnual.toLocaleString('es-PY')]
     ];
 
     doc.autoTable({
       startY: y,
-      head: [['Concepto Tributario', 'Base de LiquidaciÃ³n', 'Marco Legal', 'Importe Estimado (Gs.)']],
+      head: [['Concepto Tributario', 'Base de Liquidación', 'Marco Legal', 'Importe Estimado (Gs.)']],
       body: tributosData,
       theme: 'striped',
       headStyles: { fillColor: [67, 56, 202], fontSize: 8 },
@@ -420,12 +420,12 @@ App.exportFichaCiudadana = async function() {
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(7.2);
     doc.setFont('helvetica', 'normal');
-    const notaTexto = 'VALIDEZ Y ALCANCE ADMINISTRATIVO: La presente ficha parcelaria constituye una constancia digital oficial informativa de ubicaciÃ³n y dimensiones del inmueble expedida a travÃ©s del Geoportal Catastral Multifinalitario. Es vÃ¡lida para gestiones de conexiÃ³n de suministros de servicios pÃºblicos ante la ANDE, ESSAP, COPACO, habilitaciones comerciales, y consultas notariales preliminares. No sustituye al TÃ­tulo de Propiedad inscripto en la DirecciÃ³n General de los Registros PÃºblicos.';
+    const notaTexto = 'VALIDEZ Y ALCANCE ADMINISTRATIVO: La presente ficha parcelaria constituye una constancia digital oficial informativa de ubicación y dimensiones del inmueble expedida a través del Geoportal Catastral Multifinalitario. Es válida para gestiones de conexión de suministros de servicios públicos ante la ANDE, ESSAP, COPACO, habilitaciones comerciales, y consultas notariales preliminares. No sustituye al Título de Propiedad inscripto en la Dirección General de los Registros Públicos.';
     doc.text(doc.splitTextToSize(notaTexto, pageWidth - 36), 18, y + 4.5);
 
     y += 26;
 
-    // 6. CÃ³digo QR de Consulta y VerificaciÃ³n
+    // 6. Código QR de Consulta y Verificación
     const baseUrl = window.location.origin;
     const verifyUrl = baseUrl + '/ciudadano?padron=' + encodeURIComponent(padron);
     let qrDataUrl = null;
@@ -439,15 +439,15 @@ App.exportFichaCiudadana = async function() {
       doc.addImage(qrDataUrl, 'PNG', 14, y, 22, 22);
       doc.setFontSize(7);
       doc.setTextColor(71, 85, 105);
-      doc.text('Escanee el cÃ³digo QR para consultar este', 39, y + 7);
+      doc.text('Escanee el código QR para consultar este', 39, y + 7);
       doc.text('inmueble en vivo en el visor catastral.', 39, y + 11);
-      doc.text('CÃ³digo Ãšnico: FICHA-PY-' + padron + '-' + new Date().getFullYear(), 39, y + 16);
+      doc.text('Código Único: FICHA-PY-' + padron + '-' + new Date().getFullYear(), 39, y + 16);
     }
 
-    // Pie de pÃ¡gina
+    // Pie de página
     doc.setFontSize(6.5);
     doc.setTextColor(148, 163, 184);
-    doc.text('Expedido por Sistema Nacional de Catastro (SNC) - Portal Ciudadano. EmisiÃ³n: ' + new Date().toLocaleString('es-PY'), 14, pageHeight - 6);
+    doc.text('Expedido por Sistema Nacional de Catastro (SNC) - Portal Ciudadano. Emisión: ' + new Date().toLocaleString('es-PY'), 14, pageHeight - 6);
 
     const pdfBlob = doc.output('blob');
     const filename = 'Ficha_Catastral_Padron_' + padron + '_' + new Date().toISOString().slice(0, 10) + '.pdf';
@@ -462,7 +462,7 @@ App.exportFichaCiudadana = async function() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast('âœ… Ficha Parcelaria descargada: ' + filename, 'success');
+    showToast('✅ Ficha Parcelaria descargada: ' + filename, 'success');
   } catch (err) {
     console.error('Error generando ficha ciudadana:', err);
     showToast('Error al generar Ficha Parcelaria: ' + err.message, 'error');
@@ -476,7 +476,7 @@ export async function cargarDatosMunicipales(muniId) {
   if (!muniId) return false;
   const cleanId = String(muniId).trim().toLowerCase();
   try {
-    // 1. Obtener informaciÃ³n y branding
+    // 1. Obtener información y branding
     const infoRes = await fetch(`/api/municipal/${encodeURIComponent(cleanId)}/info`);
     if (infoRes.ok) {
       const infoData = await infoRes.json();
@@ -502,7 +502,7 @@ export async function cargarDatosMunicipales(muniId) {
       if (badgeEl) {
         badgeEl.classList.remove('hidden');
         if (badgeDate) badgeDate.textContent = currentMuniInfo.actualizado ? `Act: ${currentMuniInfo.actualizado}` : '';
-        if (badgeSource) badgeSource.textContent = `${currentMuniInfo.nombre} Â· ${currentMuniInfo.fuente || 'Catastro Municipal'}`;
+        if (badgeSource) badgeSource.textContent = `${currentMuniInfo.nombre} · ${currentMuniInfo.fuente || 'Catastro Municipal'}`;
       }
     }
 
@@ -570,7 +570,7 @@ export async function shareParcel() {
 
   const waBtn = document.getElementById('share-whatsapp-btn');
   if (waBtn) {
-    const textMsg = encodeURIComponent(`Consulte este inmueble en el Catastro Ciudadano (${padron ? 'PadrÃ³n ' + padron : ''}): ${shareUrl}`);
+    const textMsg = encodeURIComponent(`Consulte este inmueble en el Catastro Ciudadano (${padron ? 'Padrón ' + padron : ''}): ${shareUrl}`);
     waBtn.href = `https://api.whatsapp.com/send?text=${textMsg}`;
   }
 
@@ -592,10 +592,10 @@ export async function shareParcel() {
     modal.classList.add('flex');
   }
 
-  // Copiar al portapapeles automÃ¡ticamente
+  // Copiar al portapapeles automáticamente
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(shareUrl)
-      .then(() => showToast('Â¡Enlace copiado al portapapeles!', 'success'))
+      .then(() => showToast('¡Enlace copiado al portapapeles!', 'success'))
       .catch(() => {});
   }
 }
@@ -605,7 +605,7 @@ export function copyShareUrl() {
   const inputEl = document.getElementById('share-url-input');
   if (inputEl && inputEl.value) {
     navigator.clipboard?.writeText(inputEl.value)
-      .then(() => showToast('Â¡Enlace copiado!', 'success'))
+      .then(() => showToast('¡Enlace copiado!', 'success'))
       .catch(() => showToast('No se pudo copiar', 'error'));
   }
 }
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     window.flyToParcel = flyToParcel;
 
-    // Escuchar selecciÃ³n de features para actualizar el inspector
+    // Escuchar selección de features para actualizar el inspector
     State.subscribe('selectedFeature', (feat) => {
       if (feat) updateCiudadanoInspector(feat);
     });
@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       OverviewMap.mount(stackHost, window.MapEngine?.getMap?.());
     }
 
-    // Escuchar Enter en el input de bÃºsqueda
+    // Escuchar Enter en el input de búsqueda
     const searchInput = document.getElementById('parcel-search-input');
     if (searchInput) {
       searchInput.addEventListener('keydown', (e) => {
@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // ==================== PROCESAR PARÃMETROS URL (ENLACES COMPARTIBLES) ====================
+    // ==================== PROCESAR PARÁMETROS URL (ENLACES COMPARTIBLES) ====================
     const urlParams = new URLSearchParams(window.location.search);
     const paramMuni = urlParams.get('muni');
     const paramPadron = urlParams.get('padron') || urlParams.get('cta_cte') || urlParams.get('codigo');
@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadedCustomMuni = await cargarDatosMunicipales(paramMuni);
     }
 
-    // Cargar automÃ¡ticamente parcelas si no se cargÃ³ una municipalidad especÃ­fica
+    // Cargar automáticamente parcelas si no se cargó una municipalidad específica
     if (!loadedCustomMuni && !State.get('geojson')?.features?.length) {
       await App.loadSampleCiudadano().catch(() => {});
     }
@@ -722,7 +722,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   } catch (error) {
-    console.error('[CiudadanoApp] Error en inicializaciÃ³n:', error);
+    console.error('[CiudadanoApp] Error en inicialización:', error);
   } finally {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) {

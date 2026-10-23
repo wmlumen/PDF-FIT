@@ -15,7 +15,6 @@ export const AppNotarial = {
   init() {
     this.initMap();
     this.initEvents();
-    this.cargarDatosEjemplo();
     console.log('✅ Portal Notarial inicializado correctamente.');
   },
 
@@ -97,39 +96,6 @@ export const AppNotarial = {
     }
   },
 
-  cargarDatosEjemplo() {
-    // Parcela de ejemplo en Piribebuy/Cordillera
-    const demoFeature = {
-      type: 'Feature',
-      properties: {
-        PADRON: '4589',
-        CCC: '12-0458-09',
-        FINCA_MATRICULA: 'F-1420',
-        DISTRITO: 'PIRIBEBUY',
-        SUPERFICIE_M2: 720.50,
-        TITULAR: 'JUAN PÉREZ ACOSTA',
-        DOC_TITULAR: '2.345.678',
-        VALOR_FISCAL_GS: 75000000,
-        VALOR_VENTA_GS: 120000000,
-        ESTADO_DGRP: 'LIBRE',
-        MUNI_AL_DIA: true,
-        AFECTACION_MADES: false
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [-57.0450, -25.4650],
-          [-57.0447, -25.4650],
-          [-57.0447, -25.4655],
-          [-57.0450, -25.4655],
-          [-57.0450, -25.4650]
-        ]]
-      }
-    };
-
-    this.cargarParcela(demoFeature);
-  },
-
   cargarParcela(feature) {
     activeParcelFeature = feature;
     const props = feature.properties || {};
@@ -151,10 +117,10 @@ export const AppNotarial = {
     if (supInput) supInput.value = props.SUPERFICIE_M2 || '';
 
     const vfInput = document.getElementById('inp-val-fiscal');
-    if (vfInput) vfInput.value = props.VALOR_FISCAL_GS || 75000000;
+    if (vfInput) vfInput.value = props.VALOR_FISCAL_GS || '';
 
     const vvInput = document.getElementById('inp-val-venta');
-    if (vvInput) vvInput.value = props.VALOR_VENTA_GS || 120000000;
+    if (vvInput) vvInput.value = props.VALOR_VENTA_GS || '';
 
     // Dibujar en mapa
     if (mapInstance && feature.geometry) {
@@ -214,7 +180,7 @@ export const AppNotarial = {
 
   generarMinuta() {
     if (!activeParcelFeature) return;
-    const finca = document.getElementById('inp-finca')?.value || 'F-1420';
+    const finca = document.getElementById('inp-finca')?.value || '';
     const minuta = EscribaniaModule.generarMinutaNotarial(activeParcelFeature, {
       fincaMatricula: finca
     });
@@ -238,8 +204,8 @@ export const AppNotarial = {
 
   ejecutarDueDiligence() {
     const estadoDGRP = document.getElementById('sel-dgrp-estado')?.value || 'LIBRE';
-    const supTitulo = parseFloat(document.getElementById('inp-superficie')?.value || 720.50);
-    const supPlano = parseFloat(document.getElementById('inp-superficie')?.value || 720.50);
+    const supTitulo = parseFloat(document.getElementById('inp-superficie')?.value || 0);
+    const supPlano = parseFloat(document.getElementById('inp-superficie')?.value || 0);
     const muniAlDia = document.getElementById('chk-muni-dia')?.checked ?? true;
     const afectMades = document.getElementById('chk-mades-afect')?.checked ?? false;
 

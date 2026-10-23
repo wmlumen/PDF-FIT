@@ -54,6 +54,10 @@ test('Server HTTP - Servidor entrega 200 OK para todas las rutas canónicas de i
         const text = await res.text();
         assert.ok(text.length > 300, `Ruta ${r.url} debe servir HTML no vacío`);
     }
+
+    const rootRedirectRes = await fetch(`${BASE_URL}/`, { redirect: 'manual' });
+    assert.equal(rootRedirectRes.status, 302, 'Ruta / debe responder con redirección 302');
+    assert.equal(rootRedirectRes.headers.get('location'), '/index.html', 'Ruta / debe redirigir a /index.html');
 });
 
 // =========================================================================

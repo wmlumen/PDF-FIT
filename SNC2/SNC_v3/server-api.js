@@ -2012,8 +2012,9 @@ if (ENV.NODE_ENV === 'production' && ENV.RED_TICKET_BASE_URL) {
 }
 
 app.get('/', (req, res) => {
-  res.type('text/html');
-  res.send(readFileSync(join(__dirname, 'index.html'), 'utf8'));
+  const qIdx = req.originalUrl.indexOf('?');
+  const query = qIdx !== -1 ? req.originalUrl.slice(qIdx) : '';
+  res.redirect(302, `/index.html${query}`);
 });
 
 app.use((req, res, next) => {

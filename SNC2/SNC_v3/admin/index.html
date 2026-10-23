@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Super Admin â€” SNC v3 Â· Ecosistema Integral Catastral</title>
+  <title>Super Admin — SNC v3 · Ecosistema Integral Catastral</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="/css/styles.css">
@@ -28,16 +28,16 @@
       <!-- Brand & Super Admin Badge -->
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/20 text-white font-black text-xl">
-          âš¡
+          ⚡
         </div>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-lg font-bold tracking-tight text-white">Panel de Super Administrador</h1>
             <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold tracking-wider uppercase">
-              ðŸ›¡ï¸ SUPER ADMIN V3
+              ðŸ›¡️ SUPER ADMIN V3
             </span>
           </div>
-          <p class="text-xs text-gray-400">Control Total del Ecosistema: Profesional Â· Municipal Â· Notarial</p>
+          <p class="text-xs text-gray-400">Control Total del Ecosistema: Profesional · Municipal · Notarial</p>
         </div>
       </div>
 
@@ -45,14 +45,14 @@
       <div class="flex flex-wrap items-center gap-2">
         <div class="hidden xl:flex items-center gap-1.5 bg-gray-950/80 p-1 rounded-xl border border-gray-800 text-xs">
           <span class="text-gray-400 px-2 font-medium">Ir a Entorno:</span>
-          <a href="/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1" title="Abrir Mesa TÃ©cnica de Agrimensura">
+          <a href="/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1" title="Abrir Mesa Técnica de Agrimensura">
             <span>ðŸ“</span> Profesional
           </a>
-          <a href="/municipal/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1" title="Abrir MÃ³dulo Municipal Ley 3966">
-            <span>ðŸ›ï¸</span> Municipal
+          <a href="/municipal/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1" title="Abrir Módulo Municipal Ley 3966">
+            <span>ðŸ›️</span> Municipal
           </a>
-          <a href="/notarial/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1" title="Abrir Portal Notarial y EscribanÃ­as">
-            <span>âš–ï¸</span> Notarial
+          <a href="/notarial/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1" title="Abrir Portal Notarial y Escribanías">
+            <span>⚖️</span> Notarial
           </a>
           <a href="/ciudadano/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1" title="Abrir Portal Ciudadano">
             <span>ðŸ‘¥</span> Ciudadano
@@ -62,7 +62,7 @@
         <div class="flex items-center gap-3 pl-2 border-l border-gray-800">
           <span id="userEmail" class="text-xs text-gray-300 font-mono hidden sm:inline-block bg-gray-800/80 px-2.5 py-1 rounded-lg border border-gray-700">superadmin@snc.gov.py</span>
           <button id="logoutBtn" class="px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-white bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 rounded-lg transition-colors">
-            Cerrar sesiÃ³n
+            Cerrar sesión
           </button>
         </div>
       </div>
@@ -94,14 +94,14 @@
         <!-- 3. Pilar Municipal -->
         <li role="presentation">
           <button role="tab" data-tab="municipal" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
-            <span class="text-base">ðŸ›ï¸</span> Municipal (Ley 3966)
+            <span class="text-base">ðŸ›️</span> Municipal (Ley 3966)
           </button>
         </li>
 
         <!-- 4. Pilar Notarial -->
         <li role="presentation">
           <button role="tab" data-tab="notarial" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
-            <span class="text-base">âš–ï¸</span> Notarial (EscribanÃ­as / RUN)
+            <span class="text-base">⚖️</span> Notarial (Escribanías / RUN)
           </button>
         </li>
 
@@ -126,10 +126,10 @@
           </button>
         </li>
 
-        <!-- 8. Seguridad & AuditorÃ­a -->
+        <!-- 8. Seguridad & Auditoría -->
         <li role="presentation">
           <button role="tab" data-tab="audit" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
-            <span class="text-base">ðŸ›¡ï¸</span> AuditorÃ­a & Seguridad
+            <span class="text-base">ðŸ›¡️</span> Auditoría & Seguridad
           </button>
         </li>
         <!-- 9. Control de Layout de Mapas y Widgets -->
@@ -154,12 +154,12 @@
             <span class="text-2xl">ðŸŒ</span>
             <div>
               <h2 class="text-base font-bold text-white">Ecosistema Catastral Multi-Tenant Unificado</h2>
-              <p class="text-xs text-gray-400">SupervisiÃ³n en tiempo real de profesionales agrimensores, municipios distritales y escribanÃ­as pÃºblicas adheridas.</p>
+              <p class="text-xs text-gray-400">Supervisión en tiempo real de profesionales agrimensores, municipios distritales y escribanías públicas adheridas.</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Servidor en LÃ­nea
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Servidor en Línea
             </span>
           </div>
         </div>
@@ -171,18 +171,18 @@
             <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span class="font-semibold text-blue-400 flex items-center gap-1"><span>ðŸ“</span> PROFESIONAL</span>
-              <a href="#profesional" onclick="window.switchTab('profesional')" class="text-blue-400 hover:underline">Gestionar â†’</a>
+              <a href="#profesional" onclick="window.switchTab('profesional')" class="text-blue-400 hover:underline">Gestionar →</a>
             </div>
             <p id="dashProfessionals" class="text-2xl font-black text-white mt-1">12</p>
-            <p class="text-[11px] text-gray-400 mt-1">Agrimensores con MatrÃ­cula MOPC/SNC</p>
+            <p class="text-[11px] text-gray-400 mt-1">Agrimensores con Matrícula MOPC/SNC</p>
           </div>
 
           <!-- Pilar Municipal -->
           <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
             <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-              <span class="font-semibold text-emerald-400 flex items-center gap-1"><span>ðŸ›ï¸</span> MUNICIPAL</span>
-              <a href="#municipal" onclick="window.switchTab('municipal')" class="text-emerald-400 hover:underline">Gestionar â†’</a>
+              <span class="font-semibold text-emerald-400 flex items-center gap-1"><span>ðŸ›️</span> MUNICIPAL</span>
+              <a href="#municipal" onclick="window.switchTab('municipal')" class="text-emerald-400 hover:underline">Gestionar →</a>
             </div>
             <p id="dashMunicipalities" class="text-2xl font-black text-white mt-1">1 <span class="text-xs text-gray-400 font-normal">(Piribebuy)</span></p>
             <p class="text-[11px] text-gray-400 mt-1">Comunas con Catastro Multifinalitario</p>
@@ -192,11 +192,11 @@
           <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
             <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-              <span class="font-semibold text-purple-400 flex items-center gap-1"><span>âš–ï¸</span> NOTARIAL</span>
-              <a href="#notarial" onclick="window.switchTab('notarial')" class="text-purple-400 hover:underline">Gestionar â†’</a>
+              <span class="font-semibold text-purple-400 flex items-center gap-1"><span>⚖️</span> NOTARIAL</span>
+              <a href="#notarial" onclick="window.switchTab('notarial')" class="text-purple-400 hover:underline">Gestionar →</a>
             </div>
             <p id="dashNotaries" class="text-2xl font-black text-white mt-1">8</p>
-            <p class="text-[11px] text-gray-400 mt-1">EscribanÃ­as y Minutas Validadas</p>
+            <p class="text-[11px] text-gray-400 mt-1">Escribanías y Minutas Validadas</p>
           </div>
 
           <!-- Expedientes B2B2G -->
@@ -204,7 +204,7 @@
             <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span class="font-semibold text-amber-400 flex items-center gap-1"><span>ðŸ“</span> EXPEDIENTES</span>
-              <a href="#expedientes" onclick="window.switchTab('expedientes')" class="text-amber-400 hover:underline">Ver todos â†’</a>
+              <a href="#expedientes" onclick="window.switchTab('expedientes')" class="text-amber-400 hover:underline">Ver todos →</a>
             </div>
             <p id="dashExpedientes" class="text-2xl font-black text-white mt-1">24</p>
             <p class="text-[11px] text-gray-400 mt-1">En curso entre Agrimensor / Comuna / RUN</p>
@@ -219,48 +219,48 @@
                 <span class="text-lg">ðŸ“</span>
                 <h3 class="font-bold text-white text-sm">Entorno Pericial y CAD/GIS</h3>
               </div>
-              <p class="text-xs text-gray-400 mb-4">Mesa tÃ©cnica para peritos agrimensores. Carga de SHP/DXF, ediciÃ³n geomÃ©trica COGO, validaciÃ³n SNC 551/2023 y generaciÃ³n de certificados preventivos.</p>
+              <p class="text-xs text-gray-400 mb-4">Mesa técnica para peritos agrimensores. Carga de SHP/DXF, edición geométrica COGO, validación SNC 551/2023 y generación de certificados preventivos.</p>
             </div>
             <a href="/" target="_blank" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
-              Abrir EstaciÃ³n Profesional â†—
+              Abrir Estación Profesional ↗
             </a>
           </div>
 
           <div class="p-4 rounded-xl bg-gray-900/90 border border-gray-800 hover:border-emerald-500/40 transition flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-lg">ðŸ›ï¸</span>
+                <span class="text-lg">ðŸ›️</span>
                 <h3 class="font-bold text-white text-sm">Entorno Municipal y Urbanismo</h3>
               </div>
-              <p class="text-xs text-gray-400 mb-4">MÃ³dulo comunal bajo Ley 3966/2010. Control de fraccionamientos, cesiÃ³n de calles (16%), plazas (5-7%), franja hÃ­drica (30m) y publicaciÃ³n ciudadana.</p>
+              <p class="text-xs text-gray-400 mb-4">Módulo comunal bajo Ley 3966/2010. Control de fraccionamientos, cesión de calles (16%), plazas (5-7%), franja hídrica (30m) y publicación ciudadana.</p>
             </div>
             <a href="/municipal/" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
-              Abrir Plataforma Municipal â†—
+              Abrir Plataforma Municipal ↗
             </a>
           </div>
 
           <div class="p-4 rounded-xl bg-gray-900/90 border border-gray-800 hover:border-purple-500/40 transition flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-lg">âš–ï¸</span>
-                <h3 class="font-bold text-white text-sm">Entorno Notarial y EscribanÃ­as</h3>
+                <span class="text-lg">⚖️</span>
+                <h3 class="font-bold text-white text-sm">Entorno Notarial y Escribanías</h3>
               </div>
-              <p class="text-xs text-gray-400 mb-4">Seguridad jurÃ­dica inmobiliaria segÃºn Ley 7.424/25 RUN. LiquidaciÃ³n de gastos de transferencia, minutas notariales con linderos geodÃ©sicos y debida diligencia.</p>
+              <p class="text-xs text-gray-400 mb-4">Seguridad jurídica inmobiliaria según Ley 7.424/25 RUN. Liquidación de gastos de transferencia, minutas notariales con linderos geodésicos y debida diligencia.</p>
             </div>
             <a href="/notarial/" target="_blank" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
-              Abrir Portal Notarial â†—
+              Abrir Portal Notarial ↗
             </a>
           </div>
         </div>
 
-        <!-- Visor CartogrÃ¡fico Territorial Unificado -->
+        <!-- Visor Cartográfico Territorial Unificado -->
         <div id="admin-map-container" class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
             <div>
               <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                <span>ðŸ—ºï¸</span> Visor Territorial Unificado (Super Admin GIS)
+                <span>ðŸ—º️</span> Visor Territorial Unificado (Super Admin GIS)
               </h3>
-              <p class="text-xs text-gray-400">InspecciÃ³n de capas distritales, hidrografÃ­a, loteamientos y Ã¡reas protegidas.</p>
+              <p class="text-xs text-gray-400">Inspección de capas distritales, hidrografía, loteamientos y áreas protegidas.</p>
             </div>
             <div class="flex flex-wrap gap-2" id="piribebuy-layer-toggles"></div>
           </div>
@@ -275,43 +275,43 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span>ðŸ“</span> PadrÃ³n de Agrimensores y GestiÃ³n Pericial
+              <span>ðŸ“</span> Padrón de Agrimensores y Gestión Pericial
             </h2>
-            <p class="text-xs text-gray-400">Control de habilitaciÃ³n de profesionales tÃ©cnicos, matrÃ­culas MOPC/SNC y cotas de validaciÃ³n segÃºn Res. SNC 551/2023.</p>
+            <p class="text-xs text-gray-400">Control de habilitación de profesionales técnicos, matrículas MOPC/SNC y cotas de validación según Res. SNC 551/2023.</p>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnNuevoAgrimensor" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5">
-              <span>+</span> Nueva MatrÃ­cula Pericial
+              <span>+</span> Nueva Matrícula Pericial
             </button>
             <a href="/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
-              Ir a Mesa TÃ©cnica â†—
+              Ir a Mesa Técnica ↗
             </a>
           </div>
         </div>
 
-        <!-- ParÃ¡metros de Tolerancia Pericial SNC 551/2023 -->
+        <!-- Parámetros de Tolerancia Pericial SNC 551/2023 -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
           <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
-            <span>âš™ï¸</span> ParÃ¡metros Oficiales de Tolerancia y Cierre (Res. SNC 551/2023)
+            <span>⚙️</span> Parámetros Oficiales de Tolerancia y Cierre (Res. SNC 551/2023)
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <span class="text-[11px] text-gray-400 block mb-1">Tolerancia Superficie Urbana</span>
-              <span class="text-base font-bold text-blue-400">Â± 0.05 mÂ²</span>
+              <span class="text-base font-bold text-blue-400">± 0.05 m²</span>
               <span class="text-[10px] text-gray-500 block mt-1">Art. 14 Res. 551</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <span class="text-[11px] text-gray-400 block mb-1">Tolerancia Superficie Rural</span>
-              <span class="text-base font-bold text-blue-400">Â± 0.50 mÂ²</span>
+              <span class="text-base font-bold text-blue-400">± 0.50 m²</span>
               <span class="text-[10px] text-gray-500 block mt-1">Art. 15 Res. 551</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[11px] text-gray-400 block mb-1">SuperposiciÃ³n Linderos MÃ¡x</span>
+              <span class="text-[11px] text-gray-400 block mb-1">Superposición Linderos Máx</span>
               <span class="text-base font-bold text-emerald-400">0.00% (Cero)</span>
               <span class="text-[10px] text-gray-500 block mt-1">Algoritmo Sweep-Line</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[11px] text-gray-400 block mb-1">ProyecciÃ³n GeodÃ©sica Obligatoria</span>
+              <span class="text-[11px] text-gray-400 block mb-1">Proyección Geodésica Obligatoria</span>
               <span class="text-base font-bold text-amber-400">EPSG:32721 (UTM 21S)</span>
               <span class="text-[10px] text-gray-500 block mt-1">Datum SIRGAS2000 / WGS84</span>
             </div>
@@ -324,9 +324,9 @@
             <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
               <tr>
                 <th class="px-4 py-3 font-semibold">Agrimensor / Perito</th>
-                <th class="px-4 py-3 font-semibold">MatrÃ­cula MOPC</th>
+                <th class="px-4 py-3 font-semibold">Matrícula MOPC</th>
                 <th class="px-4 py-3 font-semibold">Registro SNC</th>
-                <th class="px-4 py-3 font-semibold">CircunscripciÃ³n</th>
+                <th class="px-4 py-3 font-semibold">Circunscripción</th>
                 <th class="px-4 py-3 font-semibold">Expedientes Activos</th>
                 <th class="px-4 py-3 font-semibold">Estado</th>
                 <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
@@ -346,47 +346,47 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span>ðŸ›ï¸</span> GestiÃ³n Municipal Multi-Tenant (Ley 3966/2010)
+              <span>ðŸ›️</span> Gestión Municipal Multi-Tenant (Ley 3966/2010)
             </h2>
-            <p class="text-xs text-gray-400">AdministraciÃ³n de comunas adheridas, ordenanzas urbanÃ­sticas, dependencias comunales y publicaciÃ³n ciudadana.</p>
+            <p class="text-xs text-gray-400">Administración de comunas adheridas, ordenanzas urbanísticas, dependencias comunales y publicación ciudadana.</p>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnPublicarPiribebuy" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-md flex items-center gap-1.5">
               <span>ðŸš€</span> Publicar Parcelas a Ciudadanos
             </button>
             <a href="/municipal/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
-              Abrir Plataforma Municipal â†—
+              Abrir Plataforma Municipal ↗
             </a>
           </div>
         </div>
 
-        <!-- ParÃ¡metros UrbanÃ­sticos Comuna Activa (Piribebuy) -->
+        <!-- Parámetros Urbanísticos Comuna Activa (Piribebuy) -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span>ðŸ“</span> ParÃ¡metros Urbanos Comuna: <span class="text-emerald-400">Municipalidad de Piribebuy</span>
+              <span>ðŸ“</span> Parámetros Urbanos Comuna: <span class="text-emerald-400">Municipalidad de Piribebuy</span>
             </h3>
-            <span class="text-xs text-gray-400">CÃ³digo Distrital: 0306 Â· Dpto: Cordillera</span>
+            <span class="text-xs text-gray-400">Código Distrital: 0306 · Dpto: Cordillera</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[10px] text-gray-400 block">Frente MÃ­nimo</span>
+              <span class="text-[10px] text-gray-400 block">Frente Mínimo</span>
               <span class="text-sm font-bold text-white">12.00 m</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[10px] text-gray-400 block">Superficie MÃ­nima</span>
-              <span class="text-sm font-bold text-white">360.00 mÂ²</span>
+              <span class="text-[10px] text-gray-400 block">Superficie Mínima</span>
+              <span class="text-sm font-bold text-white">360.00 m²</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[10px] text-gray-400 block">CesiÃ³n Calles (MÃ­n)</span>
+              <span class="text-[10px] text-gray-400 block">Cesión Calles (Mín)</span>
               <span class="text-sm font-bold text-emerald-400">16.00 %</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[10px] text-gray-400 block">CesiÃ³n Plazas</span>
-              <span class="text-sm font-bold text-emerald-400">5.00% â€“ 7.00%</span>
+              <span class="text-[10px] text-gray-400 block">Cesión Plazas</span>
+              <span class="text-sm font-bold text-emerald-400">5.00% – 7.00%</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
-              <span class="text-[10px] text-gray-400 block">Franja HÃ­drica (Ley 3239)</span>
+              <span class="text-[10px] text-gray-400 block">Franja Hídrica (Ley 3239)</span>
               <span class="text-sm font-bold text-cyan-400">30.00 m</span>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
@@ -403,50 +403,50 @@
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
-              <div class="w-8 h-8 mx-auto mb-1 rounded bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">ðŸ›ï¸</div>
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">ðŸ›️</div>
               <p class="text-xs font-semibold text-white">Catastro</p>
-              <p class="text-[10px] text-gray-400">VisaciÃ³n total</p>
+              <p class="text-[10px] text-gray-400">Visación total</p>
             </div>
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
               <div class="w-8 h-8 mx-auto mb-1 rounded bg-green-600/20 text-green-400 flex items-center justify-center font-bold">ðŸŒ¿</div>
               <p class="text-xs font-semibold text-white">Medio Ambiente</p>
-              <p class="text-[10px] text-gray-400">Franja hÃ­drica 30m</p>
+              <p class="text-[10px] text-gray-400">Franja hídrica 30m</p>
             </div>
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
               <div class="w-8 h-8 mx-auto mb-1 rounded bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold">ðŸ“</div>
-              <p class="text-xs font-semibold text-white">PlanificaciÃ³n</p>
+              <p class="text-xs font-semibold text-white">Planificación</p>
               <p class="text-[10px] text-gray-400">Loteamientos</p>
             </div>
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
               <div class="w-8 h-8 mx-auto mb-1 rounded bg-orange-600/20 text-orange-400 flex items-center justify-center font-bold">ðŸš§</div>
               <p class="text-xs font-semibold text-white">Obras y Vialidad</p>
-              <p class="text-[10px] text-gray-400">VÃ­as y ochavas</p>
+              <p class="text-[10px] text-gray-400">Vías y ochavas</p>
             </div>
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
               <div class="w-8 h-8 mx-auto mb-1 rounded bg-cyan-600/20 text-cyan-400 flex items-center justify-center font-bold">ðŸŽ“</div>
-              <p class="text-xs font-semibold text-white">EducaciÃ³n</p>
+              <p class="text-xs font-semibold text-white">Educación</p>
               <p class="text-[10px] text-gray-400">Equipamiento</p>
             </div>
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
               <div class="w-8 h-8 mx-auto mb-1 rounded bg-amber-600/20 text-amber-400 flex items-center justify-center font-bold">ðŸº</div>
               <p class="text-xs font-semibold text-white">Patrimonio</p>
-              <p class="text-[10px] text-gray-400">Casco histÃ³rico</p>
+              <p class="text-[10px] text-gray-400">Casco histórico</p>
             </div>
           </div>
         </div>
 
-        <!-- FiscalizaciÃ³n y Morosidad Anti-PrescripciÃ³n -->
+        <!-- Fiscalización y Morosidad Anti-Prescripción -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span>ðŸš¦</span> FiscalizaciÃ³n Tributaria y PrevenciÃ³n de PrescripciÃ³n (Ley 125/91)
+              <span>ðŸš¦</span> Fiscalización Tributaria y Prevención de Prescripción (Ley 125/91)
             </h3>
-            <span class="text-xs text-amber-400">SemÃ¡foro de Morosidad Inmobiliaria</span>
+            <span class="text-xs text-amber-400">Semáforo de Morosidad Inmobiliaria</span>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-between">
               <div>
-                <span class="text-xs text-gray-400 block">Al DÃ­a (Verde)</span>
+                <span class="text-xs text-gray-400 block">Al Día (Verde)</span>
                 <span class="text-xl font-bold text-emerald-400">842 Lotes</span>
               </div>
               <span class="text-2xl">ðŸŸ¢</span>
@@ -460,7 +460,7 @@
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-between">
               <div>
-                <span class="text-xs text-gray-400 block">Alerta PrescripciÃ³n 5 AÃ±os (Rojo)</span>
+                <span class="text-xs text-gray-400 block">Alerta Prescripción 5 Años (Rojo)</span>
                 <span class="text-xl font-bold text-red-400">19 Lotes</span>
               </div>
               <span class="text-2xl">ðŸ”´</span>
@@ -470,27 +470,27 @@
       </section>
 
       <!-- ============================================================ -->
-      <!-- TAB 4: PILAR NOTARIAL (ESCRIBANÃAS / RUN)                    -->
+      <!-- TAB 4: PILAR NOTARIAL (ESCRIBANÍAS / RUN)                    -->
       <!-- ============================================================ -->
       <section role="tabpanel" id="panel-notarial" class="tab-panel" aria-labelledby="tab-notarial">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <span>âš–ï¸</span> PadrÃ³n Notarial y Seguridad Registral (Ley 7.424/25 RUN)
+              <span>⚖️</span> Padrón Notarial y Seguridad Registral (Ley 7.424/25 RUN)
             </h2>
-            <p class="text-xs text-gray-400">SupervisiÃ³n de escribanÃ­as pÃºblicas, generaciÃ³n de minutas y validaciÃ³n de 4 slots de firma electrÃ³nica cualificada (Ley 6822/2021).</p>
+            <p class="text-xs text-gray-400">Supervisión de escribanías públicas, generación de minutas y validación de 4 slots de firma electrónica cualificada (Ley 6822/2021).</p>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnNuevaEscribania" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-md">
-              <span>+</span> Habilitar EscribanÃ­a
+              <span>+</span> Habilitar Escribanía
             </button>
             <a href="/notarial/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
-              Ir a Portal Notarial â†—
+              Ir a Portal Notarial ↗
             </a>
           </div>
         </div>
 
-        <!-- JerarquÃ­a 4 Slots de Firma ElectrÃ³nica Cualificada -->
+        <!-- Jerarquía 4 Slots de Firma Electrónica Cualificada -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
           <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
             <span>ðŸ”</span> Cadena de Confianza y Sellado de Tiempo (4 Slots - Ley 6822/2021)
@@ -499,15 +499,15 @@
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
                 <span class="font-bold text-blue-400">SLOT 1</span>
-                <span class="text-emerald-400">â— Verificado</span>
+                <span class="text-emerald-400">● Verificado</span>
               </div>
-              <p class="text-xs font-semibold text-white">Responsable TÃ©cnico</p>
+              <p class="text-xs font-semibold text-white">Responsable Técnico</p>
               <p class="text-[10px] text-gray-500 mt-1">Perito Agrimensor (MOPC/SNC)</p>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
                 <span class="font-bold text-emerald-400">SLOT 2</span>
-                <span class="text-emerald-400">â— Verificado</span>
+                <span class="text-emerald-400">● Verificado</span>
               </div>
               <p class="text-xs font-semibold text-white">Revisor Municipal</p>
               <p class="text-[10px] text-gray-500 mt-1">Director de Catastro Comunal</p>
@@ -515,15 +515,15 @@
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
                 <span class="font-bold text-amber-400">SLOT 3</span>
-                <span class="text-amber-400">â³ En CalificaciÃ³n</span>
+                <span class="text-amber-400">⏳ En Calificación</span>
               </div>
               <p class="text-xs font-semibold text-white">Calificador Catastral</p>
-              <p class="text-[10px] text-gray-500 mt-1">TÃ©cnico Analista SNC Central</p>
+              <p class="text-[10px] text-gray-500 mt-1">Técnico Analista SNC Central</p>
             </div>
             <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
               <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
                 <span class="font-bold text-purple-400">SLOT 4</span>
-                <span class="text-gray-500">â—‹ Pendiente</span>
+                <span class="text-gray-500">○ Pendiente</span>
               </div>
               <p class="text-xs font-semibold text-white">Autoridad Resolutiva</p>
               <p class="text-[10px] text-gray-500 mt-1">Director SNC / RUN</p>
@@ -531,21 +531,21 @@
           </div>
         </div>
 
-        <!-- Tabla de EscribanÃ­as Habilitadas -->
+        <!-- Tabla de Escribanías Habilitadas -->
         <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
           <table class="w-full text-xs">
             <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
               <tr>
                 <th class="px-4 py-3 font-semibold">Notario / Escribano</th>
-                <th class="px-4 py-3 font-semibold">Registro Notarial NÂº</th>
-                <th class="px-4 py-3 font-semibold">CircunscripciÃ³n Judicial</th>
+                <th class="px-4 py-3 font-semibold">Registro Notarial Nº</th>
+                <th class="px-4 py-3 font-semibold">Circunscripción Judicial</th>
                 <th class="px-4 py-3 font-semibold">Minutas Tramitadas</th>
                 <th class="px-4 py-3 font-semibold">Estado</th>
                 <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
               </tr>
             </thead>
             <tbody id="notariosTable" class="divide-y divide-gray-800">
-              <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Cargando escribanÃ­as registradas...</td></tr>
+              <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Cargando escribanías registradas...</td></tr>
             </tbody>
           </table>
         </div>
@@ -560,12 +560,12 @@
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
               <span>ðŸ“</span> Trazabilidad de Expedientes Interconectados (B2B2G)
             </h2>
-            <p class="text-xs text-gray-400">Flujo completo entre Agrimensor Independiente $\rightarrow$ Municipio Comunal $\rightarrow$ EscribanÃ­a $\rightarrow$ RUN.</p>
+            <p class="text-xs text-gray-400">Flujo completo entre Agrimensor Independiente $\rightarrow$ Municipio Comunal $\rightarrow$ Escribanía $\rightarrow$ RUN.</p>
           </div>
           <div class="flex items-center gap-2">
             <select id="expedienteFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-amber-500">
               <option value="">Todos los estados</option>
-              <option value="En revisiÃ³n">En revisiÃ³n</option>
+              <option value="En revisión">En revisión</option>
               <option value="Observado">Observado</option>
               <option value="Aprobado">Aprobado</option>
               <option value="Rechazado">Rechazado</option>
@@ -581,7 +581,7 @@
                 <th class="px-4 py-3 font-semibold">Expediente</th>
                 <th class="px-4 py-3 font-semibold">Municipio</th>
                 <th class="px-4 py-3 font-semibold">Agrimensor</th>
-                <th class="px-4 py-3 font-semibold">NotarÃ­a</th>
+                <th class="px-4 py-3 font-semibold">Notaría</th>
                 <th class="px-4 py-3 font-semibold">Estado</th>
                 <th class="px-4 py-3 font-semibold">Fecha Ingreso</th>
                 <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
@@ -612,7 +612,7 @@
               <option value="professional">Profesional / Agrimensor</option>
               <option value="manager">Revisor Municipal</option>
               <option value="notary">Notario / Escribano</option>
-              <option value="technician">TÃ©cnico</option>
+              <option value="technician">Técnico</option>
               <option value="member">Miembro</option>
               <option value="viewer">Observador</option>
             </select>
@@ -655,7 +655,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h2 class="text-lg font-bold text-white">Planes y Tarifas B2B2G</h2>
-            <p class="text-xs text-gray-400">ConfiguraciÃ³n de suscripciones para agrimensores independientes, comunas y escribanÃ­as.</p>
+            <p class="text-xs text-gray-400">Configuración de suscripciones para agrimensores independientes, comunas y escribanías.</p>
           </div>
           <button id="createPlanBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5 shadow-md">
             <span>+</span> Nuevo Plan
@@ -670,7 +670,7 @@
                 <th class="px-4 py-3 font-semibold">Nombre</th>
                 <th class="px-4 py-3 font-semibold">Tipo</th>
                 <th class="px-4 py-3 font-semibold">Precio</th>
-                <th class="px-4 py-3 font-semibold">LÃ­mite Proyectos</th>
+                <th class="px-4 py-3 font-semibold">Límite Proyectos</th>
                 <th class="px-4 py-3 font-semibold">Expedientes</th>
                 <th class="px-4 py-3 font-semibold">Estado</th>
                 <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
@@ -684,12 +684,12 @@
       </section>
 
       <!-- ============================================================ -->
-      <!-- TAB 8: SEGURIDAD, AUDITORÃA & IPS                            -->
+      <!-- TAB 8: SEGURIDAD, AUDITORÍA & IPS                            -->
       <!-- ============================================================ -->
       <section role="tabpanel" id="panel-audit" class="tab-panel" aria-labelledby="tab-audit">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg font-bold text-white">AuditorÃ­a y Trazabilidad Forense</h2>
+            <h2 class="text-lg font-bold text-white">Auditoría y Trazabilidad Forense</h2>
             <p class="text-xs text-gray-400">Monitoreo de seguridad, control de IPs y registro inmutable de transacciones.</p>
           </div>
           <button id="refreshAudit" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition border border-gray-700">
@@ -704,7 +704,7 @@
             </h3>
             <div id="errorLogs" class="max-h-[360px] overflow-y-auto scrollbar-thin font-mono text-[11px] p-3 rounded-lg bg-gray-950 border border-gray-800 text-gray-300 space-y-1">
               <p class="text-emerald-400">[INFO] Servidor backend operando con normalidad.</p>
-              <p class="text-gray-500">[AUTH] Token JWT emitido para sesiÃ³n superadmin.</p>
+              <p class="text-gray-500">[AUTH] Token JWT emitido para sesión superadmin.</p>
             </div>
           </div>
 
@@ -868,11 +868,11 @@
           <input type="text" id="memberName" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
         </div>
         <div>
-          <label class="block font-medium text-gray-300 mb-1">Correo ElectrÃ³nico</label>
+          <label class="block font-medium text-gray-300 mb-1">Correo Electrónico</label>
           <input type="email" id="memberEmail" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
         </div>
         <div>
-          <label class="block font-medium text-gray-300 mb-1">ContraseÃ±a</label>
+          <label class="block font-medium text-gray-300 mb-1">Contraseña</label>
           <input type="password" id="memberPassword" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500" autocomplete="new-password">
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -886,7 +886,7 @@
               <option value="professional">Profesional / Agrimensor</option>
               <option value="manager">Revisor Municipal</option>
               <option value="notary">Notario / Escribano</option>
-              <option value="technician">TÃ©cnico Catastral</option>
+              <option value="technician">Técnico Catastral</option>
               <option value="member">Miembro</option>
               <option value="viewer">Observador</option>
             </select>

@@ -303,7 +303,7 @@
       "phase": 3,
       "status": "abierto",
       "title": "Encoding: un solo caso real (el resto era falso positivo)",
-      "evidence": "Solo js/mapEngine.js:1852 tiene doble codificación UTF-8 (cartogrÃ¡ficas, certificaciÃ³n). El resto de los archivos —incluidos login-directo.html, js/app.js, DEPLOY.md, js/topology.worker.js— es UTF-8 válido; el \"mojibake\" observado era un artefacto de la consola de Windows. Corregir la línea y añadir .editorconfig + check de encoding en CI",
+      "evidence": "Solo js/mapEngine.js:1852 tiene doble codificación UTF-8 (cartográficas, certificación). El resto de los archivos —incluidos login-directo.html, js/app.js, DEPLOY.md, js/topology.worker.js— es UTF-8 válido; el \"mojibake\" observado era un artefacto de la consola de Windows. Corregir la línea y añadir .editorconfig + check de encoding en CI",
       "source": "docs/AUDITORIA_SNC_v3_2026-10-18.md#B-02"
     },
     {

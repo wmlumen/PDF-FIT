@@ -108,7 +108,7 @@
 - ref_node_fs
 - run_analysis.cjs
 - ValidadorMunicipal
-- PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)
+- PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)
 - mailer.js
 - api-security.test.mjs
 - `server-api.cjs` — Servidor experimental (PENDIENTE, listo para activar)
@@ -575,7 +575,7 @@ Nodes (3): CRS_LABEL(), PIRI_DEFS, renderCrsReport()
 
 ### Community 79 - "Plan de remediación"
 Cohesion: 0.12
-Nodes (16): 0. Contexto obligatorio: auditorÃ­a abierta (2026-10-18), Reglas adicionales mientras la auditorÃ­a estÃ© abierta, C-05 · Tokens JWT forjables / sesiones no revocables, 0. Estado, 1. Reglas para quien implemente, 2. Fase 0 — Contención (0-48 h, bloqueante de despliegue), 3. Fase 1 — Autorización y funcionalidad core (semana 1), 4. Fase 2 — Calidad, XSS y cadena de entrega (semanas 2-3) (+8 more)
+Nodes (16): 0. Contexto obligatorio: auditoría abierta (2026-10-18), Reglas adicionales mientras la auditoría esté abierta, C-05 · Tokens JWT forjables / sesiones no revocables, 0. Estado, 1. Reglas para quien implemente, 2. Fase 0 — Contención (0-48 h, bloqueante de despliegue), 3. Fase 1 — Autorización y funcionalidad core (semana 1), 4. Fase 2 — Calidad, XSS y cadena de entrega (semanas 2-3) (+8 more)
 
 ### Community 80 - "db-modulo9.test.mjs"
 Cohesion: 0.22
@@ -653,9 +653,9 @@ Nodes (11): captureLines, execGitLog(), findFilesMatching(), walk(), fs, gitLog,
 Cohesion: 0.23
 Nodes (3): runMunicipalValidation(), ValidadorMunicipal, validadorMunicipalDefault
 
-### Community 99 - "PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)"
+### Community 99 - "PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)"
 Cohesion: 0.15
-Nodes (13): 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3.1 Estructura de Datos (`data/`) — Regla Obligatoria, 3. Matriz RÃ¡pida de Dominios y Archivos Responsables, 4. Consulta RÃ¡pida de Estado, Paso 1: Identificar la ruta (DÃ³nde tocar) (+5 more)
+Nodes (13): 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3.1 Estructura de Datos (`data/`) — Regla Obligatoria, 3. Matriz Rápida de Dominios y Archivos Responsables, 4. Consulta Rápida de Estado, Paso 1: Identificar la ruta (Dónde tocar) (+5 more)
 
 ### Community 100 - "mailer.js"
 Cohesion: 0.21

@@ -2464,7 +2464,7 @@ export async function takeMapScreenshot() {
 }
 
 /**
- * Obtiene las dos vistas cartogrÃ¡ficas que integran el plano de certificaciÃ³n.
+ * Obtiene las dos vistas cartográficas que integran el plano de certificación.
  * La capa SNC se usa solamente como referencia visual; no se consulta ni se
  * incorporan atributos del servicio remoto.
  * @returns {Promise<{snc: string, satellite: string}>}

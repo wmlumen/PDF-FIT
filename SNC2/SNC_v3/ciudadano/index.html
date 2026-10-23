@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ciudadano PY Pro v1.0 â€” Catastro PÃºblico SNC 551/2023</title>
-  <meta name="description" content="Portal ciudadano para consulta pÃºblica de parcelas catastrales segÃºn ResoluciÃ³n SNC NÂ° 551/2023">
+  <title>Ciudadano PY Pro v1.0 — Catastro Público SNC 551/2023</title>
+  <meta name="description" content="Portal ciudadano para consulta pública de parcelas catastrales según Resolución SNC N° 551/2023">
   <meta name="theme-color" content="#4f46e5">
   <meta name="robots" content="noindex, nofollow">
   <meta name="color-scheme" content="dark">
@@ -42,7 +42,7 @@
   <div id="loading" role="status" aria-label="Cargando portal ciudadano">
     <div class="spinner"></div>
     <div class="text-xl font-bold">Ciudadano PY Pro</div>
-    <div class="text-sm text-slate-400 uppercase tracking-widest">Catastro PÃºblico SNC 551/2023</div>
+    <div class="text-sm text-slate-400 uppercase tracking-widest">Catastro Público SNC 551/2023</div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
@@ -63,14 +63,14 @@
           <span id="muni-brand" class="hidden text-xs px-2 py-0.5 rounded-full font-semibold border"></span>
         </h1>
         <p class="text-[10px] text-slate-400 font-mono uppercase tracking-widest flex items-center gap-1.5">
-          <span id="header-subtitle">Catastro PÃºblico Â· SNC 551/2023</span>
+          <span id="header-subtitle">Catastro Público · SNC 551/2023</span>
         </p>
       </div>
     </div>
 
-    <!-- ACCIONES SUPERIORES Y NAVEGACIÃ“N CRUZADA -->
+    <!-- ACCIONES SUPERIORES Y NAVEGACIÓN CRUZADA -->
     <div class="flex items-center gap-2">
-      <!-- NavegaciÃ³n a otros portales -->
+      <!-- Navegación a otros portales -->
       <a href="/" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-blue-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Entorno Profesional SNC">
         <i class="fas fa-landmark text-blue-400"></i>
         <span class="hidden sm:inline">Catastro Pro</span>
@@ -79,7 +79,7 @@
         <i class="fas fa-city text-emerald-400"></i>
         <span class="hidden sm:inline">Municipal</span>
       </a>
-      <a href="/notarial/" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-purple-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Portal Notarial y EscribanÃ­as">
+      <a href="/notarial/" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-purple-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Portal Notarial y Escribanías">
         <i class="fas fa-stamp text-purple-400"></i>
         <span class="hidden sm:inline">Notarial</span>
       </a>
@@ -129,7 +129,7 @@
           </div>
           <div class="space-y-2">
             <div class="relative">
-              <input id="parcel-search-input" type="text" placeholder="PadrÃ³n, Cta. Cte., o Lote..." class="w-full rounded-lg border border-slate-700 bg-slate-950 pl-3 pr-8 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none">
+              <input id="parcel-search-input" type="text" placeholder="Padrón, Cta. Cte., o Lote..." class="w-full rounded-lg border border-slate-700 bg-slate-950 pl-3 pr-8 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none">
               <button onclick="window.flyToParcel?.()" class="absolute right-2 top-2 text-slate-400 hover:text-indigo-400 transition" title="Buscar">
                 <i class="fas fa-arrow-right text-xs"></i>
               </button>
@@ -146,7 +146,7 @@
             <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
               <i class="fas fa-location-dot"></i> Ubicar por Enlace o Coords
             </span>
-            <button id="btn-clear-locate" type="button" class="text-[9px] text-slate-500 hover:text-rose-400 transition" title="Limpiar bÃºsqueda">
+            <button id="btn-clear-locate" type="button" class="text-[9px] text-slate-500 hover:text-rose-400 transition" title="Limpiar búsqueda">
               <i class="fas fa-xmark"></i>
             </button>
           </div>
@@ -166,7 +166,7 @@
           <div class="flex flex-wrap items-center gap-1">
             <span class="text-[8px] uppercase tracking-wider text-slate-500">Ejemplos:</span>
             <button type="button" onclick="window.CoordLocator?.fillAndLocate?.('https://maps.app.goo.gl/bWXxCDQcJ5nvGY3h9')" class="text-[8.5px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 rounded px-1.5 py-0.5 font-mono">maps.app.goo.gl</button>
-            <button type="button" onclick="window.CoordLocator?.fillAndLocate?.('25Â°18\'10.2\"S 57Â°30\'48.1\"W')" class="text-[8.5px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 rounded px-1.5 py-0.5 font-mono">DMS</button>
+            <button type="button" onclick="window.CoordLocator?.fillAndLocate?.('25°18\'10.2\"S 57°30\'48.1\"W')" class="text-[8.5px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 rounded px-1.5 py-0.5 font-mono">DMS</button>
           </div>
           <div id="coord-locate-status" class="hidden text-[10px] p-2 rounded bg-slate-900 border border-slate-800"></div>
         </section>
@@ -188,7 +188,7 @@
               </span>
             </label>
 
-            <!-- Leyenda de ZonificaciÃ³n / Estados -->
+            <!-- Leyenda de Zonificación / Estados -->
             <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-3 space-y-2 text-[11px]">
               <span class="block font-bold text-slate-400 uppercase text-[9px] tracking-wider">Estados del Inmueble</span>
               <div class="flex items-center gap-2">
@@ -197,17 +197,17 @@
               </div>
               <div class="flex items-center gap-2">
                 <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-400"></span>
-                <span class="text-slate-300">Titulado / Sin AfecciÃ³n</span>
+                <span class="text-slate-300">Titulado / Sin Afección</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-400"></span>
-                <span class="text-slate-300">En TrÃ¡mite de RegularizaciÃ³n</span>
+                <span class="text-slate-300">En Trámite de Regularización</span>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- HERRAMIENTAS RÃPIDAS -->
+        <!-- HERRAMIENTAS RÁPIDAS -->
         <section class="space-y-2">
           <button onclick="window.LocalActions?.copyCoordinates()" class="w-full p-2.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-slate-200 text-xs font-medium transition flex items-center justify-between">
             <span class="flex items-center gap-2"><i class="fas fa-copy text-indigo-400"></i> Copiar Coordenadas</span>
@@ -231,15 +231,15 @@
       <!-- FOOTER DE SIDEBAR -->
       <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-500 font-mono">
         <span>SNC CIUDADANO v1.0</span>
-        <a href="/terms.html" class="hover:text-slate-300">TÃ©rminos legales</a>
+        <a href="/terms.html" class="hover:text-slate-300">Términos legales</a>
       </div>
     </aside>
 
-    <!-- ÃREA DE MAPA Y VISOR -->
+    <!-- ÁREA DE MAPA Y VISOR -->
     <main class="flex-1 relative overflow-hidden flex flex-col">
       <div id="map" class="w-full h-full flex-1"></div>
 
-      <!-- DOCK VERTICAL: Leyenda (arriba) y Mini-mapa de ubicaciÃ³n (abajo) en la misma lÃ­nea -->
+      <!-- DOCK VERTICAL: Leyenda (arriba) y Mini-mapa de ubicación (abajo) en la misma línea -->
       <div id="map-bottom-left-stack" class="map-bottom-left-stack"></div>
 
       <!-- SELECTOR DE MAPA BASE FLOTANTE -->
@@ -272,10 +272,10 @@
       </div>
 
       <!-- INSPECTOR DE PARCELA FLOTANTE -->
-      <aside id="parcel-inspector" class="hidden absolute top-4 right-16 bottom-4 z-[1100] w-84 max-w-[calc(100%-5rem)] rounded-xl border border-slate-700 bg-slate-900/95 shadow-2xl backdrop-blur flex flex-col overflow-hidden" aria-label="InformaciÃ³n del inmueble">
+      <aside id="parcel-inspector" class="hidden absolute top-4 right-16 bottom-4 z-[1100] w-84 max-w-[calc(100%-5rem)] rounded-xl border border-slate-700 bg-slate-900/95 shadow-2xl backdrop-blur flex flex-col overflow-hidden" aria-label="Información del inmueble">
         <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3 bg-slate-950/60">
           <div>
-            <p class="text-[9px] font-bold uppercase tracking-wider text-indigo-400">InformaciÃ³n del Inmueble</p>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-indigo-400">Información del Inmueble</p>
             <h3 id="parcel-inspector-title" class="text-xs font-bold text-white mt-0.5 truncate">Inmueble Seleccionado</h3>
           </div>
           <button onclick="document.getElementById('parcel-inspector').classList.add('hidden')" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition" aria-label="Cerrar inspector">
@@ -285,59 +285,59 @@
 
         <div class="flex-1 overflow-y-auto p-4 space-y-3 text-xs custom-scrollbar">
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
-            <p class="text-[9px] text-slate-500 uppercase font-mono">PadrÃ³n / CÃ³digo</p>
-            <p id="lote-codigo" class="text-sm font-bold text-white font-mono">â€”</p>
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Padrón / Código</p>
+            <p id="lote-codigo" class="text-sm font-bold text-white font-mono">—</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
             <p class="text-[9px] text-slate-500 uppercase font-mono">Titular Registrado</p>
-            <p id="lote-propietario" class="text-xs font-bold text-slate-200">â€”</p>
+            <p id="lote-propietario" class="text-xs font-bold text-slate-200">—</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
-            <p class="text-[9px] text-slate-500 uppercase font-mono">UbicaciÃ³n Espacial</p>
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Ubicación Espacial</p>
             <p id="lote-ubicacion" class="text-xs font-semibold text-emerald-400">Paraguay</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
             <p class="text-[9px] text-slate-500 uppercase font-mono">Superficie Legal / Calculada</p>
-            <p id="lote-area" class="text-sm font-bold text-indigo-400 font-mono">â€” mÂ²</p>
+            <p id="lote-area" class="text-sm font-bold text-indigo-400 font-mono">— m²</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
             <p class="text-[9px] text-slate-500 uppercase font-mono">Destino / Uso de Suelo</p>
-            <p id="lote-uso" class="text-xs font-bold text-slate-200">â€”</p>
+            <p id="lote-uso" class="text-xs font-bold text-slate-200">—</p>
           </div>
           <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
             <p class="text-[9px] text-slate-500 uppercase font-mono">Coordenadas Centroide (Lat, Lng)</p>
-            <p id="lote-coords" class="text-xs font-mono text-slate-300">â€”</p>
+            <p id="lote-coords" class="text-xs font-mono text-slate-300">—</p>
           </div>
 
           <!-- SIMULADOR TRIBUTARIO MUNICIPAL (LEY 5513/2015) -->
           <div class="p-2.5 bg-slate-950/80 rounded-lg border border-indigo-900/40">
             <div class="flex items-center justify-between text-[10px] font-bold text-indigo-300 mb-1.5">
-              <span>ðŸ’° EstimaciÃ³n Impuesto Inmobiliario</span>
+              <span>ðŸ’° Estimación Impuesto Inmobiliario</span>
               <span class="text-[8px] text-slate-400">Ley 5513/15</span>
             </div>
             <div class="space-y-1 text-[10px]">
               <div class="flex justify-between text-slate-400">
-                <span>ValuaciÃ³n Fiscal Base:</span>
-                <span id="sim-val-fiscal" class="font-mono text-slate-200 font-semibold">â€”</span>
+                <span>Valuación Fiscal Base:</span>
+                <span id="sim-val-fiscal" class="font-mono text-slate-200 font-semibold">—</span>
               </div>
               <div class="flex justify-between text-slate-400">
                 <span>Impuesto Inmobiliario (1%):</span>
-                <span id="sim-impuesto" class="font-mono text-emerald-400 font-bold">â€”</span>
+                <span id="sim-impuesto" class="font-mono text-emerald-400 font-bold">—</span>
               </div>
               <div class="flex justify-between text-slate-400">
-                <span>Tasas y ConservaciÃ³n:</span>
-                <span id="sim-tasas" class="font-mono text-slate-200 font-semibold">â€”</span>
+                <span>Tasas y Conservación:</span>
+                <span id="sim-tasas" class="font-mono text-slate-200 font-semibold">—</span>
               </div>
               <div class="flex justify-between border-t border-slate-800 pt-1 text-slate-200 font-bold">
                 <span>Total Anual Estimado:</span>
-                <span id="sim-total-tributo" class="font-mono text-indigo-400 font-bold">â€”</span>
+                <span id="sim-total-tributo" class="font-mono text-indigo-400 font-bold">—</span>
               </div>
             </div>
           </div>
         </div>
 
         <div class="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
-          <!-- BOTÃ“N COMPARTIR PARCELA (ENLACE + QR) -->
+          <!-- BOTÓN COMPARTIR PARCELA (ENLACE + QR) -->
           <button id="btn-share-parcel" onclick="window.shareParcel?.()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow">
             <i class="fas fa-share-nodes"></i> Compartir Inmueble (Enlace & QR)
           </button>
@@ -370,12 +370,12 @@
         </button>
       </div>
       <div class="p-5 space-y-3 text-xs text-slate-300 leading-relaxed">
-        <p>Este portal permite la consulta pÃºblica y abierta de parcelas catastrales bajo los parÃ¡metros de la <strong class="text-indigo-400">ResoluciÃ³n SNC NÂ° 551/2023</strong>.</p>
+        <p>Este portal permite la consulta pública y abierta de parcelas catastrales bajo los parámetros de la <strong class="text-indigo-400">Resolución SNC N° 551/2023</strong>.</p>
         <ol class="list-decimal list-inside space-y-1.5 text-slate-400">
-          <li><strong>BÃºsqueda:</strong> Ingrese el PadrÃ³n o Cuenta Corriente Catastral en la barra lateral para volar directamente al inmueble.</li>
-          <li><strong>InspecciÃ³n Directa:</strong> Haga clic sobre cualquier polÃ­gono en el visor para abrir la ficha de dimensiones, superficie y titularidad.</li>
-          <li><strong>UbicaciÃ³n por Coordenadas:</strong> Pegue enlaces cortos de Google Maps (`maps.app.goo.gl`), coordenadas en grados (DMS) o UTM para ubicar su terreno.</li>
-          <li><strong>ExportaciÃ³n:</strong> Descargue el polÃ­gono en formatos abiertos (GeoJSON / KML) o genere la constancia de consulta catastral.</li>
+          <li><strong>Búsqueda:</strong> Ingrese el Padrón o Cuenta Corriente Catastral en la barra lateral para volar directamente al inmueble.</li>
+          <li><strong>Inspección Directa:</strong> Haga clic sobre cualquier polígono en el visor para abrir la ficha de dimensiones, superficie y titularidad.</li>
+          <li><strong>Ubicación por Coordenadas:</strong> Pegue enlaces cortos de Google Maps (`maps.app.goo.gl`), coordenadas en grados (DMS) o UTM para ubicar su terreno.</li>
+          <li><strong>Exportación:</strong> Descargue el polígono en formatos abiertos (GeoJSON / KML) o genere la constancia de consulta catastral.</li>
         </ol>
       </div>
     </div>
@@ -394,10 +394,10 @@
       </div>
       <div class="p-5 space-y-4 text-center">
         <div id="share-qr-container" class="bg-white p-3 rounded-xl inline-block shadow-inner mx-auto">
-          <img id="share-qr-img" src="" alt="CÃ³digo QR del Inmueble" class="w-48 h-48 mx-auto" />
+          <img id="share-qr-img" src="" alt="Código QR del Inmueble" class="w-48 h-48 mx-auto" />
         </div>
         <p class="text-xs text-slate-300">
-          Escanee este cÃ³digo QR con la cÃ¡mara del celular para abrir la parcela en el mapa ciudadano.
+          Escanee este código QR con la cámara del celular para abrir la parcela en el mapa ciudadano.
         </p>
         <div class="flex items-center gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-left">
           <input id="share-url-input" type="text" readonly class="bg-transparent text-xs text-slate-300 font-mono flex-1 outline-none select-all" />

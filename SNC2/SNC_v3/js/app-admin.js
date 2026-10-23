@@ -1,11 +1,11 @@
 /**
- * app-admin.js â€” Panel de Super Administrador SNC v3
+ * app-admin.js — Panel de Super Administrador SNC v3
  * Control total de los 3 subsistemas: Profesional, Municipal, Notarial.
- * AutenticaciÃ³n JWT, gestiÃ³n de miembros, auditorÃ­a, multi-tenant y visor GIS.
+ * Autenticación JWT, gestión de miembros, auditoría, multi-tenant y visor GIS.
  */
 
 // ============================================================
-// TOKEN & AUTENTICACIÃ“N
+// TOKEN & AUTENTICACIÓN
 // ============================================================
 export function getToken() { return localStorage.getItem('snc_api_token'); }
 export function setToken(t) { localStorage.setItem('snc_api_token', t); }
@@ -24,7 +24,7 @@ export async function fetchJSON(url, options = {}) {
   const res = await fetch(url, { ...options, headers });
   if (res.status === 401) {
     showLoginOverlay();
-    throw new Error('SesiÃ³n expirada o no autorizada');
+    throw new Error('Sesión expirada o no autorizada');
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -46,23 +46,23 @@ export function showLoginOverlay() {
       <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
         <div class="text-center mb-6">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30 text-white font-black text-2xl">
-            âš¡
+            ⚡
           </div>
           <h2 class="text-xl font-bold text-white">Consola de Super Administrador</h2>
-          <p class="text-xs text-amber-400 font-mono mt-1 uppercase tracking-wider">SNC v3 Â· Acceso Total Multi-Perfil</p>
+          <p class="text-xs text-amber-400 font-mono mt-1 uppercase tracking-wider">SNC v3 · Acceso Total Multi-Perfil</p>
         </div>
         <form id="admin-login-form" class="space-y-4 text-xs">
           <div>
-            <label class="block font-medium text-gray-300 mb-1">Correo ElectrÃ³nico</label>
+            <label class="block font-medium text-gray-300 mb-1">Correo Electrónico</label>
             <input type="email" id="admin-email" required autocomplete="email"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="superadmin@snc.gov.py">
           </div>
           <div>
-            <label class="block font-medium text-gray-300 mb-1">ContraseÃ±a</label>
+            <label class="block font-medium text-gray-300 mb-1">Contraseña</label>
             <input type="password" id="admin-password" required autocomplete="current-password"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+              placeholder="••••••••">
           </div>
           <div id="admin-login-error" class="hidden text-xs text-red-400 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2"></div>
           <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/30">
@@ -99,7 +99,7 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales invÃ¡lidas');
+    if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales inválidas');
     if (data.user?.role !== 'admin' && data.user?.role !== 'superadmin') {
       throw new Error('Este usuario no cuenta con privilegios de Administrador o Super Administrador');
     }
@@ -107,7 +107,7 @@ async function handleLogin(e) {
     localStorage.setItem('snc_api_user', JSON.stringify(data.user));
     hideLoginOverlay();
     loadDashboard();
-    showToast('SesiÃ³n de Super Administrador iniciada', 'success');
+    showToast('Sesión de Super Administrador iniciada', 'success');
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove('hidden');
@@ -128,7 +128,7 @@ export function showToast(msg, type = 'info') {
   };
   const el = document.createElement('div');
   el.className = `${colors[type] || colors.info} border text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
-  el.innerHTML = `<span>${type === 'success' ? 'âœ“' : type === 'error' ? 'âœ•' : 'â„¹'}</span> <span>${msg}</span>`;
+  el.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span> <span>${msg}</span>`;
   container.appendChild(el);
   requestAnimationFrame(() => {
     el.classList.remove('translate-y-2', 'opacity-0');
@@ -140,28 +140,12 @@ export function showToast(msg, type = 'info') {
 }
 
 // ============================================================
-// DATOS MAESTROS (MOCK Y PERSISTENCIA LOCAL)
+// DATOS MAESTROS (PENDIENTES DE INTEGRACIÓN CON BACKEND)
 // ============================================================
-const PROFESIONALES_DEMO = [
-  { id: 'agr-01', nombre: 'Ing. Carlos BenÃ­tez', matricula_mopc: 'MOPC-4821', registro_snc: 'SNC-892', circunscripcion: 'Capital / Central', expedientes: 6, estado: 'Habilitado' },
-  { id: 'agr-02', nombre: 'Lic. MarÃ­a FernÃ¡ndez', matricula_mopc: 'MOPC-3910', registro_snc: 'SNC-741', circunscripcion: 'Cordillera (Piribebuy)', expedientes: 4, estado: 'Habilitado' },
-  { id: 'agr-03', nombre: 'Top. Jorge Alcaraz', matricula_mopc: 'MOPC-5102', registro_snc: 'SNC-910', circunscripcion: 'ItapÃºa', expedientes: 2, estado: 'Habilitado' },
-  { id: 'agr-04', nombre: 'Ing. Roberto GimÃ©nez', matricula_mopc: 'MOPC-2190', registro_snc: 'SNC-511', circunscripcion: 'Alto ParanÃ¡', expedientes: 0, estado: 'Suspendido' }
-];
-
-const NOTARIOS_DEMO = [
-  { id: 'not-01', nombre: 'Esc. Lourdes Villalba', registro: 'NÂº 142', circunscripcion: 'Capital', minutas: 18, estado: 'Habilitada' },
-  { id: 'not-02', nombre: 'Esc. Fernando Duarte', registro: 'NÂº 88', circunscripcion: 'Cordillera', minutas: 12, estado: 'Habilitada' },
-  { id: 'not-03', nombre: 'Esc. Beatriz Caballero', registro: 'NÂº 205', circunscripcion: 'Central', minutas: 9, estado: 'Habilitada' },
-  { id: 'not-04', nombre: 'Esc. Gustavo Mendoza', registro: 'NÂº 67', circunscripcion: 'GuairÃ¡', minutas: 4, estado: 'En AuditorÃ­a' }
-];
-
-const EXPEDIENTES_DEMO = [
-  { numero: 'EXP-2026-0049', municipio: 'Piribebuy', agrimensor: 'Lic. MarÃ­a FernÃ¡ndez', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '22/10/2026' },
-  { numero: 'EXP-2026-0048', municipio: 'Piribebuy', agrimensor: 'Ing. Carlos BenÃ­tez', notaria: 'Esc. Lourdes Villalba', estado: 'En revisiÃ³n', fecha: '21/10/2026' },
-  { numero: 'EXP-2026-0047', municipio: 'AsunciÃ³n', agrimensor: 'Ing. Carlos BenÃ­tez', notaria: 'Esc. Beatriz Caballero', estado: 'Observado', fecha: '19/10/2026' },
-  { numero: 'EXP-2026-0046', municipio: 'Piribebuy', agrimensor: 'Lic. MarÃ­a FernÃ¡ndez', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '18/10/2026' }
-];
+// No existen endpoints /api/admin/profesionales, /api/admin/notarios ni un
+// listado global de expedientes. Mientras no se implementen, las tablas
+// correspondientes deben mostrar un estado vacío explícito: nunca datos
+// inventados presentados como si fueran reales (Res. SNC 551/2023).
 
 // ============================================================
 // DASHBOARD & CARGA DE LOS 3 PILARES
@@ -180,18 +164,18 @@ export async function loadDashboard() {
     const membersList = Array.isArray(members) ? members : (members.data || []);
     const plansList = Array.isArray(plans) ? plans : (plans.data || []);
 
-    const countPros = membersList.filter(u => u.role === 'professional').length || 12;
-    const countNotaries = membersList.filter(u => u.role === 'notary').length || 8;
+    const countPros = membersList.filter(u => u.role === 'professional').length;
+    const countNotaries = membersList.filter(u => u.role === 'notary').length;
 
     setText('dashProfessionals', String(countPros));
     setText('dashMunicipalities', '1 (Piribebuy)');
     setText('dashNotaries', String(countNotaries));
-    setText('dashExpedientes', '24');
+    setText('dashExpedientes', '—');
 
     renderMembersTable(membersList);
     renderPlansTable(plansList);
   } catch (e) {
-    console.warn('[superadmin] mÃ©tricas dashboard:', e.message);
+    console.warn('[superadmin] métricas dashboard:', e.message);
   }
 
   // Cargar tablas de los 3 pilares
@@ -215,35 +199,10 @@ function renderProfesionalesTable() {
   const tbody = document.getElementById('profesionalesTable');
   if (!tbody) return;
 
-  tbody.innerHTML = PROFESIONALES_DEMO.map(p => `
-    <tr class="hover:bg-gray-800/40 transition-colors">
-      <td class="px-4 py-3 font-semibold text-white">${p.nombre}</td>
-      <td class="px-4 py-3 font-mono text-blue-400">${p.matricula_mopc}</td>
-      <td class="px-4 py-3 font-mono text-gray-300">${p.registro_snc}</td>
-      <td class="px-4 py-3 text-gray-400">${p.circunscripcion}</td>
-      <td class="px-4 py-3 text-amber-400 font-bold">${p.expedientes} activos</td>
-      <td class="px-4 py-3">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.estado === 'Habilitado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}">
-          ${p.estado}
-        </span>
-      </td>
-      <td class="px-4 py-3 text-right pr-4 space-x-2">
-        <button onclick="window.toggleEstadoAgrimensor('${p.id}')" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] border border-gray-700 transition">
-          ${p.estado === 'Habilitado' ? 'Suspender' : 'Habilitar'}
-        </button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-gray-500 text-xs">
+    Registro de profesionales aún no conectado a un backend (sin endpoint /api/admin/profesionales). No hay datos para mostrar.
+  </td></tr>`;
 }
-
-window.toggleEstadoAgrimensor = function(id) {
-  const item = PROFESIONALES_DEMO.find(p => p.id === id);
-  if (item) {
-    item.estado = item.estado === 'Habilitado' ? 'Suspendido' : 'Habilitado';
-    renderProfesionalesTable();
-    showToast(`Estado de ${item.nombre} actualizado a: ${item.estado}`, 'info');
-  }
-};
 
 // ============================================================
 // PILAR 2: MUNICIPAL (LEY 3966)
@@ -252,7 +211,7 @@ export async function publicarParcelasCiudadano() {
   const btn = document.getElementById('btnPublicarPiribebuy');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<span>â³</span> Publicando...';
+    btn.innerHTML = '<span>⏳</span> Publicando...';
   }
   try {
     const res = await fetchJSON('/api/municipal/piribebuy/publicar', {
@@ -263,7 +222,7 @@ export async function publicarParcelasCiudadano() {
         distrito: '0306'
       })
     });
-    showToast('Â¡Parcelas de Piribebuy publicadas con Ã©xito en el Portal Ciudadano!', 'success');
+    showToast('¡Parcelas de Piribebuy publicadas con éxito en el Portal Ciudadano!', 'success');
   } catch (err) {
     showToast(`Aviso: ${err.message}`, 'info');
   } finally {
@@ -275,30 +234,15 @@ export async function publicarParcelasCiudadano() {
 }
 
 // ============================================================
-// PILAR 3: NOTARIAL (ESCRIBANÃAS / RUN)
+// PILAR 3: NOTARIAL (ESCRIBANÍAS / RUN)
 // ============================================================
 function renderNotariosTable() {
   const tbody = document.getElementById('notariosTable');
   if (!tbody) return;
 
-  tbody.innerHTML = NOTARIOS_DEMO.map(n => `
-    <tr class="hover:bg-gray-800/40 transition-colors">
-      <td class="px-4 py-3 font-semibold text-white">${n.nombre}</td>
-      <td class="px-4 py-3 font-mono text-purple-400 font-bold">${n.registro}</td>
-      <td class="px-4 py-3 text-gray-400">${n.circunscripcion}</td>
-      <td class="px-4 py-3 text-amber-400 font-bold">${n.minutas} emitidas</td>
-      <td class="px-4 py-3">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${n.estado === 'Habilitada' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}">
-          ${n.estado}
-        </span>
-      </td>
-      <td class="px-4 py-3 text-right pr-4">
-        <a href="/notarial/" target="_blank" class="px-2.5 py-1 bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 rounded text-[11px] border border-purple-700/50 transition">
-          Ver Minutas â†—
-        </a>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 text-xs">
+    Registro de escribanías aún no conectado a un backend (sin endpoint /api/admin/notarios). No hay datos para mostrar.
+  </td></tr>`;
 }
 
 // ============================================================
@@ -308,30 +252,10 @@ function renderExpedientesTable() {
   const tbody = document.getElementById('expedientesTable');
   if (!tbody) return;
 
-  tbody.innerHTML = EXPEDIENTES_DEMO.map(exp => `
-    <tr class="hover:bg-gray-800/40 transition-colors">
-      <td class="px-4 py-3 font-mono font-bold text-amber-400">${exp.numero}</td>
-      <td class="px-4 py-3 text-white font-medium">${exp.municipio}</td>
-      <td class="px-4 py-3 text-blue-300">${exp.agrimensor}</td>
-      <td class="px-4 py-3 text-purple-300">${exp.notaria}</td>
-      <td class="px-4 py-3">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${exp.estado === 'Aprobado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : exp.estado === 'En revisiÃ³n' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'}">
-          ${exp.estado}
-        </span>
-      </td>
-      <td class="px-4 py-3 text-gray-400 font-mono text-[11px]">${exp.fecha}</td>
-      <td class="px-4 py-3 text-right pr-4">
-        <button onclick="window.verDetalleExpediente('${exp.numero}')" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-[11px] border border-gray-700 transition">
-          Inspeccionar
-        </button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-6 text-center text-gray-500 text-xs">
+    Listado global de expedientes B2B2G aún no conectado a un backend (la API de expedientes existe por proyecto en /api/projects/:id/expedientes, pero no hay endpoint agregado de administración). No hay datos para mostrar.
+  </td></tr>`;
 }
-
-window.verDetalleExpediente = function(num) {
-  showToast(`Inspeccionando expediente ${num}: Conforme a ResoluciÃ³n SNC 551/2023 y Ley 7424/2025`, 'info');
-};
 
 // ============================================================
 // USUARIOS Y MIEMBROS GLOBALES
@@ -490,10 +414,10 @@ async function loadPiribebuyMap() {
 
   const layers = [
     { id: 'barrios', label: 'Barrios', color: '#7c3aed' },
-    { id: 'vias', label: 'VÃ­as', color: '#f59e0b' },
-    { id: 'hidro', label: 'HidrografÃ­a', color: '#0ea5e9' },
+    { id: 'vias', label: 'Vías', color: '#f59e0b' },
+    { id: 'hidro', label: 'Hidrografía', color: '#0ea5e9' },
     { id: 'vertedero', label: 'Vertedero', color: '#ef4444' },
-    { id: 'casco_historico', label: 'Casco HistÃ³rico', color: '#facc15' },
+    { id: 'casco_historico', label: 'Casco Histórico', color: '#facc15' },
   ];
 
   const toggleContainer = document.getElementById('piribebuy-layer-toggles');
@@ -536,7 +460,7 @@ async function loadPiribebuyMap() {
 }
 
 // ============================================================
-// NAVEGACIÃ“N ENTRE PESTAÃ‘AS
+// NAVEGACIÓN ENTRE PESTAÑAS
 // ============================================================
 export function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
@@ -641,7 +565,7 @@ function setupModals() {
     });
   }
 
-  // BotÃ³n publicar Piribebuy
+  // Botón publicar Piribebuy
   const pubBtn = document.getElementById('btnPublicarPiribebuy');
   if (pubBtn) {
     pubBtn.addEventListener('click', publicarParcelasCiudadano);
@@ -657,23 +581,23 @@ function setupLogout() {
     btn.addEventListener('click', () => {
       clearToken();
       showLoginOverlay();
-      showToast('SesiÃ³n de Super Administrador finalizada', 'info');
+      showToast('Sesión de Super Administrador finalizada', 'info');
     });
   }
 }
 
 // ============================================================
-// DEPENDENCIAS MUNICIPALES (jerarquÃ­a con sub-dependencias)
+// DEPENDENCIAS MUNICIPALES (jerarquía con sub-dependencias)
 // ============================================================
 const DEPARTAMENTOS = {
-  super_admin:     { label: 'Super Administrador',  icon: 'â­', color: 'text-yellow-400', dictamen: true,  secciones: ['*'], parent: null, capas: ['todas'] },
+  super_admin:     { label: 'Super Administrador',  icon: '⭐', color: 'text-yellow-400', dictamen: true,  secciones: ['*'], parent: null, capas: ['todas'] },
   notarial:        { label: 'Notarial',             icon: 'ðŸ“œ', color: 'text-slate-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: null, capas: ['parcelas','distritos'] },
-  junta_municipal: { label: 'Junta Municipal',      icon: 'ðŸ›ï¸', color: 'text-red-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: null, capas: ['barrios','zona_influencia','distritos'] },
+  junta_municipal: { label: 'Junta Municipal',      icon: 'ðŸ›️', color: 'text-red-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: null, capas: ['barrios','zona_influencia','distritos'] },
   catastro:        { label: 'Catastro',             icon: 'ðŸ“', color: 'text-blue-400',   dictamen: true,  secciones: ['municipal-status','qgis-layer-control','fraccionamiento','balance-sidebar','loteamiento','ambiental','symbology','dictamen'], parent: 'junta_municipal', capas: ['parcelas','sample_fraccionamiento_municipal','barrios','curvas_nivel'] },
   ambiental:       { label: 'Ambiental',            icon: 'ðŸŒ¿', color: 'text-green-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control','ambiental'], parent: 'junta_municipal', capas: ['hidro','vertedero','vertedero_500','vertedero_1000','cobertura_forestal'] },
-  planificacion:   { label: 'PlanificaciÃ³n',        icon: 'ðŸ“', color: 'text-purple-400', dictamen: false, secciones: ['municipal-status','qgis-layer-control','fraccionamiento','balance-sidebar','loteamiento'], parent: 'junta_municipal', capas: ['barrios','zona_influencia','sample_fraccionamiento_municipal','censo_viviendas'] },
+  planificacion:   { label: 'Planificación',        icon: 'ðŸ“', color: 'text-purple-400', dictamen: false, secciones: ['municipal-status','qgis-layer-control','fraccionamiento','balance-sidebar','loteamiento'], parent: 'junta_municipal', capas: ['barrios','zona_influencia','sample_fraccionamiento_municipal','censo_viviendas'] },
   obras:           { label: 'Obras y Vialidad',     icon: 'ðŸš§', color: 'text-orange-400', dictamen: false, secciones: ['municipal-status','qgis-layer-control','loteamiento'], parent: 'junta_municipal', capas: ['vias','topografia_curvas'] },
-  educacion:       { label: 'EducaciÃ³n',            icon: 'ðŸŽ“', color: 'text-cyan-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: 'junta_municipal', capas: ['establecimientos_escolares_mec','barrios'] },
+  educacion:       { label: 'Educación',            icon: 'ðŸŽ“', color: 'text-cyan-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: 'junta_municipal', capas: ['establecimientos_escolares_mec','barrios'] },
   patrimonio:      { label: 'Patrimonio',           icon: 'ðŸº', color: 'text-amber-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: 'junta_municipal', capas: ['casco_historico','centro','vuelo_casco'] },
 };
 
@@ -697,10 +621,10 @@ async function loadDependencias() {
     Object.keys(DEPARTAMENTOS).forEach(depKey => {
       const info = DEPARTAMENTOS[depKey];
       const depUsers = porDep[depKey] || [];
-      const parentBadge = info.parent ? ` <span class="text-[8px] text-gray-500">â†³ ${DEPARTAMENTOS[info.parent]?.label || info.parent}</span>` : '';
+      const parentBadge = info.parent ? ` <span class="text-[8px] text-gray-500">↳ ${DEPARTAMENTOS[info.parent]?.label || info.parent}</span>` : '';
       const dictamenBadge = info.dictamen 
-        ? `<span class="text-[9px] px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 border border-emerald-700/60 rounded">Dictamen: âœ…</span>`
-        : `<span class="text-[9px] px-1.5 py-0.5 bg-gray-900 text-gray-500 border border-gray-800 rounded">Dictamen: âŒ</span>`;
+        ? `<span class="text-[9px] px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 border border-emerald-700/60 rounded">Dictamen: ✅</span>`
+        : `<span class="text-[9px] px-1.5 py-0.5 bg-gray-900 text-gray-500 border border-gray-800 rounded">Dictamen: ❌</span>`;
       html += `
         <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
           <div class="flex items-center gap-3">
@@ -710,7 +634,7 @@ async function loadDependencias() {
                 <p class="text-sm font-semibold ${info.color}">${info.label}${parentBadge}</p>
                 ${dictamenBadge}
               </div>
-              <p class="text-[10px] text-gray-400 mt-0.5">${info.secciones.includes('*') ? 'Acceso a todas las secciones' : info.secciones.join(', ')} Â· ${depUsers.length} usuario(s)</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">${info.secciones.includes('*') ? 'Acceso a todas las secciones' : info.secciones.join(', ')} · ${depUsers.length} usuario(s)</p>
               <div class="flex gap-1 mt-1 flex-wrap">
                 ${(info.capas || []).map(c => `<span class="text-[9px] px-1.5 py-0.2 bg-slate-900 text-cyan-400/80 rounded border border-slate-800">ðŸ“‚ ${c}</span>`).join('')}
               </div>
@@ -724,7 +648,7 @@ async function loadDependencias() {
     const sinDep = porDep['sin_asignar'] || [];
     if (sinDep.length) {
       html += `<div class="p-3 bg-gray-950 rounded-lg border border-red-800/50">
-        <p class="text-sm text-red-400">âš ï¸ ${sinDep.length} usuario(s) sin dependencia asignada</p>
+        <p class="text-sm text-red-400">⚠️ ${sinDep.length} usuario(s) sin dependencia asignada</p>
       </div>`;
     }
     listEl.innerHTML = html || '<p class="text-gray-500 text-sm">No hay usuarios.</p>';

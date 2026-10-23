@@ -454,7 +454,7 @@ Nodes (20): Archivos Principales, 📅 Auditorías Programadas, 🔧 Checklist d
 
 ### Community 51 - "Auditoría y plan de remediación"
 Cohesion: 0.10
-Nodes (20): 0. Contexto obligatorio: auditorÃ­a abierta (2026-10-18), 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3. Matriz RÃ¡pida de Dominios y Archivos Responsables, 4. Consulta RÃ¡pida de Estado, Paso 1: Identificar la ruta (DÃ³nde tocar) (+12 more)
+Nodes (20): 0. Contexto obligatorio: auditoría abierta (2026-10-18), 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3. Matriz Rápida de Dominios y Archivos Responsables, 4. Consulta Rápida de Estado, Paso 1: Identificar la ruta (Dónde tocar) (+12 more)
 
 ### Community 52 - "Deploy SNC_v3 — Firebase Hosting"
 Cohesion: 0.10

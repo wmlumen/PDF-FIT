@@ -1,0 +1,25 @@
+# Git attributes for encoding and line endings
+* text=auto eol=lf
+
+*.html text eol=lf diff=html
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.geojson text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.sqlite binary
+*.db binary
+*.shp binary
+*.shx binary
+*.dbf binary

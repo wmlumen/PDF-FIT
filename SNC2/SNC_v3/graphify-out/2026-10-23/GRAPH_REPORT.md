@@ -94,7 +94,7 @@
 - app-municipal.js
 - app-notarial.js
 - sync-auditoria.mjs
-- PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)
+- PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)
 - cacheDb.js
 - Siguiente Tarea Ejecutable
 - Geoportal Municipal Multifinalitario — Vistas Diferenciadas por Perfil
@@ -600,9 +600,9 @@ Nodes (5): AppNotarial, ARANCELES_NOTARIALES_PY, EscribaniaModule, UrbanismoModu
 Cohesion: 0.17
 Nodes (15): buildJson(), buildReadme(), CHECK, clean(), main(), OUT_DIR, parseFindings(), PHASE (+7 more)
 
-### Community 85 - "PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)"
+### Community 85 - "PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)"
 Cohesion: 0.13
-Nodes (15): 0. Contexto obligatorio: auditorÃ­a abierta (2026-10-18), 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3.1 Estructura de Datos (`data/`) — Regla Obligatoria, 3. Matriz RÃ¡pida de Dominios y Archivos Responsables, 4. Consulta RÃ¡pida de Estado (+7 more)
+Nodes (15): 0. Contexto obligatorio: auditoría abierta (2026-10-18), 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3.1 Estructura de Datos (`data/`) — Regla Obligatoria, 3. Matriz Rápida de Dominios y Archivos Responsables, 4. Consulta Rápida de Estado (+7 more)
 
 ### Community 86 - "cacheDb.js"
 Cohesion: 0.24

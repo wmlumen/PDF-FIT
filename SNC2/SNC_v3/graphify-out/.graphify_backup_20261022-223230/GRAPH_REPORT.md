@@ -558,7 +558,7 @@ Nodes (3): CRS_LABEL(), PIRI_DEFS, renderCrsReport()
 
 ### Community 74 - "PROTOCOLO DE TRABAJO Y COORDINACIÓN MULTI-IA (SNC 551/2023)"
 Cohesion: 0.15
-Nodes (16): 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3. Matriz Rápida de Dominios y Archivos Responsables, 3. Matriz RÃ¡pida de Dominios y Archivos Responsables, 4. Consulta Rápida de Estado, 4. Consulta RÃ¡pida de Estado (+8 more)
+Nodes (16): 1.1 Fuente de la Verdad: `graphify-out/`, 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend, 1. Regla Inviolable: Aislamiento de Entornos, 2. Ciclo de Vida Obligatorio para Cada Tarea, 3. Matriz Rápida de Dominios y Archivos Responsables, 3. Matriz Rápida de Dominios y Archivos Responsables, 4. Consulta Rápida de Estado, 4. Consulta Rápida de Estado (+8 more)
 
 ### Community 75 - "1. Tablas y Estructura"
 Cohesion: 0.12
@@ -730,7 +730,7 @@ Nodes (4): loadVisibleLayers(), toggleLayerVisibility(), updateLayerControlPanel
 
 ### Community 119 - "Plan de remediación"
 Cohesion: 0.20
-Nodes (10): 0. Contexto obligatorio: auditorÃ­a abierta (2026-10-18), 0. Contexto obligatorio: auditoría abierta (2026-10-18), Reglas adicionales mientras la auditorÃ­a estÃ© abierta, Reglas adicionales mientras la auditoría esté abierta, C-05 · Tokens JWT forjables / sesiones no revocables, 1. Reglas para quien implemente, API, Backend (+2 more)
+Nodes (10): 0. Contexto obligatorio: auditoría abierta (2026-10-18), 0. Contexto obligatorio: auditoría abierta (2026-10-18), Reglas adicionales mientras la auditoría esté abierta, Reglas adicionales mientras la auditoría esté abierta, C-05 · Tokens JWT forjables / sesiones no revocables, 1. Reglas para quien implemente, API, Backend (+2 more)
 
 ### Community 120 - "Auditoría 2026-10-18"
 Cohesion: 0.20
