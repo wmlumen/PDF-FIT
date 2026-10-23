@@ -57,7 +57,7 @@
 - js_duplicados/layerPanel.js
 - COMPENDIO INTEGRAL DE LEGISLACIÓN INMOBILIARIA, CATASTRAL Y REGISTRAL DE LA REPÚBLICA DEL PARAGUAY
 - index.js
-- server-api.js
+- interoperabilidad.js
 - js/layerPanel.js
 - Plan de remediación
 - 🧪 QA Checklist - Salud del Proyecto
@@ -221,37 +221,37 @@
 - validarCierreAnillos()
 - js_workspace.js
 - graphify_update.sh
-- probe_free_models.sh script
+- probe_free_models.sh
 - run_full_check.sh
-- module10.functions.mjs
+- State10
 - 2026-10-18 - imp_1792362944006_tq240jcd
 - dedupe_ids_municipal.md
 - 2026-10-18 - imp_1792363870818_vhu54cez
 - fix_browser_logger.md
-- fix_db_cjs_merge.md
+- 2026-10-19 - imp_1792381833285_kz2cwjk3
 - fix_encoding_map_engine.md
-- fix_fluxograma_bundle.md
-- 2026-10-18 - imp_1792367788085_hln28gpr
+- 2026-10-19 - imp_1792378262665_zkod2h10
+- fix_icons_index_html.md
 - fix_icons_index_municipal_html.md
 - 2026-10-19 - imp_1792369626142_ju7tid6o
-- fix_usage_increment_and_health.md
-- 2026-10-18 - imp_1792365725348_fa4z2bqy
-- piribebuy_reproject_gis.md
+- 2026-10-18 - imp_1792365483660_2ze771kq
+- fix_vite_config.md
+- 2026-10-19 - imp_1792389104633_jnsxlpl1
 - 2026-10-18 - imp_1792361341299_8pl7wsoo
 - runtime_mismatch_isolation.md
-- inspect_chunks.mjs
+- scripts
 - backup_sqlite.sh
 - promotion_gate.sh script
-- restore_sqlite.sh
+- restore_sqlite.sh script
 - rotate_legacy_hashes.sh
-- start-server.sh
-- simulateValidarProyeccion()
+- start-server.sh script
+- simulateRunExportValidation()
 
 ## God Nodes (most connected - your core abstractions)
 1. `showToast()` - 105 edges
 2. `LayerManagerClass` - 49 edges
-3. `LayerManagerClass` - 45 edges
-4. `AttributeTableClass` - 45 edges
+3. `AttributeTableClass` - 45 edges
+4. `LayerManagerClass` - 45 edges
 5. `LayerManagerClass` - 45 edges
 6. `==========================================================================` - 44 edges
 7. `compilerOptions` - 37 edges
@@ -260,16 +260,16 @@
 10. `calcularMetricasPlanasUTM()` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Autenticación → Sesión → Autorización` --references--> `authMiddleware()`  [INFERRED]
-  docs/INTEGRATION_TEST_REPORT.md → server-api.cjs
-- `2. Qué le falta (pendiente)` --references--> `authMiddleware()`  [INFERRED]
-  docs/SERVER_API_CJS_PENDIENTE.md → server-api.cjs
-- `3.2 Promoverlo a servidor principal (solo tras cerrar los pendientes)` --references--> `authMiddleware()`  [INFERRED]
-  docs/SERVER_API_CJS_PENDIENTE.md → server-api.cjs
-- `1. Resumen de Implementación` --references--> `formatMeters()`  [INFERRED]
-  .opencode/coordination/changelogs/osnap_refent_tracking.md → js/segmentLengths.js
+- `1. Certificación PDF completa` --references--> `generateConsultaDescriptivaPDF()`  [INFERRED]
+  docs/README.md → js/export.js
+- `🚀 Estado del Proyecto` --references--> `generateConsultaDescriptivaPDF()`  [INFERRED]
+  docs/README.md → js/export.js
 - `6. Hallazgos medios` --references--> `resolvePlan()`  [INFERRED]
   docs/AUDITORIA_SNC_v3_2026-10-18.md → js/plans.js
+- `1. Resumen de Implementación` --references--> `formatMeters()`  [INFERRED]
+  .opencode/coordination/changelogs/osnap_refent_tracking.md → js/segmentLengths.js
+- `Autenticación → Sesión → Autorización` --references--> `authMiddleware()`  [INFERRED]
+  docs/INTEGRATION_TEST_REPORT.md → server-api.cjs
 
 ## Import Cycles
 - 2-file cycle: `.opencode/coordination/coordinator.mjs -> .opencode/coordination/orchestrator.mjs -> .opencode/coordination/coordinator.mjs`
@@ -456,7 +456,7 @@ Nodes (22): 10. LEGISLACIÓN INDIRECTA: RÉGIMEN ADUANERO Y DOMINIO PÚBLICO POR
 Cohesion: 0.14
 Nodes (14): AuthModal, closeExpedienteModal(), createModalDOM(), DEFAULT_METADATA, getExpedienteMetadata(), openExpedienteModal(), populateForm(), readForm() (+6 more)
 
-### Community 48 - "server-api.js"
+### Community 48 - "interoperabilidad.js"
 Cohesion: 0.10
 Nodes (8): _bloqueosRegistrales, CAPAS_RESTRICCION_OFFICIAL, ESTADOS_BLOQUEO_DGRP, InteroperabilidadAPI, _notificacionesMunicipales, TIPOS_RESTRICCION, ok(), run()
 
@@ -1041,16 +1041,16 @@ Nodes (3): formatCoordinate(), validarCierreAnillos(), validarGeometria()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `showToast()` connect `showToast` to `export.js`, `cogoUI.js`, `mapEngine.js`, `validator.js`, `parser.js`, `dataTable.js`, `attributeTableUI.js`, `init`, `js/layerPanel.js`, `index.js`, `versioningUI.js`, `utils.js`, `1) JSDoc mínimo en MapEngine`, `app-municipal.js`, `app-notarial.js`, `renderVertexEditor`, `updateHistoryControls`, `signatureManager.js`, `loadGeoJSON`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **What connects `DB_BACKEND`, `NODE_ENV`, `dom-to-image` to the rest of the system?**
   _25 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `js/crs.js` be split into smaller, more focused modules?**
   _Cohesion score 0.053555750658472345 - nodes in this community are weakly interconnected._
 - **Why does `LayerManagerClass` connect `LayerManagerClass` to `js/layerPanel.js`, `LayerManagerClass`, `LayerManagerClass`, `LayerManagerClass`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Should `export.js` be split into smaller, more focused modules?**
   _Cohesion score 0.05407925407925408 - nodes in this community are weakly interconnected._
-- **Why does `logger` connect `payment.cjs` to `export.js`, `mapEngine.js`, `attributeEditor.js`, `validator.js`, `backup_complement.js`, `parser.js`, `showToast`, `dataTable.js`, `attributeTableUI.js`, `labelEngine.js`, `mapLegend.js`, `server-api.js`, `js/layerPanel.js`, `index.js`, `utils.js`, `overviewMap.js`, `ref_node_fs`, `mailer.js`, `paraguayRef.js`?**
-  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **Should `graphify.js` be split into smaller, more focused modules?**
   _Cohesion score 0.030303030303030304 - nodes in this community are weakly interconnected._
+- **Should `cogoUI.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.06001984126984127 - nodes in this community are weakly interconnected._

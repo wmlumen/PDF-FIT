@@ -4676,17 +4676,17 @@
       "degree": 49
     },
     {
-      "id": "a_eliminar_js_duplicados_layermanager_layermanagerclass",
-      "label": "LayerManagerClass",
-      "degree": 45
-    },
-    {
       "id": "js_attributetable_attributetableclass",
       "label": "AttributeTableClass",
       "degree": 45
     },
     {
       "id": "a_eliminar_js_duplicados_js_layermanager_layermanagerclass",
+      "label": "LayerManagerClass",
+      "degree": 45
+    },
+    {
+      "id": "a_eliminar_js_duplicados_layermanager_layermanagerclass",
       "label": "LayerManagerClass",
       "degree": 45
     },
@@ -4718,37 +4718,37 @@
   ],
   "surprises": [
     {
-      "source": "Autenticación → Sesión → Autorización",
-      "target": "authMiddleware()",
+      "source": "1. Certificación PDF completa",
+      "target": "generateConsultaDescriptivaPDF()",
       "source_files": [
-        "docs/INTEGRATION_TEST_REPORT.md",
-        "server-api.cjs"
+        "docs/README.md",
+        "js/export.js"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `Autenticación → Sesión → Autorización` unexpectedly reaches hub `authMiddleware()`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `1. Certificación PDF completa` unexpectedly reaches hub `generateConsultaDescriptivaPDF()`"
     },
     {
-      "source": "2. Qué le falta (pendiente)",
-      "target": "authMiddleware()",
+      "source": "🚀 Estado del Proyecto",
+      "target": "generateConsultaDescriptivaPDF()",
       "source_files": [
-        "docs/SERVER_API_CJS_PENDIENTE.md",
-        "server-api.cjs"
+        "docs/README.md",
+        "js/export.js"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `2. Qué le falta (pendiente)` unexpectedly reaches hub `authMiddleware()`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `🚀 Estado del Proyecto` unexpectedly reaches hub `generateConsultaDescriptivaPDF()`"
     },
     {
-      "source": "3.2 Promoverlo a servidor principal (solo tras cerrar los pendientes)",
-      "target": "authMiddleware()",
+      "source": "6. Hallazgos medios",
+      "target": "resolvePlan()",
       "source_files": [
-        "docs/SERVER_API_CJS_PENDIENTE.md",
-        "server-api.cjs"
+        "docs/AUDITORIA_SNC_v3_2026-10-18.md",
+        "js/plans.js"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `3.2 Promoverlo a servidor principal (solo tras cerrar los pendientes)` unexpectedly reaches hub `authMiddleware()`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `6. Hallazgos medios` unexpectedly reaches hub `resolvePlan()`"
     },
     {
       "source": "1. Resumen de Implementación",
@@ -4762,22 +4762,22 @@
       "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `1. Resumen de Implementación` unexpectedly reaches hub `formatMeters()`"
     },
     {
-      "source": "6. Hallazgos medios",
-      "target": "resolvePlan()",
+      "source": "Autenticación → Sesión → Autorización",
+      "target": "authMiddleware()",
       "source_files": [
-        "docs/AUDITORIA_SNC_v3_2026-10-18.md",
-        "js/plans.js"
+        "docs/INTEGRATION_TEST_REPORT.md",
+        "server-api.cjs"
       ],
       "confidence": "INFERRED",
       "relation": "references",
-      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `6. Hallazgos medios` unexpectedly reaches hub `resolvePlan()`"
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code ↔ doc); connects across different repos/directories; bridges separate communities; peripheral node `Autenticación → Sesión → Autorización` unexpectedly reaches hub `authMiddleware()`"
     }
   ],
   "questions": [
     {
       "type": "bridge_node",
       "question": "Why does `showToast()` connect `showToast` to `export.js`, `cogoUI.js`, `mapEngine.js`, `validator.js`, `parser.js`, `dataTable.js`, `attributeTableUI.js`, `init`, `js/layerPanel.js`, `index.js`, `versioningUI.js`, `utils.js`, `1) JSDoc mínimo en MapEngine`, `app-municipal.js`, `app-notarial.js`, `renderVertexEditor`, `updateHistoryControls`, `signatureManager.js`, `loadGeoJSON`?",
-      "why": "High betweenness centrality (0.046) - this node is a cross-community bridge."
+      "why": "High betweenness centrality (0.035) - this node is a cross-community bridge."
     },
     {
       "type": "isolated_nodes",
@@ -4792,7 +4792,7 @@
     {
       "type": "bridge_node",
       "question": "Why does `LayerManagerClass` connect `LayerManagerClass` to `js/layerPanel.js`, `LayerManagerClass`, `LayerManagerClass`, `LayerManagerClass`?",
-      "why": "High betweenness centrality (0.042) - this node is a cross-community bridge."
+      "why": "High betweenness centrality (0.035) - this node is a cross-community bridge."
     },
     {
       "type": "low_cohesion",
@@ -4800,14 +4800,14 @@
       "why": "Cohesion score 0.05407925407925408 - nodes in this community are weakly interconnected."
     },
     {
-      "type": "bridge_node",
-      "question": "Why does `logger` connect `payment.cjs` to `export.js`, `mapEngine.js`, `attributeEditor.js`, `validator.js`, `backup_complement.js`, `parser.js`, `showToast`, `dataTable.js`, `attributeTableUI.js`, `labelEngine.js`, `mapLegend.js`, `server-api.js`, `js/layerPanel.js`, `index.js`, `utils.js`, `overviewMap.js`, `ref_node_fs`, `mailer.js`, `paraguayRef.js`?",
-      "why": "High betweenness centrality (0.032) - this node is a cross-community bridge."
-    },
-    {
       "type": "low_cohesion",
       "question": "Should `graphify.js` be split into smaller, more focused modules?",
       "why": "Cohesion score 0.030303030303030304 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `cogoUI.js` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.06001984126984127 - nodes in this community are weakly interconnected."
     }
   ]
 }
