@@ -52,8 +52,8 @@ app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'app
 
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
-  ['/index-notarial.html', 'index-notarial.html'],
   ['/login-directo.html', 'login-directo.html'],
+  ['/login-safe.html', 'login-safe.html'],
   ['/register.html', 'register.html'],
   ['/recover.html', 'recover.html'],
   ['/terms.html', 'terms.html'],
@@ -76,7 +76,7 @@ app.get(['/ciudadano', '/ciudadano/', '/ciudadano/index.html', '/index-ciudadano
 
 // Portal Notarial (Escribanías Públicas & Seguridad Inmobiliaria)
 app.get(['/notarial', '/notarial/', '/notarial/index.html', '/Notarial', '/Notarial/', '/Notarial/index.html', '/index-notarial.html'], (req, res) => {
-  res.sendFile(join(__dirname, 'index-notarial.html'));
+  res.sendFile(join(__dirname, 'notarial', 'index.html'));
 });
 
 // Portal Administrador / Super Administrador
@@ -173,7 +173,7 @@ async function adminMiddleware(req, res, next) {
     if ((!user || !user.id) && req.user.provider === 'firebase' && req.user.email) {
       user = await dbAPI.users.findByEmail(req.user.email);
     }
-    if (!user || user.status !== 'active' || (user.role !== 'admin' && user.role !== 'superadmin')) {
+    if (!user || user.status !== 'active' || (!['superadmin', 'admin', 'admin_municipal', 'admin_notarial'].includes(user.role))) {
       return res.status(403).json({ error: 'Se requiere rol administrador' });
     }
     req.member = user;
@@ -620,7 +620,7 @@ app.post('/api/auth/recover', async (req, res) => {
   }
 });
 
-const USER_ROLES = new Set(['superadmin', 'admin', 'manager', 'professional', 'notary', 'technician', 'member', 'viewer']);
+const USER_ROLES = new Set(['superadmin', 'admin', 'admin_municipal', 'admin_notarial', 'manager', 'professional', 'notary', 'technician', 'member', 'viewer']);
 const USER_STATUSES = new Set(['active', 'suspended', 'inactive']);
 const PLAN_TYPES = new Set(['free', 'paid', 'enterprise']);
 const PLAN_ID_PATTERN = /^[a-z][a-z0-9_-]{1,31}$/;
@@ -658,6 +658,31 @@ app.post('/api/auth/reset', async (req, res) => {
   } catch (e) {
     logger.error('reset password error', e);
     res.status(500).json({ error: 'Error al actualizar contraseña' });
+  }
+});
+
+// NUEVOS: Check y Logout de sesión
+app.get('/api/auth/check', authMiddleware, async (req, res) => {
+  try {
+    const user = await dbAPI.users.findById(req.user.userId);
+    if (!user || user.status !== 'active') {
+      return res.json({ authenticated: false, user: null });
+    }
+    res.json({ authenticated: true, user: { id: user.id, email: user.email, name: user.name, role: user.role, plan: user.plan } });
+  } catch (e) {
+    logger.error('check auth error', e);
+    res.status(500).json({ authenticated: false, error: 'Error verificando sesión' });
+  }
+});
+
+app.post('/api/auth/logout', authMiddleware, async (req, res) => {
+  try {
+    // En un entorno con httpOnly cookies, aquí se invalidaría la sesión
+    // Por ahora,limpiar el token local
+    res.json({ success: true, message: 'Cierre de sesión exitoso' });
+  } catch (e) {
+    logger.error('logout error', e);
+    res.status(500).json({ error: 'Error al cerrar sesión' });
   }
 });
 
