@@ -70,6 +70,12 @@
           </button>
         </li>
         <li role="presentation">
+          <button role="tab" data-tab="dependencias" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Dependencias
+          </button>
+        </li>
+        <li role="presentation">
           <button role="tab" data-tab="ips" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             IPs
@@ -391,6 +397,57 @@
           <h3 class="text-sm font-semibold text-gray-400 mb-4">Estado de Dictámenes Generados</h3>
           <div id="dictamenList" class="max-h-[400px] overflow-y-auto scrollbar-thin">
             <p class="text-gray-500 text-sm">Cargando estado...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dependencias Municipales -->
+      <section role="tabpanel" id="panel-dependencias" class="tab-panel hidden" aria-labelledby="tab-dependencias">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-semibold">Dependencias Municipales</h2>
+            <p class="text-sm text-gray-400 mt-1">Gestiona los accesos de cada dirección municipal a la plataforma /municipal</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="depCards">
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-blue-600/20 flex items-center justify-center text-blue-400 text-lg">🏛️</div>
+            <p class="text-xs font-semibold text-white">Catastro</p>
+            <p class="text-[10px] text-gray-400">Acceso total</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-green-600/20 flex items-center justify-center text-green-400 text-lg">🌿</div>
+            <p class="text-xs font-semibold text-white">Ambiental</p>
+            <p class="text-[10px] text-gray-400">Restricciones</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400 text-lg">📐</div>
+            <p class="text-xs font-semibold text-white">Planificación</p>
+            <p class="text-[10px] text-gray-400">Loteamientos</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-orange-600/20 flex items-center justify-center text-orange-400 text-lg">🚧</div>
+            <p class="text-xs font-semibold text-white">Obras y Vialidad</p>
+            <p class="text-[10px] text-gray-400">Vías</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-cyan-600/20 flex items-center justify-center text-cyan-400 text-lg">🎓</div>
+            <p class="text-xs font-semibold text-white">Educación</p>
+            <p class="text-[10px] text-gray-400">Consulta</p>
+          </div>
+          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
+            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-amber-600/20 flex items-center justify-center text-amber-400 text-lg">🏛️</div>
+            <p class="text-xs font-semibold text-white">Patrimonio</p>
+            <p class="text-[10px] text-gray-400">Casco histórico</p>
+          </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+            <h3 class="text-sm font-semibold text-gray-400">Usuarios por Dependencia</h3>
+            <button id="btnAddDepUser" class="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">+ Nuevo usuario municipal</button>
+          </div>
+          <div id="depUserList" class="space-y-2">
+            <p class="text-gray-500 text-sm">Cargando usuarios...</p>
           </div>
         </div>
       </section>

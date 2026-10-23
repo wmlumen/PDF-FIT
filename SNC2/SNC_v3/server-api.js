@@ -79,8 +79,8 @@ app.get(['/notarial', '/notarial/', '/notarial/index.html', '/Notarial', '/Notar
   res.sendFile(join(__dirname, 'index-notarial.html'));
 });
 
-// Portal Administrador
-app.get(['/admin', '/admin/', '/admin/index.html'], (req, res) => {
+// Portal Administrador / Super Administrador
+app.get(['/admin', '/admin/', '/admin/index.html', '/superadmin', '/superadmin/', '/superadmin/index.html'], (req, res) => {
   res.sendFile(join(__dirname, 'admin', 'index.html'));
 });
 
@@ -173,7 +173,7 @@ async function adminMiddleware(req, res, next) {
     if ((!user || !user.id) && req.user.provider === 'firebase' && req.user.email) {
       user = await dbAPI.users.findByEmail(req.user.email);
     }
-    if (!user || user.status !== 'active' || user.role !== 'admin') {
+    if (!user || user.status !== 'active' || (user.role !== 'admin' && user.role !== 'superadmin')) {
       return res.status(403).json({ error: 'Se requiere rol administrador' });
     }
     req.member = user;
@@ -582,7 +582,7 @@ app.post('/api/auth/login', async (req, res) => {
     const sameIpUsers = isSameIp || [];
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, role: user.role, status: user.status, last_login_ip: ip }, stats, sameIpUsers });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, role: user.role, status: user.status, department: user.department || '', last_login_ip: ip }, stats, sameIpUsers });
   } catch (e) {
     logger.error('login error', e);
     res.status(500).json({ error: 'Error iniciando sesión' });
@@ -620,7 +620,7 @@ app.post('/api/auth/recover', async (req, res) => {
   }
 });
 
-const USER_ROLES = new Set(['admin', 'manager', 'professional', 'technician', 'member', 'viewer']);
+const USER_ROLES = new Set(['superadmin', 'admin', 'manager', 'professional', 'notary', 'technician', 'member', 'viewer']);
 const USER_STATUSES = new Set(['active', 'suspended', 'inactive']);
 const PLAN_TYPES = new Set(['free', 'paid', 'enterprise']);
 const PLAN_ID_PATTERN = /^[a-z][a-z0-9_-]{1,31}$/;

@@ -143,6 +143,71 @@ function set(id, value) {
 }
 
 // ============================================================
+// DEPENDENCIAS MUNICIPALES
+// ============================================================
+const DEPARTAMENTOS = {
+  catastro:     { label: 'Catastro',         icon: '🏛️', color: 'text-blue-400',    secciones: ['municipal-status','fraccionamiento','qgis-layer-control','balance-sidebar','loteamiento','ambiental','symbology','dictamen'] },
+  ambiental:    { label: 'Ambiental',        icon: '🌿', color: 'text-green-400',   secciones: ['municipal-status','qgis-layer-control','ambiental'] },
+  planificacion:{ label: 'Planificación',    icon: '📐', color: 'text-purple-400',  secciones: ['municipal-status','fraccionamiento','qgis-layer-control','balance-sidebar','loteamiento'] },
+  obras:        { label: 'Obras y Vialidad', icon: '🚧', color: 'text-orange-400',  secciones: ['municipal-status','qgis-layer-control','loteamiento'] },
+  educacion:    { label: 'Educación',        icon: '🎓', color: 'text-cyan-400',     secciones: ['municipal-status','qgis-layer-control'] },
+  patrimonio:   { label: 'Patrimonio',      icon: '🏺', color: 'text-amber-400',   secciones: ['municipal-status','qgis-layer-control'] },
+};
+
+async function loadDependencias() {
+  const listEl = document.getElementById('depUserList');
+  if (!listEl) return;
+  listEl.innerHTML = '<p class="text-gray-500 text-sm">Cargando...</p>';
+  try {
+    const members = await fetchJSON('/api/admin/members');
+    const users = Array.isArray(members) ? members : (members.data || []);
+    // Agrupar por department
+    const porDep = {};
+    users.forEach(u => {
+      const dep = u.department || 'sin_asignar';
+      if (!porDep[dep]) porDep[dep] = [];
+      porDep[dep].push(u);
+    });
+    let html = '';
+    const deps = Object.keys(DEPARTAMENTOS);
+    deps.forEach(depKey => {
+      const info = DEPARTAMENTOS[depKey];
+      const depUsers = porDep[depKey] || [];
+      html += `
+        <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">${info.icon}</span>
+            <div>
+              <p class="text-sm font-semibold ${info.color}">${info.label}</p>
+              <p class="text-[10px] text-gray-500">${info.secciones.length} secciones · ${depUsers.length} usuario(s)</p>
+            </div>
+          </div>
+          <div class="flex gap-1.5 flex-wrap">
+            ${depUsers.map(u => `<span class="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-300 rounded-full border border-gray-700">${u.name || u.email}</span>`).join('')}
+          </div>
+        </div>`;
+    });
+    // Usuarios sin dependencia asignada
+    const sinDep = porDep['sin_asignar'] || [];
+    if (sinDep.length) {
+      html += `
+        <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-red-800/50">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">⚠️</span>
+            <div>
+              <p class="text-sm font-semibold text-red-400">Sin dependencia asignada</p>
+              <p class="text-[10px] text-gray-500">${sinDep.length} usuario(s) sin acceso al portal municipal</p>
+            </div>
+          </div>
+        </div>`;
+    }
+    listEl.innerHTML = html || '<p class="text-gray-500 text-sm">No hay usuarios.</p>';
+  } catch (e) {
+    listEl.innerHTML = `<p class="text-red-400 text-sm">Error: ${e.message}</p>`;
+  }
+}
+
+// ============================================================
 // VISOR DE CAPAS PIRIBEBUY
 // ============================================================
 let adminMap = null;
@@ -246,8 +311,30 @@ function setupTabs() {
       panels.forEach(p => p.classList.remove('active'));
       const panel = document.getElementById(`panel-${btn.dataset.tab}`);
       if (panel) panel.classList.add('active');
+      // Cargar datos específicos por pestaña
+      if (btn.dataset.tab === 'dependencias') loadDependencias();
+      if (btn.dataset.tab === 'members') loadMembersList();
     });
   });
+}
+
+async function loadMembersList() {
+  const el = document.getElementById('memberList') || document.querySelector('#panel-members table tbody');
+  if (!el) return;
+  try {
+    const members = await fetchJSON('/api/admin/members');
+    const users = Array.isArray(members) ? members : (members.data || []);
+    if (el.tagName === 'TBODY') {
+      el.innerHTML = users.map(u => `
+        <tr class="border-b border-gray-800">
+          <td class="py-2 px-3 text-sm">${u.name || '—'}</td>
+          <td class="py-2 px-3 text-sm">${u.email}</td>
+          <td class="py-2 px-3 text-sm"><span class="px-2 py-0.5 text-xs rounded-full ${u.role === 'admin' ? 'bg-amber-600/20 text-amber-400' : 'bg-gray-700 text-gray-300'}">${u.role}</span></td>
+          <td class="py-2 px-3 text-sm">${DEPARTAMENTOS[u.department]?.label || '—'}</td>
+          <td class="py-2 px-3 text-sm">${u.status || 'active'}</td>
+        </tr>`).join('');
+    }
+  } catch (e) { console.warn('[admin] members:', e.message); }
 }
 
 // ============================================================

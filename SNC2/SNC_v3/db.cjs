@@ -19,6 +19,8 @@ function logDb(event, meta = {}) {
 }
 
 const sqlite3 = require('sqlite3').verbose();
+// crypto.createHash no es global implícito en este entorno; requerirlo explicitamente.
+const crypto = require('crypto');
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) console.error('[DB]', JSON.stringify({ event: 'open_error', error: err.message }));
 });
@@ -54,6 +56,7 @@ db.serialize(() => {
   db.run("ALTER TABLE users ADD COLUMN stats_json TEXT NOT NULL DEFAULT '{}'", () => {});
   db.run("ALTER TABLE users ADD COLUMN blocked_reason TEXT", () => {});
   db.run("ALTER TABLE users ADD COLUMN blocked_until TEXT", () => {});
+  db.run("ALTER TABLE users ADD COLUMN department TEXT DEFAULT ''", () => {});
 
   db.run(`CREATE TABLE IF NOT EXISTS plans (
     id TEXT PRIMARY KEY,
@@ -87,6 +90,107 @@ db.serialize(() => {
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   )`);
+
+  // Modulo 9 — Mesa de entrada: columnas de estado registral.
+  // Se agregan con ALTER TABLE idempotente porque la tabla ya existe en DBs
+  // en produccion; CREATE TABLE IF NOT EXISTS no las agregaria.
+  // Se ejecuta dentro de la misma cola serialize para garantizar el orden
+  // (un db.all anidado fuera de la cola puede resolver antes de abrir la DB).
+  db.all('PRAGMA table_info(expedientes)', [], (err, cols) => {
+    if (err) { logDb('modulo9_pragma_error', { error: err.message }); return; }
+    const existing = (cols || []).map(c => c.name);
+    const pendientes = [];
+    const addCol = (name, ddl) => {
+      if (existing.includes(name)) return;
+      pendientes.push({ name, ddl });
+    };
+    addCol('estado', "estado TEXT NOT NULL DEFAULT 'BORRADOR'");
+    addCol('entrada_nro', "entrada_nro TEXT");
+    addCol('revisor_id', "revisor_id TEXT");
+    addCol('precalificacion_status', "precalificacion_status TEXT");
+    addCol('precalificacion_json', "precalificacion_json TEXT");
+    addCol('dictamen_json', "dictamen_json TEXT");
+    addCol('padron_nro', "padron_nro TEXT");
+    addCol('homologacion_estado', "homologacion_estado TEXT NOT NULL DEFAULT 'PENDIENTE'");
+    addCol('resolucion_municipal_nro', "resolucion_municipal_nro TEXT");
+    addCol('resolucion_municipal_fecha', "resolucion_municipal_fecha TEXT");
+    addCol('intendente_promulgacion_fecha', "intendente_promulgacion_fecha TEXT");
+    // Encadenar los ALTER para que se apliquen en orden y secuencia
+    let i = 0;
+    const next = () => {
+      if (i >= pendientes.length) { logDb('modulo9_ready', { agregadas: pendientes.length }); return; }
+      const col = pendientes[i++];
+      db.run(`ALTER TABLE expedientes ADD COLUMN ${col.ddl}`, [], (e) => {
+        if (e) logDb('modulo9_alter_error', { col: col.name, error: e.message });
+        else logDb('modulo9_alter_ok', { col: col.name });
+        next();
+      });
+    };
+    next();
+    db.run("CREATE UNIQUE INDEX IF NOT EXISTS idx_expedientes_entrada_nro ON expedientes(entrada_nro) WHERE entrada_nro IS NOT NULL");
+  });
+
+  // Bitacora inmutable del expediente (req. 180). Cadena de hash SHA-256:
+  // cada fila enlaza con la anterior, asi cualquier borrado/alteracion rompe
+  // la cadena y queda detectable con verifyChain().
+  db.run(`CREATE TABLE IF NOT EXISTS expediente_historial (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    expediente_id TEXT NOT NULL REFERENCES expedientes(id) ON DELETE CASCADE,
+    actor_id TEXT,
+    actor_email TEXT,
+    accion TEXT NOT NULL,
+    estado_desde TEXT,
+    estado_hacia TEXT NOT NULL,
+    diff_json TEXT,
+    hash_prev TEXT,
+    hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    nonce TEXT
+  )`);
+  db.run("CREATE INDEX IF NOT EXISTS idx_hist_exp ON expediente_historial(expediente_id, seq)");
+
+  // La tabla ya existe en DBs en produccion sin la columna `nonce` (se agrego al
+  // corregir el Bug M9-1). CREATE TABLE IF NOT EXISTS no la agrega: se hace con
+  // ALTER TABLE idempotente leyendo el esquema real.
+  db.all('PRAGMA table_info(expediente_historial)', [], (err, cols) => {
+    if (err) { logDb('modulo9_hist_pragma_error', { error: err.message }); return; }
+    const existing = (cols || []).map(c => c.name);
+    if (existing.includes('nonce')) { logDb('modulo9_nonce_ok', {}); return; }
+    db.run("ALTER TABLE expediente_historial ADD COLUMN nonce TEXT", [], (e) => {
+      if (e) logDb('modulo9_nonce_error', { error: e.message });
+      else logDb('modulo9_nonce_added', {});
+    });
+  });
+
+  // Reparacion de la cadena pre-AUTOINCREMENT (Bug M9-1).
+  // La tabla se creo con una secuencia global: el hash de las filas tempranas se
+  // calculo con MAX(seq)+1 por expediente, no con el seq real insertado, asi que
+  // la cadena quedaba rota desde la fila 1. Se recalcula cada fila con su seq
+  // real (el AUTOINCREMENT ya asignado) y el hash_prev del predecessor real.
+  db.all('SELECT expediente_id FROM expediente_historial GROUP BY expediente_id', [], (err, grupos) => {
+    if (err || !grupos || !grupos.length) return;
+    let pending = grupos.length;
+    const done = () => { if (--pending === 0) logDb('modulo9_reparacion_ok', { expedientes: grupos.length }); };
+    grupos.forEach(g => {
+      db.all('SELECT * FROM expediente_historial WHERE expediente_id = ? ORDER BY seq ASC', [g.expediente_id], [], (e2, rows) => {
+        if (e2 || !rows) { done(); return; }
+        let prev = null;
+        let i = 0;
+        const next = () => {
+          if (i >= rows.length) { done(); return; }
+          const r = rows[i++];
+          const nuevoHash = calcularHash({
+            expediente_id: r.expediente_id, seq: r.seq, accion: r.accion,
+            estado_desde: r.estado_desde, estado_hacia: r.estado_hacia,
+            diff_json: r.diff_json, created_at: r.created_at
+          }, prev);
+          db.run('UPDATE expediente_historial SET hash = ?, hash_prev = ? WHERE seq = ?',
+            [nuevoHash, prev, r.seq], [], () => { prev = nuevoHash; next(); });
+        };
+        next();
+      });
+    });
+  });
 
   db.run(`CREATE TABLE IF NOT EXISTS payments (
     id TEXT PRIMARY KEY,
@@ -414,7 +518,7 @@ const expedientes = {
     if (fields.name !== undefined) { sets.push('name = ?'); params.push(String(fields.name).slice(0, 200)); }
     if (fields.state_json !== undefined) { sets.push('state_json = ?'); params.push(fields.state_json ? JSON.stringify(fields.state_json) : null); }
     if (fields.validation_results !== undefined) { sets.push('validation_results = ?'); params.push(fields.validation_results ? JSON.stringify(fields.validation_results) : null); }
-    if (fields.files_json !== undefined) { sets.push('files_json = ?'); params.push(fields.files_json ? JSON.stringify(fields.files_json) : null); }
+    if (fields.files_json !== undefined) { sets.push('files_json = ?'); params.push(files_json_value(fields.files_json)); }
     if (!sets.length) return Promise.resolve({ changes: 0 });
     sets.push('updated_at = ?');
     params.push(new Date().toISOString());
@@ -426,6 +530,172 @@ const expedientes = {
     return promisifyRun('DELETE FROM expedientes WHERE id = ?', [id]);
   }
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// Modulo 9 — Mesa de entrada de expedientes (workflow registral)
+// Maquina de estados + bitacora inmutable con cadena de hash.
+// ═══════════════════════════════════════════════════════════════════
+
+// Circuito registral. Cada entrada lista las transiciones habilitadas.
+const WORKFLOW_EXPEDIENTE = {
+  BORRADOR:             { orden: 1,  siguiente: ['MESA_ENTRADA'],                       requierePrecalificacion: false },
+  MESA_ENTRADA:         { orden: 2,  siguiente: ['ASIGNADO', 'RECHAZADO'],              requierePrecalificacion: true  },
+  ASIGNADO:             { orden: 3,  siguiente: ['EN_REVISION'],                       requierePrecalificacion: true  },
+  EN_REVISION:          { orden: 4,  siguiente: ['OBSERVADO', 'DICTAMEN'],              requierePrecalificacion: true  },
+  OBSERVADO:            { orden: 5,  siguiente: ['REINGRESO'],                         requierePrecalificacion: false },
+  REINGRESO:            { orden: 6,  siguiente: ['EN_REVISION'],                       requierePrecalificacion: true  },
+  DICTAMEN:             { orden: 7,  siguiente: ['APROBADO_FISCALIZACION', 'OBSERVADO'],requierePrecalificacion: true  },
+  APROBADO_FISCALIZACION:{ orden: 8, siguiente: ['FIRMADO_DIRECTOR'],                  requierePrecalificacion: true  },
+  FIRMADO_DIRECTOR:     { orden: 9,  siguiente: ['PADRON_ASIGNADO'],                   requierePrecalificacion: true  },
+  PADRON_ASIGNADO:      { orden: 10, siguiente: [],                                    requierePrecalificacion: true  },
+  RECHAZADO:            { orden: 99, siguiente: ['BORRADOR'],                          requierePrecalificacion: false }
+};
+
+function estadoValido(e) { return Object.prototype.hasOwnProperty.call(WORKFLOW_EXPEDIENTE, e); }
+
+function puedeTransitar(desde, hacia) {
+  if (!estadoValido(desde) || !estadoValido(hacia)) return false;
+  return (WORKFLOW_EXPEDIENTE[desde].siguiente || []).includes(hacia);
+}
+
+// Tipo de expediente que exige homologacion municipal de la Junta.
+function exigeHomologacion(tipo) {
+  const t = String(tipo || '').toUpperCase();
+  return t.includes('FRACCIONAMIENTO') || t.includes('LOTEAMIENTO') || t.includes('LOTEO');
+}
+
+// Cadena de hash: hash = SHA-256(expediente_id | seq | accion | estado_hacia | diff | hash_prev | created_at)
+function calcularHash(entry, hashPrev) {
+  const payload = [
+    entry.expediente_id,
+    entry.seq,
+    entry.accion,
+    entry.estado_desde || '',
+    entry.estado_hacia,
+    entry.diff_json || '',
+    hashPrev || '',
+    entry.created_at
+  ].join('|');
+  return crypto.createHash('sha256').update(payload).digest('hex');
+}
+
+const expediente_historial = {
+  // Inserta una fila enlazada con la anterior.
+  // El hash se sella despues del INSERT porque depende del seq real que asigna
+  // AUTOINCREMENT (calcularlo con MAX(seq)+1 rompia la cadena, Bug M9-1).
+  async append(entry) {
+    const prev = await promisifyGet(
+      'SELECT hash FROM expediente_historial WHERE expediente_id = ? ORDER BY seq DESC LIMIT 1',
+      [entry.expediente_id]
+    );
+    const hashPrev = prev ? prev.hash : null;
+    const createdAt = entry.created_at || new Date().toISOString();
+    const nonce = crypto.randomUUID();
+    const info = await promisifyRun(
+      'INSERT INTO expediente_historial (expediente_id, actor_id, actor_email, accion, estado_desde, estado_hacia, diff_json, hash_prev, hash, created_at, nonce) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [entry.expediente_id, entry.actor_id || null, entry.actor_email || null,
+       entry.accion, entry.estado_desde || null, entry.estado_hacia,
+       entry.diff_json || null, hashPrev, 'PENDIENTE', createdAt, nonce]
+    );
+    const seq = Number(info.lastID);
+    const hash = calcularHash({
+      expediente_id: entry.expediente_id, seq, accion: entry.accion,
+      estado_desde: entry.estado_desde, estado_hacia: entry.estado_hacia,
+      diff_json: entry.diff_json, created_at: createdAt
+    }, hashPrev);
+    await promisifyRun(
+      'UPDATE expediente_historial SET hash = ? WHERE expediente_id = ? AND nonce = ?',
+      [hash, entry.expediente_id, nonce]
+    );
+    return { seq, hash, hash_prev: hashPrev };
+  },
+
+  list(expedienteId) {
+    return promisifyQuery(
+      'SELECT * FROM expediente_historial WHERE expediente_id = ? ORDER BY seq ASC', [expedienteId]
+    );
+  },
+
+  // Verifica la integridad de la cadena. Devuelve { ok, total, rotoEn }.
+  async verifyChain(expedienteId) {
+    const rows = await promisifyQuery(
+      'SELECT * FROM expediente_historial WHERE expediente_id = ? ORDER BY seq ASC', [expedienteId]
+    );
+    let prev = null;
+    for (const row of rows) {
+      const recalculado = calcularHash({
+        expediente_id: row.expediente_id, seq: row.seq, accion: row.accion,
+        estado_desde: row.estado_desde, estado_hacia: row.estado_hacia,
+        diff_json: row.diff_json, created_at: row.created_at
+      }, prev);
+      if (recalculado !== row.hash || (prev !== null && row.hash_prev !== prev)) {
+        return { ok: false, total: rows.length, rotoEn: row.seq, esperado: recalculado, obtenido: row.hash };
+      }
+      prev = row.hash;
+    }
+    return { ok: true, total: rows.length, rotoEn: null };
+  }
+};
+
+// Transicion de estado con bitacora. Serializa las escrituras para no pisar
+// la cadena de hash cuando llegan peticiones concurrentes.
+let _chainQueue = Promise.resolve();
+function conChain(fn) {
+  const next = _chainQueue.then(fn, fn);
+  _chainQueue = next.catch(() => {});
+  return next;
+}
+
+async function transicionarExpediente(expedienteId, hacia, actor, opciones = {}) {
+  return conChain(async () => {
+    const row = await promisifyGet('SELECT estado, name FROM expedientes WHERE id = ?', [expedienteId]);
+    if (!row) { const e = new Error('Expediente no encontrado'); e.code = 'NOT_FOUND'; throw e; }
+    // NULL/undefined se normalizan a BORRADOR (el default real de la columna).
+    // Un estado vacio o desconocido NO se normaliza: se deja tal cual y la
+    // validacion de abajo lo rechaza. Usar `|| 'BORRADOR'` convertiria '' en
+    // 'BORRADOR' y saltaria la validacion (Bug M9-2).
+    const estadoActual = (row.estado === null || row.estado === undefined)
+      ? 'BORRADOR'
+      : String(row.estado);
+    if (!puedeTransitar(estadoActual, hacia)) {
+      const e = new Error(`Transicion invalida: ${estadoActual} -> ${hacia}`);
+      e.code = 'TRANSICION_INVALIDA'; e.desde = estadoActual; e.hacia = hacia; throw e;
+    }
+    const accion = opciones.accion || `TRANSICION_${estadoActual}_A_${hacia}`;
+    const createdAt = new Date().toISOString();
+    const diff = opciones.diff !== undefined ? JSON.stringify(opciones.diff) : null;
+
+    const prev = await promisifyGet(
+      'SELECT hash FROM expediente_historial WHERE expediente_id = ? ORDER BY seq DESC LIMIT 1',
+      [expedienteId]
+    );
+    const hashPrev = prev ? prev.hash : null;
+
+    // 1. Persistir el nuevo estado del expediente.
+    await promisifyRun('UPDATE expedientes SET estado = ?, updated_at = ? WHERE id = ?', [hacia, createdAt, expedienteId]);
+
+    // 2. Insertar la fila de bitacora con hash temporal y sellarla con el seq real.
+    const nonce = crypto.randomUUID();
+    const info = await promisifyRun(
+      'INSERT INTO expediente_historial (expediente_id, actor_id, actor_email, accion, estado_desde, estado_hacia, diff_json, hash_prev, hash, created_at, nonce) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [expedienteId, actor?.id || null, actor?.email || null, accion, estadoActual, hacia, diff, hashPrev, 'PENDIENTE', createdAt, nonce]
+    );
+    // El seq real lo asigna AUTOINCREMENT; el hash depende de ese seq, asi que
+    // se inserta primero y se sella despues. Antes se calculaba con MAX(seq)+1
+    // (Bug M9-1): si el expediente no era el primero en la bitacora, el seq
+    // guardado no coincidia con el usado en el hash y verifyChain lo detectaba.
+    const seq = Number(info.lastID);
+    const hash = calcularHash({
+      expediente_id: expedienteId, seq, accion,
+      estado_desde: estadoActual, estado_hacia: hacia, diff_json: diff, created_at: createdAt
+    }, hashPrev);
+    await promisifyRun(
+      'UPDATE expediente_historial SET hash = ? WHERE expediente_id = ? AND nonce = ?',
+      [hash, expedienteId, nonce]
+    );
+    return { ok: true, desde: estadoActual, hacia, accion, seq, hash };
+  });
+}
 
 const payments = {
   insert(payment) {
@@ -572,4 +842,51 @@ function runJsonMigration() {
   return Promise.resolve();
 }
 
-module.exports = { dbAPI, migrateFromJson, runJsonMigration };
+// Normaliza files_json antes de persistarlo.
+// Acepta array (lo serializa), string ya serializado (lo pasa tal cual) o
+// string con doble encoding (lo re-parsea y re-serializa a la forma canónica).
+// Sin esto, el endpoint POST /files serializaba dos veces y el GET devolvia
+// un string en lugar de un array.
+function files_json_value(value) {
+  if (value == null) return null;
+  if (Array.isArray(value)) return JSON.stringify(value);
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s) return null;
+    // Si ya es JSON valido de un array, dejarlo canonico
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return JSON.stringify(parsed);
+      if (typeof parsed === 'string') {
+        // Doble encoding: re-parsear una vez mas
+        const inner = JSON.parse(parsed);
+        return JSON.stringify(inner);
+      }
+      return JSON.stringify(parsed);
+    } catch {
+      return s;
+    }
+  }
+  return JSON.stringify(value);
+}
+
+// Normaliza files_json leido de la DB. Devuelve siempre un array.
+// Repara filas historicas con doble encoding.
+function normalizeFilesJson(raw) {
+  if (raw == null) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string') return [];
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch { return []; }
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed); } catch { return []; }
+  }
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+module.exports = {
+  dbAPI, migrateFromJson, runJsonMigration, files_json_value, normalizeFilesJson,
+  // Modulo 9 — mesa de entrada
+  WORKFLOW_EXPEDIENTE, estadoValido, puedeTransitar, exigeHomologacion,
+  expediente_historial, transicionarExpediente
+};
