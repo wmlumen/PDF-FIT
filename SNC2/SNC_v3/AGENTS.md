@@ -1,4 +1,4 @@
-﻿# PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)
+# PROTOCOLO DE TRABAJO Y COORDINACIÃ“N MULTI-IA (SNC 551/2023)
 
 Este repositorio es operado por mÃºltiples agentes de Inteligencia Artificial (Hermes, Claude, Antigravity, OpenCode, etc.). 
 **Todo agente que trabaje en este proyecto DEBE seguir obligatoriamente este protocolo por defecto en cada acciÃ³n.**
@@ -129,7 +129,8 @@ npm test
 | **Tabla de Atributos** | `js/dataTable.js` | `js/state.js` | `tests/workflow.test.mjs` |
 | **TopologÃ­a y COGO** | `js/geoprocessing.js` | `js/cogo.js`, `js/topologyRepair.js` | `tests/geoprocessing.test.mjs` |
 | **Backend API y Base de Datos** | `server-api.js` | `db.cjs`, `cacheDb.js` | `tests/api-security.test.mjs` |
-| **Portal Ciudadano (compartir datos municipales)** | ciudadano/index.html | js/app-ciudadano.js, server-api.js | Ver docs/PLAN_PORTAL_CIUDADANO.md |\n| **Frontend Entry Point** | `js/app.js` | `js/app/index.js`, `index.html` | `npm run build` |
+| **Portal Ciudadano (compartir datos municipales)** | `ciudadano/index.html` | `js/app-ciudadano.js`, `server-api.js` | Ver `docs/PLAN_PORTAL_CIUDADANO.md` |
+| **Frontend Entry Point** | `js/app.js` | `js/app/index.js`, `index.html` | `npm run build` |
 
 ---
 
