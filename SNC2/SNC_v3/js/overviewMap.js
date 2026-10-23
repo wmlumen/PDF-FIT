@@ -188,21 +188,36 @@ function syncView() {
 /**
  * Consulta la ubicación territorial del centro del mapa para mantener actualizado
  * el barrio y distrito en el mini-mapa en todo momento.
+ *
+ * Debounced: 'moveend'/'zoomend' pueden disparar varias veces durante una
+ * animación (fitBounds, carga de una capa grande) y sin esto se inundaba
+ * /api/spatial-identify con decenas de pedidos por segundo (429 en cadena).
  */
+let contextFromCenterTimer = null;
+let lastContextFromCenterKey = null;
 function updateContextFromCenter() {
     if (!mainMapRef) return;
     const center = mainMapRef.getCenter?.();
     if (!center || typeof center.lat !== 'number') return;
+    // Límite de proyección Mercator (Leaflet clampea aquí si el mapa quedó
+    // en un estado sin encuadrar): no tiene sentido geográfico real, no consultar.
+    if (Math.abs(center.lat) >= 85.05 || !Number.isFinite(center.lng)) return;
 
-    fetch(`/api/spatial-identify?lat=${center.lat}&lng=${center.lng}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-            if (!data || !data.ok) return;
-            currentBarrioInfo = data;
-            updateDomLabels(data);
-            renderBarrioInMiniMap(data.barrio_geometry);
-        })
-        .catch(() => {});
+    clearTimeout(contextFromCenterTimer);
+    contextFromCenterTimer = setTimeout(() => {
+        const key = `${center.lat.toFixed(5)},${center.lng.toFixed(5)}`;
+        if (key === lastContextFromCenterKey) return;
+        lastContextFromCenterKey = key;
+        fetch(`/api/spatial-identify?lat=${center.lat}&lng=${center.lng}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data || !data.ok) return;
+                currentBarrioInfo = data;
+                updateDomLabels(data);
+                renderBarrioInMiniMap(data.barrio_geometry);
+            })
+            .catch(() => {});
+    }, 400);
 }
 
 function updateDomLabels(data) {

@@ -88,10 +88,19 @@ app.get(['/admin', '/admin/', '/admin/index.html', '/superadmin', '/superadmin/'
 app.get('/data/DISTRITOS_PY_CNPV2022.geojson', (req, res) => {
   res.sendFile(join(__dirname, 'data', 'DISTRITOS_PY_CNPV2022.geojson'));
 });
+// Capa de referencia nacional (grupo "Paraguay" del panel): versiones ligeras,
+// aptas para cargarse enteras en el navegador (no el corpus crudo de 1.Paraguay/).
+app.get('/data/deptos_py_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'deptos_py_light.geojson'));
+});
+app.get('/data/distritos_py_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'distritos_py_light.geojson'));
+});
 // Datos municipales (capas por municipio, ej: piribebuy) — única carpeta de datos municipales.
-app.use('/data/municipal', express.static(join(__dirname, 'data', 'municipal'), STATIC_OPTIONS));
+// Carpeta canónica numerada (ver AGENTS.md §3.1): data/2.Municipal/<muniId>/...
+app.use('/data/municipal', express.static(join(__dirname, 'data', '2.Municipal'), STATIC_OPTIONS));
 // Alias retrocompatible: /data/piribebuy → /data/municipal/piribebuy.
-app.use('/data/piribebuy', express.static(join(__dirname, 'data', 'municipal', 'piribebuy'), STATIC_OPTIONS));
+app.use('/data/piribebuy', express.static(join(__dirname, 'data', '2.Municipal', 'piribebuy'), STATIC_OPTIONS));
 
 // Dependencias del frontend servidas localmente (sin depender de CDNs).
 // Whitelist explícita: nunca se sirve node_modules/ completo.
@@ -418,7 +427,7 @@ app.get('/api/municipal/:muniId/info', (req, res) => {
   if (!/^[a-z0-9_-]+$/.test(muniId)) {
     return res.status(400).json({ ok: false, error: 'Identificador municipal inválido' });
   }
-  const infoPath = join(__dirname, 'data', 'municipal', muniId, 'info.json');
+  const infoPath = join(__dirname, 'data', '2.Municipal', muniId, 'info.json');
   if (!existsSync(infoPath)) {
     return res.status(404).json({ ok: false, error: 'Municipalidad no encontrada o sin datos publicados' });
   }
@@ -436,7 +445,7 @@ app.get('/api/municipal/:muniId/parcelas', (req, res) => {
   if (!/^[a-z0-9_-]+$/.test(muniId)) {
     return res.status(400).json({ ok: false, error: 'Identificador municipal inválido' });
   }
-  const parcelasPath = join(__dirname, 'data', 'municipal', muniId, 'parcelas.geojson');
+  const parcelasPath = join(__dirname, 'data', '2.Municipal', muniId, 'parcelas.geojson');
   if (!existsSync(parcelasPath)) {
     return res.status(404).json({ ok: false, error: 'Parcelas no disponibles para esta municipalidad' });
   }
@@ -453,7 +462,7 @@ app.post('/api/municipal/:muniId/publicar', authMiddleware, (req, res) => {
   if (!geojson || geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
     return res.status(400).json({ ok: false, error: 'El cuerpo debe ser un FeatureCollection GeoJSON válido' });
   }
-  const muniDir = join(__dirname, 'data', 'municipal', muniId);
+  const muniDir = join(__dirname, 'data', '2.Municipal', muniId);
   if (!existsSync(muniDir)) {
     mkdirSync(muniDir, { recursive: true });
   }

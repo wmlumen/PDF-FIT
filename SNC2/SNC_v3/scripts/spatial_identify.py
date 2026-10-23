@@ -1,8 +1,18 @@
 import sys
 import json
+import os
 import argparse
 import geopandas as gpd
 from shapely.geometry import mapping
+
+# Carpeta nacional "PAIS" de la Fase 1 (1.Paraguay/01. Datos Oficiales DGEEC).
+# Ruta absoluta derivada de la ubicacion de este script para no depender del
+# cwd con el que el backend lo invoque.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_PAIS_DIR = os.path.join(_REPO_ROOT, 'data', '1.Paraguay', '01. Datos Oficiales DGEEC', 'PAIS', 'PAÍS')
+_SHP_BARRIOS = os.path.join(_PAIS_DIR, 'Barrios_Localidades_Paraguay.shp')
+_SHP_DISTRITOS = os.path.join(_PAIS_DIR, 'Distritos_Paraguay.shp')
+_SHP_MANZANAS = os.path.join(_PAIS_DIR, 'Manzanas_Paraguay.shp')
 
 def identify(lat, lng, include_geom=True):
     pt = gpd.points_from_xy([lng], [lat], crs='EPSG:4674')
@@ -25,7 +35,7 @@ def identify(lat, lng, include_geom=True):
 
     try:
         # 1. Barrios y Localidades (cubre todo Paraguay)
-        gdf_barrios = gpd.read_file('data/Paraguay/Barrios_Localidades_Paraguay.shp', bbox=box)
+        gdf_barrios = gpd.read_file(_SHP_BARRIOS, bbox=box)
         if not gdf_barrios.empty:
             match = gdf_barrios[gdf_barrios.intersects(pt[0])]
             if not match.empty:
@@ -44,7 +54,7 @@ def identify(lat, lng, include_geom=True):
         
         # 2. Si no encontró en barrios, intentar con Distritos
         if not out['distrito']:
-            gdf_dist = gpd.read_file('data/Paraguay/Distritos_Paraguay.shp', bbox=box)
+            gdf_dist = gpd.read_file(_SHP_DISTRITOS, bbox=box)
             if not gdf_dist.empty:
                 m_dist = gdf_dist[gdf_dist.intersects(pt[0])]
                 if not m_dist.empty:
@@ -60,7 +70,7 @@ def identify(lat, lng, include_geom=True):
 
         # 3. Manzanas (para zonas urbanas)
         try:
-            gdf_m = gpd.read_file('data/Paraguay/Manzanas_Paraguay.shp', bbox=box)
+            gdf_m = gpd.read_file(_SHP_MANZANAS, bbox=box)
             if not gdf_m.empty:
                 m_match = gdf_m[gdf_m.intersects(pt[0])]
                 if not m_match.empty:

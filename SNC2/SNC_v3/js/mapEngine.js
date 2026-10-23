@@ -2120,7 +2120,17 @@ export function exportPiribebuyLayer(id, targetCode = 'EPSG:4326') {
     return { ...projected, crs: { type: 'name', properties: { name: `urn:ogc:def:crs:${targetCode.replace(':', '::')}` } } };
 }
 
+// Capas de referencia nacional (grupo "Paraguay"): no viven bajo
+// data/municipal/piribebuy, sino en data/ directamente (versiones ligeras).
+const NATIONAL_REFERENCE_FILES = {
+    py_deptos: '../data/deptos_py_light.geojson',
+    py_distritos: '../data/distritos_py_light.geojson'
+};
+
 function piribebuyUrl(node, id) {
+    if (NATIONAL_REFERENCE_FILES[id]) {
+        return new URL(NATIONAL_REFERENCE_FILES[id], import.meta.url);
+    }
     const folder = PIRIBEBUY_FOLDER_BY_GROUP[node.parentId];
     const path = `../data/municipal/piribebuy/${folder ? folder + "/" : ""}${encodeURIComponent(id)}.geojson`;
     return new URL(path, import.meta.url);

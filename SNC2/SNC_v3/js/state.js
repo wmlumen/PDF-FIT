@@ -6,7 +6,18 @@
 import { calcularMetricasPlanasUTM, sanitizeString } from './utils.js';
 import { logger } from './logger.js';
 
-const EXPEDIENTE_STORAGE_KEY = 'snc_v3_expediente_activo';
+// Cada subsistema (Catastro PY Pro, Municipal, Ciudadano) corre en el mismo
+// origen (localhost:5556) pero NO debe compartir el proyecto activo entre si:
+// un geojson de demostracion cargado en el Portal Ciudadano publico no puede
+// reaparecer como "expediente activo" en el validador profesional. Se
+// namespacea la clave de localStorage por path para evitar esa fuga de datos.
+function resolveExpedienteStorageKey() {
+    const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
+    if (path.startsWith('/ciudadano')) return 'snc_v3_expediente_activo_ciudadano';
+    if (path.startsWith('/municipal')) return 'snc_v3_expediente_activo_municipal';
+    return 'snc_v3_expediente_activo';
+}
+const EXPEDIENTE_STORAGE_KEY = resolveExpedienteStorageKey();
 
 // Polyfill localStorage para entorno Node.js (tests)
 const isNode = typeof window === 'undefined' || typeof window?.location?.origin === 'undefined';
@@ -24,6 +35,13 @@ if (isNode) {
 
 function loadPersistedExpediente() {
     try {
+        // Limpieza de la clave compartida legacy: si este subsistema NO es
+        // el validador profesional, descartar (sin migrar) cualquier
+        // expediente guardado bajo la clave antigua sin namespace, para
+        // cortar la fuga de datos entre Ciudadano/Municipal y Catastro Pro.
+        if (EXPEDIENTE_STORAGE_KEY !== 'snc_v3_expediente_activo') {
+            localStorage.removeItem('snc_v3_expediente_activo');
+        }
         const saved = localStorage.getItem(EXPEDIENTE_STORAGE_KEY);
         return saved ? JSON.parse(saved) : {};
     } catch (error) {

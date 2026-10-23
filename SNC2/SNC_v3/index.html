@@ -273,7 +273,7 @@
             <button id="piribebuy-crs-refresh" type="button" class="shrink-0 text-[9px] text-slate-500 hover:text-blue-400" title="Re-evaluar proyecciones de las capas" aria-label="Re-evaluar proyecciones"><i class="fas fa-rotate"></i></button>
             <button type="button" onclick="window.MagService?.forceMagSync().then(() => window.showToast?.('Catálogo MAG actualizado (vigencia 15 días)', 'success'))" class="flex shrink-0 items-center gap-1 rounded-full border border-emerald-700/60 bg-emerald-950/80 px-2 py-0.5 text-[8px] text-emerald-300 hover:text-white" title="Sincronizar catálogo MAG (server.gis.mag.gov.py)"><i class="fas fa-arrows-rotate"></i> MAG 15d</button>
           </div>
-          <div id="piribebuyCrsReport" class="mb-2 space-y-1"></div>
+          <div id="piribebuyCrsReport" class="fixed bottom-4 right-4 z-[3000] w-72 max-w-[90vw] space-y-1"></div>
           <div class="mb-1 flex justify-end">
             <button id="lp-new-folder" type="button" class="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[9px] text-slate-300 hover:text-white"><i class="fas fa-folder-plus"></i> Carpeta</button>
             <button id="lp-new-layer" type="button" class="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[9px] text-slate-300 hover:text-white"><i class="fas fa-layer-group"></i> Capa</button>
@@ -372,6 +372,12 @@
             <span id="kpi-area" class="text-xs font-bold text-white">0 m²</span>
           </div>
           <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
+          <div class="flex items-center gap-1.5 px-2" title="Perímetro total SIG computado">
+            <i class="fas fa-vector-square text-[11px] text-sky-400"></i>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400">Perímetro</span>
+            <span id="kpi-perimetro" class="text-xs font-bold text-white">0 m</span>
+          </div>
+          <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
           <div class="flex items-center gap-1.5 px-2" title="Vértices totales dibujados">
             <i class="fas fa-draw-polygon text-[11px] text-purple-400"></i>
             <span class="text-[10px] uppercase tracking-wider text-slate-400">Vértices</span>
@@ -383,6 +389,10 @@
             <span class="text-[10px] uppercase tracking-wider text-slate-400">Validación</span>
             <span id="kpi-validacion" class="text-xs font-bold text-slate-500">—</span>
           </div>
+          <span class="h-4 w-px bg-slate-700/60" aria-hidden="true"></span>
+          <button type="button" id="kpi-copy" class="flex items-center gap-1 px-1.5 text-[10px] text-slate-400 hover:text-emerald-400" title="Copiar estas métricas">
+            <i class="fas fa-copy"></i>
+          </button>
         </div>
 
         <!-- INSPECTOR LATERAL -->
@@ -1338,13 +1348,25 @@ import OverviewMap from '/js/overviewMap.js';
     return names[code] || code;
   }
 
+  // Agrupa capas con el mismo resultado (origen + corrección + confianza)
+  // en una sola línea: con 6 capas en UTM 21S antes salían 6 líneas idénticas
+  // salvo el nombre; ahora sale "6 capas: ...".
   function crsReportLines(items) {
-    return items.map(item => {
-      if (item.corrected) {
-        return `${item.name}: reproyectada de ${reportCrsName(item.source)} a WGS84 (EPSG:4326) para el mapa; confianza ${Math.round(item.confidence * 100)} %.`;
+    const groups = new Map();
+    for (const item of items) {
+      const key = item.corrected
+        ? `C:${item.source}:${Math.round(item.confidence * 100)}`
+        : (!item.source ? 'U' : `S:${item.source}`);
+      if (!groups.has(key)) groups.set(key, { ...item, names: [] });
+      groups.get(key).names.push(item.name);
+    }
+    return [...groups.values()].map(g => {
+      const label = g.names.length > 1 ? `${g.names.length} capas` : g.names[0];
+      if (g.corrected) {
+        return `${label}: ${reportCrsName(g.source)} → WGS84 (${Math.round(g.confidence * 100)} %).`;
       }
-      if (!item.source) return `${item.name}: proyección no identificada; revisar manualmente.`;
-      return `${item.name}: sin cambios (${reportCrsName(item.source)}).`;
+      if (!g.source) return `${label}: proyección no identificada.`;
+      return `${label}: sin cambios (${reportCrsName(g.source)}).`;
     });
   }
 
@@ -1374,7 +1396,14 @@ import OverviewMap from '/js/overviewMap.js';
     if (!force && key === crsReportLastKey) return;
     crsReportLastKey = key;
     const lines = crsReportLines(items);
-    box.dataset.report = ['Informe de proyección del expediente', ...lines].join('\n');
+    // El texto copiado al portapapeles mantiene el detalle por capa, aunque
+    // en pantalla se vea agrupado y compacto.
+    const detailLines = items.map(item => {
+      if (item.corrected) return `${item.name}: ${reportCrsName(item.source)} → WGS84 (EPSG:4326); confianza ${Math.round(item.confidence * 100)} %.`;
+      if (!item.source) return `${item.name}: proyección no identificada; revisar manualmente.`;
+      return `${item.name}: sin cambios (${reportCrsName(item.source)}).`;
+    });
+    box.dataset.report = ['Informe de proyección del expediente', ...detailLines].join('\n');
     box.hidden = false;
     box.innerHTML = `<div class="rounded border border-emerald-700/40 bg-slate-950/80 p-1.5 text-[9px] text-slate-300">
       <div class="mb-1 flex items-center justify-between gap-2">
@@ -1507,6 +1536,18 @@ import OverviewMap from '/js/overviewMap.js';
     LayerManager.registerGroup({ id: 'g_base', title: 'Base territorial', parentId: 'g_piri' });
     LayerManager.registerGroup({ id: 'g_vert', title: 'Vertedero y entorno', parentId: 'g_piri' });
     LayerManager.registerGroup({ id: 'g_casco', title: 'Casco histórico', parentId: 'g_piri' });
+
+    // Grupo "Paraguay": referencia nacional (data/1.Paraguay), versiones
+    // ligeras ya generadas para poder cargarse enteras en el navegador.
+    LayerManager.registerGroup({ id: 'g_paraguay', title: 'Paraguay (referencia nacional)' });
+    LayerManager.registerLayer({ id: 'py_deptos', title: 'Departamentos', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson' });
+    LayerManager.registerLayer({ id: 'py_distritos', title: 'Distritos', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson' });
+    LayerManager.get('py_deptos').visible = false;
+    LayerManager.get('py_distritos').visible = false;
+
+    // Grupo "Mis archivos": capas que el propio usuario agrega como
+    // referencia (no se suben al servidor, viven solo en esta sesión).
+    LayerManager.registerGroup({ id: 'g_user', title: 'Mis archivos' });
 
     const STYLES = window.MapEngine?._piribebuyStyles || null;
     for (const [id, def] of Object.entries(PIRI_DEFS)) {
@@ -2487,16 +2528,24 @@ import OverviewMap from '/js/overviewMap.js';
     function updateKpiStrip() {
       const geojson = window.State?.get?.('geojson');
       const features = geojson?.features || [];
-      let totalArea = 0, totalVertices = 0;
+      let totalArea = 0, totalVertices = 0, totalPerimetro = 0;
       features.forEach(f => {
         if (f.geometry?.coordinates?.[0]) {
           totalVertices += f.geometry.coordinates[0].length;
           if (window.turf?.area) { try { totalArea += window.turf.area(f); } catch (e) { /* geometría inválida */ } }
+          if (window.turf?.length && window.turf?.polygonToLine) {
+            try {
+              const asLine = window.turf.polygonToLine(f);
+              const lines = asLine.type === 'FeatureCollection' ? asLine.features : [asLine];
+              lines.forEach(l => { totalPerimetro += window.turf.length(l, { units: 'meters' }); });
+            } catch (e) { /* geometría inválida */ }
+          }
         }
       });
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
       set('kpi-parcelas', String(features.length));
       set('kpi-area', totalArea >= 10000 ? (totalArea / 10000).toFixed(2) + ' ha' : Math.round(totalArea) + ' m²');
+      set('kpi-perimetro', totalPerimetro >= 1000 ? (totalPerimetro / 1000).toFixed(2) + ' km' : Math.round(totalPerimetro) + ' m');
       set('kpi-vertices', String(totalVertices));
       const val = window.State?.get?.('validationResults') || window.State?.get?.('validation');
       if (val?.apto !== undefined) {
@@ -2508,6 +2557,23 @@ import OverviewMap from '/js/overviewMap.js';
       }
     }
     window.updateKpiStrip = updateKpiStrip;
+
+    // Copiar las métricas visibles del strip como texto plano.
+    document.getElementById('kpi-copy')?.addEventListener('click', async () => {
+      const text = ['Parcelas', 'Área', 'Perímetro', 'Vértices', 'Validación']
+        .map((label, i) => {
+          const id = ['kpi-parcelas', 'kpi-area', 'kpi-perimetro', 'kpi-vertices', 'kpi-validacion'][i];
+          const val = document.getElementById(id)?.textContent || '';
+          return `${label}: ${val}`;
+        })
+        .join(' | ');
+      try {
+        await navigator.clipboard.writeText(text);
+        window.showToast?.('Métricas copiadas', 'success');
+      } catch {
+        window.showToast?.('No se pudo copiar', 'warning');
+      }
+    });
 
     // ---------- VISTA MODELO: contadores ----------
     async function updateEntityCounts() {

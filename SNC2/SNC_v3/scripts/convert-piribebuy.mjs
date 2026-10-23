@@ -7,25 +7,25 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SRC = 'C:\\Users\\HP 250 G10\\Documents\\PY-IA\\SIG\\PIRIBEBUY';
-const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'piribebuy');
+// Carpeta canónica numerada (ver AGENTS.md §3.1): data/2.Municipal/piribebuy/<grupo>/.
+const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', '2.Municipal', 'piribebuy');
 
 const LAYERS = [
-  { shp: 'barrios_piri', out: 'barrios' },
-  { shp: 'Vias_generales Piri', out: 'vias' },
-  { shp: 'hidro piribebuy', out: 'hidro' },
-  { shp: 'VERTEDERO', out: 'vertedero' },
-  { shp: 'VERTEDERO INTEGRADO', out: 'vertedero_integrado' },
-  { shp: 'CENTRO', out: 'centro' },
-  { shp: 'VUELO_CASCO', out: 'vuelo_casco' },
-  { shp: 'area vertedero 500 mts', out: 'vertedero_500' },
-  { shp: 'area vertedero 1000 mts', out: 'vertedero_1000' },
-  { shp: 'ZONA DE INFLUENCIA', out: 'zona_influencia' },
+  { shp: 'barrios_piri', out: 'barrios', group: 'base' },
+  { shp: 'Vias_generales Piri', out: 'vias', group: 'base' },
+  { shp: 'hidro piribebuy', out: 'hidro', group: 'base' },
+  { shp: 'ZONA DE INFLUENCIA', out: 'zona_influencia', group: 'base' },
+  { shp: 'VERTEDERO', out: 'vertedero', group: 'vertedero' },
+  { shp: 'VERTEDERO INTEGRADO', out: 'vertedero_integrado', group: 'vertedero' },
+  { shp: 'CENTRO', out: 'centro', group: 'vertedero' },
+  { shp: 'area vertedero 500 mts', out: 'vertedero_500', group: 'vertedero' },
+  { shp: 'area vertedero 1000 mts', out: 'vertedero_1000', group: 'vertedero' },
+  { shp: 'VUELO_CASCO', out: 'vuelo_casco', group: 'casco' },
 ];
 
 const mod = await import('shpjs');
 const shp = mod.default || mod;
 
-fs.mkdirSync(OUT, { recursive: true });
 let total = 0;
 for (const layer of LAYERS) {
   const shpPath = path.join(SRC, layer.shp + '.shp');
@@ -36,7 +36,9 @@ for (const layer of LAYERS) {
   }
   try {
     const gj = await shp({ shp: fs.readFileSync(shpPath), dbf: fs.readFileSync(dbfPath) });
-    const outFile = path.join(OUT, layer.out + '.geojson');
+    const outDir = path.join(OUT, layer.group);
+    fs.mkdirSync(outDir, { recursive: true });
+    const outFile = path.join(outDir, layer.out + '.geojson');
     fs.writeFileSync(outFile, JSON.stringify(gj));
     const kb = fs.statSync(outFile).size / 1024;
     total += kb;

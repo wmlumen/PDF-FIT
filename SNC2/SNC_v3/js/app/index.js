@@ -485,11 +485,28 @@ const App = {
   },
 
   bindEvents() {
-    // Sincronizar panel "Estado del Proyecto" con cambios en State
+    // Sincronizar panel "Estado del Proyecto" con cambios en State.
+    //
+    // Guard de reentrancia: MapEngine.loadGeoJSON() hace su propio
+    // State.set('geojson', ...) cuando reproyecta (UTM -> WGS84). Ese set
+    // dispara ESTE MISMO callback de nuevo, de forma síncrona y anidada,
+    // antes de que la llamada original termine -> bucle infinito de
+    // loadGeoJSON/State.set que inunda /api/spatial-identify (429 en
+    // cadena) y cuelga la pestaña. Mientras una llamada a loadGeoJSON está
+    // en curso, las reentradas solo actualizan el panel de estado (que sí
+    // debe reflejar siempre el último geojson) pero no vuelven a invocar
+    // loadGeoJSON: la invocación original sigue con el geojson ya
+    // reproyectado y lo termina de renderizar.
+    let applyingGeojson = false;
     State.subscribe('geojson', (geojson) => {
       actualizarEstadoProyecto(geojson, State.get('validationResults'));
-      if (geojson && window.MapEngine?.loadGeoJSON) {
-        window.MapEngine.loadGeoJSON(geojson);
+      if (geojson && window.MapEngine?.loadGeoJSON && !applyingGeojson) {
+        applyingGeojson = true;
+        try {
+          window.MapEngine.loadGeoJSON(geojson);
+        } finally {
+          applyingGeojson = false;
+        }
       }
     });
 
@@ -525,23 +542,20 @@ const App = {
         if (!resp.ok) throw new Error('No se pudo descargar casco_historico.geojson');
         const data = await resp.json();
         if (data.features && data.features[0]) {
+          const supCalculada = (typeof turf !== 'undefined' && turf.area)
+            ? Number(turf.area(data.features[0]).toFixed(2))
+            : null;
           data.features[0].properties = {
             ...data.features[0].properties,
-            CODIGO: '0314-004-0001',
-            PADRON: '4278',
-            CTA_CTE: '19-0142-01',
             DEPARTAMEN: 'CORDILLERA',
             DISTRITO: 'PIRIBEBUY',
-            BARRIO: 'CENTRO',
-            PARCELA_ESTADO: 'VIGENTE',
-            PROPIETARIO: 'FRANCISCO SOLANO LÓPEZ (HEREDEROS)',
-            USO_TIERRA: 'URBANO RESIDENCIAL',
-            SUP_TITULO: 1245.50
+            PARCELA_ESTADO: 'EJEMPLO (dato ficticio, no es un expediente real)',
+            ...(supCalculada != null ? { SUP_TITULO: supCalculada } : {})
           };
         }
         State.set('geojson', data);
-        State.set('sourceGeoFileName', 'expediente_piribebuy.geojson');
-        window.currentGeoFile = 'expediente_piribebuy.geojson';
+        State.set('sourceGeoFileName', 'ejemplo_piribebuy.geojson');
+        window.currentGeoFile = 'ejemplo_piribebuy.geojson';
         if (window.MapEngine?.loadGeoJSON) {
           window.MapEngine.loadGeoJSON(data);
           window.MapEngine.focusWorkPolygon?.();
