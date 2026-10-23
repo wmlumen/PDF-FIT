@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNC_v3 — Manual Técnico y de Usuario Integral</title>
+<style>
+/* ================================================================
+     SNC_v3 — Manual Técnico · Hoja de estilos
+     Diseñada para lectura en pantalla y generación PDF vía
+     Chromium/Playwright (pdfgen/render.js).
+     ================================================================ */
+
+  /* ---------- Design tokens ---------- */
+  :root{
+    --accent:#1f4fd0;
+    --accent-dark:#163a8c;
+    --accent-light:#eff6ff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --line-soft:#f3f4f6;
+    --bg:#f4f5f7;
+    --good:#15803d;
+    --good-bg:#f0fdf4;
+    --warn:#b45309;
+    --warn-bg:#fef3c7;
+    --danger:#b91c1c;
+    --danger-bg:#fee2e2;
+    --mono-stack:"Cascadia Code","Consolas","SF Mono","Menlo",monospace;
+    --radius:6px;
+    --radius-sm:4px;
+  }
+
+  /* ---------- Reset y base ---------- */
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;}
+  body{background:var(--bg);}
+  ::selection{background:var(--accent); color:#fff;}
+
+  /* ---------- Tipografía ---------- */
+  html{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif; color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;}
+  body{font-size:0.95rem; line-height:1.7;}
+
+  h2.sec{
+    font-size:1.5rem; color:var(--ink);
+    margin:2.2rem 0 0.9rem; padding-bottom:0.35rem;
+    border-bottom:2px solid var(--accent);
+    letter-spacing:-0.01em;
+    break-after:avoid;              /* no dejar el título huérfano */
+    page-break-after:avoid;
+  }
+  h3{
+    font-size:1.15rem; color:var(--accent-dark);
+    margin:1.5rem 0 0.5rem;
+    break-after:avoid; page-break-after:avoid;
+  }
+  h4{font-size:1rem; color:var(--ink); margin:1.1rem 0 0.35rem; break-after:avoid;}
+  p{margin:0.5rem 0; text-align:justify; hyphens:auto;}
+  ul,ol{margin:0.5rem 0 0.5rem 1.5rem;}
+  li{margin:0.25rem 0;}
+  li::marker{color:var(--accent);}
+
+  a{color:var(--accent); text-decoration:none; border-bottom:1px solid transparent; transition:color .15s, border-color .15s;}
+  a:hover{color:var(--accent-dark); border-bottom-color:var(--accent-dark);}
+
+  strong{color:#111827;}
+
+  /* ---------- Código inline (99 usos; antes sin estilo) ---------- */
+  code{
+    font-family:var(--mono-stack);
+    font-size:0.85em;
+    background:var(--line-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:0.1em 0.4em;
+    color:var(--accent-dark);
+    white-space:nowrap;
+  }
+  td code{white-space:normal;}       /* dentro de tablas permitir salto */
+
+  /* ---------- Monospace helper (antes sin definir) ---------- */
+  .mono{
+    font-family:var(--mono-stack);
+    font-size:0.85em;
+    background:var(--line-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:0.1em 0.4em;
+    color:#0f172a;
+    overflow-wrap:anywhere;
+  }
+
+  /* ---------- Cover ---------- */
+  .cover{
+    padding:4.5rem 2rem 3rem; text-align:center;
+    page-break-after:always; break-after:page;
+    background:#fff;
+    border-bottom:1px solid var(--line);
+  }
+  .cover .kicker{
+    color:var(--accent); font-size:0.8rem;
+    letter-spacing:0.22em; text-transform:uppercase; font-weight:700;
+  }
+  .cover h1{
+    font-size:2.5rem; line-height:1.12; color:var(--ink);
+    margin:0.8rem 0 0.3rem; letter-spacing:-0.02em;
+    text-wrap:balance;
+  }
+  .cover .tagline{color:var(--muted); font-size:1.05rem; max-width:34rem; margin:0.4rem auto 1.6rem;}
+  .cover .badge{
+    display:inline-block; background:var(--accent); color:#fff;
+    padding:0.4rem 1.2rem; border-radius:999px;
+    font-size:0.78rem; font-weight:600; letter-spacing:0.04em;
+    box-shadow:0 2px 6px rgba(31,79,208,.25);
+  }
+  .cover .meta{height:4px; background:linear-gradient(90deg,var(--accent),var(--accent-dark)); border-radius:2px; width:140px; margin:1.4rem auto;}
+  .cover table{width:78%; margin:1.2rem auto 0; font-size:0.85rem;}
+
+  /* ---------- TOC ---------- */
+  .toc{
+    page-break-after:always; break-after:page;
+    background:#fff; max-width:21cm; margin:0 auto;
+    padding:2.2rem 2.5rem;
+  }
+  .toc h2{font-size:1.45rem; color:var(--ink); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-bottom:1.1rem;}
+  .toc ul{list-style:none; margin-left:0;}
+  .toc li{margin:0.15rem 0;}
+  .toc a{
+    color:var(--ink); text-decoration:none; display:flex;
+    justify-content:space-between; align-items:baseline;
+    padding:0.32rem 0.2rem; border-bottom:1px dotted var(--line); font-size:0.95rem;
+  }
+  .toc a:hover{color:var(--accent); background:var(--accent-light); border-radius:var(--radius-sm);}
+  .toc li.l2{margin-left:1.6rem; font-size:0.87rem;}
+  .toc li.l2 a{border-bottom:none; color:var(--muted); padding:0.22rem 0.2rem;}
+  .toc li.l2 a:hover{color:var(--accent);}
+  .toc .num{font-weight:700; color:var(--accent); margin-right:0.45rem; min-width:1.6em; display:inline-block;}
+
+  /* ---------- Sidebar de navegación (colapsable) ---------- */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    max-height: 100vh;
+    background: var(--ink);
+    color: #fff;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease, width 0.3s ease;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar.collapsed {
+    transform: translateX(-260px);
+    width: 0;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .sidebar-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  .sidebar-toggle {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .sidebar-toggle:hover { background: rgba(255,255,255,0.15); }
+  .sidebar-group {
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+  .sidebar ul { list-style: none; margin: 0; padding: 0; }
+  .sidebar li { margin: 0; }
+  .sidebar a {
+    color: #e5e7eb;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 0.45rem 0.8rem;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    font-size: 0.88rem;
+    border-left: 3px solid transparent;
+  }
+  .sidebar a:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-left-color: var(--accent);
+  }
+  .sidebar a.active {
+    background: rgba(31,79,208,0.3);
+    color: #fff;
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+  .sidebar .l2 a { padding-left: 1.6rem; font-size: 0.8rem; color: #9ca3af; }
+  .sidebar .l2 a:hover { background: transparent; }
+  .sidebar .l2.active a { color: #fff; background: transparent; }
+  .sidebar .num {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-right: 0.5rem;
+  }
+
+  /* ---------- Overlay para ocultar sidebar ---------- */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    display: none;
+  }
+  .sidebar-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+    display: block;
+  }
+
+  /* ---------- Main content shift cuando sidebar visible ---------- */
+  main.shift {
+    margin-left: 260px;
+  }
+  main.collapsed {
+    margin-left: 0;
+  }
+  body.sidebar-open main { margin-left: 260px; }
+  body.sidebar-open .toc { margin-left: 260px; }
+  body.sidebar-open .cover { margin-left: 260px; }
+
+  /* ---------- Contenedor principal ---------- */
+  body{overflow-x:hidden;}
+  main{
+    max-width:21cm; margin:0 auto;
+    padding:2.2rem 2.5rem 3rem; min-height:100vh;
+  }
+  .no-sidebar main,
+  .no-sidebar .toc,
+  .no-sidebar .cover {
+    max-width:21cm; margin:0 auto; padding:2.2rem 2.5rem 3rem;
+  }
+
+  /* ---------- Callouts (note / warn / tip / danger) ---------- */
+  .note,.warn,.tip,.danger{
+    padding:0.7rem 1rem; border-radius:0 var(--radius) var(--radius) 0;
+    font-size:0.92rem; margin:0.9rem 0;
+    break-inside:avoid; page-break-inside:avoid;   /* no cortar al imprimir */
+  }
+  .note{background:var(--accent-light); border-left:4px solid var(--accent);}
+  .note b{color:var(--accent-dark);}
+  .warn{background:var(--warn-bg); border-left:4px solid #f59e0b;}
+  .warn b{color:var(--warn);}
+  .tip{background:var(--good-bg); border-left:4px solid var(--good);}
+  .tip b{color:var(--good);}
+  .danger{background:var(--danger-bg); border-left:4px solid var(--danger);}
+  .danger b{color:var(--danger);}
+
+  /* ---------- Bloque de ejemplo ---------- */
+  .example{
+    background:var(--line-soft); border:1px solid var(--line);
+    border-radius:var(--radius); padding:0.75rem 1rem;
+    font-size:0.88rem; margin:0.9rem 0;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .example .lbl{
+    font-weight:700; color:var(--muted); font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.1em;
+    display:block; margin-bottom:0.25rem;
+  }
+
+  /* ---------- Tablas ---------- */
+  table{
+    border-collapse:collapse; width:100%;
+    margin:1rem 0; font-size:0.88rem;
+  }
+  thead{display:table-header-group;}  /* repetir encabezado en cada página */
+  th{
+    background:var(--accent-dark); color:#fff;
+    text-align:left; padding:0.55rem 0.7rem;
+    border:1px solid var(--accent-dark);
+    font-weight:600; font-size:0.84rem;
+    letter-spacing:0.02em;
+  }
+  td{padding:0.5rem 0.7rem; border:1px solid var(--line); vertical-align:top;}
+  tbody tr:nth-child(even) td{background:var(--line-soft);}
+  tbody tr:hover td{background:var(--accent-light);}
+  tr{break-inside:avoid; page-break-inside:avoid;}   /* fila nunca cortada */
+
+  /* ---------- Diagrama de flujo ---------- */
+  .flow{
+    margin:0.9rem 0; padding:0.9rem 1.1rem;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--line-soft); font-size:0.88rem;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .flow .row{display:flex; align-items:center; gap:0.7rem; margin:0.35rem 0;}
+  .flow .num{
+    flex:0 0 26px; height:26px; border-radius:50%;
+    background:var(--accent); color:#fff; font-weight:800;
+    display:flex; align-items:center; justify-content:center; font-size:0.78rem;
+    box-shadow:0 1px 3px rgba(31,79,208,.3);
+  }
+  .flow .step{flex:1;}
+  .flow .arrow{color:var(--muted); font-weight:700; font-size:1.15rem; width:26px; text-align:center; flex:0 0 26px;}
+
+  /* ---------- Bloque terminal / pseudocódigo ---------- */
+  .screen{
+    background:#0d1117; color:#e6edf3;
+    border-radius:var(--radius); border:1px solid #21262d;
+    padding:0.9rem 1.1rem; font-size:0.85rem;
+    overflow-wrap:anywhere; line-height:1.55; margin:0.9rem 0;
+    font-family:var(--mono-stack);
+    break-inside:avoid; page-break-inside:avoid;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.35);
+  }
+  .screen .hd{
+    display:flex; align-items:center; gap:0.45rem;
+    font-size:0.75rem; color:#8b949e;
+    margin-bottom:0.5rem; border-bottom:1px solid #21262d; padding-bottom:0.35rem;
+    font-family:inherit; text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .screen .ico{                                  /* antes sin definir */
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:var(--radius-sm);
+    background:#21262d; color:#58a6ff; font-weight:800; font-size:0.72rem;
+  }
+
+  /* ---------- Badges ---------- */
+  .badge-tag{
+    font-size:0.72rem; font-weight:700;
+    padding:0.15rem 0.5rem; border-radius:999px;
+    text-transform:uppercase; letter-spacing:0.04em;
+    margin-left:0.35rem; white-space:nowrap;
+  }
+  .badge-green{background:#dcfce7; color:#15803d;}
+  .badge-blue{background:#dbeafe; color:#1e40af;}
+  .badge-amber{background:#fef3c7; color:#b45309;}
+
+  /* Badge de texto inline (14 usos; antes sin definir) */
+  .badge-txt{
+    font-family:var(--mono-stack);
+    font-size:0.8em; font-weight:700;
+    background:var(--line-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:0.1em 0.45em;
+    white-space:nowrap;
+  }
+
+  /* ---------- Pie ---------- */
+  .footer-note{
+    font-size:0.8rem; color:var(--muted);
+    margin-top:3rem; border-top:1px solid var(--line);
+    padding-top:1rem; text-align:center;
+  }
+
+  /* ================================================================
+     IMPRESIÓN / PDF
+     Nota: los margin boxes (@bottom-center, @bottom-right) son
+     Paged Media CSS Nivel 3 y Chromium NO los renderiza nativamente.
+     Se conservan para motores que sí los soportan (paged.js, Prince,
+     WeasyPrint); el pie de página real se genera con render.js.
+     ================================================================ */
+  @page{
+    size:A4;
+    margin:2cm 1.8cm 2.2cm 1.8cm;
+  }
+  @page cover{ margin:0; }
+
+  /* Control de huérfanas/viudas (Chromium sí soporta estas) */
+  h2.sec,h3,h4{orphans:3; widows:3;}
+  p{orphans:2; widows:2;}
+  li{orphans:2; widows:2;}
+
+  @media print{
+    body{background:#fff;}
+    a{color:var(--ink); border-bottom:none;}      /* en PDF los links no cambian de color */
+    .cover{box-shadow:none;}
+    .screen,.flow,.note,.warn,.tip,.danger,.example{break-inside:avoid; page-break-inside:avoid;}
+    tr,th,td{break-inside:avoid; page-break-inside:avoid;}
+    thead{display:table-header-group;}
+  }
+
+  @media screen and (max-width:820px){
+    main,.toc{padding:1.4rem 1.2rem; max-width:100%;}
+    .cover{padding:3rem 1.2rem 2rem;}
+    .cover h1{font-size:1.9rem;}
+    .cover table{width:100%;}
+    table{font-size:0.8rem;}
+    th,td{padding:0.4rem 0.5rem;}
+  }
+</style>
+<script>
+  (function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+    const mainEl = document.querySelector('main');
+    let sidebarOpen = false;
+
+    function setSidebarState(open) {
+      sidebarOpen = open;
+      sidebar.classList.toggle('collapsed', !open);
+      mainEl.classList.toggle('shift', open);
+      mainEl.classList.toggle('collapsed', !open);
+      document.body.classList.toggle('sidebar-open', open);
+      overlay.classList.toggle('visible', open);
+      toggleBtn.textContent = open ? '–' : '☰';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      setSidebarState(!sidebarOpen);
+    });
+
+    overlay.addEventListener('click', () => {
+      setSidebarState(false);
+    });
+
+    // Close sidebar on link click (for mobile)
+    sidebar.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        setTimeout(() => setSidebarState(false), 300);
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarState(false);
+      }
+    });
+  })();
+</script>
+</head>
+<body>
+
+<!-- ===================== SIDEBAR DE NAVEGACIÓN ===================== -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<aside id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h3>☰ Índice SNC_v3</h3>
+    <button id="sidebarToggle" class="sidebar-toggle" aria-label="Cerrar menú">☰</button>
+  </div>
+  <div class="sidebar-group">Capítulos</div>
+  <ul id="sidebar-toc">
+    <li><a href="#s1"><span class="num">1</span> Visión General</a></li>
+    <li><a href="#s2"><span class="num">2</span> Ingesta</a></li>
+    <li><a href="#s3"><span class="num">3</span> Validación</a></li>
+    <li><a href="#s4"><span class="num">4</span> COGO</a></li>
+    <li><a href="#s5"><span class="num">5</span> Municipal</a></li>
+    <li><a href="#s6"><span class="num">6</span> VEP-MEF</a></li>
+    <li><a href="#s7"><span class="num">7</span> PMTiles</a></li>
+    <li><a href="#s8"><span class="num">8</span> Registral/Firmas</a></li>
+    <li><a href="#s9"><span class="num">9</span> Entregables</a></li>
+    <li><a href="#s10"><span class="num">10</span> Botones</a></li>
+    <li><a href="#s11"><span class="num">11</span> Guía Operador</a></li>
+    <li><a href="#s12"><span class="num">12</span> Solución de Problemas</a></li>
+  </ul>
+</aside>
+
+<!-- ===================== COVER ===================== -->
+<div class="toc">
+  <h2>Índice General</h2>
+  <ul>
+    <li><a href="#s1"><span><span class="num">1.</span> Visión General y Marco Jurídico Vinculante</span></a></li>
+    <li class="l2"><a href="#s1-1">1.1 Propósito y Objetivos del Sistema</a></li>
+    <li class="l2"><a href="#s1-2">1.2 Marco Legal Oficial (Leyes Directas e Indirectas)</a></li>
+    <li class="l2"><a href="#s1-3">1.3 Arquitectura de Portales Integrados</a></li>
+    
+    <li><a href="#s2"><span><span class="num">2.</span> Ingesta Multiformato y Parsers Espaciales</span></a></li>
+    <li class="l2"><a href="#s2-1">2.1 Ingesta AutoCAD DXF / DWG</a></li>
+    <li class="l2"><a href="#s2-2">2.2 Shapefile Binario (4 archivos obligatorios)</a></li>
+    <li class="l2"><a href="#s2-3">2.3 KML, GeoJSON y Planillas Excel / CSV</a></li>
+
+    <li><a href="#s3"><span><span class="num">3.</span> Motor de Validación Catastral (Res. SNC N° 551/2023)</span></a></li>
+    <li class="l2"><a href="#s3-1">3.1 Cero Superposición y Algoritmo Sweep-Line</a></li>
+    <li class="l2"><a href="#s3-2">3.2 Tolerancia Pericial de Superficie (ΔS_adm)</a></li>
+    <li class="l2"><a href="#s3-3">3.3 Detección de Huérfanos e Integridad de Atributos</a></li>
+
+    <li><a href="#s4"><span><span class="num">4.</span> Geoprocesamiento, Topología y Cálculos COGO</span></a></li>
+    <li class="l2"><a href="#s4-1">4.1 Rumbos, Distancias y Cuadro de Derrotero</a></li>
+    <li class="l2"><a href="#s4-2">4.2 Operaciones Booleanas y Reparación Topológica</a></li>
+
+    <li><a href="#s5"><span><span class="num">5.</span> Módulo Municipal: Ley Orgánica N° 3966/2010</span></a></li>
+    <li class="l2"><a href="#s5-1">5.1 Parámetros Urbanos y Dimensiones Mínimas</a></li>
+    <li class="l2"><a href="#s5-2">5.2 Balance de Loteamientos (Cesiones 16% vial, 5%-7% plazas)</a></li>
+    <li class="l2"><a href="#s5-3">5.3 Perfiles Viales, Ochavas y Contribución por Mejoras</a></li>
+    <li class="l2"><a href="#s5-4">5.4 Homologación de Junta Municipal y Promulgación</a></li>
+
+    <li><a href="#s6"><span><span class="num">6.</span> Catastro Multifinalitario (Modelo Ciudades Sustentables VEP - MEF)</span></a></li>
+    <li class="l2"><a href="#s6-1">6.1 Conexión con CARTO SQL API y 230 Capas Abiertas</a></li>
+    <li class="l2"><a href="#s6-2">6.2 Matriz de Indicadores por Dirección Municipal</a></li>
+
+    <li><a href="#s7"><span><span class="num">7.</span> Infraestructura de Datos Vectoriales PMTiles y Mosaico Nacional (loteamientos.com)</span></a></li>
+    <li class="l2"><a href="#s7-1">7.1 Arquitectura Cloudflare R2 y Vector Tiles PMTiles de los 17 Departamentos</a></li>
+    <li class="l2"><a href="#s7-2">7.2 Capas Temáticas Nacionales: Lotes, Vías, Usos de Suelo y POIs</a></li>
+    <li class="l2"><a href="#s7-3">7.3 Ficha Catastral y Modelos de Entorno Urbano/Rural</a></li>
+
+    <li><a href="#s8"><span><span class="num">8.</span> Mesa de Entrada, Interoperabilidad DGRP/MADES y Firmas Digitales</span></a></li>
+    <li class="l2"><a href="#s8-1">8.1 Circuito Registral Oficial y Diff de Versiones</a></li>
+    <li class="l2"><a href="#s8-2">8.2 Bloqueo Preventivo Registral y Restricciones Ambientales</a></li>
+    <li class="l2"><a href="#s8-3">8.3 Firmas Electrónicas Cualificadas y Sellos Institucionales (4 Slots - Ley 6822/2021)</a></li>
+    <li class="l2"><a href="#s8-4">8.4 Motor Espacial Soberano (Base de Datos, R-Tree y Vector Tiles)</a></li>
+
+    <li><a href="#s9"><span><span class="num">9.</span> Entregables Oficiales y Generación de Planos</span></a></li>
+    <li class="l2"><a href="#s9-1">9.1 Exportación AutoCAD DXF R12 con Capas Oficiales</a></li>
+    <li class="l2"><a href="#s9-2">9.2 Certificado Preventivo PDF y DOCX con Hash y QR</a></li>
+    <li class="l2"><a href="#s9-3">9.3 Plano Georreferenciado para Transferencias Notariales</a></li>
+
+    <li><a href="#s10"><span><span class="num">10.</span> Guía Completa de Botones, Menús y Herramientas de la Interfaz</span></a></li>
+    <li class="l2"><a href="#s10-1">10.1 Barra Superior y Gestión de Proyectos</a></li>
+    <li class="l2"><a href="#s10-2">10.2 Selector de Mapas Base y Capas de Referencia</a></li>
+    <li class="l2"><a href="#s10-2-4">10.2.4 Matriz de Servicios por Perfil de Usuario</a></li>
+    <li class="l2"><a href="#s10-3">10.3 Barra Flotante de Herramientas de Edición Topológica y COGO</a></li>
+    <li class="l2"><a href="#s10-4">10.4 Localizador Geodésico y Buscador de Coordenadas</a></li>
+    <li class="l2"><a href="#s10-5">10.5 Inspector de Parcelas, Cotas y Asignación de Números</a></li>
+    <li class="l2"><a href="#s10-6">10.6 Pestañas de Trabajo: Importar, Datos, Auditoría, Linaje y Versiones</a></li>
+
+    <li><a href="#s11"><span><span class="num">11.</span> Guía Paso a Paso para el Operador</span></a></li>
+    <li><a href="#s12"><span><span class="num">12.</span> Solución de Problemas y Glosario</span></a></li>
+  </ul>
+</div>
+
+<!-- ===================== 1. VISION ===================== -->
+<main id="s1">
+  <h2 class="sec">1. Visión General y Marco Jurídico Vinculante</h2>
+  
+  <h3 id="s1-1">1.1 Propósito y Objetivos del Sistema</h3>
+  <p><strong>SNC_v3</strong> es la plataforma tecnológica unificada de la República del Paraguay diseñada para agrimensores, peritos topógrafos, escribanos públicos, direcciones municipales de catastro y calificadores registrales del <strong>Servicio Nacional de Catastro (SNC)</strong> y del nuevo <strong>Registro Unificado Nacional (RUN)</strong>.</p>
+  
+  <p>El sistema garantiza que ningún inmueble sea transferido, fraccionado ni registrado sin antes superar una rigurosa calificación pericial matemática, topológica y ambiental en base a los principios registrales de especialidad, legalidad y tracto sucesivo.</p>
+
+  <h3 id="s1-2">1.2 Marco Legal Oficial (Leyes Directas e Indirectas)</h3>
+  <table>
+    <tr><th>Norma Oficial</th><th>Año</th><th>Objeto / Impacto en SNC_v3</th></tr>
+    <tr><td><strong>Ley N° 7.424/2025 (RUN)</strong></td><td>2025</td><td>Crea el Registro Unificado Nacional (fusión SNC + DGRP + DAG). Catastración previa obligatoria (Art. 14), folio real y precisión centimétrica ≤ 0.01m (Art. 18).</td></tr>
+    <tr><td><strong>Resolución SNC N° 551/2023</strong></td><td>2023</td><td>Reglamento técnico pericial: Cero superposición (0.000 m²), márgenes de tolerancia ΔS admisible, Shapefile de 4 archivos (.shp, .shx, .dbf, .prj).</td></tr>
+    <tr><td><strong>Resolución SNC N° 200/2020</strong></td><td>2020</td><td>Planos de ubicación georreferenciada de títulos de propiedad (F-IG-GEO-01) en WGS84 UTM huso 21S o 20S para transferencias de dominio.</td></tr>
+    <tr><td><strong>Ley N° 3966/2010</strong></td><td>2010</td><td>Orgánica Municipal: Parámetros urbanos, cesiones obligatorias (16% vial, 5%-7% plazas), perfiles viales mínimos (12m/24m) y homologación de loteamientos.</td></tr>
+    <tr><td><strong>Ley N° 6822/2021</strong></td><td>2021</td><td>Servicios de Confianza y Firma Digital: Validez jurídica cualificada de dictámenes periciales con circuito de 4 slots y sellado de tiempo.</td></tr>
+    <tr><td><strong>Leyes Ambientales e Hídricas</strong></td><td>Varias</td><td>Ley 3239/07 (Aguas), Ley 4241/10 (Fajas ribereñas de 30m a 100m), Ley 352/94 (SINASIP), Ley 3956/09 (1000m de amortiguamiento de vertederos).</td></tr>
+  </table>
+
+  <h3 id="s1-3">1.3 Arquitectura de Portales Integrados</h3>
+  <table>
+    <tr><th>Portal</th><th>Ruta</th><th>Público Objetivo</th><th>Alcance Operativo</th></tr>
+    <tr><td><strong>Portal Central</strong></td><td><code>index.html</code></td><td>Peritos agrimensores, topógrafos, ingenieros</td><td>Carga de CAD/GIS, validación SNC 551, balance pericial, exportación DXF/SHP/PDF.</td></tr>
+    <tr><td><strong>Portal Municipal</strong></td><td><code>municipal/index.html</code></td><td>Direcciones de Catastro, Obras y Medio Ambiente</td><td>Aprobación de loteamientos, verificación de cesiones públicas, perfiles viales y plusvalía.</td></tr>
+    <tr><td><strong>Portal Notarial & Escribanías</strong></td><td><code>notarial/index.html</code></td><td>Escribanos públicos y asesores jurídicos</td><td>Due Diligence registral/catastral, minutas con cláusula de linderos UTM 21S, liquidación de tasas/gastos de transferencia y verificación FOS/FOT.</td></tr>
+    <tr><td><strong>Portal Ciudadano</strong></td><td><code>ciudadano/index.html</code></td><td>Propietarios, compradores y contribuyentes</td><td>Consulta pública de estado parcelario, certificado de no superposición y verificación de autenticidad por QR.</td></tr>
+    <tr><td><strong>Panel Administrativo</strong></td><td><code>admin.html</code></td><td>Directores, revisores técnicos y auditores</td><td>Control de carga de revisores, trazabilidad registral y bitácora de auditoría.</td></tr>
+  </table>
+  <div class="flow" style="margin-top:1.4rem;">
+    <div class="row">
+      <div class="num">1</div>
+      <div class="step"><strong>Portal Principal</strong><br><code>index.html</code><br>Peritos topógrafos, agrimensores</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="step"><strong>Portal Municipal</strong><br><code>municipal/index.html</code><br>Ley 3966/10 · Urbanismo</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="step"><strong>Portal Notarial</strong><br><code>notarial/index.html</code><br>Escribanías, notarios</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="step"><strong>Portal Ciudadano</strong><br><code>ciudadano/index.html</code><br>Público general</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">5</div>
+      <div class="step"><strong>Panel Administrativo</strong><br><code>admin.html</code><br>Directores, auditores</div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== 2. INGESTA ===================== -->
+<main id="s2">
+  <h2 class="sec">2. Ingesta Multiformato y Parsers Espaciales</h2>
+  
+  <p>El núcleo de lectura espacial (<code>js/parser.js</code>) procesa los archivos en memoria del navegador sin transmitir datos confidenciales a servidores no autorizados:</p>
+
+  <h3 id="s2-1">2.1 Ingesta AutoCAD DXF / DWG</h3>
+  <ul>
+    <li>Extrae entidades vectoriales <code>LWPOLYLINE</code>, <code>POLYLINE</code>, <code>LINE</code> y <code>CIRCLE</code>.</li>
+    <li>Filtra y agrupa entidades por capas oficiales: <code>0_LIMITES_PARCELAS</code>, <code>1_VERTICES_MOJONES</code> y <code>2_TEXTOS_PADRON</code>.</li>
+    <li>Calcula centroides automáticos para asociar etiquetas de texto de padrones a su respectivo polígono.</li>
+  </ul>
+
+  <h3 id="s2-2">2.2 Shapefile Binario (4 archivos obligatorios)</h3>
+  <div class="note">
+    <b>Regla de Oro SNC 551/2023:</b> El paquete Shapefile comprimido en ZIP debe contener exactamente cuatro archivos con el mismo nombre base: <code>.shp</code> (geometría), <code>.shx</code> (índice), <code>.dbf</code> (tabla xBase) y <code>.prj</code> (definición WKT WGS84 UTM 21S o 20S). La falta de cualquiera de ellos invalida el expediente de forma automática.
+  </div>
+
+  <h3 id="s2-3">2.3 KML, GeoJSON y Planillas Excel / CSV</h3>
+  <ul>
+    <li><strong>KML / KMZ:</strong> Soporta geometrías <code>Polygon</code> y <code>MultiGeometry</code> con extracción de propiedades extendidas.</li>
+    <li><strong>GeoJSON:</strong> Valida estándar RFC 7946 con orientación de anillos en sentido antihorario.</li>
+    <li><strong>Planilla Excel Oficial (XLSX):</strong> Vincula automáticamente los datos tabulares del título de propiedad con la geometría gráfica usando el campo <code>CODIGO</code> o <code>PADRON</code> como clave primaria.</li>
+  </ul>
+</main>
+
+<!-- ===================== 3. VALIDACION ===================== -->
+<main id="s3">
+  <h2 class="sec">3. Motor de Validación Catastral (Res. SNC N° 551/2023)</h2>
+
+  <h3 id="s3-1">3.1 Cero Superposición y Algoritmo Sweep-Line</h3>
+  <p>La Resolución SNC N° 551/2023 prohíbe cualquier tolerancia de solapamiento entre parcelas contiguas:</p>
+  <div class="screen">
+    <div class="hd"><span class="ico">#</span> ALGORITMO CERO SUPERPOSICIÓN (js/topology.worker.js)</div>
+    Area_Solapamiento = Intersección(Parcela_A, Parcela_B)<br>
+    SI Area_Solapamiento > 0.0000 m² ENTONCES:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Estado = RECHAZADO / ERROR BLOQUEANTE<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Reportar coordenadas exactas del polígono de conflicto
+  </div>
+
+  <h3 id="s3-2">3.2 Tolerancia Pericial de Superficie (ΔS_adm)</h3>
+  <p>Calcula la diferencia porcentual y absoluta entre la superficie según título inscripto (S_título) y la superficie resultante de la mensura computada en el SIG (S_SIG):</p>
+  <table>
+    <tr><th>Zona Catastral</th><th>Tolerancia Máxima Admisible (ΔS_adm)</th><th>Efecto de la Discrepancia</th></tr>
+    <tr><td><strong>Urbana</strong></td><td><strong>± 5.0 %</strong></td><td>Dentro de tolerancia: Apto con nota de balance.<br>Supera ±5%: Observado; requiere rectificación o mensura judicial.</td></tr>
+    <tr><td><strong>Rural</strong></td><td><strong>± 10.0 %</strong></td><td>Dentro de tolerancia: Apto.<br>Supera ±10%: Bloqueo; sospecha de excedente fiscal o invasión.</td></tr>
+  </table>
+
+  <h3 id="s3-3">3.3 Detección de Huérfanos e Integridad de Atributos</h3>
+  <ul>
+    <li><strong>Huérfanos Gráficos:</strong> Polígonos dibujados que no tienen fila ni propietario en la planilla Excel.</li>
+    <li><strong>Huérfanos Tabulares:</strong> Títulos o cuentas corrientes en la planilla sin polígono geométrico asociado.</li>
+    <li><strong>16 Atributos SNC Obligatorios:</strong> <code>CODIGO</code>, <code>PROPIETARIO</code>, <code>USO_TIERRA</code>, <code>SUP_TITULO</code>, <code>DEPARTAMEN</code>, <code>DISTRITO</code>, <code>PADRON</code>, <code>ZONA</code>, <code>MANZANA</code>, <code>LOTE</code>, <code>SUP_SIG_M</code>, <code>SUP_LEGAL</code>, <code>REG_PROF</code>, <code>FINCA</code>, <code>MATRICULA</code>, <code>COLONIA</code>.</li>
+  </ul>
+</main>
+
+<!-- ===================== 4. COGO ===================== -->
+<main id="s4">
+  <h2 class="sec">4. Geoprocesamiento, Topología y Cálculos COGO</h2>
+
+  <h3 id="s4-1">4.1 Rumbos, Distancias y Cuadro de Derrotero</h3>
+  <p>Para cada parcela, el motor calcula el derrotero pericial completo:</p>
+  <ul>
+    <li><strong>Rumbo Cuadrantal:</strong> Conversión de azimut sexagesimal a formato tradicional (ej: N 45° 30' 12" E).</li>
+    <li><strong>Distancia de Tramo:</strong> Distancia euclidiana plana en proyección UTM WGS84 al milímetro.</li>
+    <li><strong>Coordenadas de Vértices:</strong> Tabla de coordenadas planas X (Este) e Y (Norte) con 4 decimales.</li>
+    <li><strong>Error de Cierre Lineal:</strong> Verifica que la relación de cierre sea superior a 1:10.000 en urbano y 1:5.000 en rural.</li>
+  </ul>
+
+  <h3 id="s4-2">4.2 Operaciones Booleanas y Reparación Topológica</h3>
+  <p>Herramientas automáticas de limpieza espacial (<code>js/topologyRepair.js</code>):</p>
+  <ul>
+    <li><em>Snapping:</em> Cierre automático de vértices desconectados dentro del radio de tolerancia pericial (1 cm).</li>
+    <li><em>Eliminación de auto-intersecciones:</em> Desagregación de polígonos complejos en anillo cerrado simple.</li>
+    <li><em>Buffer de seguridad:</em> Generación automática de franjas de protección hídrica y fajas viales.</li>
+  </ul>
+</main>
+
+<!-- ===================== 5. MUNICIPAL ===================== -->
+<main id="s5">
+  <h2 class="sec">5. Módulo Municipal: Ley Orgánica N° 3966/2010</h2>
+
+  <h3 id="s5-1">5.1 Parámetros Urbanos y Dimensiones Mínimas</h3>
+  <ul>
+    <li><strong>Frente Mínimo de Lote Urbano:</strong> 12.00 metros lineales continuos sobre calzada pública.</li>
+    <li><strong>Superficie Mínima de Lote:</strong> 360.00 m² (Art. 86 Ley 3966/10).</li>
+    <li><strong>Retiros Obligatorios:</strong> Retiro de fondo mínimo de 3.00 m y lateral de 1.50 m.</li>
+  </ul>
+
+  <h3 id="s5-2">5.2 Balance de Loteamientos y Cesiones Obligatorias (Art. 235)</h3>
+  <p>Todo proyecto de fraccionamiento territorial debe ceder gratuitamente a favor de la municipalidad:</p>
+  <table>
+    <tr><th>Destino de la Cesión</th><th>Porcentaje Exigido por Ley</th><th>Finalidad Pública</th></tr>
+    <tr><td><strong>Calles y Vías de Circulación</strong></td><td><strong>Mínimo 16.0 %</strong></td><td>Integración a la trama vial urbana municipal.</td></tr>
+    <tr><td><strong>Plazas y Espacios Verdes</strong></td><td><strong>5.0 % a 7.0 %</strong></td><td>Recreación pública, arbolado y mitigación climática.</td></tr>
+    <tr><td><strong>Edificios Públicos / Equipamiento</strong></td><td><strong>Hasta 3.0 %</strong></td><td>Escuelas, centros de salud, comisarías o dispensarios.</td></tr>
+  </table>
+
+  <h3 id="s5-3">5.3 Perfiles Viales, Ochavas y Contribución por Mejoras</h3>
+  <ul>
+    <li><strong>Perfiles Viales Mínimos:</strong> Calles secundarias ≥ 12.0 m; Avenidas colectoras ≥ 24.0 m; Pasajes peatonales ≥ 6.0 m.</li>
+    <li><strong>Ochavas Reglamentarias:</strong> Obligatorias en todo lote de esquina con chaflán mínimo de 3.00 metros por lado para garantizar la visibilidad del tránsito.</li>
+    <li><strong>Contribución Especial por Mejoras (Ley 5513/2015):</strong> Cálculo automático del monto liquidable por cada lote en función a sus metros lineales de frente sobre obras de pavimento.</li>
+  </ul>
+
+  <h3 id="s5-4">5.4 Homologación de Junta Municipal y Promulgación</h3>
+  <div class="warn">
+    <b>Bloqueo Catastral:</b> Ningún lote de un fraccionamiento puede recibir Código de Cuenta Corriente (CCC) ni Padrón definitivo si el expediente no incluye el <strong>Número de Resolución Homologatoria de la Junta Municipal</strong> y la <strong>Fecha de Promulgación por la Intendencia</strong>.
+  </div>
+</main>
+
+<!-- ===================== 6. VEP MEF ===================== -->
+<main id="s6">
+  <h2 class="sec">6. Catastro Multifinalitario (Modelo Ciudades Sustentables VEP - MEF)</h2>
+
+  <h3 id="s6-1">6.1 Conexión con CARTO SQL API y 230 Capas Abiertas</h3>
+  <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:8px 12px; margin:10px 0; border-radius:4px;">
+    <span style="color:#b91c1c; font-weight:bold; font-size:0.85rem;">SERVICIO DESVINCULADO / VÍNCULO DISCONTINUADO:</span>
+    <span style="color:#7f1d1d; font-size:0.82rem;"> La conexión externa directa a <code>https://serviciosvep.mef.gov.py/home</code> ha sido desestimada en el portal notarial y central por requerimiento institucional. Se conserva el registro tachado como antecedente:</span>
+  </div>
+  <p style="text-decoration:line-through; color:#6b7280;">La plataforma integra el cliente <code>js/vepDataClient.js</code>, que conecta con la infraestructura de datos abiertos de <strong>Ciudades Sustentables VEP del MEF</strong> (<code>https://serviciosvep.mef.gov.py/user/ama/</code>):</p>
+  <ul style="text-decoration:line-through; color:#6b7280;">
+    <li>Acceso abierto y en tiempo real a <strong>230 conjuntos de datos geoespaciales</strong> sin necesidad de contraseñas ni API keys.</li>
+    <li>Descarga directa multiformato mediante la CARTO SQL API v2:
+      <ul>
+        <li><strong>GeoJSON:</strong> <code>https://serviciosvep.mef.gov.py/user/ama/api/v2/sql?q=SELECT * FROM {tabla}&format=geojson</code></li>
+        <li><strong>Shapefile (ZIP completo):</strong> <code>?format=shp</code></li>
+        <li><strong>CSV:</strong> <code>?format=csv</code></li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3 id="s6-2">6.2 Matriz de Indicadores por Dirección Municipal</h3>
+  <table>
+    <tr><th>Dirección Municipal</th><th>Indicadores Clave Calculados Automáticamente</th><th>Meta / Umbral VEP</th></tr>
+    <tr><td><strong>Catastro y Obras</strong></td><td>Tasa de Titularidad Formal (%); Densidad Habitacional (hab/Ha); Cesión Vial y Espacios Verdes.</td><td>≥ 85% títulos formalizados; ≥ 16% vial.</td></tr>
+    <tr><td><strong>Medio Ambiente</strong></td><td>Espacio Verde Público por Habitante (m²/hab); Faja protectora ribereña respetada (Ley 4241/10).</td><td><strong>≥ 9.0 m²/hab</strong> (Estándar OMS / VEP).</td></tr>
+    <tr><td><strong>Gestión de Riesgos</strong></td><td>Número de lotes en zona inundable periódica; Afectación de cota 64 msnm del Río Paraguay.</td><td><strong>0 lotes habitacionales</strong> en cota de riesgo.</td></tr>
+    <tr><td><strong>Tránsito y Vialidad</strong></td><td>Porcentaje de red vial conforme a perfiles de 12m/24m; Cobertura de ciclovías AMABICI (km).</td><td>100% perfiles mínimos en nuevas aperturas.</td></tr>
+    <tr><td><strong>Hacienda / Recaudación</strong></td><td>Potencial recaudatorio de Contribución por Mejoras vial (₲); Eficiencia del Impuesto Inmobiliario.</td><td>Amortización del costo de calzada proyectada.</td></tr>
+  </table>
+</main>
+
+<!-- ===================== 7. PMTILES LOTEAMIENTOS ===================== -->
+<main id="s7">
+  <h2 class="sec">7. Infraestructura de Datos Vectoriales PMTiles y Mosaico Nacional (loteamientos.com)</h2>
+  
+  <p>El portal <strong>loteamientos.com/mapa-catastral</strong> representa una de las arquitecturas cartográficas más eficientes en Paraguay para visualizar el mosaico parcelario completo sin requerir servidores SIG pesados:</p>
+
+  <h3 id="s7-1">7.1 Arquitectura Cloudflare R2 y Vector Tiles PMTiles de los 17 Departamentos</h3>
+  <p>A diferencia de los geoservidores WMS convencionales que se saturan, la totalidad del catastro y la cartografía base se distribuye en archivos compactos <strong>PMTiles (ProtoMaps)</strong> servidos directamente desde el CDN perimetral de Cloudflare R2:</p>
+  <ul>
+    <li><strong>Repositorio Edge R2:</strong> <code>https://pub-2cf9f3924156489b8938a9ac9c2f2d0b.r2.dev/</code></li>
+    <li><strong>Cobertura Parcelaria por Departamento:</strong>
+      <ul>
+        <li><code>lotes-capital.pmtiles</code> (Asunción) y <code>lotes-central.pmtiles</code> (Área Metropolitana).</li>
+        <li><code>lotes-altoparana.pmtiles</code>, <code>lotes-itapua.pmtiles</code>, <code>lotes-caaguazu.pmtiles</code>, etc.</li>
+        <li>Cobertura completa de los 17 Departamentos (Regiones Oriental y Occidental/Chaco).</li>
+      </ul>
+    </li>
+    <li><strong>Optimización por Zoom (*Overview*):</strong> Cada departamento cuenta con un archivo <code>*-overview.pmtiles</code> para visualizaciones a gran escala y un archivo detallado para inspección de linderos individuales a nivel de lote.</li>
+  </ul>
+
+  <h3 id="s7-2">7.2 Capas Temáticas Nacionales: Lotes, Vías, Usos de Suelo y POIs</h3>
+  <table>
+    <tr><th>Capa PMTiles Nacional</th><th>Contenido y Utilidad Pericial</th></tr>
+    <tr><td><code>departamentos.pmtiles</code> / <code>distritos.pmtiles</code></td><td>Límites distritales oficiales de la República del Paraguay (INE / DISERGEMIL).</td></tr>
+    <tr><td><code>ejido-urbano.pmtiles</code></td><td>Polígonos delimitadores de áreas urbanas versus rurales para aplicación de tolerancias periciales (±5% vs. ±10%).</td></tr>
+    <tr><td><code>hidrografia.pmtiles</code></td><td>Red completa de ríos, arroyos y cauces para control de franjas ribereñas (Ley 4241/10).</td></tr>
+    <tr><td><code>vias.pmtiles</code> / <code>vias-overview.pmtiles</code></td><td>Red vial estructurante, rutas nacionales, departamentales y calles municipales.</td></tr>
+    <tr><td><code>uso-00-asuncion.pmtiles</code> a <code>uso-17.pmtiles</code></td><td>Zonificación y usos de suelo normativos por departamento (residencial, comercial, industrial).</td></tr>
+    <tr><td><code>poi-salud</code>, <code>poi-educativos</code>, <code>poi-plazas</code>, etc.</td><td>Puntos de interés y equipamientos públicos para evaluación de fraccionamientos (Ley 3966/10).</td></tr>
+  </table>
+
+  <h3 id="s7-3">7.3 Ficha Catastral y Modelos de Entorno Urbano/Rural</h3>
+  <p>La plataforma ofrece casos de referencia técnica para análisis parcelario pericial:</p>
+  <ul>
+    <li><strong>Terreno Rural (20 ha en Encarnación):</strong> Control de reserva forestal legal (25% según Ley 422/73) y fajas de drenaje natural.</li>
+    <li><strong>Lote Urbano (1.000 m² en Encarnación):</strong> Control de ochavas, perfil vial secundario (12 m) y retiros de edificación.</li>
+    <li><strong>Lote Urbano de 1 Hectárea (Luque):</strong> Simulación de balance de loteamiento con cesión obligatoria de 16% de calles y 7% de plazas públicas.</li>
+  </ul>
+</main>
+
+<!-- ===================== 8. REGISTRAL Y FIRMAS ===================== -->
+<main id="s8">
+  <h2 class="sec">8. Mesa de Entrada, Interoperabilidad DGRP/MADES y Firmas Digitales</h2>
+
+  <h3 id="s8-1">8.1 Circuito Registral Oficial y Diff de Versiones</h3>
+  <p>El Módulo 9 (<code>js/mesaEntrada.js</code>) administra la trazabilidad de los expedientes bajo formato oficial <code>SNC-{AÑO}-{CORRELATIVO}</code>:</p>
+  <ul>
+    <li><em>Gatekeeper de Admisión:</em> Valida que las geometrías estén cerradas y tengan coordenadas UTM válidas antes de admitir el trámite.</li>
+    <li><em>Balanceo de Cargas:</em> Asigna el expediente automáticamente al perito calificador con menor número de revisiones pendientes.</li>
+    <li><em>Diff Geométrico de Versiones:</em> Detecta con precisión milimétrica si entre versiones el perito modificó vértices, agregó o eliminó lotes, o si alteró la superficie total.</li>
+  </ul>
+
+  <h3 id="s8-2">8.2 Bloqueo Preventivo Registral y Restricciones Ambientales</h3>
+  <p>El Módulo 10 (<code>js/interoperabilidad.js</code>) consulta bases registrales y espaciales:</p>
+  <ul>
+    <li><strong>Alerta DGRP:</strong> Si el inmueble posee medida cautelar de Prohibición de Innovar, Litis o Embargo, el trámite queda <strong>bloqueado</strong> hasta la acreditación del levantamiento judicial.</li>
+    <li><strong>Afectación SINASIP:</strong> Solapamiento con Parques Nacionales bloquea el expediente.</li>
+    <li><strong>Tierras Indígenas (INDI - Ley 904/81):</strong> Imprescriptibles e inembargables. Cualquier subdivisión sobre ellas es nula de pleno derecho.</li>
+  </ul>
+
+  <h3 id="s8-3">8.3 Firmas Electrónicas Cualificadas y Sellos Institucionales (4 Slots - Ley 6822/2021)</h3>
+  
+  <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:10px 14px; margin-bottom:12px;">
+    <span style="color:#be123c; font-weight:bold; font-size:0.85rem;">🕐 REVISIÓN HISTÓRICA / REGLA AJUSTADA:</span>
+    <span style="color:#881337; font-size:0.82rem;"> Se conserva tachada la redacción preliminar y se actualiza a la jerarquía oficial implementada en <code>js/signatureManager.js</code> bajo la Ley N° 6822/2021 y Resolución SNC N° 551/2023:</span>
+  </div>
+
+  <div style="text-decoration:line-through; color:#6b7280; opacity:0.75; margin-bottom:1rem;">
+    <p>El sistema implementa una jerarquía estricta de validación mediante js/signatureManager.js:</p>
+    <div class="flow" style="background:#f3f4f6;">
+      <div class="row"><div class="num" style="background:#9ca3af;">1</div><div class="step">Slot 1: Responsable Técnico (Perito Agrimensor con Matrícula MOPC/SNC).</div></div>
+      <div class="row"><div class="num" style="background:#9ca3af;">2</div><div class="step">Slot 2: Revisor Municipal (Director de Catastro u Obras Municipales).</div></div>
+      <div class="row"><div class="num" style="background:#9ca3af;">3</div><div class="step">Slot 3: Calificador Técnico Catastral (Servicio Nacional de Catastro).</div></div>
+      <div class="row"><div class="num" style="background:#9ca3af;">4</div><div class="step">Slot 4: Autoridad Resolutiva (Director del SNC / RUN). Emisión del Certificado definitivo.</div></div>
+    </div>
+  </div>
+
+  <p>El sistema implementa el <strong>Protocolo Gubernamental Oficial de Firmas y Sellos</strong> mediante <code>js/signatureManager.js</code>, garantizando el estricto cumplimiento de la <strong>Ley N° 6822/2021</strong> (Servicios de Confianza y Firma Digital Cualificada) y la <strong>Resolución SNC N° 551/2023</strong>. Se establecen 4 slots jerárquicos con distinción técnica estricta entre <em>Sellos Internos Institucionales</em> y <em>Firmas Digitales Cualificadas</em>:</p>
+
+  <div class="flow">
+    <div class="row">
+      <div class="num">1</div>
+      <div class="step">
+        <strong>Slot 1 (slot_profesional): Responsable Técnico de Agrimensura</strong> <span class="badge-tag badge-blue">Firma Digital Cualificada</span><br>
+        <em>Rol Requerido:</em> <code>AGRIMENSOR_TOPOGRAFO</code> (Perito Agrimensor con Matrícula habilitante MOPC/SNC).<br>
+        <em>Alcance:</em> Declaración jurada de mensura, georreferenciación y responsabilidad técnica del profesional actuante. <strong>Obligatorio para dictamen definitivo.</strong>
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="step">
+        <strong>Slot 2 (slot_revisor): Control Técnico y Topológico</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
+        <em>Rol Requerido:</em> <code>REVISOR_TECNICO</code> (Revisor Municipal de Catastro u Obras / Técnico Calificador SNC).<br>
+        <em>Alcance:</em> Sello institucional de control preliminar de topología, no superposición y consistencia de atributos. Trámite en revisión interna.
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="step">
+        <strong>Slot 3 (slot_fiscalizador): Fiscalización y Dictamen</strong> <span class="badge-tag badge-amber">Sello Interno Institucional</span><br>
+        <em>Rol Requerido:</em> <code>JEFE_FISCALIZACION</code> (Jefatura de Fiscalización Catastral y Registral).<br>
+        <em>Alcance:</em> Visto bueno interno de la jefatura técnica y verificación del cumplimiento normativo de tolerancias e informes periciales.
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="step">
+        <strong>Slot 4 (slot_director): Aprobación y Homologación Oficial</strong> <span class="badge-tag badge-green">Firma Digital Cualificada</span><br>
+        <em>Rol Requerido:</em> <code>AUTORIDAD_RESOLUTIVA</code> (Director General del SNC / Intendente Municipal / Director RUN).<br>
+        <em>Alcance:</em> Firma digital cualificada de la máxima autoridad con emisión de Certificado Catastral definitivo y asignación de Padrón/CCC. <strong>Obligatorio definitivo.</strong>
+      </div>
+    </div>
+  </div>
+
+  <p><strong>Regla de Negocio Gubernamental Estricta:</strong></p>
+  <ul>
+    <li><strong>Sellos Internos:</strong> Utilizados exclusivamente en etapas previas o en revisión (<code>BORRADOR</code>, <code>MESA_ENTRADA</code>, <code>ASIGNADO</code>, <code>EN_REVISION</code>, <code>OBSERVADO</code>, <code>REINGRESO</code>) mediante sellos institucionales circulares oficiales o rectangulares de visado.</li>
+    <li><strong>Firmas Digitales Cualificadas:</strong> Requisito infranqueable para etapas definitivas (<code>DICTAMEN</code>, <code>APROBADO_FISCALIZACION</code>, <code>FIRMADO_DIRECTOR</code>, <code>PADRON_ASIGNADO</code>).</li>
+    <li><strong>Seguridad Criptográfica:</strong> Validación automática de la cadena de confianza PKI (entidad emisora certificada por MIC), sellado de tiempo criptográfico (Timestamping según RFC 3161) y verificación de revocación en tiempo real mediante Lista de Certificados Revocados (CRL).</li>
+  </ul>
+
+  <h3 id="s8-4">8.4 Motor Espacial Soberano (Base de Datos, R-Tree y Vector Tiles)</h3>
+  <p>El sistema incluye una arquitectura de base de datos y motor vectorial soberano, completamente local y sin depender de servidores externos. La documentación se encontraba fragmentada; aquí se detalla la integración:</p>
+  <ul>
+    <li><strong>Motor R-Tree (SQLite):</strong> Índice espacial nativo en <code>database/database.db</code> (también en <code>catastro_cache.db</code>). Permite consultar parcelas colindantes por bounding box en menos de 3 ms, sin depender de servidores externos ni servicios de terceros.</li>
+    <li><strong>Emulador Firebase Local:</strong> La base de datos de desarrollo se ejecuta localmente mediante Firebase Emulators (Firestore, Auth, Hosting, UI) en <code>localhost</code>:
+      <ul>
+        <li>Firestore API: <span class="mono">http://127.0.0.1:8080</span></li>
+        <li>Auth API: <span class="mono">http://127.0.0.1:9099</span></li>
+        <li>Hosting: <span class="mono">http://127.0.0.1:5000</span></li>
+        <li>Emulator UI: <span class="mono">http://127.0.0.1:4000</span></li>
+      </ul>
+      La configuración local se define en <code>firebase.json</code> y <code>.firebaserc</code> (proyecto <code>snc511</code>).</li>
+    <li><strong>Endpoint API Soberano:</strong> <code>GET /api/v3/catastro/vector-view?minX=&minY=&maxX=&maxY=</code> devuelve un FeatureCollection de parcelas colindantes con el bbox visible del mapa. La consulta utiliza el índice R-Tree y retorna en &lt;3 ms para hasta 3.000 parcelas.</li>
+    <li><strong>Motor Vectorial Soberano (Leaflet):</strong>
+      <ul>
+        <li>Cliente: <code>js/sovereignVectorTiles.js</code> — Clase <code>SovereignVectorTiles</code> que inicializa un layer de Leaflet con estilos personalizados (azul #2563eb, fillOpacity 0.12, dashArray '3,3').</li>
+        <li>Control: <code>window.MapEngine.toggleSovereignVectorTiles()</code> — alterna la visibilidad de la layer de teselas vectoriales en el mapa.</li>
+        <li>Botón en la interfaz: <code>map-tool-sovereign-vector</code> (icono de capa) en la barra de herramientas.</li>
+        <li>Al iniciar el mapa, el motor descarga las parcelas colindantes del bbox visible y las dibuja sobre las capas base.</li>
+      </ul>
+    </li>
+    <li><strong>Almacenamiento Offline:</strong> Las parcelas del distrito se guardan en IndexedDB del navegador para trabajo 100% desconectado en campo, sin necesidad de conexión a internet.</li>
+    <li><strong>Base de Datos Local:</strong> <code>data/catastro_cache.db</code> (8.184 parcelas activas con columnas <code>minX, minY, maxX, maxY</code>) y <code>database/database.db</code> (SQLite mainstream). Ambos soportan la búsqueda R-Tree.</li>
+  </ul>
+  <div class="flow" style="margin-top:1.2rem;">
+    <div class="row">
+      <div class="num">1</div>
+      <div class="step"><strong>Motor Soberano Local (SQLite + R-Tree)</strong><br><code>database/database.db</code><br><code>catastro_cache.db</code><br>Búsqueda colindante &lt; 3 ms</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="step"><strong>API Soberana (Express/Node)</strong><br><code>GET /api/v3/catastro/vector-view</code><br><code>minX · minY · maxX · maxY</code><br>Auth: Firebase Emulador (9099)</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="step"><strong>Vector Tiles PMTiles (Cloudflare R2)</strong><br><code>*.pmtiles</code><br>17 Departamentos<br>MapLibre/Leaflet</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="step"><strong>Offline Storage (IndexedDB)</strong><br><code>Navegador (100% local)</code><br>Cache de parcelas del distrito<br>Sin conexión</div>
+    </div>
+  </div>
+  <div class="note">
+    <b>Verificación:</b> El endpoint <code>/api/v3/catastro/vector-view</code> retorna 200 con un FeatureCollection de parcelas colindantes. Todas las suites de pruebas (<code>npm test</code>) están en verde. El motor funciona 100% offline para expedientes en campo (Chaco, zonas rurales, etc.).
+  </div>
+</main>
+
+<!-- ===================== 8. ENTREGABLES ===================== -->
+<main id="s9">
+  <h2 class="sec">9. Entregables Oficiales y Generación de Planos</h2>
+
+  <h3 id="s9-1">9.1 Exportación AutoCAD DXF R12 con Capas Oficiales</h3>
+  <p>Genera archivos <code>.dxf</code> en formato ASCII AutoCAD R12 (<code>js/exportFormats.js</code>) 100% compatibles con AutoCAD, Civil 3D y QGIS:</p>
+  <ul>
+    <li><code>0_LIMITES_PARCELAS</code>: Polilíneas cerradas (<code>LWPOLYLINE</code>) en color verde (código 3).</li>
+    <li><code>1_VERTICES_MOJONES</code>: Puntos (<code>POINT</code>) y textos con el identificador del mojón (V₁, V₂, ...) en color amarillo (código 2).</li>
+    <li><code>2_TEXTOS_PADRON</code>: Textos con el número de padrón o código situados en el centroide de la parcela en color blanco (código 7).</li>
+  </ul>
+
+  <h3 id="s9-2">9.2 Certificado Preventivo PDF y DOCX con Hash y QR</h3>
+  <p>El generador de certificados (<code>js/export.js</code>) emite documentos periciales listos para protocolización notarial:</p>
+  <ul>
+    <li>Código de expediente y Código Único de Identificación Catastral Registral (CUI-CR).</li>
+    <li>Código QR dinámico de validación pública de autenticidad.</li>
+    <li>Hash criptográfico SHA-256 de 64 caracteres hex que sella los datos del informe.</li>
+    <li>5 capturas cartográficas profesionales (Plano de implantación general, croquis perimetral, etc.).</li>
+    <li>Cuadro completo de derroteros con coordenadas UTM 21S o 20S.</li>
+    <li>Versión Word (.DOCX) idéntica para facilitar la incorporación a escrituras públicas y peritajes judiciales.</li>
+  </ul>
+
+  <h3 id="s9-3">9.3 Plano Georreferenciado para Transferencias Notariales</h3>
+  <p>Cumple íntegramente con los requisitos de la <strong>Res. SNC N° 200/2020</strong> y de empresas líderes del sector como Geochaco:</p>
+  <ul>
+    <li>Carátula con datos registrales (Finca/Matrícula, Padrón/Cuenta Corriente, Propietario, Distrito y Departamento).</li>
+    <li>Metadatos geodésicos obligatorios (Estación CORS de referencia PYAR/PYCN, método RTK NTRIP y fecha de rastreo).</li>
+    <li>Balance de superficie de título versus superficie medida con cálculo de tolerancia pericial.</li>
+  </ul>
+</main>
+
+<!-- ===================== 10. GUIA BOTONES ===================== -->
+<main id="s10">
+  <h2 class="sec">10. Guía Completa de Botones, Menús y Herramientas de la Interfaz</h2>
+  <p>La interfaz de usuario de <strong>SNC_v3</strong> cuenta con más de 100 herramientas interactivas diseñadas específicamente para agrimensores y revisores catastrales. A continuación se detalla la función exacta de cada botón y panel:</p>
+
+  <h3 id="s10-1">10.1 Barra Superior y Gestión de Proyectos</h3>
+  <table>
+    <tr><th>Botón / Elemento</th><th>Identificador</th><th>Acción y Función Técnica</th></tr>
+    <tr><td><strong>Nuevo Proyecto</strong></td><td><code>btn-project-new</code></td><td>Limpia el espacio de trabajo actual, restablece capas y prepara un nuevo expediente en blanco.</td></tr>
+    <tr><td><strong>Abrir Proyecto</strong></td><td><code>btn-project-open</code></td><td>Abre el selector de proyectos guardados localmente en SQLite o en memoria.</td></tr>
+    <tr><td><strong>Guardar Proyecto</strong></td><td><code>btn-project-save</code></td><td>Persiste el estado actual de las geometrías, tablas de atributos y metadatos en la base de datos.</td></tr>
+    <tr><td><strong>Renombrar Proyecto</strong></td><td><code>btn-project-rename</code></td><td>Modifica la denominación del expediente o código de trabajo.</td></tr>
+    <tr><td><strong>Eliminar Proyecto</strong></td><td><code>btn-project-delete</code></td><td>Elimina el proyecto activo tras confirmación de seguridad.</td></tr>
+    <tr><td><strong>Validar</strong></td><td><code>btn-project-validate</code></td><td>Ejecuta la auditoría pericial completa según la Res. SNC N° 551/2023 (tolerancias, cero superposición y 16 campos).</td></tr>
+    <tr><td><strong>Auditar / Dictamen</strong></td><td><code>btn-project-audit</code></td><td>Abre el informe de auditoría detallado con desglose de advertencias, errores y checklist normativo.</td></tr>
+    <tr><td><strong>Certificar</strong></td><td><code>exportBtn</code></td><td>Genera y descarga el paquete oficial de entrega con el Certificado de Aptitud en PDF y Shapefile validado.</td></tr>
+    <tr><td><strong>GeoJSON / KML / DXF</strong></td><td><code>exportGeoJSONBtn</code> / <code>exportKMLBtn</code> / <code>exportDXFBtn</code></td><td>Botones de exportación rápida individual en los formatos vectoriales estándares.</td></tr>
+    <tr><td><strong>Certificado PDF Profesional</strong></td><td><code>exportProfessionalBtn</code></td><td>Genera el informe pericial completo de 8 páginas con 5 mapas capturados, QR y Hash SHA-256.</td></tr>
+    <tr><td><strong>Abrir Catastro Oficial</strong></td><td><code>btn-open-catastro</code></td><td>Abre en una ventana flotante o pestaña externa la consulta oficial del Servicio Nacional de Catastro (SNC).</td></tr>
+    <tr><td><strong>Datos del Expediente</strong></td><td><code>btn-expediente-data</code></td><td>Despliega el modal de carátula para cargar titular, perito agrimensor, registro MOPC, finca, padrón y resolución municipal.</td></tr>
+    <tr><td><strong>Firmas y Sellos</strong></td><td><code>btn-firmas-sellos</code></td><td>Abre el panel del circuito de 4 slots para estampar firmas digitales cualificadas (Ley 6822/21) o sellos internos de revisión.</td></tr>
+    <tr><td><strong>Tema Oscuro / Claro</strong></td><td><code>theme-toggle</code></td><td>Alterna entre modo oscuro (Dark Mode para trabajo nocturno en gabinete) y modo claro para impresión.</td></tr>
+    <tr><td><strong>Demo Oficial</strong></td><td>Botón Demo</td><td>Carga instantáneamente un expediente catastral de prueba real para demostración de capacidades del sistema.</td></tr>
+  </table>
+
+  <h3 id="s10-2">10.2 Selector de Mapas Base y Capas de Referencia</h3>
+  <table>
+    <tr><th>Herramienta</th><th>Identificador</th><th>Descripción Técnica</th></tr>
+    <tr><td><strong>Menú de Mapas Base</strong></td><td><code>map-base-menu-toggle</code></td><td>Despliega las opciones de cartografía de fondo: OpenStreetMap estándar, Satélite ESRI de alta resolución, Cartografía Humanitaria OSM, Curvas de nivel topográficas y Mosaico Catastral SNC.</td></tr>
+    <tr><td><strong>Mostrar/Ocultar Capas</strong></td><td><code>layers-toggle-btn</code></td><td>Abre el panel lateral de capas para encender o apagar polígonos de distritos, hidrografía, vías y ortofotos.</td></tr>
+    <tr><td><strong>Re-evaluar CRS</strong></td><td><code>piribebuy-crs-refresh</code></td><td>Fuerza la reproyección y verificación del sistema de coordenadas de referencia de todas las capas activas a UTM 21S o 20S.</td></tr>
+  </table>
+
+  <h3 id="s10-2-2">10.2.2 Arquitectura Jerárquica de Panes (Leaflet Z-Index Stacking) y Agrupación Modular</h3>
+  <p>Conforme a la estandarización cartográfica del Sistema Nacional de Catastro (SNC 551/2023), todas las capas vectoriales y ráster se organizan en <strong>7 niveles estrictos de apilamiento visual (Leaflet Panes)</strong>. Este orden garantiza matemáticamente que las capas base queden siempre en el fondo y que las parcelas de trabajo del usuario permanezcan en la cúspide visual, sin riesgo de quedar ocultas bajo mosaicos pesados o capas WMS:</p>
+  
+  <table>
+    <tr>
+      <th>Nivel</th>
+      <th>Leaflet Pane</th>
+      <th>Z-Index</th>
+      <th>Servidor / Fuente</th>
+      <th>Temática y Capas Integradas</th>
+      <th>Regla de Prelación Cartográfica</th>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td><strong>Nivel 1 (Fondo)</strong></td>
+      <td><code>pane-base</code></td>
+      <td><strong>200</strong></td>
+      <td>OpenStreetMap, ESRI Satelital, CartoDB, Topográfico</td>
+      <td>Mapas Base de contexto global, relieve y texturas ortofoto.</td>
+      <td>Base cartográfica absoluta. Siempre abajo de todas las capas vectoriales.</td>
+    </tr>
+    <tr>
+      <td><strong>Nivel 2</strong></td>
+      <td><code>pane-paraguay</code></td>
+      <td><strong>300</strong></td>
+      <td>INE / Servidor Geodésico Nacional / IGN</td>
+      <td>Límites Departamentales, Distritales y Red Geodésica Oficial.</td>
+      <td>Arriba del Mapa Base; enmarca la soberanía y límites territoriales.</td>
+    </tr>
+    <tr style="background:#f0fdf4;">
+      <td><strong>Nivel 3</strong></td>
+      <td><code>pane-mag</code></td>
+      <td><strong>400</strong></td>
+      <td>MAG (Ministerio de Agricultura y Ganadería)</td>
+      <td>Uso de la tierra, cultivos temporales (soja/maíz/arroz), cuencas y ganadería.</td>
+      <td>Arriba de límites nacionales; ciclo de sincronización oficial de 15 días.</td>
+    </tr>
+    <tr style="background:#ecfdf5;">
+      <td><strong>Nivel 4</strong></td>
+      <td><code>pane-mades</code></td>
+      <td><strong>500</strong></td>
+      <td>MADES (SIAM + SIAGUA)</td>
+      <td>SINASIP (Áreas Silvestres Protegidas), Franja Hídrica (30m Ley 3239/07), Alertas.</td>
+      <td>Arriba del MAG; evalúa restricciones ambientales bloqueantes antes del catastro.</td>
+    </tr>
+    <tr style="background:#fef3c7;">
+      <td><strong>Nivel 5</strong></td>
+      <td><code>pane-catastro</code></td>
+      <td><strong>600</strong></td>
+      <td>SNC / DGRP / Loteamientos.com</td>
+      <td>Mosaico Catastral Nacional WMS (CRS:84), Padrón Oficial, Loteamientos aprobados.</td>
+      <td>Arriba de capas ambientales; referencia registral previa a la aprobación municipal.</td>
+    </tr>
+    <tr style="background:#eff6ff;">
+      <td><strong>Nivel 6</strong></td>
+      <td><code>pane-municipal</code></td>
+      <td><strong>700</strong></td>
+      <td>Gobierno Municipal (Ley 3966/10)</td>
+      <td>Zonificación urbana, ejes viales, cesiones del 16% (vial) y 5%-7% (plazas).</td>
+      <td>Arriba de la cartografía catastral nacional; aplica normativas urbanísticas comunales.</td>
+    </tr>
+    <tr style="background:#faf5ff;">
+      <td><strong>Nivel 7 (Cúspide)</strong></td>
+      <td><code>pane-usuario</code></td>
+      <td><strong>800</strong></td>
+      <td>Expediente Local del Usuario / Perito</td>
+      <td>Parcelas en trámite, mensura pericial, vértices COGO, cotas y derroteros.</td>
+      <td><strong>Cúspide visual inmutable.</strong> Nunca puede ser tapada por capas de ningún servidor.</td>
+    </tr>
+  </table>
+
+  <div style="background:#f1f5f9; border-left:4px solid #1f4fd0; padding:12px; margin:16px 0; border-radius:4px;">
+    <strong>Agrupación Flexible en la Tabla de Contenido (TOC):</strong><br>
+    El panel de capas (<code>js/layerPanel.js</code>) permite visualizar y alternar el conjunto de datos de tres maneras operativas:
+    <ul style="margin-left:20px; margin-top:6px;">
+      <li><strong>Por Servidor Oficial:</strong> Agrupa las capas según el organismo emisor (SNC, MAG, MADES, Municipal, INE/Geodésico, Local).</li>
+      <li><strong>Por Dominio Temático:</strong> Agrupa por función sustantiva (Ambiental, Catastral, Agropecuario, Urbanístico/Municipal, Cobertura Nacional, Trabajo del Usuario).</li>
+      <li><strong>Por Ruta de Origen:</strong> Muestra la estructura de carpetas, directorios y servicios REST/WMS de origen.</li>
+    </ul>
+  </div>
+
+  <h3 id="s10-2-3">10.2.3 Fuentes de Datos y Comparación de Capas Duplicadas</h3>
+  <p>La plataforma SNC_v3 consulta capas desde múltiples fuentes. La siguiente tabla compara las capas disponibles en los servidores externos contra las capas locales de <code>data/piribebuy/</code>. Cada capa se clasifica con un color según su presencia:</p>
+  <ul>
+  <li><strong style="color:#15803d;">Verde (3 Nuestro):</strong> Capa exclusiva de nuestro servidor (no duplicada en otros servidores).</li>
+  <li><strong style="color:#b45309;">Naranja (2 Ambos):</strong> Capa duplicada, presente en nuestro servidor y en uno o más servidores externos.</li>
+  <li><strong style="color:#b91c1c;">Rojo (1 Afuera):</strong> Capa disponible únicamente en servidores externos, no en nuestro servidor.</li>
+  </ul>
+  <table>
+  <tr><th>Capa</th><th>Fuente Externa</th><th>Estado</th><th>Comentario</th></tr>
+  <tr>
+    <td><strong>barrios</strong> (Piribebuy)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Capa exclusiva local; no duplicada en servidores externos.</td>
+  </tr>
+  <tr>
+    <td><strong>casco_historico</strong> (Casco Histórico)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Capa exclusiva local; no duplicada.</td>
+  </tr>
+  <tr>
+    <td><s><strong>casco_historico_2</strong> (Casco Histórico 2)</s></td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Indicador de capa que no se encuentra en la arquitectura actual (solo casco_historico.geojson existe).</td>
+  </tr>
+  <tr>
+    <td><strong>centro</strong> (Centro)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Capa exclusiva local; no duplicada.</td>
+  </tr>
+  <tr>
+    <td><strong>DISTRITOS_PY_CNPV2022</strong></td>
+    <td>PMTiles Nacional (distritos.pmtiles)</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada: mapa de distritos en ambos servidores. Recontextualizar (reproyectar) si hay diferencia de precisión (CNPV2022 vs. referencia oficial).</td>
+  </tr>
+  <tr>
+    <td><strong>hidro</strong> (Hidrografía)</td>
+    <td>PMTiles Nacional (hidrografia.pmtiles)</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada: red de ríos y cauces en ambos. Verificar consistencia de nombres y distancias. MADES aporta fajas riberas (30m) de ley.</td>
+  </tr>
+  <tr>
+    <td><strong>sample_fraccionamiento_municipal</strong></td>
+    <td>NA (muestra local)</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Solo local; muestra de fraccionamiento municipal.</td>
+  </tr>
+  <tr>
+    <td><strong>vertedero</strong> (Vertedero)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada: lote de vertedero en ambos. Rectificar con la última versión del SERVER ORA o SKM.</td>
+  </tr>
+  <tr>
+    <td><strong>vertedero_500</strong> (Vertedero 500m)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada; aplicar Ley 3956/09 (1000m) o Resolución 4/2026 (corregir a 1000m según vigencia).</td>
+  </tr>
+  <tr>
+    <td><strong>vertedero_1000</strong> (Vertedero 1000m)</td>
+    <td>PMTiles Nacional</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada; cumple Ley 3956/09 de amortiguamiento de vertederos (1000m).</td>
+  </tr>
+  <tr>
+    <td><strong>vias</strong> (Vías)</td>
+    <td>PMTiles Nacional (vias.pmtiles)</td>
+    <td style="color:#b45309;"><span class="badge-txt">2 Ambos</span></td>
+    <td>Capa duplicada: red vial estructurante en ambos. Verificar tipo de vía (nacional, departamental, local).</td>
+  </tr>
+  <tr>
+    <td><strong>vertedero_integrado</strong> (Vertedero Integrado)</td>
+    <td>NA (integrado local)</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Solo local; enmendar con datos oficiales del entorno del vertedero.</td>
+  </tr>
+  <tr>
+    <td><strong>vuelo_casco</strong> (Vuelo Casco)</td>
+    <td>NA (imagen/local)</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Solo local; imágenes de vuelo o satélite de alta resolución.</td>
+  </tr>
+  <tr>
+    <td><strong>zona_influencia</strong> (Zona de Influencia)</td>
+    <td>NA (definición local)</td>
+    <td style="color:#15803d;"><span class="badge-txt">3 Nuestro</span></td>
+    <td>Solo local; área de influencia del distrito de Piribebuy (definición propietaria).</td>
+  </tr>
+  </table>
+  <h4>Reglas de toma de decisión</h4>
+  <ol>
+  <li><strong>Duplicados (2 Ambos - Naranja):</strong> si una capa existe en ambos servidores, priorizar la fuente oficial (DGRP/RUN o MADES) y calibrar la duplicada local. Registro de versiones e hashes SHA-256 de cada copia.</li>
+  <li><strong>Solo externo (1 Afuera - Rojo):</strong> capas que no tenemos; descargar del servidor fuente o solicitar acceso al responsable del topic. Si procede, incorporar al servidor local.</li>
+  <li><strong>Solo nuestro (3 Nuestro - Verde):</strong> capas de carácter propietario o de estudio; documentar su licencia y fuente de datos para no violar derechos de terceros.</li>
+  </ol>
+  <p><strong>Recomendación:</strong> aplica la tabla antes de cada expediente pericial para evitar doble carga de datos, errores de medición y conflictos de esquema de codificación. Sustituye los colores de estado según la versión del servidor consultada (SNC/DGRP, MADES, Municipal).</p>
+
+  <h3 id="s10-2-1">10.2.1 Jerarquía de Capas Histórica (z-order anterior — <span style="color:#b91c1c; font-weight:normal; text-decoration:none;">Reemplazado por los 7 Panes Oficiales de la Sección 10.2.2</span>)</h3>
+  <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:10px 14px; margin-bottom:12px;">
+    <span style="color:#be123c; font-weight:bold; font-size:0.85rem;">🕐 NOTA HISTÓRICA / REGLA OBSOLETA:</span>
+    <span style="color:#881337; font-size:0.82rem;"> La siguiente tabla de 5 niveles numéricos simples ha sido discontinuada para dar cumplimiento a la Resolución SNC 551/2023 y la Acordada CSJ N° 1823/2025. Se conserva en el manual de forma tachada para fines de auditoría y trazabilidad pericial:</span>
+  </div>
+  <table style="text-decoration:line-through; opacity:0.65; background:#f9fafb;">
+    <tr style="text-decoration:none; background:#f3f4f6;"><th>Nivel</th><th>Categoría</th><th>Cobertura</th><th>Ejemplos</th></tr>
+    <tr><td><strong>0 (Base)</strong></td><td>Mapa Base</td><td>Fondo cartográfico</td><td>OpenStreetMap, Satélite ESRI, Carto Positron, Topografía, Catastro SNC</td></tr>
+    <tr><td><strong>10</strong></td><td>Nacional</td><td>República del Paraguay</td><td>Límites departamentales, distritos, vías generales, hidrografía oficial</td></tr>
+    <tr><td><strong>20</strong></td><td>MADES</td><td>Ambiental e hidrológica</td><td>SINASIP, fajas riberas (30m), reservas forestales, cauces de agua</td></tr>
+    <tr><td><strong>30</strong></td><td>Municipio</td><td>Municipal</td><td>Cesiones obligatorias, perfiles viales, urbanismo, reglamentos</td></tr>
+    <tr><td><strong>40</strong></td><td>Usuario</td><td>Propias del operador</td><td>Expedientes actuales, parcelas trazadas, capas editadas por el usuario</td></tr>
+    <tr><td><strong>50</strong></td><td>Superposición</td><td>Overlay (no afecta z-order)</td><td>Etiquetas, marcadores, línea de transición, anotaciones</td></tr>
+  </table>
+  <p style="text-decoration:line-through; color:#6b7280; font-size:0.85rem;">Las capas se dibujan en ese orden, de abajo hacia arriba. Las capas del usuario siempre se dibujan sobre las capas oficiales (nacional, MADES, municipio). El mapa base se mantiene siempre en el fondo.</p>
+  <p style="text-decoration:line-through; color:#6b7280; font-size:0.85rem;">El panel lateral de capas muestra las capas organizadas por categoría. Puedes cambiar la visibilidad en cualquier momento; el orden de apilamiento se mantiene automáticamente.</p>
+
+  <h3 id="s10-2-4">10.2.4 Matriz de Servicios por Perfil de Usuario</h3>
+  <p>Para garantizar el principio de segregación de funciones, la plataforma <strong>SNC_v3</strong> distribuye las herramientas y accesos según el rol institucional del operador a través de portales especializados e independientes:</p>
+  <table>
+    <tr><th>Portal / Plataforma</th><th>Ruta de Acceso</th><th>Perfil Autorizado</th><th>Capas y Servicios Habilitados</th><th>Entregables Generados</th></tr>
+    <tr>
+      <td><strong>Portal Central</strong></td>
+      <td><code>index.html</code></td>
+      <td>Peritos Agrimensores, Topógrafos, Ingenieros Geógrafos</td>
+      <td>Carga multiformato (DXF, SHP, KML), validación topológica SNC 551/23, derroteros COGO, cálculo de tolerancias ΔS, capas MADES/SNC.</td>
+      <td>Certificado Preventivo PDF/DOCX con QR y Hash SHA-256, Shapefile oficial (4 archivos) y AutoCAD DXF R12.</td>
+    </tr>
+    <tr>
+      <td><strong>Portal Municipal</strong></td>
+      <td><code>municipal/index.html</code></td>
+      <td>Directores de Catastro Municipal, Obras Públicas y Medio Ambiente</td>
+      <td>Control de loteamientos (Ley 3966/10), cálculo de cesión vial (16%) y plazas (5%-7%), perfiles viales mínimos, plusvalía de mejoras (Ley 5513/15).</td>
+      <td>Dictamen de Homologación Municipal, Ficha de Aprobación de Fraccionamiento y Liquidación de Mejoras.</td>
+    </tr>
+    <tr>
+      <td><strong>Portal Notarial & Escribanías</strong></td>
+      <td><code>notarial/index.html</code></td>
+      <td>Escribanos Públicos, Notarios de Registro y Asesores Jurídicos</td>
+      <td>Due Diligence registral/catastral, verificación de medidas cautelares DGRP (embargos, litis), comprobación de linderos UTM 21S, validación de coeficientes FOS/FOT.</td>
+      <td>Minuta Notarial con Cláusula de Georreferenciación Catastral, Informe de Solvencia Parcelaria y Liquidación de Tasas de Transferencia.</td>
+    </tr>
+    <tr>
+      <td><strong>Portal Ciudadano</strong></td>
+      <td><code>ciudadano/index.html</code></td>
+      <td>Ciudadanos, Titulares de Inmuebles y Público General</td>
+      <td>Consulta pública de expedientes por Código o Padrón, visualización del mosaico parcelario aprobado, verificación de autenticidad de certificados mediante código QR.</td>
+      <td>Constancia de Consulta Pública y Verificación de Estado de Trámite Catastral.</td>
+    </tr>
+    <tr>
+      <td><strong>Panel Administrativo</strong></td>
+      <td><code>admin/index.html</code></td>
+      <td>Directores Generales SNC/RUN, Fiscalizadores y Administradores de Seguridad</td>
+      <td>Mesa de Entrada institucional, balanceo de cargas periciales, gestión de Lista de Certificados Revocados (CRL), auditoría de firmas (4 slots) y trazabilidad SHA-256.</td>
+      <td>Resolución Definitiva de Asignación de Padrón, Auditoría de Cadena de Confianza y Reportes Estadísticos Nacionales.</td>
+    </tr>
+  </table>
+
+  <h3 id="s10-3">10.3 Barra Flotante de Herramientas de Edición Topológica y COGO</h3>
+  <table>
+    <tr><th>Botón / Herramienta</th><th>Identificador</th><th>Uso Pericial</th></tr>
+    <tr><td><strong>Editar Vértices</strong></td><td><code>map-tool-edit-vertices</code></td><td>Activa el modo de edición de polígonos con ajuste magnético topológico (<em>snapping</em> centimétrico).</td></tr>
+    <tr><td><strong>Mover Vértices</strong></td><td><code>map-edit-mode-move</code></td><td>Permite arrastrar mojones existentes garantizando que los polígonos vecinos compartan el nuevo vértice sin superposición.</td></tr>
+    <tr><td><strong>Agregar Vértice</strong></td><td><code>map-edit-mode-add</code></td><td>Inserta un nuevo vértice intermedio sobre cualquier segmento de lindero existente.</td></tr>
+    <tr><td><strong>Eliminar Vértice</strong></td><td><code>map-edit-mode-delete</code></td><td>Suprime un vértice no deseado y recalcula automáticamente la superficie y los rumbos contiguos.</td></tr>
+    <tr><td><strong>Confirmar Edición</strong></td><td><code>map-edit-commit</code></td><td>Guarda permanentemente las modificaciones en el estado reactivo y recalcula las tolerancias de área.</td></tr>
+    <tr><td><strong>Cancelar Edición</strong></td><td><code>map-edit-cancel</code></td><td>Descarta los cambios en curso y restaura la geometría previa.</td></tr>
+    <tr><td><strong>Deshacer / Rehacer</strong></td><td><code>map-tool-undo</code> / <code>redo</code></td><td>Historial de acciones de dibujo y edición (soporta atajos de teclado <code>Ctrl+Z</code> y <code>Ctrl+Y</code>).</td></tr>
+    <tr><td><strong>Subdividir Polígono (Corte)</strong></td><td><code>map-tool-split</code></td><td>Permite trazar una línea de corte que divide una parcela matriz en dos o más fracciones independientes con balance automático.</td></tr>
+    <tr><td><strong>Medir Distancia</strong></td><td><code>map-tool-measure</code></td><td>Regla interactiva que mide distancias euclidianas planas acumuladas y rumbos en tiempo real sobre el mapa.</td></tr>
+    <tr><td><strong>Construcción COGO</strong></td><td>Botón COGO</td><td>Abre el asistente de dibujo por rumbo y distancia: ingresa azimut/rumbo y metros para trazar polígonos con precisión milimétrica.</td></tr>
+    <tr><td><strong>Corrección Topológica Asistida</strong></td><td>Botón Topología</td><td>Detecta y repara automáticamente solapamientos micrométricos, huecos entre lotes (*gaps*) y polígonos no cerrados.</td></tr>
+    <tr><td><strong>Geoprocesamiento</strong></td><td>Botón Geoprocesamiento</td><td>Abre el cuadro de diálogo para operaciones de Intersección, Unión, Diferencia y generación de Buffers de protección.</td></tr>
+    <tr><td><strong>Convertir Puntos a Polígono</strong></td><td><code>map-tool-convert</code></td><td>Transforma un listado de puntos sueltos o mojones levantados con GPS en un polígono catastral cerrado.</td></tr>
+    <tr><td><strong>Descargar Parcelas Vecinas (1000m)</strong></td><td><code>map-tool-environment</code></td><td>Descarga del geoportal del SNC o del modelo VEP todas las parcelas colindantes en un radio de 1 km para verificar linderos.</td></tr>
+  </table>
+
+  <h3 id="s10-4">10.4 Localizador Geodésico y Buscador de Coordenadas</h3>
+  <p>Ubicado en la esquina del mapa, permite encontrar y verificar cualquier posición en la República del Paraguay:</p>
+  <ul>
+    <li><strong>Buscar / Centrar Coordenadas (<code>btn-center-coordinates</code>):</strong> Acepta formatos múltiples:
+      <ul>
+        <li>Coordenadas proyectadas UTM WGS84: <code>X=500000, Y=7200000</code>.</li>
+        <li>Grados Minutos Segundos (DMS): <code>25°18'10.2"S 57°30'15.4"W</code>.</li>
+        <li>Grados decimales (WGS84): <code>-25.302609, -57.504281</code>.</li>
+        <li>Enlaces cortos de Google Maps: <code>https://maps.app.goo.gl/...</code> (resuelve la ubicación exacta automáticamente).</li>
+      </ul>
+    </li>
+    <li><strong>Pegar del Portapapeles (<code>btn-paste-coord</code>):</strong> Pega automáticamente las coordenadas copiadas desde WhatsApp, mensajes o informes periciales.</li>
+    <li><strong>Copiar Coordenadas (<code>btn-copy-coordinates</code>):</strong> Copia la posición actual del cursor en proyección UTM 21S o 20S con un solo clic.</li>
+    <li><strong>Limpiar Marcador (<code>btn-clear-locate</code>):</strong> Elimina la chincheta de búsqueda del mapa.</li>
+  </ul>
+
+  <h3 id="s10-5">10.5 Inspector de Parcelas, Cotas y Asignación de Números</h3>
+  <ul>
+    <li><strong>Inspector de Parcelas (<code>close-parcel-inspector</code>):</strong> Al hacer clic en cualquier parcela, despliega la ficha catastral completa: Código, Padrón, Propietario, Superficie SIG, Superficie de Título, discrepancia y perímetro.
+      <ul>
+        <li>Botón <em>GeoJSON</em>: Exporta únicamente la parcela seleccionada a archivo GeoJSON.</li>
+        <li>Botón <em>JSON</em>: Exporta la ficha técnica alfanumérica individual a formato JSON.</li>
+      </ul>
+    </li>
+    <li><strong>Orientación de Cotas (<code>map-tool-cotas</code>):</strong> Configura la visualización de los textos de medidas sobre cada tramo: <em>Automático</em>, <em>Encima de la línea</em>, <em>Debajo</em>, <em>Lado interno del polígono</em> o <em>Lado externo</em>.</li>
+    <li><strong>Ver Cotas en Todos los Polígonos (<code>map-tool-all-cotas</code>):</strong> Enciende o apaga la rotulación de distancias en todos los linderos simultáneamente.</li>
+    <li><strong>Asignar Orden de Parcelas (<code>map-tool-number-parcels</code>):</strong> Herramienta para renumerar de forma secuencial los lotes de una manzana con un solo clic en cada polígono.</li>
+  </ul>
+
+  <h3 id="s10-6">10.6 Pestañas de Trabajo Principales</h3>
+  <table>
+    <tr><th>Pestaña</th><th>Identificador</th><th>Propósito y Herramientas Incluidas</th></tr>
+    <tr><td><strong>Mapa</strong></td><td><code>tab-map</code></td><td>Visor principal interactivo con Leaflet, herramientas de dibujo, medición y capas temáticas.</td></tr>
+    <tr><td><strong>Importar</strong></td><td><code>tab-import</code></td><td>Zona de arrastre (*Drag & Drop*) para archivos Shapefile, DXF, KML, GeoJSON y Excel. Incluye botones de prueba de datasets oficiales.</td></tr>
+    <tr><td><strong>Datos</strong></td><td><code>tab-data</code></td><td>Editor tabular de la base de datos de parcelas. Permite editar padrones, propietarios y cuenta con el botón <em>"Autocompletar con SNC"</em> para sincronizar con la base oficial.</td></tr>
+    <tr><td><strong>Auditoría</strong></td><td><code>tab-audit</code></td><td>Consola de diagnóstico en tiempo real con el registro de errores bloqueantes, advertencias normativas y balance de tolerancias.</td></tr>
+    <tr><td><strong>Linaje</strong></td><td><code>tab-lineage</code></td><td>Árbol genealógico parcelario que muestra desprendimientos, loteamientos y fusiones territoriales a lo largo del tiempo.</td></tr>
+    <tr><td><strong>Versiones</strong></td><td><code>tab-versions</code></td><td>Control de versiones del expediente (Botones <em>"Crear Versión"</em> y <em>"Comparar Últimas"</em> con cálculo automático de variaciones de área ΔS).</td></tr>
+  </table>
+</main>
+
+<!-- ===================== 11. GUIA OPERADOR ===================== -->
+<main id="s11">
+  <h2 class="sec">11. Guía Paso a Paso para el Operador</h2>
+
+  <div class="flow">
+    <div class="row">
+      <div class="num">1</div>
+      <div class="step">
+        <strong>Paso 1: Cargar el Plano y Datos Tabulares</strong><br>
+        Arrastra tu archivo Shapefile (ZIP con .shp, .shx, .dbf y .prj), DXF, KML o GeoJSON sobre el visor. Si tienes la planilla Excel oficial con los datos de los títulos, arrástrala simultáneamente para vincular propietarios y números de padrón.
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="step">
+        <strong>Paso 2: Ejecutar la Validación Pericial</strong><br>
+        Haz clic en el botón <strong>"Validar"</strong>. El sistema verificará en milisegundos la proyección WGS84 UTM 21S/20S, la ausencia absoluta de superposiciones (0.000 m²) y que la diferencia de superficie cumpla con el margen admisible (±5% urbano / ±10% rural).
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="step">
+        <strong>Paso 3: Revisar el Diagnóstico y Parámetros Municipales</strong><br>
+        Inspecciona el semáforo en el panel lateral:
+        <ul>
+          <li><span class="badge-tag badge-green">Apto (Verde):</span> Sin observaciones técnicas. Expediente listo para certificar.</li>
+          <li><span class="badge-tag badge-amber">Observado (Amarillo):</span> Advertencias subsanables (ej. falta de ochava o frentes menores al mínimo).</li>
+          <li><span class="badge-tag" style="background:#fee2e2; color:#b91c1c;">Rechazado (Rojo):</span> Superposición gráfica, polígono abierto o discrepancia grave de área.</li>
+        </ul>
+        Verifica en la pestaña municipal el cumplimiento del 16% vial, 5%-7% de plazas y el indicador verde VEP (≥ 9.0 m²/hab).
+      </div>
+    </div>
+    <div class="row">
+      <div class="arrow">↓</div>
+    </div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="step">
+        <strong>Paso 4: Firmar Digitalmente y Descargar Entregables</strong><br>
+        Completa los datos del profesional actuante y aplica la firma digital cualificada (Slot 1). Luego, descarga los entregables con un solo clic:
+        <ul>
+          <li><strong>Certificar:</strong> Descarga el Certificado Preventivo en PDF y DOCX con QR y Hash SHA-256.</li>
+          <li><strong>Exportar DXF:</strong> Descarga el plano en AutoCAD R12 con capas oficiales.</li>
+          <li><strong>Exportar Shapefile:</strong> Descarga el paquete oficial ZIP de 4 archivos exigido por el SNC/RUN.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== 11. TROUBLESHOOTING ===================== -->
+<main id="s12">
+
+<h3 id="s12-1">12.1 Solución de Problemas Frecuentes</h3>
+  <table>
+    <tr><th>Problema Detectado</th><th>Causa Técnica</th><th>Solución Recomendada</th></tr>
+    <tr><td><strong>Error: Faltan archivos en Shapefile (.prj faltante)</strong></td><td>El archivo ZIP cargado no contiene el archivo de proyección cartográfica.</td><td>Genera el archivo <code>.prj</code> con la cadena WKT WGS84 UTM 21S o reproyecta la capa en QGIS/ArcGIS antes de exportar.</td></tr>
+    <tr><td><strong>Rechazo por Superposición > 0.000 m²</strong></td><td>Dos parcelas contiguas comparten un área de solapamiento gráfico.</td><td>Utiliza la herramienta <em>"Reparar Topología"</em> o ajusta los linderos en el CAD para garantizar vértice compartido sin solape.</td></tr>
+    <tr><td><strong>Error de Tolerancia de Superficie (ΔS > 5%)</strong></td><td>La superficie del polígono medido difiere en más del 5% del título urbano.</td><td>Verifica si existen desprendimientos de terreno, afectaciones viales no descontadas o solicita mensura judicial de rectificación.</td></tr>
+    <tr><td><strong>Bloqueo por Falta de Homologación Municipal</strong></td><td>No se cargó el número de resolución de Junta en loteamientos.</td><td>En el formulario de expediente, ingresa el número de Resolución de Junta Municipal y Decreto de Promulgación.</td></tr>
+    <tr><td><strong>Afectación de Faja Ribereña (Ley 4241/10)</strong></td><td>Lotes residenciales proyectados a menos de 30 metros de un cauce hídrico.</td><td>Reubica los lotes afectados como espacio verde de preservación o faja de cesión municipal.</td></tr>
+  </table>
+
+  <h3>12.2 Glosario de Términos Técnicos y Jurídicos</h3>
+  <table>
+    <tr><th>Término</th><th>Definición Técnica / Legal</th></tr>
+    <tr><td><strong>RUN</strong></td><td>Registro Unificado Nacional (Ley N° 7.424/2025). Institución que fusiona la DGRP, el SNC y el Departamento de Agrimensura y Geodesia.</td></tr>
+    <tr><td><strong>CUI-CR</strong></td><td>Código Único de Identificación Catastral Registral asignado a cada parcela parcelaria inmutable en el folio real.</td></tr>
+    <tr><td><strong>Catastración Previa</strong></td><td>Exigencia legal por la cual ningún título puede ser inscripto ni transferido sin contar con plano georreferenciado certificado por el Catastro.</td></tr>
+    <tr><td><strong>UTM 21S / 20S</strong></td><td>Universal Transverse Mercator Huso 21 Sur (Paraguay Oriental, EPSG:32721) y Huso 20 Sur (Chaco Occidental, EPSG:32720).</td></tr>
+    <tr><td><strong>VEP (MEF)</strong></td><td>Vías a la Sustentabilidad / Proyecto Ciudades Sustentables del Ministerio de Economía y Finanzas para Catastro Multifinalitario.</td></tr>
+    <tr><td><strong>Ochava</strong></td><td>Chaflán que se corta en la esquina de dos calzadas para facilitar la visual y el giro de vehículos (mínimo 3 metros en esquinas a 90°).</td></tr>
+  </table>
+
+  <div class="footer-note">
+    <strong>SNC_v3 — Sistema Nacional de Catastro y Registro Unificado Nacional</strong><br>
+    Manual Técnico y de Usuario Único Oficial · República del Paraguay · Actualizado al 2026-10-22.
+  </div>
+</main>
+
+</body>
+</html>
