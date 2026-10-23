@@ -1,11 +1,11 @@
 /**
- * app-admin.js — Panel de Super Administrador SNC v3
+ * app-admin.js â€” Panel de Super Administrador SNC v3
  * Control total de los 3 subsistemas: Profesional, Municipal, Notarial.
- * Autenticación JWT, gestión de miembros, auditoría, multi-tenant y visor GIS.
+ * AutenticaciÃ³n JWT, gestiÃ³n de miembros, auditorÃ­a, multi-tenant y visor GIS.
  */
 
 // ============================================================
-// TOKEN & AUTENTICACIÓN
+// TOKEN & AUTENTICACIÃ“N
 // ============================================================
 export function getToken() { return localStorage.getItem('snc_api_token'); }
 export function setToken(t) { localStorage.setItem('snc_api_token', t); }
@@ -24,7 +24,7 @@ export async function fetchJSON(url, options = {}) {
   const res = await fetch(url, { ...options, headers });
   if (res.status === 401) {
     showLoginOverlay();
-    throw new Error('Sesión expirada o no autorizada');
+    throw new Error('SesiÃ³n expirada o no autorizada');
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
@@ -46,23 +46,23 @@ export function showLoginOverlay() {
       <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
         <div class="text-center mb-6">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30 text-white font-black text-2xl">
-            ⚡
+            âš¡
           </div>
           <h2 class="text-xl font-bold text-white">Consola de Super Administrador</h2>
-          <p class="text-xs text-amber-400 font-mono mt-1 uppercase tracking-wider">SNC v3 · Acceso Total Multi-Perfil</p>
+          <p class="text-xs text-amber-400 font-mono mt-1 uppercase tracking-wider">SNC v3 Â· Acceso Total Multi-Perfil</p>
         </div>
         <form id="admin-login-form" class="space-y-4 text-xs">
           <div>
-            <label class="block font-medium text-gray-300 mb-1">Correo Electrónico</label>
+            <label class="block font-medium text-gray-300 mb-1">Correo ElectrÃ³nico</label>
             <input type="email" id="admin-email" required autocomplete="email"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="superadmin@snc.gov.py">
           </div>
           <div>
-            <label class="block font-medium text-gray-300 mb-1">Contraseña</label>
+            <label class="block font-medium text-gray-300 mb-1">ContraseÃ±a</label>
             <input type="password" id="admin-password" required autocomplete="current-password"
               class="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              placeholder="••••••••">
+              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
           </div>
           <div id="admin-login-error" class="hidden text-xs text-red-400 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2"></div>
           <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/30">
@@ -99,7 +99,7 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales inválidas');
+    if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales invÃ¡lidas');
     if (data.user?.role !== 'admin' && data.user?.role !== 'superadmin') {
       throw new Error('Este usuario no cuenta con privilegios de Administrador o Super Administrador');
     }
@@ -107,7 +107,7 @@ async function handleLogin(e) {
     localStorage.setItem('snc_api_user', JSON.stringify(data.user));
     hideLoginOverlay();
     loadDashboard();
-    showToast('Sesión de Super Administrador iniciada', 'success');
+    showToast('SesiÃ³n de Super Administrador iniciada', 'success');
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.remove('hidden');
@@ -128,7 +128,7 @@ export function showToast(msg, type = 'info') {
   };
   const el = document.createElement('div');
   el.className = `${colors[type] || colors.info} border text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
-  el.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span> <span>${msg}</span>`;
+  el.innerHTML = `<span>${type === 'success' ? 'âœ“' : type === 'error' ? 'âœ•' : 'â„¹'}</span> <span>${msg}</span>`;
   container.appendChild(el);
   requestAnimationFrame(() => {
     el.classList.remove('translate-y-2', 'opacity-0');
@@ -143,24 +143,24 @@ export function showToast(msg, type = 'info') {
 // DATOS MAESTROS (MOCK Y PERSISTENCIA LOCAL)
 // ============================================================
 const PROFESIONALES_DEMO = [
-  { id: 'agr-01', nombre: 'Ing. Carlos Benítez', matricula_mopc: 'MOPC-4821', registro_snc: 'SNC-892', circunscripcion: 'Capital / Central', expedientes: 6, estado: 'Habilitado' },
-  { id: 'agr-02', nombre: 'Lic. María Fernández', matricula_mopc: 'MOPC-3910', registro_snc: 'SNC-741', circunscripcion: 'Cordillera (Piribebuy)', expedientes: 4, estado: 'Habilitado' },
-  { id: 'agr-03', nombre: 'Top. Jorge Alcaraz', matricula_mopc: 'MOPC-5102', registro_snc: 'SNC-910', circunscripcion: 'Itapúa', expedientes: 2, estado: 'Habilitado' },
-  { id: 'agr-04', nombre: 'Ing. Roberto Giménez', matricula_mopc: 'MOPC-2190', registro_snc: 'SNC-511', circunscripcion: 'Alto Paraná', expedientes: 0, estado: 'Suspendido' }
+  { id: 'agr-01', nombre: 'Ing. Carlos BenÃ­tez', matricula_mopc: 'MOPC-4821', registro_snc: 'SNC-892', circunscripcion: 'Capital / Central', expedientes: 6, estado: 'Habilitado' },
+  { id: 'agr-02', nombre: 'Lic. MarÃ­a FernÃ¡ndez', matricula_mopc: 'MOPC-3910', registro_snc: 'SNC-741', circunscripcion: 'Cordillera (Piribebuy)', expedientes: 4, estado: 'Habilitado' },
+  { id: 'agr-03', nombre: 'Top. Jorge Alcaraz', matricula_mopc: 'MOPC-5102', registro_snc: 'SNC-910', circunscripcion: 'ItapÃºa', expedientes: 2, estado: 'Habilitado' },
+  { id: 'agr-04', nombre: 'Ing. Roberto GimÃ©nez', matricula_mopc: 'MOPC-2190', registro_snc: 'SNC-511', circunscripcion: 'Alto ParanÃ¡', expedientes: 0, estado: 'Suspendido' }
 ];
 
 const NOTARIOS_DEMO = [
-  { id: 'not-01', nombre: 'Esc. Lourdes Villalba', registro: 'Nº 142', circunscripcion: 'Capital', minutas: 18, estado: 'Habilitada' },
-  { id: 'not-02', nombre: 'Esc. Fernando Duarte', registro: 'Nº 88', circunscripcion: 'Cordillera', minutas: 12, estado: 'Habilitada' },
-  { id: 'not-03', nombre: 'Esc. Beatriz Caballero', registro: 'Nº 205', circunscripcion: 'Central', minutas: 9, estado: 'Habilitada' },
-  { id: 'not-04', nombre: 'Esc. Gustavo Mendoza', registro: 'Nº 67', circunscripcion: 'Guairá', minutas: 4, estado: 'En Auditoría' }
+  { id: 'not-01', nombre: 'Esc. Lourdes Villalba', registro: 'NÂº 142', circunscripcion: 'Capital', minutas: 18, estado: 'Habilitada' },
+  { id: 'not-02', nombre: 'Esc. Fernando Duarte', registro: 'NÂº 88', circunscripcion: 'Cordillera', minutas: 12, estado: 'Habilitada' },
+  { id: 'not-03', nombre: 'Esc. Beatriz Caballero', registro: 'NÂº 205', circunscripcion: 'Central', minutas: 9, estado: 'Habilitada' },
+  { id: 'not-04', nombre: 'Esc. Gustavo Mendoza', registro: 'NÂº 67', circunscripcion: 'GuairÃ¡', minutas: 4, estado: 'En AuditorÃ­a' }
 ];
 
 const EXPEDIENTES_DEMO = [
-  { numero: 'EXP-2026-0049', municipio: 'Piribebuy', agrimensor: 'Lic. María Fernández', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '22/10/2026' },
-  { numero: 'EXP-2026-0048', municipio: 'Piribebuy', agrimensor: 'Ing. Carlos Benítez', notaria: 'Esc. Lourdes Villalba', estado: 'En revisión', fecha: '21/10/2026' },
-  { numero: 'EXP-2026-0047', municipio: 'Asunción', agrimensor: 'Ing. Carlos Benítez', notaria: 'Esc. Beatriz Caballero', estado: 'Observado', fecha: '19/10/2026' },
-  { numero: 'EXP-2026-0046', municipio: 'Piribebuy', agrimensor: 'Lic. María Fernández', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '18/10/2026' }
+  { numero: 'EXP-2026-0049', municipio: 'Piribebuy', agrimensor: 'Lic. MarÃ­a FernÃ¡ndez', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '22/10/2026' },
+  { numero: 'EXP-2026-0048', municipio: 'Piribebuy', agrimensor: 'Ing. Carlos BenÃ­tez', notaria: 'Esc. Lourdes Villalba', estado: 'En revisiÃ³n', fecha: '21/10/2026' },
+  { numero: 'EXP-2026-0047', municipio: 'AsunciÃ³n', agrimensor: 'Ing. Carlos BenÃ­tez', notaria: 'Esc. Beatriz Caballero', estado: 'Observado', fecha: '19/10/2026' },
+  { numero: 'EXP-2026-0046', municipio: 'Piribebuy', agrimensor: 'Lic. MarÃ­a FernÃ¡ndez', notaria: 'Esc. Fernando Duarte', estado: 'Aprobado', fecha: '18/10/2026' }
 ];
 
 // ============================================================
@@ -191,7 +191,7 @@ export async function loadDashboard() {
     renderMembersTable(membersList);
     renderPlansTable(plansList);
   } catch (e) {
-    console.warn('[superadmin] métricas dashboard:', e.message);
+    console.warn('[superadmin] mÃ©tricas dashboard:', e.message);
   }
 
   // Cargar tablas de los 3 pilares
@@ -252,7 +252,7 @@ export async function publicarParcelasCiudadano() {
   const btn = document.getElementById('btnPublicarPiribebuy');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<span>⏳</span> Publicando...';
+    btn.innerHTML = '<span>â³</span> Publicando...';
   }
   try {
     const res = await fetchJSON('/api/municipal/piribebuy/publicar', {
@@ -263,19 +263,19 @@ export async function publicarParcelasCiudadano() {
         distrito: '0306'
       })
     });
-    showToast('¡Parcelas de Piribebuy publicadas con éxito en el Portal Ciudadano!', 'success');
+    showToast('Â¡Parcelas de Piribebuy publicadas con Ã©xito en el Portal Ciudadano!', 'success');
   } catch (err) {
     showToast(`Aviso: ${err.message}`, 'info');
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = '<span>🚀</span> Publicar Parcelas a Ciudadanos';
+      btn.innerHTML = '<span>ðŸš€</span> Publicar Parcelas a Ciudadanos';
     }
   }
 }
 
 // ============================================================
-// PILAR 3: NOTARIAL (ESCRIBANÍAS / RUN)
+// PILAR 3: NOTARIAL (ESCRIBANÃAS / RUN)
 // ============================================================
 function renderNotariosTable() {
   const tbody = document.getElementById('notariosTable');
@@ -294,7 +294,7 @@ function renderNotariosTable() {
       </td>
       <td class="px-4 py-3 text-right pr-4">
         <a href="/notarial/" target="_blank" class="px-2.5 py-1 bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 rounded text-[11px] border border-purple-700/50 transition">
-          Ver Minutas ↗
+          Ver Minutas â†—
         </a>
       </td>
     </tr>
@@ -315,7 +315,7 @@ function renderExpedientesTable() {
       <td class="px-4 py-3 text-blue-300">${exp.agrimensor}</td>
       <td class="px-4 py-3 text-purple-300">${exp.notaria}</td>
       <td class="px-4 py-3">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${exp.estado === 'Aprobado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : exp.estado === 'En revisión' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'}">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${exp.estado === 'Aprobado' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : exp.estado === 'En revisiÃ³n' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'}">
           ${exp.estado}
         </span>
       </td>
@@ -330,7 +330,7 @@ function renderExpedientesTable() {
 }
 
 window.verDetalleExpediente = function(num) {
-  showToast(`Inspeccionando expediente ${num}: Conforme a Resolución SNC 551/2023 y Ley 7424/2025`, 'info');
+  showToast(`Inspeccionando expediente ${num}: Conforme a ResoluciÃ³n SNC 551/2023 y Ley 7424/2025`, 'info');
 };
 
 // ============================================================
@@ -429,19 +429,55 @@ async function loadPiribebuyMap() {
       });
     }
 
-    adminMap = L.map('admin-map', { center: [-25.45, -57.05], zoom: 13 });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors · SNC v3 Super Admin GIS',
-      maxZoom: 19,
-    }).addTo(adminMap);
+    adminMap = L.map('admin-map', { center: [-26.85790, -58.30369], zoom: 16 });
+    const baseLayers = {
+      osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors · SNC v3 Super Admin GIS', maxZoom: 19,
+      }),
+      satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri', maxZoom: 19,
+      }),
+      topo: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17,
+      }),
+      catastro: L.tileLayer.wms('https://www.catastro.gov.py/geoserver/ows', {
+        layers: 'snc:parcelas_activas', format: 'image/png8', transparent: true,
+        CRS: 'CRS:84', attribution: '© SNC Paraguay',
+      }),
+    };
+    baseLayers.osm.addTo(adminMap);
+    adminMap._sncBaseLayers = baseLayers;
+    adminMap.setBaseLayer = function (name) {
+      Object.values(baseLayers).forEach(l => adminMap.removeLayer(l));
+      if (baseLayers[name]) baseLayers[name].addTo(adminMap);
+    };
+
+    // Selector de mapa base hamburguesa (flotante derecha-arriba)
+    if (!document.getElementById('map-base-selector')) {
+      const selector = document.createElement('div');
+      selector.id = 'map-base-selector';
+      selector.className = 'absolute right-3 top-3 z-[1000]';
+      selector.setAttribute('aria-label', 'Tipos de mapas');
+      selector.innerHTML = `
+        <button id="map-base-menu-toggle" class="bg-gray-900 border border-gray-700 text-gray-300 hover:text-white rounded-lg px-3 py-2 shadow-lg" type="button" aria-expanded="false" title="Tipos de mapas"><i class="fas fa-bars"></i></button>
+        <div id="map-base-menu" class="hidden bg-gray-900 border border-gray-700 rounded-lg shadow-xl mt-1 p-1 flex flex-col gap-1 absolute right-0 top-full" role="radiogroup" aria-label="Mapa base">
+          <button onclick="window._adminMap?.setBaseLayer('osm')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-blue-400" data-layer="osm">OpenStreetMap</button>
+          <button onclick="window._adminMap?.setBaseLayer('satellite')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-gray-300" data-layer="satellite">Satélite ESRI</button>
+          <button onclick="window._adminMap?.setBaseLayer('topo')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-gray-300" data-layer="topo">Curvas de nivel</button>
+          <button onclick="window._adminMap?.setBaseLayer('catastro')" class="text-xs px-3 py-1.5 text-left rounded hover:bg-gray-800 text-amber-400" data-layer="catastro">Catastro SNC</button>
+        </div>`;
+      mapContainer.style.position = 'relative';
+      mapContainer.appendChild(selector);
+      window._adminMap = adminMap;
+    }
   }
 
   const layers = [
     { id: 'barrios', label: 'Barrios', color: '#7c3aed' },
-    { id: 'vias', label: 'Vías', color: '#f59e0b' },
-    { id: 'hidro', label: 'Hidrografía', color: '#0ea5e9' },
+    { id: 'vias', label: 'VÃ­as', color: '#f59e0b' },
+    { id: 'hidro', label: 'HidrografÃ­a', color: '#0ea5e9' },
     { id: 'vertedero', label: 'Vertedero', color: '#ef4444' },
-    { id: 'casco_historico', label: 'Casco Histórico', color: '#facc15' },
+    { id: 'casco_historico', label: 'Casco HistÃ³rico', color: '#facc15' },
   ];
 
   const toggleContainer = document.getElementById('piribebuy-layer-toggles');
@@ -462,7 +498,7 @@ async function loadPiribebuyMap() {
           btn.style.opacity = '0.5';
         } else {
           try {
-            const res = await fetch(`/data/piribebuy/${layer.id}.geojson`);
+            const res = await fetch(`/data/municipal/piribebuy/${layer.id}.geojson`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const gj = await res.json();
             const isPoint = gj.features?.some(f => f.geometry?.type === 'Point');
@@ -483,7 +519,7 @@ async function loadPiribebuyMap() {
 }
 
 // ============================================================
-// NAVEGACIÓN ENTRE PESTAÑAS
+// NAVEGACIÃ“N ENTRE PESTAÃ‘AS
 // ============================================================
 export function switchTab(tabName) {
   const tabs = document.querySelectorAll('.tab-btn');
@@ -587,7 +623,7 @@ function setupModals() {
     });
   }
 
-  // Botón publicar Piribebuy
+  // BotÃ³n publicar Piribebuy
   const pubBtn = document.getElementById('btnPublicarPiribebuy');
   if (pubBtn) {
     pubBtn.addEventListener('click', publicarParcelasCiudadano);
@@ -603,24 +639,24 @@ function setupLogout() {
     btn.addEventListener('click', () => {
       clearToken();
       showLoginOverlay();
-      showToast('Sesión de Super Administrador finalizada', 'info');
+      showToast('SesiÃ³n de Super Administrador finalizada', 'info');
     });
   }
 }
 
 // ============================================================
-// DEPENDENCIAS MUNICIPALES (jerarquía con sub-dependencias)
+// DEPENDENCIAS MUNICIPALES (jerarquÃ­a con sub-dependencias)
 // ============================================================
 const DEPARTAMENTOS = {
-  super_admin:     { label: 'Super Administrador',  icon: '⭐', color: 'text-yellow-400', secciones: ['*'],              parent: null },
-  notarial:        { label: 'Notarial',             icon: '📜', color: 'text-slate-400',  secciones: ['municipal-status','qgis-layer-control'], parent: null },
-  junta_municipal: { label: 'Junta Municipal',      icon: '🏛️', color: 'text-red-400',     secciones: ['municipal-status','qgis-layer-control'], parent: null },
-  catastro:        { label: 'Catastro',             icon: '📐', color: 'text-blue-400',    secciones: ['fraccionamiento','balance-sidebar','loteamiento','ambiental','symbology','dictamen'], parent: 'junta_municipal' },
-  ambiental:       { label: 'Ambiental',            icon: '🌿', color: 'text-green-400',   secciones: ['ambiental'],      parent: 'junta_municipal' },
-  planificacion:   { label: 'Planificación',        icon: '📏', color: 'text-purple-400',  secciones: ['fraccionamiento','balance-sidebar','loteamiento'], parent: 'junta_municipal' },
-  obras:           { label: 'Obras y Vialidad',     icon: '🚧', color: 'text-orange-400',  secciones: ['loteamiento'],     parent: 'junta_municipal' },
-  educacion:       { label: 'Educación',            icon: '🎓', color: 'text-cyan-400',     secciones: [],                 parent: 'junta_municipal' },
-  patrimonio:      { label: 'Patrimonio',           icon: '🏺', color: 'text-amber-400',   secciones: [],                 parent: 'junta_municipal' },
+  super_admin:     { label: 'Super Administrador',  icon: 'â­', color: 'text-yellow-400', dictamen: true,  secciones: ['*'], parent: null, capas: ['todas'] },
+  notarial:        { label: 'Notarial',             icon: 'ðŸ“œ', color: 'text-slate-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: null, capas: ['parcelas','distritos'] },
+  junta_municipal: { label: 'Junta Municipal',      icon: 'ðŸ›ï¸', color: 'text-red-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: null, capas: ['barrios','zona_influencia','distritos'] },
+  catastro:        { label: 'Catastro',             icon: 'ðŸ“', color: 'text-blue-400',   dictamen: true,  secciones: ['municipal-status','qgis-layer-control','fraccionamiento','balance-sidebar','loteamiento','ambiental','symbology','dictamen'], parent: 'junta_municipal', capas: ['parcelas','sample_fraccionamiento_municipal','barrios','curvas_nivel'] },
+  ambiental:       { label: 'Ambiental',            icon: 'ðŸŒ¿', color: 'text-green-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control','ambiental'], parent: 'junta_municipal', capas: ['hidro','vertedero','vertedero_500','vertedero_1000','cobertura_forestal'] },
+  planificacion:   { label: 'PlanificaciÃ³n',        icon: 'ðŸ“', color: 'text-purple-400', dictamen: false, secciones: ['municipal-status','qgis-layer-control','fraccionamiento','balance-sidebar','loteamiento'], parent: 'junta_municipal', capas: ['barrios','zona_influencia','sample_fraccionamiento_municipal','censo_viviendas'] },
+  obras:           { label: 'Obras y Vialidad',     icon: 'ðŸš§', color: 'text-orange-400', dictamen: false, secciones: ['municipal-status','qgis-layer-control','loteamiento'], parent: 'junta_municipal', capas: ['vias','topografia_curvas'] },
+  educacion:       { label: 'EducaciÃ³n',            icon: 'ðŸŽ“', color: 'text-cyan-400',    dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: 'junta_municipal', capas: ['establecimientos_escolares_mec','barrios'] },
+  patrimonio:      { label: 'Patrimonio',           icon: 'ðŸº', color: 'text-amber-400',  dictamen: false, secciones: ['municipal-status','qgis-layer-control'], parent: 'junta_municipal', capas: ['casco_historico','centro','vuelo_casco'] },
 };
 
 async function loadDependencias() {
@@ -643,17 +679,26 @@ async function loadDependencias() {
     Object.keys(DEPARTAMENTOS).forEach(depKey => {
       const info = DEPARTAMENTOS[depKey];
       const depUsers = porDep[depKey] || [];
-      const parentBadge = info.parent ? ` <span class="text-[8px] text-gray-500">↳ ${DEPARTAMENTOS[info.parent]?.label || info.parent}</span>` : '';
+      const parentBadge = info.parent ? ` <span class="text-[8px] text-gray-500">â†³ ${DEPARTAMENTOS[info.parent]?.label || info.parent}</span>` : '';
+      const dictamenBadge = info.dictamen 
+        ? `<span class="text-[9px] px-1.5 py-0.5 bg-emerald-950/80 text-emerald-400 border border-emerald-700/60 rounded">Dictamen: âœ…</span>`
+        : `<span class="text-[9px] px-1.5 py-0.5 bg-gray-900 text-gray-500 border border-gray-800 rounded">Dictamen: âŒ</span>`;
       html += `
         <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
           <div class="flex items-center gap-3">
             <span class="text-xl">${info.icon}</span>
             <div>
-              <p class="text-sm font-semibold ${info.color}">${info.label}${parentBadge}</p>
-              <p class="text-[10px] text-gray-500">${info.secciones.includes('*') ? 'acceso total' : info.secciones.length + ' secciones'} · ${depUsers.length} usuario(s)</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold ${info.color}">${info.label}${parentBadge}</p>
+                ${dictamenBadge}
+              </div>
+              <p class="text-[10px] text-gray-400 mt-0.5">${info.secciones.includes('*') ? 'Acceso a todas las secciones' : info.secciones.join(', ')} Â· ${depUsers.length} usuario(s)</p>
+              <div class="flex gap-1 mt-1 flex-wrap">
+                ${(info.capas || []).map(c => `<span class="text-[9px] px-1.5 py-0.2 bg-slate-900 text-cyan-400/80 rounded border border-slate-800">ðŸ“‚ ${c}</span>`).join('')}
+              </div>
             </div>
           </div>
-          <div class="flex gap-1.5 flex-wrap max-w-[50%] justify-end">
+          <div class="flex gap-1.5 flex-wrap max-w-[40%] justify-end">
             ${depUsers.map(u => `<span class="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-300 rounded-full border border-gray-700">${u.name || u.email}</span>`).join('')}
           </div>
         </div>`;
@@ -661,7 +706,7 @@ async function loadDependencias() {
     const sinDep = porDep['sin_asignar'] || [];
     if (sinDep.length) {
       html += `<div class="p-3 bg-gray-950 rounded-lg border border-red-800/50">
-        <p class="text-sm text-red-400">⚠️ ${sinDep.length} usuario(s) sin dependencia asignada</p>
+        <p class="text-sm text-red-400">âš ï¸ ${sinDep.length} usuario(s) sin dependencia asignada</p>
       </div>`;
     }
     listEl.innerHTML = html || '<p class="text-gray-500 text-sm">No hay usuarios.</p>';

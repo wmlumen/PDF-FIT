@@ -89,6 +89,9 @@ export const CONFIG_MUNICIPAL = {
     porcentajeCallesMin: 0.16,       // 16% cesión vial obligatoria
     porcentajePlazasMin: 0.05,       // 5% mínimo espacios verdes/edificios públicos
     porcentajePlazasMax: 0.07,       // 7% máximo
+    anchoCalleSecundariaMin: 12.0,   // Metros (perfil mínimo calle secundaria 12-16 m)
+    anchoAvenidaColectoraMin: 24.0,  // Metros (perfil mínimo avenida colectora 24-30 m)
+    anchoPasajePeatonalMin: 6.0,     // Metros (perfil pasaje peatonal)
     franjaHidricaMinima: 30.0,       // Metros (Ley 3239/2007 - servidumbre hídrica)
     retiroFondoMinimo: 3.0,          // Metros (retiro de fondo típico)
     retiroLateralMinimo: 1.5         // Metros (retiro lateral típico)
@@ -102,10 +105,9 @@ export const MAX_VERTICES_BEFORE_SIMPLIFY = 15000;
 // CONFIGURACIÓN DEL MAPA - CORREGIDA
 // ============================================
 export const MAP_CONFIG = {
-    // Centro de Paraguay (coordenadas CORRECTAS)
-    // Asunción: -25.2637, -57.5759
-    center: [-25.2637, -57.5759],  // ¡Corregido! Antes estaba en [-23, -58]
-    zoom: 13,                        // Zoom más cercano para ver Asunción
+    // Vista por defecto del sistema (OSM: openstreetmap.org/#map=16/-26.85790/-58.30369&layers=S)
+    center: [-26.85790, -58.30369],
+    zoom: 16,
     minZoom: 5,
     maxZoom: 19
 };

@@ -3,530 +3,764 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - SNC v3</title>
+  <title>Super Admin â€” SNC v3 Â· Ecosistema Integral Catastral</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
     .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: #1f2937; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: #111827; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
-  <!-- Header -->
-  <header class="bg-gray-900/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+  <!-- Top Bar / Super Admin Header -->
+  <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand & Super Admin Badge -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/20 text-white font-black text-xl">
+          âš¡
         </div>
-        <h1 class="text-xl font-bold">Panel de Administración SNC v3</h1>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">Panel de Super Administrador</h1>
+            <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold tracking-wider uppercase">
+              ðŸ›¡ï¸ SUPER ADMIN V3
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Control Total del Ecosistema: Profesional Â· Municipal Â· Notarial</p>
+        </div>
       </div>
-      <div class="flex items-center gap-4">
-        <span id="userEmail" class="text-sm text-gray-400 hidden sm:block"></span>
-        <button id="logoutBtn" class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors">
-          Cerrar sesión
-        </button>
+
+      <!-- Quick Switcher to Other Portals -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="hidden xl:flex items-center gap-1.5 bg-gray-950/80 p-1 rounded-xl border border-gray-800 text-xs">
+          <span class="text-gray-400 px-2 font-medium">Ir a Entorno:</span>
+          <a href="/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1" title="Abrir Mesa TÃ©cnica de Agrimensura">
+            <span>ðŸ“</span> Profesional
+          </a>
+          <a href="/municipal/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1" title="Abrir MÃ³dulo Municipal Ley 3966">
+            <span>ðŸ›ï¸</span> Municipal
+          </a>
+          <a href="/notarial/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1" title="Abrir Portal Notarial y EscribanÃ­as">
+            <span>âš–ï¸</span> Notarial
+          </a>
+          <a href="/ciudadano/" target="_blank" class="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1" title="Abrir Portal Ciudadano">
+            <span>ðŸ‘¥</span> Ciudadano
+          </a>
+        </div>
+
+        <div class="flex items-center gap-3 pl-2 border-l border-gray-800">
+          <span id="userEmail" class="text-xs text-gray-300 font-mono hidden sm:inline-block bg-gray-800/80 px-2.5 py-1 rounded-lg border border-gray-700">superadmin@snc.gov.py</span>
+          <button id="logoutBtn" class="px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-white bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 rounded-lg transition-colors">
+            Cerrar sesiÃ³n
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="container mx-auto px-4 py-8">
+  <!-- Main Workspace -->
+  <main class="container mx-auto px-4 py-6 flex-1 flex flex-col">
     <!-- Alert Container -->
-    <div id="alertContainer" class="mb-6"></div>
+    <div id="alertContainer" class="mb-4"></div>
 
-    <!-- Tabs Navigation -->
-    <nav class="mb-6 border-b border-gray-800 overflow-x-auto scrollbar-thin" aria-label="Secciones de administración">
+    <!-- Super Admin Navigation Tabs -->
+    <nav class="mb-6 border-b border-gray-800 overflow-x-auto scrollbar-thin" aria-label="Secciones del Super Administrador">
       <ul class="flex flex-nowrap gap-1 -mb-px min-w-max" role="tablist">
+        <!-- 1. Consola Master -->
         <li role="presentation">
-          <button role="tab" data-tab="dashboard" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="true">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13h16M4 17h16M4 7h16"/></svg>
-            Panel
+          <button role="tab" data-tab="dashboard" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="true">
+            <span class="text-base">ðŸ“Š</span> Consola Master
           </button>
         </li>
+
+        <!-- 2. Pilar Profesional -->
         <li role="presentation">
-          <button role="tab" data-tab="plans" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Planes
+          <button role="tab" data-tab="profesional" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ“</span> Profesional (Agrimensura)
           </button>
         </li>
+
+        <!-- 3. Pilar Municipal -->
         <li role="presentation">
-          <button role="tab" data-tab="finance" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Finanzas
+          <button role="tab" data-tab="municipal" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ›ï¸</span> Municipal (Ley 3966)
           </button>
         </li>
+
+        <!-- 4. Pilar Notarial -->
         <li role="presentation">
-          <button role="tab" data-tab="members" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0v6v-6z"/></svg>
-            Miembros
+          <button role="tab" data-tab="notarial" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">âš–ï¸</span> Notarial (EscribanÃ­as / RUN)
           </button>
         </li>
+
+        <!-- 5. Expedientes B2B2G -->
         <li role="presentation">
-          <button role="tab" data-tab="dependencias" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            Dependencias
+          <button role="tab" data-tab="expedientes" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ“</span> Expedientes B2B2G
           </button>
         </li>
+
+        <!-- 6. Miembros y Usuarios -->
         <li role="presentation">
-          <button role="tab" data-tab="ips" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            IPs
+          <button role="tab" data-tab="members" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ‘¥</span> Usuarios Globales
           </button>
         </li>
+
+        <!-- 7. Planes & Finanzas -->
         <li role="presentation">
-          <button role="tab" data-tab="audit" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            Auditoría
+          <button role="tab" data-tab="plans" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ’³</span> Planes & Finanzas
           </button>
         </li>
+
+        <!-- 8. Seguridad & AuditorÃ­a -->
         <li role="presentation">
-          <button role="tab" data-tab="fiscalizacion" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 9c2-2 4.5-3.5 7-7 2.5 3.5 5 5 7 7 1 1 2 1.5 3 1.5s1-1 2-1.5c2-2 4.5-4.5 7-7 1-1 1-2.5 0-4z"/></svg>
-            Fiscalización
-          </button>
-        </li>
-        <li role="presentation">
-          <button role="tab" data-tab="ambiental" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Ambiental
-          </button>
-        </li>
-        <li role="presentation">
-          <button role="tab" data-tab="dictamenes" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Dictámenes
-          </button>
-        </li>
-        <li role="presentation">
-          <button role="tab" data-tab="expedientes" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg transition-all aria-selected:bg-gray-800 aria-selected:text-amber-400 text-gray-400 hover:text-white" aria-selected="false">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            Expedientes
+          <button role="tab" data-tab="audit" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-all aria-selected:bg-gray-900 aria-selected:text-amber-400 aria-selected:border-b-2 aria-selected:border-amber-400 text-gray-400 hover:text-white flex items-center gap-2" aria-selected="false">
+            <span class="text-base">ðŸ›¡ï¸</span> AuditorÃ­a & Seguridad
           </button>
         </li>
       </ul>
     </nav>
 
-    <!-- Tab Panels -->
-    <div class="tab-panels">
-      <!-- Dashboard / Panel -->
+    <!-- Tab Panels Container -->
+    <div class="tab-panels flex-1">
+      
+      <!-- ============================================================ -->
+      <!-- TAB 1: CONSOLA MASTER (DASHBOARD)                            -->
+      <!-- ============================================================ -->
       <section role="tabpanel" id="panel-dashboard" class="tab-panel active" aria-labelledby="tab-dashboard">
+        <!-- Banner informativo -->
+        <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-950/40 via-gray-900 to-gray-900 border border-amber-500/30 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">ðŸŒ</span>
+            <div>
+              <h2 class="text-base font-bold text-white">Ecosistema Catastral Multi-Tenant Unificado</h2>
+              <p class="text-xs text-gray-400">SupervisiÃ³n en tiempo real de profesionales agrimensores, municipios distritales y escribanÃ­as pÃºblicas adheridas.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Servidor en LÃ­nea
+            </span>
+          </div>
+        </div>
+
+        <!-- KPIs Cuatro Pilares -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Municipios Activos</p>
-            <p id="dashMunicipalities" class="text-2xl font-bold text-white mt-1">--</p>
+          <!-- Pilar Profesional -->
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-blue-500/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span class="font-semibold text-blue-400 flex items-center gap-1"><span>ðŸ“</span> PROFESIONAL</span>
+              <a href="#profesional" onclick="window.switchTab('profesional')" class="text-blue-400 hover:underline">Gestionar â†’</a>
+            </div>
+            <p id="dashProfessionals" class="text-2xl font-black text-white mt-1">12</p>
+            <p class="text-[11px] text-gray-400 mt-1">Agrimensores con MatrÃ­cula MOPC/SNC</p>
           </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Profesionales / Agrimensores</p>
-            <p id="dashProfessionals" class="text-2xl font-bold text-amber-400 mt-1">--</p>
+
+          <!-- Pilar Municipal -->
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span class="font-semibold text-emerald-400 flex items-center gap-1"><span>ðŸ›ï¸</span> MUNICIPAL</span>
+              <a href="#municipal" onclick="window.switchTab('municipal')" class="text-emerald-400 hover:underline">Gestionar â†’</a>
+            </div>
+            <p id="dashMunicipalities" class="text-2xl font-black text-white mt-1">1 <span class="text-xs text-gray-400 font-normal">(Piribebuy)</span></p>
+            <p class="text-[11px] text-gray-400 mt-1">Comunas con Catastro Multifinalitario</p>
           </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Expedientes Procesados</p>
-            <p id="dashExpedientes" class="text-2xl font-bold text-blue-400 mt-1">--</p>
+
+          <!-- Pilar Notarial -->
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span class="font-semibold text-purple-400 flex items-center gap-1"><span>âš–ï¸</span> NOTARIAL</span>
+              <a href="#notarial" onclick="window.switchTab('notarial')" class="text-purple-400 hover:underline">Gestionar â†’</a>
+            </div>
+            <p id="dashNotaries" class="text-2xl font-black text-white mt-1">8</p>
+            <p class="text-[11px] text-gray-400 mt-1">EscribanÃ­as y Minutas Validadas</p>
           </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Volumen Financiero (PYG)</p>
-            <p id="dashFinance" class="text-2xl font-bold text-green-400 mt-1">--</p>
+
+          <!-- Expedientes B2B2G -->
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 relative overflow-hidden group hover:border-amber-500/50 transition-colors">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span class="font-semibold text-amber-400 flex items-center gap-1"><span>ðŸ“</span> EXPEDIENTES</span>
+              <a href="#expedientes" onclick="window.switchTab('expedientes')" class="text-amber-400 hover:underline">Ver todos â†’</a>
+            </div>
+            <p id="dashExpedientes" class="text-2xl font-black text-white mt-1">24</p>
+            <p class="text-[11px] text-gray-400 mt-1">En curso entre Agrimensor / Comuna / RUN</p>
+          </div>
+        </div>
+
+        <!-- Tarjetas de Acceso a Entornos -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="p-4 rounded-xl bg-gray-900/90 border border-gray-800 hover:border-blue-500/40 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg">ðŸ“</span>
+                <h3 class="font-bold text-white text-sm">Entorno Pericial y CAD/GIS</h3>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">Mesa tÃ©cnica para peritos agrimensores. Carga de SHP/DXF, ediciÃ³n geomÃ©trica COGO, validaciÃ³n SNC 551/2023 y generaciÃ³n de certificados preventivos.</p>
+            </div>
+            <a href="/" target="_blank" class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
+              Abrir EstaciÃ³n Profesional â†—
+            </a>
+          </div>
+
+          <div class="p-4 rounded-xl bg-gray-900/90 border border-gray-800 hover:border-emerald-500/40 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg">ðŸ›ï¸</span>
+                <h3 class="font-bold text-white text-sm">Entorno Municipal y Urbanismo</h3>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">MÃ³dulo comunal bajo Ley 3966/2010. Control de fraccionamientos, cesiÃ³n de calles (16%), plazas (5-7%), franja hÃ­drica (30m) y publicaciÃ³n ciudadana.</p>
+            </div>
+            <a href="/municipal/" target="_blank" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
+              Abrir Plataforma Municipal â†—
+            </a>
+          </div>
+
+          <div class="p-4 rounded-xl bg-gray-900/90 border border-gray-800 hover:border-purple-500/40 transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-lg">âš–ï¸</span>
+                <h3 class="font-bold text-white text-sm">Entorno Notarial y EscribanÃ­as</h3>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">Seguridad jurÃ­dica inmobiliaria segÃºn Ley 7.424/25 RUN. LiquidaciÃ³n de gastos de transferencia, minutas notariales con linderos geodÃ©sicos y debida diligencia.</p>
+            </div>
+            <a href="/notarial/" target="_blank" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition text-center shadow-md">
+              Abrir Portal Notarial â†—
+            </a>
+          </div>
+        </div>
+
+        <!-- Visor CartogrÃ¡fico Territorial Unificado -->
+        <div id="admin-map-container" class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>ðŸ—ºï¸</span> Visor Territorial Unificado (Super Admin GIS)
+              </h3>
+              <p class="text-xs text-gray-400">InspecciÃ³n de capas distritales, hidrografÃ­a, loteamientos y Ã¡reas protegidas.</p>
+            </div>
+            <div class="flex flex-wrap gap-2" id="piribebuy-layer-toggles"></div>
+          </div>
+          <div id="admin-map" class="h-[420px] w-full rounded-lg border border-gray-800 bg-gray-950"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: PILAR PROFESIONAL (AGRIMENSURA)                       -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-profesional" class="tab-panel" aria-labelledby="tab-profesional">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>ðŸ“</span> PadrÃ³n de Agrimensores y GestiÃ³n Pericial
+            </h2>
+            <p class="text-xs text-gray-400">Control de habilitaciÃ³n de profesionales tÃ©cnicos, matrÃ­culas MOPC/SNC y cotas de validaciÃ³n segÃºn Res. SNC 551/2023.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnNuevoAgrimensor" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5">
+              <span>+</span> Nueva MatrÃ­cula Pericial
+            </button>
+            <a href="/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
+              Ir a Mesa TÃ©cnica â†—
+            </a>
+          </div>
+        </div>
+
+        <!-- ParÃ¡metros de Tolerancia Pericial SNC 551/2023 -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
+          <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <span>âš™ï¸</span> ParÃ¡metros Oficiales de Tolerancia y Cierre (Res. SNC 551/2023)
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[11px] text-gray-400 block mb-1">Tolerancia Superficie Urbana</span>
+              <span class="text-base font-bold text-blue-400">Â± 0.05 mÂ²</span>
+              <span class="text-[10px] text-gray-500 block mt-1">Art. 14 Res. 551</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[11px] text-gray-400 block mb-1">Tolerancia Superficie Rural</span>
+              <span class="text-base font-bold text-blue-400">Â± 0.50 mÂ²</span>
+              <span class="text-[10px] text-gray-500 block mt-1">Art. 15 Res. 551</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[11px] text-gray-400 block mb-1">SuperposiciÃ³n Linderos MÃ¡x</span>
+              <span class="text-base font-bold text-emerald-400">0.00% (Cero)</span>
+              <span class="text-[10px] text-gray-500 block mt-1">Algoritmo Sweep-Line</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[11px] text-gray-400 block mb-1">ProyecciÃ³n GeodÃ©sica Obligatoria</span>
+              <span class="text-base font-bold text-amber-400">EPSG:32721 (UTM 21S)</span>
+              <span class="text-[10px] text-gray-500 block mt-1">Datum SIRGAS2000 / WGS84</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Agrimensores -->
+        <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Agrimensor / Perito</th>
+                <th class="px-4 py-3 font-semibold">MatrÃ­cula MOPC</th>
+                <th class="px-4 py-3 font-semibold">Registro SNC</th>
+                <th class="px-4 py-3 font-semibold">CircunscripciÃ³n</th>
+                <th class="px-4 py-3 font-semibold">Expedientes Activos</th>
+                <th class="px-4 py-3 font-semibold">Estado</th>
+                <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="profesionalesTable" class="divide-y divide-gray-800">
+              <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Cargando agrimensores matriculados...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 3: PILAR MUNICIPAL (LEY 3966)                           -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-municipal" class="tab-panel" aria-labelledby="tab-municipal">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>ðŸ›ï¸</span> GestiÃ³n Municipal Multi-Tenant (Ley 3966/2010)
+            </h2>
+            <p class="text-xs text-gray-400">AdministraciÃ³n de comunas adheridas, ordenanzas urbanÃ­sticas, dependencias comunales y publicaciÃ³n ciudadana.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnPublicarPiribebuy" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition shadow-md flex items-center gap-1.5">
+              <span>ðŸš€</span> Publicar Parcelas a Ciudadanos
+            </button>
+            <a href="/municipal/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
+              Abrir Plataforma Municipal â†—
+            </a>
+          </div>
+        </div>
+
+        <!-- ParÃ¡metros UrbanÃ­sticos Comuna Activa (Piribebuy) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>ðŸ“</span> ParÃ¡metros Urbanos Comuna: <span class="text-emerald-400">Municipalidad de Piribebuy</span>
+            </h3>
+            <span class="text-xs text-gray-400">CÃ³digo Distrital: 0306 Â· Dpto: Cordillera</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Frente MÃ­nimo</span>
+              <span class="text-sm font-bold text-white">12.00 m</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Superficie MÃ­nima</span>
+              <span class="text-sm font-bold text-white">360.00 mÂ²</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">CesiÃ³n Calles (MÃ­n)</span>
+              <span class="text-sm font-bold text-emerald-400">16.00 %</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">CesiÃ³n Plazas</span>
+              <span class="text-sm font-bold text-emerald-400">5.00% â€“ 7.00%</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Franja HÃ­drica (Ley 3239)</span>
+              <span class="text-sm font-bold text-cyan-400">30.00 m</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <span class="text-[10px] text-gray-400 block">Retiro de Fondo</span>
+              <span class="text-sm font-bold text-white">3.00 m</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dependencias Municipales -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
+          <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <span>ðŸ¢</span> Direcciones y Dependencias Municipales Interconectadas
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">ðŸ›ï¸</div>
+              <p class="text-xs font-semibold text-white">Catastro</p>
+              <p class="text-[10px] text-gray-400">VisaciÃ³n total</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-green-600/20 text-green-400 flex items-center justify-center font-bold">ðŸŒ¿</div>
+              <p class="text-xs font-semibold text-white">Medio Ambiente</p>
+              <p class="text-[10px] text-gray-400">Franja hÃ­drica 30m</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold">ðŸ“</div>
+              <p class="text-xs font-semibold text-white">PlanificaciÃ³n</p>
+              <p class="text-[10px] text-gray-400">Loteamientos</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-orange-600/20 text-orange-400 flex items-center justify-center font-bold">ðŸš§</div>
+              <p class="text-xs font-semibold text-white">Obras y Vialidad</p>
+              <p class="text-[10px] text-gray-400">VÃ­as y ochavas</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-cyan-600/20 text-cyan-400 flex items-center justify-center font-bold">ðŸŽ“</div>
+              <p class="text-xs font-semibold text-white">EducaciÃ³n</p>
+              <p class="text-[10px] text-gray-400">Equipamiento</p>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 text-center">
+              <div class="w-8 h-8 mx-auto mb-1 rounded bg-amber-600/20 text-amber-400 flex items-center justify-center font-bold">ðŸº</div>
+              <p class="text-xs font-semibold text-white">Patrimonio</p>
+              <p class="text-[10px] text-gray-400">Casco histÃ³rico</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FiscalizaciÃ³n y Morosidad Anti-PrescripciÃ³n -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>ðŸš¦</span> FiscalizaciÃ³n Tributaria y PrevenciÃ³n de PrescripciÃ³n (Ley 125/91)
+            </h3>
+            <span class="text-xs text-amber-400">SemÃ¡foro de Morosidad Inmobiliaria</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-gray-400 block">Al DÃ­a (Verde)</span>
+                <span class="text-xl font-bold text-emerald-400">842 Lotes</span>
+              </div>
+              <span class="text-2xl">ðŸŸ¢</span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-gray-400 block">Morosidad Media (Naranja)</span>
+                <span class="text-xl font-bold text-orange-400">128 Lotes</span>
+              </div>
+              <span class="text-2xl">ðŸŸ </span>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800 flex items-center justify-between">
+              <div>
+                <span class="text-xs text-gray-400 block">Alerta PrescripciÃ³n 5 AÃ±os (Rojo)</span>
+                <span class="text-xl font-bold text-red-400">19 Lotes</span>
+              </div>
+              <span class="text-2xl">ðŸ”´</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Miembros -->
-      <section role="tabpanel" id="panel-members" class="tab-panel hidden" aria-labelledby="tab-members">
+      <!-- ============================================================ -->
+      <!-- TAB 4: PILAR NOTARIAL (ESCRIBANÃAS / RUN)                    -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-notarial" class="tab-panel" aria-labelledby="tab-notarial">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>âš–ï¸</span> PadrÃ³n Notarial y Seguridad Registral (Ley 7.424/25 RUN)
+            </h2>
+            <p class="text-xs text-gray-400">SupervisiÃ³n de escribanÃ­as pÃºblicas, generaciÃ³n de minutas y validaciÃ³n de 4 slots de firma electrÃ³nica cualificada (Ley 6822/2021).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnNuevaEscribania" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-md">
+              <span>+</span> Habilitar EscribanÃ­a
+            </button>
+            <a href="/notarial/" target="_blank" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition border border-gray-700">
+              Ir a Portal Notarial â†—
+            </a>
+          </div>
+        </div>
+
+        <!-- JerarquÃ­a 4 Slots de Firma ElectrÃ³nica Cualificada -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6 shadow-xl">
+          <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <span>ðŸ”</span> Cadena de Confianza y Sellado de Tiempo (4 Slots - Ley 6822/2021)
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span class="font-bold text-blue-400">SLOT 1</span>
+                <span class="text-emerald-400">â— Verificado</span>
+              </div>
+              <p class="text-xs font-semibold text-white">Responsable TÃ©cnico</p>
+              <p class="text-[10px] text-gray-500 mt-1">Perito Agrimensor (MOPC/SNC)</p>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span class="font-bold text-emerald-400">SLOT 2</span>
+                <span class="text-emerald-400">â— Verificado</span>
+              </div>
+              <p class="text-xs font-semibold text-white">Revisor Municipal</p>
+              <p class="text-[10px] text-gray-500 mt-1">Director de Catastro Comunal</p>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span class="font-bold text-amber-400">SLOT 3</span>
+                <span class="text-amber-400">â³ En CalificaciÃ³n</span>
+              </div>
+              <p class="text-xs font-semibold text-white">Calificador Catastral</p>
+              <p class="text-[10px] text-gray-500 mt-1">TÃ©cnico Analista SNC Central</p>
+            </div>
+            <div class="p-3 bg-gray-950 rounded-lg border border-gray-800">
+              <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                <span class="font-bold text-purple-400">SLOT 4</span>
+                <span class="text-gray-500">â—‹ Pendiente</span>
+              </div>
+              <p class="text-xs font-semibold text-white">Autoridad Resolutiva</p>
+              <p class="text-[10px] text-gray-500 mt-1">Director SNC / RUN</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de EscribanÃ­as Habilitadas -->
+        <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Notario / Escribano</th>
+                <th class="px-4 py-3 font-semibold">Registro Notarial NÂº</th>
+                <th class="px-4 py-3 font-semibold">CircunscripciÃ³n Judicial</th>
+                <th class="px-4 py-3 font-semibold">Minutas Tramitadas</th>
+                <th class="px-4 py-3 font-semibold">Estado</th>
+                <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="notariosTable" class="divide-y divide-gray-800">
+              <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Cargando escribanÃ­as registradas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 5: EXPEDIENTES B2B2G                                     -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-expedientes" class="tab-panel" aria-labelledby="tab-expedientes">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>ðŸ“</span> Trazabilidad de Expedientes Interconectados (B2B2G)
+            </h2>
+            <p class="text-xs text-gray-400">Flujo completo entre Agrimensor Independiente $\rightarrow$ Municipio Comunal $\rightarrow$ EscribanÃ­a $\rightarrow$ RUN.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="expedienteFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:ring-2 focus:ring-amber-500">
+              <option value="">Todos los estados</option>
+              <option value="En revisiÃ³n">En revisiÃ³n</option>
+              <option value="Observado">Observado</option>
+              <option value="Aprobado">Aprobado</option>
+              <option value="Rechazado">Rechazado</option>
+            </select>
+            <button id="refreshExpedientes" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs transition border border-gray-700">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
+          <table class="w-full text-xs" role="grid">
+            <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Expediente</th>
+                <th class="px-4 py-3 font-semibold">Municipio</th>
+                <th class="px-4 py-3 font-semibold">Agrimensor</th>
+                <th class="px-4 py-3 font-semibold">NotarÃ­a</th>
+                <th class="px-4 py-3 font-semibold">Estado</th>
+                <th class="px-4 py-3 font-semibold">Fecha Ingreso</th>
+                <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="expedientesTable" class="divide-y divide-gray-800">
+              <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Cargando expedientes interconectados...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- TAB 6: USUARIOS Y MIEMBROS GLOBALES                          -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-members" class="tab-panel" aria-labelledby="tab-members">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div class="relative max-w-md w-full">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" id="memberSearch" placeholder="Buscar por nombre o email..." class="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <input type="text" id="memberSearch" placeholder="Buscar por usuario, email o rol..." class="w-full pl-4 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs placeholder-gray-500 focus:ring-2 focus:ring-amber-500">
           </div>
           <div class="flex flex-wrap gap-2">
-            <select id="roleFilter" class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <select id="roleFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs">
               <option value="">Todos los roles</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="professional">Professional</option>
-              <option value="technician">Technician</option>
-              <option value="member">Member</option>
-              <option value="viewer">Viewer</option>
+              <option value="superadmin">Super Admin (Acceso Total)</option>
+              <option value="admin">Administrador General</option>
+              <option value="admin_municipal">Administrador Municipal</option>
+              <option value="admin_notarial">Administrador Notarial</option>
+              <option value="professional">Profesional / Agrimensor</option>
+              <option value="manager">Revisor Municipal</option>
+              <option value="notary">Notario / Escribano</option>
+              <option value="technician">TÃ©cnico</option>
+              <option value="member">Miembro</option>
+              <option value="viewer">Observador</option>
             </select>
-            <select id="statusFilter" class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <select id="statusFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs">
               <option value="">Todos los estados</option>
               <option value="active">Activo</option>
               <option value="suspended">Suspendido</option>
               <option value="inactive">Inactivo</option>
             </select>
-            <button id="createMemberBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-              Nuevo
+            <button id="createMemberBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5 shadow-md">
+              <span>+</span> Nuevo Usuario
             </button>
           </div>
         </div>
 
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
-          <table class="w-full" role="grid">
-            <thead class="bg-gray-800/50">
-              <tr class="text-left text-sm text-gray-400">
-                <th class="px-4 py-3 font-medium">Usuario</th>
-                <th class="px-4 py-3 font-medium">Plan</th>
-                <th class="px-4 py-3 font-medium">Rol</th>
-                <th class="px-4 py-3 font-medium">Estado</th>
-                <th class="px-4 py-3 font-medium">Proyectos</th>
-                <th class="px-4 py-3 font-medium">Límite</th>
-                <th class="px-4 py-3 font-medium">Creado</th>
-                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
+        <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Usuario</th>
+                <th class="px-4 py-3 font-semibold">Plan</th>
+                <th class="px-4 py-3 font-semibold">Rol</th>
+                <th class="px-4 py-3 font-semibold">Estado</th>
+                <th class="px-4 py-3 font-semibold">Proyectos</th>
+                <th class="px-4 py-3 font-semibold">Creado</th>
+                <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
               </tr>
             </thead>
-            <tbody id="membersTable" class="divide-y divide-gray-800 scrollbar-thin max-h-[600px]">
-              <tr><td colspan="8" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+            <tbody id="membersTable" class="divide-y divide-gray-800">
+              <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Cargando usuarios del sistema...</td></tr>
             </tbody>
           </table>
         </div>
-
-        <div id="membersPagination" class="flex items-center justify-between mt-4 text-sm text-gray-500 hidden">
-          <span id="paginationInfo"></span>
-          <div class="flex gap-2">
-            <button id="prevPage" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
-            <button id="nextPage" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
-          </div>
-        </div>
       </section>
 
-      <!-- Planes -->
-      <section role="tabpanel" id="panel-plans" class="tab-panel hidden" aria-labelledby="tab-plans">
+      <!-- ============================================================ -->
+      <!-- TAB 7: PLANES & FINANZAS                                     -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-plans" class="tab-panel" aria-labelledby="tab-plans">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Planes y Suscripciones</h2>
-          <button id="createPlanBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors flex items-center gap-2 self-start">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Nuevo Plan
+          <div>
+            <h2 class="text-lg font-bold text-white">Planes y Tarifas B2B2G</h2>
+            <p class="text-xs text-gray-400">ConfiguraciÃ³n de suscripciones para agrimensores independientes, comunas y escribanÃ­as.</p>
+          </div>
+          <button id="createPlanBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs transition flex items-center gap-1.5 shadow-md">
+            <span>+</span> Nuevo Plan
           </button>
         </div>
 
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
-          <table class="w-full" role="grid">
-            <thead class="bg-gray-800/50">
-              <tr class="text-left text-sm text-gray-400">
-                <th class="px-4 py-3 font-medium">ID</th>
-                <th class="px-4 py-3 font-medium">Nombre</th>
-                <th class="px-4 py-3 font-medium">Tipo</th>
-                <th class="px-4 py-3 font-medium">Precio</th>
-                <th class="px-4 py-3 font-medium">Proyectos</th>
-                <th class="px-4 py-3 font-medium">Expedientes</th>
-                <th class="px-4 py-3 font-medium">Watermark</th>
-                <th class="px-4 py-3 font-medium">Activo</th>
-                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
+        <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900 shadow-xl mb-6">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-800/60 border-b border-gray-800 text-gray-400 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">ID</th>
+                <th class="px-4 py-3 font-semibold">Nombre</th>
+                <th class="px-4 py-3 font-semibold">Tipo</th>
+                <th class="px-4 py-3 font-semibold">Precio</th>
+                <th class="px-4 py-3 font-semibold">LÃ­mite Proyectos</th>
+                <th class="px-4 py-3 font-semibold">Expedientes</th>
+                <th class="px-4 py-3 font-semibold">Estado</th>
+                <th class="px-4 py-3 font-semibold text-right pr-4">Acciones</th>
               </tr>
             </thead>
             <tbody id="plansTable" class="divide-y divide-gray-800">
-              <tr><td colspan="9" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
+              <tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Cargando planes...</td></tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- Finanzas -->
-      <section role="tabpanel" id="panel-finance" class="tab-panel hidden" aria-labelledby="tab-finance">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Resumen Financiero</h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Total Transacciones</p>
-            <p id="finTotalTx" class="text-2xl font-bold text-white mt-1">-</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Pagadas</p>
-            <p id="finPaidTx" class="text-2xl font-bold text-green-400 mt-1">-</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Pendientes</p>
-            <p id="finPendingTx" class="text-2xl font-bold text-yellow-400 mt-1">-</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <p class="text-sm text-gray-400">Fees Proveedor</p>
-            <p id="finFees" class="text-2xl font-bold text-gray-300 mt-1">-</p>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
-          <table class="w-full" role="grid">
-            <thead class="bg-gray-800/50">
-              <tr class="text-left text-sm text-gray-400">
-                <th class="px-4 py-3 font-medium">ID</th>
-                <th class="px-4 py-3 font-medium">Usuario</th>
-                <th class="px-4 py-3 font-medium">Plan</th>
-                <th class="px-4 py-3 font-medium">Monto</th>
-                <th class="px-4 py-3 font-medium">Moneda</th>
-                <th class="px-4 py-3 font-medium">Estado</th>
-                <th class="px-4 py-3 font-medium">Proveedor</th>
-                <th class="px-4 py-3 font-medium">Fecha</th>
-              </tr>
-            </thead>
-            <tbody id="financeTable" class="divide-y divide-gray-800">
-              <tr><td colspan="8" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- IPs -->
-      <section role="tabpanel" id="panel-ips" class="tab-panel hidden" aria-labelledby="tab-ips">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Gestión y Bloqueo de IPs</h2>
-        </div>
-        <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
-          <p class="text-gray-400 text-sm">Control de acceso por direcciones IP y restricciones de seguridad perimetral.</p>
-        </div>
-      </section>
-
-      <!-- Auditoría -->
-      <section role="tabpanel" id="panel-audit" class="tab-panel hidden" aria-labelledby="tab-audit">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Auditoría y Monitoreo</h2>
-          <div class="flex gap-2">
-            <button id="refreshAudit" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Refrescar</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Logs de Errores del Backend</h3>
-            <div id="errorLogs" class="max-h-[400px] overflow-y-auto scrollbar-thin">
-              <p class="text-gray-500 text-sm">Cargando logs...</p>
-            </div>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Trazabilidad de Accesos (Últimos 20)</h3>
-            <div id="auditLogs" class="max-h-[400px] overflow-y-auto scrollbar-thin">
-              <p class="text-gray-500 text-sm">Cargando trazabilidad...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Fiscalización -->
-      <section role="tabpanel" id="panel-fiscalizacion" class="tab-panel hidden" aria-labelledby="tab-fiscalizacion">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Fiscalización Tributaria y Anti-Prescripción</h2>
-          <div class="flex gap-2">
-            <select id="fiscalizacionMunicipio" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="">Seleccionar municipio</option>
-            </select>
-            <button id="refreshFiscalizacion" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Actualizar Mapa</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Mapa de Morosidad por Semáforo</h3>
-            <div id="fiscalizacionMap" class="w-full h-[400px] rounded-lg border border-gray-800 bg-gray-950 flex items-center justify-center text-gray-500">Mapa SIG / PostGIS</div>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Alertas de Prescripción (Ley 125/91)</h3>
-            <div id="prescripcionAlerts" class="max-h-[400px] overflow-y-auto scrollbar-thin">
-              <p class="text-gray-500 text-sm">Cargando alertas...</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h4 class="text-sm font-semibold text-gray-400 mb-2">Fugas Catastrales</h4>
-            <p id="fugasCount" class="text-2xl font-bold text-gray-200">0</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h4 class="text-sm font-semibold text-gray-400 mb-2">Morosidad Alta (Rojo)</h4>
-            <p id="morosidadAltoCount" class="text-2xl font-bold text-[#ef4444]">0</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h4 class="text-sm font-semibold text-gray-400 mb-2">Morosidad Media (Naranja)</h4>
-            <p id="morosidadMedioCount" class="text-2xl font-bold text-[#f97316]">0</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Ambiental -->
-      <section role="tabpanel" id="panel-ambiental" class="tab-panel hidden" aria-labelledby="tab-ambiental">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Validación Ambiental y Servidumbres (Ley 3239/07)</h2>
-          <div class="flex gap-2">
-            <select id="ambienteMunicipio" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="">Seleccionar municipio</option>
-            </select>
-            <button id="refreshAmbiente" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Verificar</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Cruce con Cursos Hídricos (30m)</h3>
-            <div id="ambienteMap" class="w-full h-[400px] rounded-lg border border-gray-800 bg-gray-950 flex items-center justify-center text-gray-500">Visor Topológico Hídrico</div>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-400 mb-4">Resultados de Validación</h3>
-            <div id="ambienteResultados" class="max-h-[400px] overflow-y-auto scrollbar-thin">
-              <p class="text-gray-500 text-sm">Cargando resultados...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Dictámenes -->
-      <section role="tabpanel" id="panel-dictamenes" class="tab-panel hidden" aria-labelledby="tab-dictamenes">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Dictámenes e Informes Legales</h2>
-          <div class="flex flex-wrap gap-2">
-            <select id="dictamenType" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="A">Informe A - Pre-validación</option>
-              <option value="B">Informe B - Dictamen Pericial</option>
-            </select>
-            <select id="dictamenProject" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="">Seleccionar proyecto</option>
-            </select>
-            <button id="generarDictamenBtn" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Generar Documento</button>
-          </div>
-        </div>
-
-        <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <h3 class="text-sm font-semibold text-gray-400 mb-4">Estado de Dictámenes Generados</h3>
-          <div id="dictamenList" class="max-h-[400px] overflow-y-auto scrollbar-thin">
-            <p class="text-gray-500 text-sm">Cargando estado...</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Dependencias Municipales -->
-      <section role="tabpanel" id="panel-dependencias" class="tab-panel hidden" aria-labelledby="tab-dependencias">
+      <!-- ============================================================ -->
+      <!-- TAB 8: SEGURIDAD, AUDITORÃA & IPS                            -->
+      <!-- ============================================================ -->
+      <section role="tabpanel" id="panel-audit" class="tab-panel" aria-labelledby="tab-audit">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg font-semibold">Dependencias Municipales</h2>
-            <p class="text-sm text-gray-400 mt-1">Gestiona los accesos de cada dirección municipal a la plataforma /municipal</p>
+            <h2 class="text-lg font-bold text-white">AuditorÃ­a y Trazabilidad Forense</h2>
+            <p class="text-xs text-gray-400">Monitoreo de seguridad, control de IPs y registro inmutable de transacciones.</p>
           </div>
+          <button id="refreshAudit" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition border border-gray-700">
+            Refrescar Logs
+          </button>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="depCards">
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-blue-600/20 flex items-center justify-center text-blue-400 text-lg">🏛️</div>
-            <p class="text-xs font-semibold text-white">Catastro</p>
-            <p class="text-[10px] text-gray-400">Acceso total</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <span>ðŸ“‹</span> Logs Operativos del Backend
+            </h3>
+            <div id="errorLogs" class="max-h-[360px] overflow-y-auto scrollbar-thin font-mono text-[11px] p-3 rounded-lg bg-gray-950 border border-gray-800 text-gray-300 space-y-1">
+              <p class="text-emerald-400">[INFO] Servidor backend operando con normalidad.</p>
+              <p class="text-gray-500">[AUTH] Token JWT emitido para sesiÃ³n superadmin.</p>
+            </div>
           </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-green-600/20 flex items-center justify-center text-green-400 text-lg">🌿</div>
-            <p class="text-xs font-semibold text-white">Ambiental</p>
-            <p class="text-[10px] text-gray-400">Restricciones</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400 text-lg">📐</div>
-            <p class="text-xs font-semibold text-white">Planificación</p>
-            <p class="text-[10px] text-gray-400">Loteamientos</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-orange-600/20 flex items-center justify-center text-orange-400 text-lg">🚧</div>
-            <p class="text-xs font-semibold text-white">Obras y Vialidad</p>
-            <p class="text-[10px] text-gray-400">Vías</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-cyan-600/20 flex items-center justify-center text-cyan-400 text-lg">🎓</div>
-            <p class="text-xs font-semibold text-white">Educación</p>
-            <p class="text-[10px] text-gray-400">Consulta</p>
-          </div>
-          <div class="bg-gray-900 border border-gray-800 rounded-lg p-3 text-center">
-            <div class="w-10 h-10 mx-auto mb-2 rounded-lg bg-amber-600/20 flex items-center justify-center text-amber-400 text-lg">🏛️</div>
-            <p class="text-xs font-semibold text-white">Patrimonio</p>
-            <p class="text-[10px] text-gray-400">Casco histórico</p>
-          </div>
-        </div>
-        <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-            <h3 class="text-sm font-semibold text-gray-400">Usuarios por Dependencia</h3>
-            <button id="btnAddDepUser" class="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">+ Nuevo usuario municipal</button>
-          </div>
-          <div id="depUserList" class="space-y-2">
-            <p class="text-gray-500 text-sm">Cargando usuarios...</p>
+
+          <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+            <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+              <span>ðŸ”’</span> Accesos Registrados y Control de IPs
+            </h3>
+            <div id="auditLogs" class="max-h-[360px] overflow-y-auto scrollbar-thin text-xs space-y-2">
+              <div class="p-2.5 rounded-lg bg-gray-950 border border-gray-800 flex items-center justify-between">
+                <div>
+                  <span class="font-mono text-amber-400">127.0.0.1</span>
+                  <span class="text-gray-400 ml-2">Super Admin Console Access</span>
+                </div>
+                <span class="text-[10px] text-gray-500 font-mono">Ahora</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Expedientes -->
-      <section role="tabpanel" id="panel-expedientes" class="tab-panel hidden" aria-labelledby="tab-expedientes">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 class="text-lg font-semibold">Interoperabilidad y Gestión de Expedientes (B2B2G)</h2>
-          <div class="flex gap-2">
-            <select id="expedienteFilter" class="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="">Todos los estados</option>
-              <option value="En revisión">En revisión</option>
-              <option value="Observado">Observado</option>
-              <option value="Aprobado">Aprobado</option>
-              <option value="Rechazado">Rechazado</option>
-            </select>
-            <button id="refreshExpedientes" class="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Actualizar</button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-gray-900">
-          <table class="w-full" role="grid">
-            <thead class="bg-gray-800/50">
-              <tr class="text-left text-sm text-gray-400">
-                <th class="px-4 py-3 font-medium">Expediente</th>
-                <th class="px-4 py-3 font-medium">Municipio</th>
-                <th class="px-4 py-3 font-medium">Profesional</th>
-                <th class="px-4 py-3 font-medium">Estado</th>
-                <th class="px-4 py-3 font-medium">Fecha</th>
-                <th class="px-4 py-3 font-medium text-right pr-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="expedientesTable" class="divide-y divide-gray-800">
-              <tr><td colspan="6" class="px-4 py-12 text-center text-gray-500">Cargando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   </main>
 
   <!-- Modals -->
   <!-- Member Modal -->
-  <div id="memberModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+  <div id="memberModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between p-4 border-b border-gray-800">
-        <h3 id="memberModalTitle" class="text-lg font-semibold">Nuevo Miembro</h3>
-        <button id="closeMemberModal" class="p-2 text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <h3 id="memberModalTitle" class="text-base font-bold text-white">Nuevo Usuario / Miembro</h3>
+        <button id="closeMemberModal" class="p-1.5 text-gray-400 hover:text-white rounded-lg transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
-      <form id="memberForm" class="p-4 space-y-4">
+      <form id="memberForm" class="p-5 space-y-4 text-xs">
         <input type="hidden" id="memberId">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
-          <input type="text" id="memberName" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          <label class="block font-medium text-gray-300 mb-1">Nombre Completo</label>
+          <input type="text" id="memberName" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Email</label>
-          <input type="email" id="memberEmail" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          <label class="block font-medium text-gray-300 mb-1">Correo ElectrÃ³nico</label>
+          <input type="email" id="memberEmail" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
-          <input type="password" id="memberPassword" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" autocomplete="new-password">
-          <p id="passwordHint" class="text-xs text-gray-500 mt-1 hidden">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo</p>
+          <label class="block font-medium text-gray-300 mb-1">ContraseÃ±a</label>
+          <input type="password" id="memberPassword" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500" autocomplete="new-password">
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Rol</label>
-            <select id="memberRole" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="member">Member</option>
-              <option value="technician">Technician</option>
-              <option value="professional">Professional</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-              <option value="viewer">Viewer</option>
+            <label class="block font-medium text-gray-300 mb-1">Rol en el Ecosistema</label>
+            <select id="memberRole" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
+              <option value="superadmin">Super Admin (Acceso Total)</option>
+              <option value="admin">Administrador General</option>
+              <option value="admin_municipal">Administrador Municipal</option>
+              <option value="admin_notarial">Administrador Notarial</option>
+              <option value="professional">Profesional / Agrimensor</option>
+              <option value="manager">Revisor Municipal</option>
+              <option value="notary">Notario / Escribano</option>
+              <option value="technician">TÃ©cnico Catastral</option>
+              <option value="member">Miembro</option>
+              <option value="viewer">Observador</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
-            <select id="memberStatus" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <label class="block font-medium text-gray-300 mb-1">Estado</label>
+            <select id="memberStatus" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
               <option value="active">Activo</option>
               <option value="suspended">Suspendido</option>
               <option value="inactive">Inactivo</option>
@@ -534,101 +768,72 @@
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Plan</label>
-          <select id="memberPlan" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          <label class="block font-medium text-gray-300 mb-1">Plan Asignado</label>
+          <select id="memberPlan" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
             <option value="free">Free</option>
+            <option value="profesional_pro">Profesional Pro</option>
+            <option value="municipal_enterprise">Municipal Enterprise</option>
+            <option value="notarial_premium">Notarial Premium</option>
           </select>
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
-          <button type="button" id="cancelMemberModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Guardar</button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-gray-800">
+          <button type="button" id="cancelMemberModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition font-medium">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition font-semibold shadow-md">Guardar Usuario</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Plan Modal -->
-  <div id="planModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-    <div class="bg-gray-900 border border-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+  <div id="planModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between p-4 border-b border-gray-800">
-        <h3 id="planModalTitle" class="text-lg font-semibold">Nuevo Plan</h3>
-        <button id="closePlanModal" class="p-2 text-gray-400 hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <h3 id="planModalTitle" class="text-base font-bold text-white">Nuevo Plan</h3>
+        <button id="closePlanModal" class="p-1.5 text-gray-400 hover:text-white rounded-lg transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
-      <form id="planForm" class="p-4 space-y-4">
+      <form id="planForm" class="p-5 space-y-4 text-xs">
         <input type="hidden" id="planId">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">ID del Plan</label>
-          <input type="text" id="planIdInput" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" pattern="^[a-z][a-z0-9_-]{1,31}$" title="Solo minúsculas, números, guiones y guiones bajos. Debe empezar con letra.">
-          <p class="text-xs text-gray-500 mt-1">Solo minúsculas, números, guiones y guiones bajos. Máx 32 chars.</p>
+          <label class="block font-medium text-gray-300 mb-1">ID del Plan</label>
+          <input type="text" id="planIdInput" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500" pattern="^[a-z][a-z0-9_-]{1,31}$">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
-          <input type="text" id="planName" required maxlength="80" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+          <label class="block font-medium text-gray-300 mb-1">Nombre</label>
+          <input type="text" id="planName" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
-            <select id="planType" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+            <label class="block font-medium text-gray-300 mb-1">Tipo</label>
+            <select id="planType" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
               <option value="free">Free</option>
               <option value="paid">Paid</option>
               <option value="enterprise">Enterprise</option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Moneda</label>
-            <select id="planCurrency" required class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-              <option value="PYG">PYG</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-            </select>
+            <label class="block font-medium text-gray-300 mb-1">Precio (PYG)</label>
+            <input type="number" id="planPrice" required min="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-amber-500">
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Precio</label>
-          <input type="number" id="planPrice" required min="0" step="0.01" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Proyectos</label>
-            <input type="number" id="planLimitProjects" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Expedientes</label>
-            <input type="number" id="planLimitExpedientes" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Exportaciones/día</label>
-            <input type="number" id="planLimitExports" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Límite Consultas/día</label>
-            <input type="number" id="planLimitConsultas" min="0" value="0" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-          </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <input type="checkbox" id="planWatermark" class="w-4 h-4 text-amber-600 border-gray-700 rounded focus:ring-amber-500">
-          <label class="text-sm text-gray-300">Watermark en exportaciones</label>
-        </div>
-        <div class="flex items-center gap-3">
-          <input type="checkbox" id="planActive" checked class="w-4 h-4 text-amber-600 border-gray-700 rounded focus:ring-amber-500">
-          <label class="text-sm text-gray-300">Plan activo</label>
-        </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
-          <button type="button" id="cancelPlanModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition-colors">Guardar</button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-gray-800">
+          <button type="button" id="cancelPlanModal" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition font-medium">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition font-semibold shadow-md">Guardar Plan</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Toast Container -->
+  <!-- Toast Notification Container -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
+  <!-- Boot Module Script -->
   <script type="module">
     import { initAdmin } from '/js/app-admin.js';
-    initAdmin();
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdmin();
+    });
   </script>
+  <!-- Selector de mapa base hamburguesa -->
+  <script src="/js/basemapMenu.js"></script>
 </body>
 </html>

@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ciudadano PY Pro v1.0 â€” Catastro PÃºblico SNC 551/2023</title>
+  <meta name="description" content="Portal ciudadano para consulta pÃºblica de parcelas catastrales segÃºn ResoluciÃ³n SNC NÂ° 551/2023">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Estilos principales locales (/vendor y /css) -->
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "docx": "/vendor/docx.mjs",
+      "xlsx": "/vendor/xlsx.mjs"
+    }
+  }
+  </script>
+
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+    #map { height: 100%; width: 100%; background: #020617; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 h-screen overflow-hidden flex flex-col font-sans">
+
+  <!-- LOADING SCREEN -->
+  <div id="loading" role="status" aria-label="Cargando portal ciudadano">
+    <div class="spinner"></div>
+    <div class="text-xl font-bold">Ciudadano PY Pro</div>
+    <div class="text-sm text-slate-400 uppercase tracking-widest">Catastro PÃºblico SNC 551/2023</div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="system-toast" role="alert" aria-live="polite" hidden>
+    <i class="fas fa-circle-info text-indigo-400"></i>
+    <span id="toast-msg">Mensaje del sistema</span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="h-16 bg-slate-900/90 backdrop-blur border-b border-slate-800 flex items-center justify-between px-5 z-[2000] shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+        <i class="fas fa-home text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>Ciudadano PY <span class="text-indigo-400">Pro</span></span>
+          <span id="muni-brand" class="hidden text-xs px-2 py-0.5 rounded-full font-semibold border"></span>
+        </h1>
+        <p class="text-[10px] text-slate-400 font-mono uppercase tracking-widest flex items-center gap-1.5">
+          <span id="header-subtitle">Catastro PÃºblico Â· SNC 551/2023</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- ACCIONES SUPERIORES Y NAVEGACIÃ“N CRUZADA -->
+    <div class="flex items-center gap-2">
+      <!-- NavegaciÃ³n a otros portales -->
+      <a href="/" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-blue-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Entorno Profesional SNC">
+        <i class="fas fa-landmark text-blue-400"></i>
+        <span class="hidden sm:inline">Catastro Pro</span>
+      </a>
+      <a href="/municipal" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-emerald-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Portal Municipal Ley 3966">
+        <i class="fas fa-city text-emerald-400"></i>
+        <span class="hidden sm:inline">Municipal</span>
+      </a>
+      <a href="/notarial/" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-purple-400 hover:text-white transition flex items-center gap-1.5" title="Ir al Portal Notarial y EscribanÃ­as">
+        <i class="fas fa-stamp text-purple-400"></i>
+        <span class="hidden sm:inline">Notarial</span>
+      </a>
+      <button id="btn-expediente-data" onclick="window.ExpedienteModal?.open()" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-xs font-semibold rounded-lg text-amber-400 hover:text-white transition flex items-center gap-1.5" title="Completar datos del expediente y propietario">
+        <i class="fas fa-file-signature text-amber-400"></i>
+        <span class="hidden sm:inline">Expediente</span>
+      </button>
+
+      <span class="w-px h-6 bg-slate-800 mx-1"></span>
+      <button onclick="window.openCatastro?.()" class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-xs font-medium rounded-lg text-indigo-300 transition flex items-center gap-2" title="Abrir visor oficial en Catastro Nacional">
+        <i class="fas fa-external-link-alt text-indigo-400"></i>
+        <span class="hidden md:inline">Visor Oficial SNC</span>
+      </button>
+      <button onclick="window.showReadme?.()" class="w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-300 transition" title="Manual de ayuda">
+        <i class="fas fa-question-circle"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="flex-1 flex relative overflow-hidden">
+
+    <!-- SIDEBAR / PANEL LATERAL -->
+    <aside class="w-80 bg-slate-900/95 backdrop-blur border-r border-slate-800 flex flex-col z-[1000] shrink-0">
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
+
+        <!-- BADGE FUENTE MUNICIPAL -->
+        <div id="data-source-badge" class="hidden bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-3 text-xs space-y-1">
+          <div class="flex items-center justify-between text-emerald-400 font-bold">
+            <span class="flex items-center gap-1.5">
+              <i class="fas fa-shield-halved"></i> Datos Municipales
+            </span>
+            <span id="muni-badge-date" class="text-[10px] text-emerald-300 font-mono"></span>
+          </div>
+          <p id="muni-badge-source" class="text-[11px] text-slate-300"></p>
+        </div>
+
+        <!-- BUSCAR INMUEBLE -->
+        <section class="space-y-2.5">
+          <div class="flex justify-between items-center">
+            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+              <i class="fas fa-magnifying-glass text-indigo-400 mr-2"></i> Buscar Inmueble
+            </h3>
+            <button type="button" onclick="window.App?.loadSampleCiudadano?.()" class="text-[9px] text-indigo-400 hover:text-indigo-300 bg-indigo-950/60 border border-indigo-800/60 rounded px-1.5 py-0.5 transition cursor-pointer" title="Cargar inmuebles demo de prueba">
+              <i class="fas fa-flask mr-1"></i> Demo
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div class="relative">
+              <input id="parcel-search-input" type="text" placeholder="PadrÃ³n, Cta. Cte., o Lote..." class="w-full rounded-lg border border-slate-700 bg-slate-950 pl-3 pr-8 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none">
+              <button onclick="window.flyToParcel?.()" class="absolute right-2 top-2 text-slate-400 hover:text-indigo-400 transition" title="Buscar">
+                <i class="fas fa-arrow-right text-xs"></i>
+              </button>
+            </div>
+            <button onclick="window.flyToParcel?.()" class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2 transition shadow-sm flex items-center justify-center gap-2">
+              <i class="fas fa-search"></i> Buscar en el Visor
+            </button>
+          </div>
+        </section>
+
+        <!-- LOCALIZADOR UNIVERSAL (Google Maps, DMS, Decimal, UTM) -->
+        <section id="geographic-location-section" class="p-3.5 bg-slate-950 border border-indigo-500/20 rounded-xl relative space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="text-[9px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fas fa-location-dot"></i> Ubicar por Enlace o Coords
+            </span>
+            <button id="btn-clear-locate" type="button" class="text-[9px] text-slate-500 hover:text-rose-400 transition" title="Limpiar bÃºsqueda">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="flex gap-1.5 items-center">
+            <input id="coord-search-input" type="text"
+              placeholder="Enlace Maps, DMS o Lat, Lng..."
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-[11px] font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            <button id="btn-paste-coord" type="button" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg border border-slate-700 text-[11px] transition shrink-0" title="Pegar del portapapeles">
+              <i class="fas fa-paste"></i>
+            </button>
+            <button id="btn-locate-coord" type="button" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-semibold transition shrink-0 shadow flex items-center gap-1" title="Ubicar en el mapa">
+              <i class="fas fa-magnifying-glass-location"></i>
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="text-[8px] uppercase tracking-wider text-slate-500">Ejemplos:</span>
+            <button type="button" onclick="window.CoordLocator?.fillAndLocate?.('https://maps.app.goo.gl/bWXxCDQcJ5nvGY3h9')" class="text-[8.5px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 rounded px-1.5 py-0.5 font-mono">maps.app.goo.gl</button>
+            <button type="button" onclick="window.CoordLocator?.fillAndLocate?.('25Â°18\'10.2\"S 57Â°30\'48.1\"W')" class="text-[8.5px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-indigo-400 rounded px-1.5 py-0.5 font-mono">DMS</button>
+          </div>
+          <div id="coord-locate-status" class="hidden text-[10px] p-2 rounded bg-slate-900 border border-slate-800"></div>
+        </section>
+
+        <!-- CAPAS DE REFERENCIA -->
+        <section class="space-y-3">
+          <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+            <i class="fas fa-layer-group text-indigo-400 mr-2"></i> Capas y Referencias
+          </h3>
+          
+          <div class="space-y-2">
+            <!-- Toggle Capa SNC -->
+            <label class="flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-800 bg-slate-950/60 p-2.5 hover:border-indigo-500/50 transition">
+              <input id="sncReferenceLayerToggle" type="checkbox" class="mt-0.5 accent-indigo-500" onchange="window.MapEngine?.toggleSNCReferenceLayer(this.checked)">
+              <span class="text-xs">
+                <span class="block font-bold text-slate-200">Referencia Catastral SNC</span>
+                <span class="block text-[10px] text-slate-400">Servicio WMS oficial del Servicio Nacional de Catastro.</span>
+                <span id="sncLayerStatus" class="inline-block text-[9px] text-slate-400 font-semibold mt-1 px-1.5 py-0.5 rounded bg-slate-800">Desactivada</span>
+              </span>
+            </label>
+
+            <!-- Leyenda de ZonificaciÃ³n / Estados -->
+            <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-3 space-y-2 text-[11px]">
+              <span class="block font-bold text-slate-400 uppercase text-[9px] tracking-wider">Estados del Inmueble</span>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded bg-indigo-500/30 border border-indigo-400"></span>
+                <span class="text-slate-300">Inmueble Seleccionado</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-400"></span>
+                <span class="text-slate-300">Titulado / Sin AfecciÃ³n</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-400"></span>
+                <span class="text-slate-300">En TrÃ¡mite de RegularizaciÃ³n</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HERRAMIENTAS RÃPIDAS -->
+        <section class="space-y-2">
+          <button onclick="window.LocalActions?.copyCoordinates()" class="w-full p-2.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-slate-200 text-xs font-medium transition flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fas fa-copy text-indigo-400"></i> Copiar Coordenadas</span>
+            <i class="fas fa-chevron-right text-[10px] text-slate-500"></i>
+          </button>
+          <button onclick="window.MapEngine?.toggleMeasureMode()" class="w-full p-2.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-slate-200 text-xs font-medium transition flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fas fa-ruler text-blue-400"></i> Medir Frente o Distancia</span>
+            <i class="fas fa-chevron-right text-[10px] text-slate-500"></i>
+          </button>
+        </section>
+
+        <!-- COORDENADAS DEL CURSOR -->
+        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs space-y-1">
+          <div class="text-[9px] font-bold text-indigo-400 uppercase mb-1">Cursor UTM (WGS 84 / Zona 21S)</div>
+          <div class="flex justify-between text-slate-400"><span>Este (X):</span> <span id="coord-e" class="text-slate-200 font-bold">0.00</span></div>
+          <div class="flex justify-between text-slate-400"><span>Norte (Y):</span> <span id="coord-n" class="text-slate-200 font-bold">0.00</span></div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER DE SIDEBAR -->
+      <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+        <span>SNC CIUDADANO v1.0</span>
+        <a href="/terms.html" class="hover:text-slate-300">TÃ©rminos legales</a>
+      </div>
+    </aside>
+
+    <!-- ÃREA DE MAPA Y VISOR -->
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+      <div id="map" class="w-full h-full flex-1"></div>
+
+      <!-- DOCK VERTICAL: Leyenda (arriba) y Mini-mapa de ubicaciÃ³n (abajo) en la misma lÃ­nea -->
+      <div id="map-bottom-left-stack" class="map-bottom-left-stack"></div>
+
+      <!-- SELECTOR DE MAPA BASE FLOTANTE -->
+      <div id="map-base-selector" class="map-selector-box absolute right-3 top-3 z-[1000]" aria-label="Tipos de mapas">
+        <button id="map-base-menu-toggle" class="map-selector-btn map-base-menu-toggle" type="button" aria-expanded="false" aria-controls="map-base-menu" title="Tipos de mapas y capas" aria-label="Tipos de mapas y capas"><i class="fas fa-bars" aria-hidden="true"></i></button>
+        <div id="map-base-menu" class="map-base-menu" hidden>
+          <div class="map-menu-section" role="radiogroup" aria-label="Mapa base">
+            <span class="map-menu-heading">Mapa base</span>
+            <button onclick="window.MapEngine?.setBaseLayer('osm')" class="map-selector-btn active" data-layer="osm" title="OpenStreetMap" role="radio" aria-checked="true" aria-label="Mapa base OpenStreetMap"><i class="fas fa-map" aria-hidden="true"></i><span>OpenStreetMap</span></button>
+            <button onclick="window.MapEngine?.setBaseLayer('satellite')" class="map-selector-btn" data-layer="satellite" title="SatÃ©lite ESRI" role="radio" aria-checked="false" aria-label="Mapa satelital ESRI"><i class="fas fa-satellite" aria-hidden="true"></i><span>SatÃ©lite ESRI</span></button>
+            <button onclick="window.MapEngine?.setBaseLayer('topo')" class="map-selector-btn" data-layer="topo" title="Curvas de nivel" role="radio" aria-checked="false" aria-label="Mapa curvas de nivel"><i class="fas fa-mountain-sun" aria-hidden="true"></i><span>Curvas de nivel</span></button>
+            <button onclick="window.MapEngine?.setBaseLayer('catastro')" class="map-selector-btn" data-layer="catastro" title="Catastro SNC" role="radio" aria-checked="false" aria-label="Mapa Catastro SNC"><i class="fas fa-landmark" aria-hidden="true"></i><span>Catastro SNC</span></button>
+            <button onclick="window.MapEngine?.setBaseLayer('humanitarian')" class="map-selector-btn" data-layer="humanitarian" title="Humanitarian OSM" role="radio" aria-checked="false" aria-label="Mapa Humanitarian OSM"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i><span>Humanitarian OSM</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTONERA FLOTANTE DE HERRAMIENTAS -->
+      <div id="map-tools" class="operational-section absolute right-3 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-1.5" role="toolbar" aria-label="Herramientas de mapa">
+        <button onclick="window.MapEngine?.toggleMeasureMode()" class="map-selector-btn bg-slate-900/90 border border-slate-700 text-white shadow hover:bg-slate-800" title="Medir distancia o frentes" aria-label="Medir distancia">
+          <i class="fas fa-ruler"></i>
+        </button>
+        <button onclick="window.MapEngine?.focusWorkPolygon?.()" class="map-selector-btn bg-slate-900/90 border border-slate-700 text-white shadow hover:bg-slate-800" title="Encuadrar inmuebles" aria-label="Encuadrar inmuebles">
+          <i class="fas fa-compress"></i>
+        </button>
+        <button onclick="window.App?.loadSampleCiudadano?.()" class="map-selector-btn bg-indigo-600 border border-indigo-500 text-white shadow hover:bg-indigo-500" title="Cargar lote demo" aria-label="Cargar lote demo">
+          <i class="fas fa-play"></i>
+        </button>
+      </div>
+
+      <!-- INSPECTOR DE PARCELA FLOTANTE -->
+      <aside id="parcel-inspector" class="hidden absolute top-4 right-16 bottom-4 z-[1100] w-84 max-w-[calc(100%-5rem)] rounded-xl border border-slate-700 bg-slate-900/95 shadow-2xl backdrop-blur flex flex-col overflow-hidden" aria-label="InformaciÃ³n del inmueble">
+        <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3 bg-slate-950/60">
+          <div>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-indigo-400">InformaciÃ³n del Inmueble</p>
+            <h3 id="parcel-inspector-title" class="text-xs font-bold text-white mt-0.5 truncate">Inmueble Seleccionado</h3>
+          </div>
+          <button onclick="document.getElementById('parcel-inspector').classList.add('hidden')" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition" aria-label="Cerrar inspector">
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 text-xs custom-scrollbar">
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">PadrÃ³n / CÃ³digo</p>
+            <p id="lote-codigo" class="text-sm font-bold text-white font-mono">â€”</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Titular Registrado</p>
+            <p id="lote-propietario" class="text-xs font-bold text-slate-200">â€”</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">UbicaciÃ³n Espacial</p>
+            <p id="lote-ubicacion" class="text-xs font-semibold text-emerald-400">Paraguay</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Superficie Legal / Calculada</p>
+            <p id="lote-area" class="text-sm font-bold text-indigo-400 font-mono">â€” mÂ²</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Destino / Uso de Suelo</p>
+            <p id="lote-uso" class="text-xs font-bold text-slate-200">â€”</p>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+            <p class="text-[9px] text-slate-500 uppercase font-mono">Coordenadas Centroide (Lat, Lng)</p>
+            <p id="lote-coords" class="text-xs font-mono text-slate-300">â€”</p>
+          </div>
+
+          <!-- SIMULADOR TRIBUTARIO MUNICIPAL (LEY 5513/2015) -->
+          <div class="p-2.5 bg-slate-950/80 rounded-lg border border-indigo-900/40">
+            <div class="flex items-center justify-between text-[10px] font-bold text-indigo-300 mb-1.5">
+              <span>ðŸ’° EstimaciÃ³n Impuesto Inmobiliario</span>
+              <span class="text-[8px] text-slate-400">Ley 5513/15</span>
+            </div>
+            <div class="space-y-1 text-[10px]">
+              <div class="flex justify-between text-slate-400">
+                <span>ValuaciÃ³n Fiscal Base:</span>
+                <span id="sim-val-fiscal" class="font-mono text-slate-200 font-semibold">â€”</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Impuesto Inmobiliario (1%):</span>
+                <span id="sim-impuesto" class="font-mono text-emerald-400 font-bold">â€”</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>Tasas y ConservaciÃ³n:</span>
+                <span id="sim-tasas" class="font-mono text-slate-200 font-semibold">â€”</span>
+              </div>
+              <div class="flex justify-between border-t border-slate-800 pt-1 text-slate-200 font-bold">
+                <span>Total Anual Estimado:</span>
+                <span id="sim-total-tributo" class="font-mono text-indigo-400 font-bold">â€”</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
+          <!-- BOTÃ“N COMPARTIR PARCELA (ENLACE + QR) -->
+          <button id="btn-share-parcel" onclick="window.shareParcel?.()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow">
+            <i class="fas fa-share-nodes"></i> Compartir Inmueble (Enlace & QR)
+          </button>
+          <div class="flex gap-2">
+            <button onclick="window.App?.exportGeoJSON?.()" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <i class="fas fa-file-code"></i> GeoJSON
+            </button>
+            <button onclick="window.App?.exportKML?.()" class="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <i class="fas fa-earth-americas"></i> KML
+            </button>
+          </div>
+          <button onclick="window.App?.exportFichaCiudadana?.()" class="w-full py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow">
+            <i class="fas fa-file-pdf"></i> Descargar Ficha Parcelaria (PDF)
+          </button>
+        </div>
+      </aside>
+    </main>
+
+  </div>
+
+  <!-- MODAL DE AYUDA / README -->
+  <div id="readmeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[3000] hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fas fa-book text-indigo-400"></i> Manual del Portal Ciudadano
+        </h2>
+        <button onclick="closeReadme()" class="text-slate-400 hover:text-white text-sm" aria-label="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-3 text-xs text-slate-300 leading-relaxed">
+        <p>Este portal permite la consulta pÃºblica y abierta de parcelas catastrales bajo los parÃ¡metros de la <strong class="text-indigo-400">ResoluciÃ³n SNC NÂ° 551/2023</strong>.</p>
+        <ol class="list-decimal list-inside space-y-1.5 text-slate-400">
+          <li><strong>BÃºsqueda:</strong> Ingrese el PadrÃ³n o Cuenta Corriente Catastral en la barra lateral para volar directamente al inmueble.</li>
+          <li><strong>InspecciÃ³n Directa:</strong> Haga clic sobre cualquier polÃ­gono en el visor para abrir la ficha de dimensiones, superficie y titularidad.</li>
+          <li><strong>UbicaciÃ³n por Coordenadas:</strong> Pegue enlaces cortos de Google Maps (`maps.app.goo.gl`), coordenadas en grados (DMS) o UTM para ubicar su terreno.</li>
+          <li><strong>ExportaciÃ³n:</strong> Descargue el polÃ­gono en formatos abiertos (GeoJSON / KML) o genere la constancia de consulta catastral.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE COMPARTIR PARCELA Y QR -->
+  <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[3000] hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+          <i class="fas fa-share-nodes text-emerald-400"></i> Compartir Inmueble
+        </h2>
+        <button onclick="window.closeShareModal?.()" class="text-slate-400 hover:text-white text-sm" aria-label="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-4 text-center">
+        <div id="share-qr-container" class="bg-white p-3 rounded-xl inline-block shadow-inner mx-auto">
+          <img id="share-qr-img" src="" alt="CÃ³digo QR del Inmueble" class="w-48 h-48 mx-auto" />
+        </div>
+        <p class="text-xs text-slate-300">
+          Escanee este cÃ³digo QR con la cÃ¡mara del celular para abrir la parcela en el mapa ciudadano.
+        </p>
+        <div class="flex items-center gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-left">
+          <input id="share-url-input" type="text" readonly class="bg-transparent text-xs text-slate-300 font-mono flex-1 outline-none select-all" />
+          <button onclick="window.copyShareUrl?.()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold transition flex items-center gap-1">
+            <i class="fas fa-copy"></i> Copiar
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <a id="share-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <i class="fab fa-whatsapp text-emerald-400"></i> WhatsApp
+          </a>
+          <button onclick="window.closeShareModal?.()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showReadme() {
+      const modal = document.getElementById('readmeModal');
+      if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+    }
+    function closeReadme() {
+      const modal = document.getElementById('readmeModal');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+    window.showReadme = showReadme;
+    window.closeReadme = closeReadme;
+
+    window.openCatastro = () => {
+      window.open('https://www.catastro.gov.py/visor/?snc=geo', '_blank', 'noopener,noreferrer');
+    };
+  </script>
+
+  <!-- Dependencias GIS y frontend servidas localmente (/vendor, sin CDN) -->
+  <script src="/vendor/leaflet.js"></script>
+  <script src="/vendor/proj4.js"></script>
+  <script src="/vendor/turf.min.js"></script>
+  <script src="/vendor/dom-to-image.min.js"></script>
+  <script src="/vendor/jszip.min.js"></script>
+  <script src="/vendor/xlsx.full.min.js"></script>
+  <script src="/vendor/jspdf.umd.min.js"></script>
+  <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
+  <script src="/vendor/shpwrite.js"></script>
+  <script src="/vendor/dxf-parser.js"></script>
+  <script>window.dxfParser = new window.DxfParser();</script>
+  <script type="module">
+    try {
+      const m = await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm');
+      window.QRCode = m;
+    } catch (e) { console.warn('QRCode no disponible:', e?.message); }
+  </script>
+
+  <!-- Entry Point Ciudadano Dedicado -->
+  <script type="module" src="/js/app-ciudadano.js"></script>
+  <script src="/js/basemapMenu.js"></script>
+</body>
+</html>
