@@ -604,6 +604,123 @@
         </div>
       </div>
 
+      <!-- MODEL VIEW: Vista de Modelo de Datos (paradigma Power BI Model View) -->
+      <div class="main-view" id="view-modelo" role="tabpanel" aria-labelledby="tab-modelo" hidden>
+        <div class="flex-1 overflow-auto bg-slate-900 p-6">
+          <div class="mb-5">
+            <h2 class="text-xl font-bold text-white"><i class="fas fa-diagram-project mr-2 text-cyan-400"></i>Vista de Modelo de Datos</h2>
+            <p class="text-xs text-slate-400">Relaciones entre las entidades del sistema — esquema estrella del Catastro Nacional</p>
+          </div>
+
+          <!-- Diagrama ER: esquema flexbox con conectores CSS -->
+          <div class="er-diagram mx-auto max-w-5xl rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+
+            <!-- Fila 1: Núcleo del sistema -->
+            <div class="flex items-stretch justify-center gap-3 mb-3">
+              <div class="er-entity er-users" data-entity="users">
+                <div class="er-entity-header"><i class="fas fa-user-shield"></i> USERS</div>
+                <div class="er-entity-body">
+                  <div class="er-pk">🔑 id (PK)</div>
+                  <div class="er-field">email</div>
+                  <div class="er-field">role</div>
+                  <div class="er-field">department</div>
+                  <div class="er-field">plan_id (FK)</div>
+                  <div class="er-field">status</div>
+                </div>
+                <div class="er-entity-count" id="er-count-users">—</div>
+              </div>
+              <div class="er-connector er-connector-h" data-cardinality="1:N" title="Un usuario crea muchos proyectos"></div>
+              <div class="er-entity er-projects" data-entity="projects">
+                <div class="er-entity-header"><i class="fas fa-folder-tree"></i> PROJECTS</div>
+                <div class="er-entity-body">
+                  <div class="er-pk">🔑 id (PK)</div>
+                  <div class="er-field">user_id (FK)</div>
+                  <div class="er-field">name</div>
+                  <div class="er-field">created_at</div>
+                </div>
+                <div class="er-entity-count" id="er-count-projects">—</div>
+              </div>
+              <div class="er-connector er-connector-h" data-cardinality="1:N" title="Un proyecto tiene muchos expedientes"></div>
+              <div class="er-entity er-expedientes" data-entity="expedientes">
+                <div class="er-entity-header"><i class="fas fa-file-signature"></i> EXPEDIENTES</div>
+                <div class="er-entity-body">
+                  <div class="er-pk">🔑 id (PK)</div>
+                  <div class="er-field">project_id (FK)</div>
+                  <div class="er-field">numero</div>
+                  <div class="er-field">estado</div>
+                  <div class="er-field">hash_chain</div>
+                </div>
+                <div class="er-entity-count" id="er-count-expedientes">—</div>
+              </div>
+            </div>
+
+            <!-- Fila 2: GeoJSON y entidades satélite -->
+            <div class="flex items-start justify-center gap-3 mt-6">
+              <div class="er-entity er-parcelas" data-entity="parcelas">
+                <div class="er-entity-header"><i class="fas fa-draw-polygon"></i> PARCELAS (GeoJSON)</div>
+                <div class="er-entity-body">
+                  <div class="er-pk">🔑 FeatureCollection</div>
+                  <div class="er-field">geometry (Polygon)</div>
+                  <div class="er-field">properties.padron</div>
+                  <div class="er-field">properties.titular</div>
+                  <div class="er-field">properties.area_sig</div>
+                </div>
+                <div class="er-entity-count" id="er-count-parcelas">—</div>
+              </div>
+              <div class="er-connector er-connector-v" data-cardinality="1:1" title="Un proyecto contiene un GeoJSON de parcelas"></div>
+              <div style="flex:0 0 2px"></div>
+
+              <div class="flex flex-col gap-3">
+                <div class="er-entity er-plans" data-entity="plans">
+                  <div class="er-entity-header"><i class="fas fa-tags"></i> PLANS</div>
+                  <div class="er-entity-body">
+                    <div class="er-pk">🔑 id (PK)</div>
+                    <div class="er-field">name</div>
+                    <div class="er-field">price</div>
+                  </div>
+                </div>
+                <div class="er-entity er-payments" data-entity="payments">
+                  <div class="er-entity-header"><i class="fas fa-credit-card"></i> PAYMENTS</div>
+                  <div class="er-entity-body">
+                    <div class="er-pk">🔑 id (PK)</div>
+                    <div class="er-field">user_id (FK)</div>
+                    <div class="er-field">plan_id (FK)</div>
+                    <div class="er-field">amount</div>
+                  </div>
+                </div>
+                <div class="er-entity er-ip-events" data-entity="ip_events">
+                  <div class="er-entity-header"><i class="fas fa-network-wired"></i> IP_EVENTS</div>
+                  <div class="er-entity-body">
+                    <div class="er-pk">🔑 id (PK)</div>
+                    <div class="er-field">user_id (FK)</div>
+                    <div class="er-field">ip</div>
+                    <div class="er-field">event</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Leyenda -->
+            <div class="mt-6 flex flex-wrap items-center gap-4 rounded-lg border border-slate-800 bg-slate-950/80 px-4 py-3">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Leyenda:</span>
+              <span class="flex items-center gap-1.5 text-[10px] text-slate-300"><span class="inline-block h-2 w-2 rounded-full bg-blue-500"></span> Usuario / Auth</span>
+              <span class="flex items-center gap-1.5 text-[10px] text-slate-300"><span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span> Proyecto / Expediente</span>
+              <span class="flex items-center gap-1.5 text-[10px] text-slate-300"><span class="inline-block h-2 w-2 rounded-full bg-purple-500"></span> Geometría SIG</span>
+              <span class="flex items-center gap-1.5 text-[10px] text-slate-300"><span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span> Comercial</span>
+              <span class="flex items-center gap-1.5 text-[10px] text-slate-300"><span class="inline-block h-2 w-2 rounded-full bg-slate-500"></span> Auditoría</span>
+              <span class="ml-auto text-[10px] text-slate-500"><i class="fas fa-key mr-1 text-amber-400"></i>PK = Llave primaria · FK = Llave foránea</span>
+            </div>
+          </div>
+
+          <!-- Nota informativa -->
+          <div class="mx-auto mt-4 max-w-5xl rounded-lg border border-blue-800/40 bg-blue-950/30 px-4 py-3 text-xs text-slate-300">
+            <i class="fas fa-circle-info mr-2 text-blue-400"></i>
+            <strong>Vista de Modelo</strong> — inspirada en Power BI Model View: muestra el esquema estrella del sistema.
+            La trazabilidad completa está en <code class="text-blue-300">graphify-out/graph.json</code> (3654 nodos indexados).
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
