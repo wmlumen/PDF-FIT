@@ -16,7 +16,8 @@
 | `ca2d34e` | Índices FK (P-03), `compression` HTTP (P-05), debounce de `localStorage` (P-08) | AUDITORIA_RENDIMIENTO_ARQUITECTURA §3,4,5 |
 | `6540155` | Parcela como entidad direccionable: tablas `parcelas`/`cuenta_catastral`/`personas`/`parcela_propietario`/`matriculas`/`parcel_lineage`, sync automático, 4 endpoints nuevos (todos con ownership) | AUDITORIA_ESTRATEGICA_MODELO_DATOS §1 "Estado de implementación" |
 | `60fb9ed` | `js/vepMetrics.js`: reporting básico + `IND-CAT-01` real, helpers espaciales (`IND-AMB-04` resuelto), los otros 14 indicadores devuelven `disponible: false` con motivo | AUDITORIA_ESTRATEGICA_MODELO_DATOS §1 "Paso 5" |
-| *(este commit)* | M-3: tab "Indicadores VEP" en `admin/index.html` + `GET /api/admin/metrics/vep` | §2 "M-3" abajo |
+| `ff0b6fe` | M-3: tab "Indicadores VEP" en `admin/index.html` + `GET /api/admin/metrics/vep` | §2 "M-3" abajo |
+| *(este commit)* | M-1: `js/ambientalEngine.js` + tabla `restricciones_ambientales` + endpoints (`POST /api/parcelas/:id/evaluar-ambiental`, CRUD admin) | §2 "M-1" abajo |
 
 ---
 
@@ -39,7 +40,7 @@
 
 | # | Acción | Depende de | Archivos (nuevos) | Criterio de cierre |
 |---|---|---|---|---|
-| M-1 | **Ambiental**: tabla `restricciones_ambientales` (parcela_id, tipo, fuente, geometria_buffer) + regla que la consulte al fraccionar/mensurar | Fase 11 (parcelas) ✅ | `db.cjs`, `server-api.js` | `POST` de fraccionamiento devuelve `apto`/`condicionado`/`no_apto` según intersección real, no hardcodeado |
+| M-1 | ✅ **Hecho.** Ambiental: tabla `restricciones_ambientales` (tipo, fuente, geojson, buffer_metros, nivel_restriccion) + `js/ambientalEngine.js` (evaluación espacial real, turf inyectado) + `POST /api/parcelas/:id/evaluar-ambiental` | Fase 11 (parcelas) ✅ | `db.cjs`, `server-api.js`, `js/ambientalEngine.js` | Cerrado: verificado end-to-end (geometría dentro de un humedal `BLOQUEA` → `no_apto`; fuera → `apto`; alta de restricción solo admin, 403 para usuario normal) |
 | M-2 | **POUT / zonificación**: tabla `zonificacion` (polígono + uso permitido) + chequeo de compatibilidad de uso en alta de expediente | Capas de POUT del usuario (Drive, ver §3) | `db.cjs`, `server-api.js` | Cargar un proyecto incompatible con la zona devuelve advertencia, no 200 silencioso |
 | M-3 | ✅ **Hecho.** Dashboard de indicadores: tab "Indicadores VEP" en `admin/index.html` + `js/app-admin.js`, consumiendo `GET /api/admin/metrics/vep` | `js/vepMetrics.js` ✅ | `admin/index.html`, `js/app-admin.js`, `server-api.js`, `db.cjs` (`parcelas.listAll`) | Cerrado: verificado con captura de pantalla (12 parcelas, `IND-CAT-01 = 100%`, catálogo completo) y `403` para no-admin |
 | M-4 | **Capas espaciales reales para IND-AMB-02/IND-RSG-01/IND-RSG-03**: cargar en el visor una capa VEP/MADES (vía `vepDataClient.js`) simultánea a la capa de parcelas, y llamar `calcularInterseccionEspacial()` | `js/vepMetrics.js` ✅, `js/vepDataClient.js` (ya existe) | `js/mapEngine.js` o nuevo controlador | Los 3 indicadores dejan de estar en `INDICADORES_NO_DISPONIBLES` |

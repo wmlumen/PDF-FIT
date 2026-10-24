@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/validator.test.mjs && node tests/export.test.mjs && node tests/workflow.test.mjs && node tests/geometry-history.test.mjs && node tests/cogo.test.mjs && node tests/lineage.test.mjs && node tests/topology-repair.test.mjs && node tests/versioning.test.mjs && node tests/geoprocessing.test.mjs && node tests/segment-lengths.test.mjs && node tests/api-security.test.mjs && node tests/files-json.test.mjs && node tests/db-modulo9.test.mjs && node tests/db-modulo1.test.mjs && node tests/db-modulo4.test.mjs && node tests/db-modulo5.test.mjs && node tests/db-modulo6.test.mjs && node tests/coord-locator.test.mjs && node tests/municipal-dxf.test.mjs && node tests/signature-manager.test.mjs && node tests/mesa-entrada.test.mjs && node tests/interoperabilidad.test.mjs && node tests/vep-client.test.mjs && node tests/sovereign-vector.test.mjs && node tests/mag-sync.test.mjs && node tests/auth-modal.test.mjs && node tests/geoportales-modulos.test.mjs && node tests/escribania-urbanismo.test.mjs && node tests/portal-notarial.test.mjs && node tests/layer-stacking.test.mjs && node tests/run-forms.test.mjs && node tests/portal-ciudadano.test.mjs && node tests/super-admin.test.mjs && node tests/osnap-measurement.test.mjs && node tests/all-index-functionalities.test.mjs && node tests/basemap-menu-overlap.test.mjs && node tests/map-layout-manager.test.mjs && node tests/encoding.test.mjs && node tests/fase11-ccc.test.mjs && node tests/vep-metrics.test.mjs",
+    "test": "node tests/validator.test.mjs && node tests/export.test.mjs && node tests/workflow.test.mjs && node tests/geometry-history.test.mjs && node tests/cogo.test.mjs && node tests/lineage.test.mjs && node tests/topology-repair.test.mjs && node tests/versioning.test.mjs && node tests/geoprocessing.test.mjs && node tests/segment-lengths.test.mjs && node tests/api-security.test.mjs && node tests/files-json.test.mjs && node tests/db-modulo9.test.mjs && node tests/db-modulo1.test.mjs && node tests/db-modulo4.test.mjs && node tests/db-modulo5.test.mjs && node tests/db-modulo6.test.mjs && node tests/coord-locator.test.mjs && node tests/municipal-dxf.test.mjs && node tests/signature-manager.test.mjs && node tests/mesa-entrada.test.mjs && node tests/interoperabilidad.test.mjs && node tests/vep-client.test.mjs && node tests/sovereign-vector.test.mjs && node tests/mag-sync.test.mjs && node tests/auth-modal.test.mjs && node tests/geoportales-modulos.test.mjs && node tests/escribania-urbanismo.test.mjs && node tests/portal-notarial.test.mjs && node tests/layer-stacking.test.mjs && node tests/run-forms.test.mjs && node tests/portal-ciudadano.test.mjs && node tests/super-admin.test.mjs && node tests/osnap-measurement.test.mjs && node tests/all-index-functionalities.test.mjs && node tests/basemap-menu-overlap.test.mjs && node tests/map-layout-manager.test.mjs && node tests/encoding.test.mjs && node tests/fase11-ccc.test.mjs && node tests/vep-metrics.test.mjs && node tests/ambiental-engine.test.mjs",
     "lint:encoding": "node scripts/fix-mojibake.mjs --check",
     "fix:encoding": "node scripts/fix-mojibake.mjs",
     "start": "node server-api.js",
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
+    "@turf/turf": "^7.4.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^13.0.3",
     "compression": "^1.8.2",
@@ -47,7 +48,6 @@
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
-    "@turf/turf": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^8.71.2",
     "@typescript-eslint/parser": "^8.71.2",
     "@vitejs/plugin-legacy": "^8.2.3",

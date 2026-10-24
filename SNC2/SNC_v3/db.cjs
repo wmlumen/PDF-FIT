@@ -343,6 +343,27 @@ db.serialize(() => {
     created_at TEXT DEFAULT (datetime('now'))
   )`);
   db.run('CREATE INDEX IF NOT EXISTS idx_lineage_expediente ON parcel_lineage(expediente_id)');
+
+  // Fase 11, M-1 (ambiental — ver docs/PLAN_FASE11_BACKLOG.md): restricciones
+  // cargadas por un administrador (humedal, faja ribereña, reserva, vertedero
+  // + buffer, zona inundable...). `geojson` guarda la geometria de la propia
+  // restriccion; `buffer_metros` es opcional (p. ej. 1000m alrededor de un
+  // vertedero puntual). `nivel_restriccion` decide si una interseccion
+  // bloquea (no_apto) o solo condiciona un fraccionamiento/mensura.
+  db.run(`CREATE TABLE IF NOT EXISTS restricciones_ambientales (
+    id TEXT PRIMARY KEY,
+    tipo TEXT NOT NULL,
+    nombre TEXT,
+    fuente TEXT,
+    geojson TEXT NOT NULL,
+    buffer_metros REAL,
+    nivel_restriccion TEXT NOT NULL DEFAULT 'CONDICIONA',
+    activo INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_restricciones_tipo ON restricciones_ambientales(tipo)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_restricciones_activo ON restricciones_ambientales(activo)');
 });
 
 // async wrappers for DB calls
@@ -1159,7 +1180,37 @@ async function syncParcelasFromGeojson(expedienteId, geojson) {
   return resultados;
 }
 
-const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log, parcelas, cuentaCatastral, personas, parcelaPropietario, matriculas, parcelLineage };
+const restriccionesAmbientales = {
+  // Fase 11, M-1: cargadas por un admin (ver endpoints /api/admin/ambiental/*).
+  insert(data) {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const sql = `INSERT INTO restricciones_ambientales (id, tipo, nombre, fuente, geojson, buffer_metros, nivel_restriccion, activo, created_at, updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?)`;
+    return promisifyRun(sql, [
+      id, data.tipo, data.nombre || null, data.fuente || null,
+      typeof data.geojson === 'string' ? data.geojson : JSON.stringify(data.geojson),
+      Number.isFinite(Number(data.buffer_metros)) ? Number(data.buffer_metros) : null,
+      data.nivel_restriccion === 'BLOQUEA' ? 'BLOQUEA' : 'CONDICIONA',
+      data.activo === false ? 0 : 1, now, now
+    ]).then(() => this.findById(id));
+  },
+  findById(id) {
+    return promisifyGet('SELECT * FROM restricciones_ambientales WHERE id = ?', [id]);
+  },
+  listActivas() {
+    return promisifyQuery('SELECT * FROM restricciones_ambientales WHERE activo = 1 ORDER BY datetime(created_at) DESC');
+  },
+  // Para la gestion en el panel admin: incluye las inactivas.
+  listAll() {
+    return promisifyQuery('SELECT * FROM restricciones_ambientales ORDER BY datetime(created_at) DESC');
+  },
+  setActivo(id, activo) {
+    return promisifyRun('UPDATE restricciones_ambientales SET activo = ?, updated_at = ? WHERE id = ?', [activo ? 1 : 0, new Date().toISOString(), id]);
+  }
+};
+
+const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log, parcelas, cuentaCatastral, personas, parcelaPropietario, matriculas, parcelLineage, restriccionesAmbientales };
 const dbAPI = { ...api, health, transaction };
 
 // Migraciones JSON legacy: el esquema actual ya se crea con CREATE TABLE IF NOT EXISTS.

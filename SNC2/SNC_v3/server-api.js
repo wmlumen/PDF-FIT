@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { PLANS, resolvePlan, canCreateProject, canCreateExpediente, canExport } from './js/plans.js';
 import { calcularCatalogoCompleto } from './js/vepMetrics.js';
+import { evaluarRestriccionesAmbientales } from './js/ambientalEngine.js';
+import * as turf from '@turf/turf';
 import { ENV } from './config.env.js';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -1296,6 +1298,41 @@ app.post('/api/expedientes/:id/lineage', authMiddleware, async (req, res) => {
   }
 });
 
+// Fase 11, M-1 (ambiental — ver docs/PLAN_FASE11_BACKLOG.md y js/ambientalEngine.js).
+// Lectura de las restricciones activas: cualquier usuario autenticado (son
+// capas institucionales, no datos privados de nadie). Alta/baja: solo admin,
+// ver el bloque junto a GET /api/admin/metrics/vep.
+app.get('/api/ambiental/restricciones', authMiddleware, async (req, res) => {
+  try {
+    res.json(await dbAPI.restriccionesAmbientales.listActivas());
+  } catch (err) {
+    logger.error('list restricciones ambientales error', err);
+    res.status(500).json({ error: 'Error listando restricciones ambientales' });
+  }
+});
+
+// Evalua una geometria propuesta (fraccionamiento/mensura) contra las
+// restricciones ambientales activas. No persiste nada: es una consulta.
+// La geometria se recibe en el body (lo que el usuario está por guardar), no
+// se relee de `parcelas` porque esa tabla no guarda geometría (ver
+// AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md y el comentario de
+// js/vepMetrics.js sobre por qué las funciones espaciales reciben la
+// geometría por parámetro).
+app.post('/api/parcelas/:id/evaluar-ambiental', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedParcela(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
+    const { geometria } = req.body || {};
+    if (!geometria) return res.status(400).json({ error: 'geometria requerida (Feature o Geometry GeoJSON)' });
+    const restricciones = await dbAPI.restriccionesAmbientales.listActivas();
+    const resultado = evaluarRestriccionesAmbientales(geometria, restricciones, turf);
+    res.json(resultado);
+  } catch (err) {
+    logger.error('evaluar ambiental error', err);
+    res.status(500).json({ error: 'Error evaluando restricciones ambientales' });
+  }
+});
+
 app.get('/api/expedientes/:id/files', authMiddleware, (req, res) => {
   dbAPI.expedientes.findById(req.params.id).then(expediente => {
     if (!expediente) return res.status(404).json({ error: 'Expediente no encontrado' });
@@ -1686,6 +1723,53 @@ app.get('/api/admin/metrics/vep', authMiddleware, adminMiddleware, async (req, r
   } catch (err) {
     logger.error('vep metrics error', err);
     res.status(500).json({ error: 'Error calculando indicadores' });
+  }
+});
+
+const TIPOS_RESTRICCION_AMBIENTAL = ['HUMEDAL', 'FAJA_RIBERENIA', 'RESERVA', 'BOSQUE_PROTEGIDO', 'VERTEDERO', 'ZONA_INUNDABLE', 'RIESGO_TECNOLOGICO', 'OTRO'];
+
+// Fase 11, M-1: alta/gestión de restricciones ambientales — solo admin
+// (son capas institucionales, no algo que cada usuario deba poder cargar).
+app.get('/api/admin/ambiental/restricciones', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    res.json(await dbAPI.restriccionesAmbientales.listAll());
+  } catch (err) {
+    logger.error('list restricciones admin error', err);
+    res.status(500).json({ error: 'Error listando restricciones ambientales' });
+  }
+});
+
+app.post('/api/admin/ambiental/restricciones', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { tipo, nombre, fuente, geojson, buffer_metros, nivel_restriccion } = req.body || {};
+    if (!TIPOS_RESTRICCION_AMBIENTAL.includes(tipo)) {
+      return res.status(400).json({ error: `tipo inválido. Use uno de: ${TIPOS_RESTRICCION_AMBIENTAL.join(', ')}` });
+    }
+    if (!geojson) return res.status(400).json({ error: 'geojson requerido (Feature o Geometry)' });
+    const creada = await dbAPI.restriccionesAmbientales.insert({
+      tipo,
+      nombre: nombre ? String(nombre).slice(0, 160) : null,
+      fuente: fuente ? String(fuente).slice(0, 160) : null,
+      geojson,
+      buffer_metros,
+      nivel_restriccion
+    });
+    res.status(201).json(creada);
+  } catch (err) {
+    logger.error('create restriccion ambiental error', err);
+    res.status(500).json({ error: 'Error creando la restricción ambiental' });
+  }
+});
+
+app.patch('/api/admin/ambiental/restricciones/:id/activo', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const existente = await dbAPI.restriccionesAmbientales.findById(req.params.id);
+    if (!existente) return res.status(404).json({ error: 'Restricción no encontrada' });
+    await dbAPI.restriccionesAmbientales.setActivo(req.params.id, !!(req.body || {}).activo);
+    res.json(await dbAPI.restriccionesAmbientales.findById(req.params.id));
+  } catch (err) {
+    logger.error('toggle restriccion ambiental error', err);
+    res.status(500).json({ error: 'Error actualizando la restricción ambiental' });
   }
 });
 
