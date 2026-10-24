@@ -26,6 +26,10 @@ if (DB_BACKEND === 'firestore') {
   logger.debug('[DB] Usando backend SQLite');
 }
 const { dbAPI, migrateFromJson, runJsonMigration } = dbModule;
+// Fase 11 (auditoria estrategica de modelo de datos, 2026-10-23): solo existe
+// en el backend SQLite por ahora (db.cjs); con DB_BACKEND=firestore se omite
+// en vez de romper el arranque — ver docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md.
+const syncParcelasFromGeojson = dbModule.syncParcelasFromGeojson || (async () => []);
 
 import { sendRecoveryEmail, sendWelcomeEmail, sendAdminAlert } from './js/mailer.js';
 import * as redticketPkg from './js/redticket-api.cjs';
@@ -1075,13 +1079,22 @@ app.post('/api/projects/:projectId/expedientes', authMiddleware, async (req, res
       return res.status(403).json({ error: 'Límite de expedientes alcanzado para tu plan', code: 'PLAN_LIMIT' });
     }
     const { name, state_json } = req.body || {};
-    const sanitizedStateJson = state_json ? JSON.stringify(sanitizeClientState(state_json)) : null;
+    const sanitizedState = state_json ? sanitizeClientState(state_json) : null;
+    const sanitizedStateJson = sanitizedState ? JSON.stringify(sanitizedState) : null;
     // Fix P0-8 (2026-10-19): project_id normalizado a uuid + id del expediente
     // tomado del objeto insertado (result.lastID no existe en sqlite3).
     const expedienteName = String(name ?? '').trim().slice(0, 120) || 'Expediente';
     const projectId = normalizeProjectId(req.params.projectId);
     const expediente = { id: crypto.randomUUID(), project_id: projectId, name: expedienteName, state_json: sanitizedStateJson, validation_results: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     await dbAPI.expedientes.insert(expediente);
+    // Fase 11: parcela como entidad direccionable (ver docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md).
+    // Se sincroniza con el objeto ya sanitizado, no releido de la columna, para
+    // no depender de como quede codificado state_json en la fila. Un error aca
+    // no debe tumbar la creacion del expediente (ya persistido): se loguea y sigue.
+    if (sanitizedState?.geojson) {
+      try { await syncParcelasFromGeojson(expediente.id, sanitizedState.geojson); }
+      catch (syncErr) { logger.error('sync parcelas (create) error', syncErr); }
+    }
     res.status(201).json(expediente);
   } catch (err) {
     logger.error('create expediente error', err);
@@ -1133,6 +1146,11 @@ app.put('/api/expedientes/:id', authMiddleware, async (req, res) => {
       state_json: sanitizedState ? JSON.stringify(sanitizedState) : null,
       validation_results: validation_results ? JSON.stringify(validation_results) : null
     });
+    // Fase 11: ver nota equivalente en POST /api/projects/:projectId/expedientes.
+    if (sanitizedState?.geojson) {
+      try { await syncParcelasFromGeojson(req.params.id, sanitizedState.geojson); }
+      catch (syncErr) { logger.error('sync parcelas (update) error', syncErr); }
+    }
     res.json({ ok: true, updated_at: new Date().toISOString() });
   } catch (err) {
     logger.error('update expediente error', err);
@@ -1149,6 +1167,132 @@ app.delete('/api/expedientes/:id', authMiddleware, (req, res) => {
     logger.error('delete expediente error', err);
     res.status(500).json({ error: 'Error eliminando expediente' });
   });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// Fase 11 (auditoria estrategica de modelo de datos, 2026-10-23): parcela
+// como entidad direccionable (CCC, matricula, propietario, linaje).
+// Ver docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md.
+// Cada endpoint verifica ownership expediente -> proyecto -> usuario (igual
+// que PUT /api/expedientes/:id) para no agregar una IDOR nueva mientras C-04
+// sigue abierto en el resto del archivo.
+// ═══════════════════════════════════════════════════════════════════
+
+async function loadOwnedExpediente(expedienteId, userId) {
+  const expediente = await dbAPI.expedientes.findById(expedienteId);
+  if (!expediente) return null;
+  const project = await dbAPI.projects.findById(expediente.project_id);
+  if (!project || project.user_id !== userId) return null;
+  return { expediente, project };
+}
+
+async function loadOwnedParcela(parcelaId, userId) {
+  const parcela = await dbAPI.parcelas.findById(parcelaId);
+  if (!parcela) return null;
+  const owned = await loadOwnedExpediente(parcela.expediente_id, userId);
+  if (!owned) return null;
+  return { parcela, ...owned };
+}
+
+app.get('/api/expedientes/:id/parcelas', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedExpediente(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Expediente no encontrado' });
+    const parcelas = await dbAPI.parcelas.listByExpediente(req.params.id);
+    const detalle = await Promise.all(parcelas.map(async (parcela) => ({
+      ...parcela,
+      cuenta_catastral: await dbAPI.cuentaCatastral.findByParcela(parcela.id),
+      matricula: await dbAPI.matriculas.findByParcela(parcela.id),
+      propietarios: await dbAPI.parcelaPropietario.listByParcela(parcela.id)
+    })));
+    res.json(detalle);
+  } catch (err) {
+    logger.error('list parcelas error', err);
+    res.status(500).json({ error: 'Error listando parcelas' });
+  }
+});
+
+app.get('/api/parcelas/:id', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedParcela(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
+    const { parcela } = owned;
+    res.json({
+      ...parcela,
+      cuenta_catastral: await dbAPI.cuentaCatastral.findByParcela(parcela.id),
+      matricula: await dbAPI.matriculas.findByParcela(parcela.id),
+      propietarios: await dbAPI.parcelaPropietario.listByParcela(parcela.id)
+    });
+  } catch (err) {
+    logger.error('get parcela error', err);
+    res.status(500).json({ error: 'Error obteniendo parcela' });
+  }
+});
+
+const TIPOS_RELACION_PARCELA = ['PROPIETARIO', 'COPROPIETARIO', 'POSEEDOR', 'USUFRUCTUARIO', 'ARRENDATARIO', 'HEREDERO'];
+
+app.post('/api/parcelas/:id/propietarios', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedParcela(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
+    const { cedula, nombre, apellido, fecha_nacimiento, telefono, correo, tipo_relacion, porcentaje, fecha_desde, fecha_hasta } = req.body || {};
+    const cedulaLimpia = String(cedula || '').trim();
+    if (!cedulaLimpia) return res.status(400).json({ error: 'cedula requerida' });
+    const tipo = TIPOS_RELACION_PARCELA.includes(tipo_relacion) ? tipo_relacion : 'PROPIETARIO';
+    const persona = await dbAPI.personas.findOrCreateByCedula({
+      cedula: cedulaLimpia,
+      nombre: String(nombre || '').trim().slice(0, 120) || null,
+      apellido: String(apellido || '').trim().slice(0, 120) || null,
+      fecha_nacimiento: fecha_nacimiento || null,
+      telefono: String(telefono || '').trim().slice(0, 40) || null,
+      correo: String(correo || '').trim().slice(0, 160) || null
+    });
+    const pct = porcentaje === undefined || porcentaje === null || porcentaje === '' ? null : Number(porcentaje);
+    const propietarios = await dbAPI.parcelaPropietario.upsert({
+      parcela_id: req.params.id,
+      persona_id: persona.id,
+      tipo_relacion: tipo,
+      porcentaje: Number.isFinite(pct) ? pct : null,
+      fecha_desde: fecha_desde || null,
+      fecha_hasta: fecha_hasta || null
+    });
+    res.status(201).json({ persona, propietarios });
+  } catch (err) {
+    logger.error('upsert propietario error', err);
+    res.status(500).json({ error: 'Error registrando propietario' });
+  }
+});
+
+app.get('/api/expedientes/:id/lineage', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedExpediente(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Expediente no encontrado' });
+    res.json(await dbAPI.parcelLineage.listByExpediente(req.params.id));
+  } catch (err) {
+    logger.error('list lineage error', err);
+    res.status(500).json({ error: 'Error listando linaje parcelario' });
+  }
+});
+
+app.post('/api/expedientes/:id/lineage', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedExpediente(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Expediente no encontrado' });
+    const { codigo_origen, codigo_destino, tipo_evento, fecha, meta } = req.body || {};
+    if (!tipo_evento) return res.status(400).json({ error: 'tipo_evento requerido' });
+    const entry = await dbAPI.parcelLineage.append({
+      expediente_id: req.params.id,
+      codigo_origen: codigo_origen ? String(codigo_origen).slice(0, 80) : null,
+      codigo_destino: codigo_destino ? String(codigo_destino).slice(0, 80) : null,
+      tipo_evento: String(tipo_evento).slice(0, 40),
+      fecha: fecha || null,
+      meta: meta && typeof meta === 'object' ? meta : null
+    });
+    res.status(201).json(entry);
+  } catch (err) {
+    logger.error('append lineage error', err);
+    res.status(500).json({ error: 'Error registrando evento de linaje' });
+  }
 });
 
 app.get('/api/expedientes/:id/files', authMiddleware, (req, res) => {

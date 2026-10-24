@@ -246,6 +246,103 @@ db.serialize(() => {
   )`);
   db.run("CREATE INDEX IF NOT EXISTS idx_ip_events_ip ON ip_events(ip)");
   db.run("CREATE INDEX IF NOT EXISTS idx_ip_events_user ON ip_events(user_id)");
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Fase 11 (auditoria estrategica de modelo de datos, 2026-10-23): la
+  // parcela pasa a ser una entidad direccionable (una fila por feature del
+  // GeoJSON de cada expediente), en vez de vivir solo como atributo suelto
+  // dentro de expedientes.state_json. Cuenta Corriente Catastral, matricula
+  // y propietario se enganchan a esa fila, no al expediente completo.
+  // ═══════════════════════════════════════════════════════════════════
+
+  db.run(`CREATE TABLE IF NOT EXISTS parcelas (
+    id TEXT PRIMARY KEY,
+    expediente_id TEXT NOT NULL REFERENCES expedientes(id) ON DELETE CASCADE,
+    feature_index INTEGER NOT NULL,
+    codigo TEXT,
+    padron TEXT,
+    departamento TEXT,
+    distrito TEXT,
+    zona TEXT,
+    manzana TEXT,
+    lote TEXT,
+    propietario_raw TEXT,
+    finca_raw TEXT,
+    matricula_raw TEXT,
+    sup_sig_m REAL,
+    sup_legal REAL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(expediente_id, feature_index)
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_parcelas_expediente ON parcelas(expediente_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_parcelas_codigo ON parcelas(codigo)');
+
+  db.run(`CREATE TABLE IF NOT EXISTS cuenta_catastral (
+    id TEXT PRIMARY KEY,
+    parcela_id TEXT NOT NULL UNIQUE REFERENCES parcelas(id) ON DELETE CASCADE,
+    codigo_ccc TEXT NOT NULL UNIQUE,
+    departamento TEXT,
+    distrito TEXT,
+    zona TEXT,
+    manzana TEXT,
+    lote TEXT,
+    padron_nro TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_ccc_codigo ON cuenta_catastral(codigo_ccc)');
+
+  db.run(`CREATE TABLE IF NOT EXISTS personas (
+    id TEXT PRIMARY KEY,
+    cedula TEXT NOT NULL UNIQUE,
+    nombre TEXT,
+    apellido TEXT,
+    fecha_nacimiento TEXT,
+    telefono TEXT,
+    correo TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS parcela_propietario (
+    id TEXT PRIMARY KEY,
+    parcela_id TEXT NOT NULL REFERENCES parcelas(id) ON DELETE CASCADE,
+    persona_id TEXT NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
+    tipo_relacion TEXT NOT NULL DEFAULT 'PROPIETARIO',
+    porcentaje REAL,
+    fecha_desde TEXT,
+    fecha_hasta TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(parcela_id, persona_id, tipo_relacion)
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_pp_parcela ON parcela_propietario(parcela_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_pp_persona ON parcela_propietario(persona_id)');
+
+  db.run(`CREATE TABLE IF NOT EXISTS matriculas (
+    id TEXT PRIMARY KEY,
+    parcela_id TEXT NOT NULL UNIQUE REFERENCES parcelas(id) ON DELETE CASCADE,
+    matricula TEXT,
+    finca TEXT,
+    folio TEXT,
+    protocolo TEXT,
+    escribano TEXT,
+    estado TEXT NOT NULL DEFAULT 'SIN_VERIFICAR',
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS parcel_lineage (
+    id TEXT PRIMARY KEY,
+    expediente_id TEXT NOT NULL REFERENCES expedientes(id) ON DELETE CASCADE,
+    codigo_origen TEXT,
+    codigo_destino TEXT,
+    tipo_evento TEXT NOT NULL,
+    fecha TEXT,
+    meta_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_lineage_expediente ON parcel_lineage(expediente_id)');
 });
 
 // async wrappers for DB calls
@@ -839,7 +936,223 @@ function transaction(fn) {
   });
 }
 
-const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log };
+// ═══════════════════════════════════════════════════════════════════
+// Fase 11 (auditoria estrategica de modelo de datos, 2026-10-23):
+// parcelas / cuenta_catastral / personas / parcela_propietario /
+// matriculas / parcel_lineage. Ver docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md
+// ═══════════════════════════════════════════════════════════════════
+
+function extractFeatureProp(props, upperKey, lowerKey) {
+  const value = props?.[upperKey] ?? props?.[lowerKey];
+  return (value === undefined || value === null || value === '') ? null : value;
+}
+
+// Identificador de Cuenta Corriente Catastral. No hay un formato oficial SNC
+// todavia (ver auditoria estrategica, punto 1): se arma con los campos
+// territoriales disponibles + un sufijo de la parcela para garantizar unicidad
+// aunque dos features compartan departamento/distrito/zona/manzana/lote/padron.
+function buildCodigoCcc(parcela) {
+  const norm = (v) => (v === null || v === undefined || String(v).trim() === '')
+    ? '0' : String(v).trim().replace(/[^A-Za-z0-9]/g, '');
+  const partes = [parcela.departamento, parcela.distrito, parcela.zona, parcela.manzana, parcela.lote, parcela.padron].map(norm);
+  return `${partes.join('-')}-${String(parcela.id).slice(0, 8)}`;
+}
+
+const parcelas = {
+  // Una fila por feature del GeoJSON de un expediente. Upsert por
+  // (expediente_id, feature_index): nunca se borran filas aunque un feature
+  // desaparezca de una edicion posterior (principio catastral "nunca eliminar
+  // parcelas" — ver auditoria estrategica, punto 3), y se preserva el `id`
+  // entre resguardos para no romper cuenta_catastral/matriculas/propietarios
+  // ya enganchados a esa parcela.
+  upsertFromFeature(expedienteId, featureIndex, props = {}) {
+    const now = new Date().toISOString();
+    const codigo = extractFeatureProp(props, 'CODIGO', 'codigo');
+    const padron = extractFeatureProp(props, 'PADRON', 'padron');
+    const departamento = extractFeatureProp(props, 'DEPARTAMEN', 'departamento');
+    const distrito = extractFeatureProp(props, 'DISTRITO', 'distrito');
+    const zona = extractFeatureProp(props, 'ZONA', 'zona');
+    const manzana = extractFeatureProp(props, 'MANZANA', 'manzana');
+    const lote = extractFeatureProp(props, 'LOTE', 'lote');
+    const propietarioRaw = extractFeatureProp(props, 'PROPIETARIO', 'propietario');
+    const fincaRaw = extractFeatureProp(props, 'FINCA', 'finca');
+    const matriculaRaw = extractFeatureProp(props, 'MATRICULA', 'matricula');
+    const supSigMRaw = extractFeatureProp(props, 'SUP_SIG_M', 'sup_sig_m');
+    const supLegalRaw = extractFeatureProp(props, 'SUP_LEGAL', 'sup_legal');
+    const supSigM = supSigMRaw === null ? NaN : Number(supSigMRaw);
+    const supLegal = supLegalRaw === null ? NaN : Number(supLegalRaw);
+    const sql = `INSERT INTO parcelas (
+        id, expediente_id, feature_index, codigo, padron, departamento, distrito, zona, manzana, lote,
+        propietario_raw, finca_raw, matricula_raw, sup_sig_m, sup_legal, created_at, updated_at
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ON CONFLICT(expediente_id, feature_index) DO UPDATE SET
+        codigo = excluded.codigo, padron = excluded.padron, departamento = excluded.departamento,
+        distrito = excluded.distrito, zona = excluded.zona, manzana = excluded.manzana, lote = excluded.lote,
+        propietario_raw = excluded.propietario_raw, finca_raw = excluded.finca_raw,
+        matricula_raw = excluded.matricula_raw, sup_sig_m = excluded.sup_sig_m,
+        sup_legal = excluded.sup_legal, updated_at = excluded.updated_at`;
+    return promisifyRun(sql, [
+      crypto.randomUUID(), expedienteId, featureIndex, codigo, padron, departamento, distrito, zona, manzana, lote,
+      propietarioRaw, fincaRaw, matriculaRaw,
+      Number.isFinite(supSigM) ? supSigM : null, Number.isFinite(supLegal) ? supLegal : null,
+      now, now
+    ]).then(() => this.findByExpedienteAndIndex(expedienteId, featureIndex));
+  },
+  findByExpedienteAndIndex(expedienteId, featureIndex) {
+    return promisifyGet('SELECT * FROM parcelas WHERE expediente_id = ? AND feature_index = ?', [expedienteId, featureIndex]);
+  },
+  listByExpediente(expedienteId) {
+    return promisifyQuery('SELECT * FROM parcelas WHERE expediente_id = ? ORDER BY feature_index ASC', [expedienteId]);
+  },
+  findById(id) {
+    return promisifyGet('SELECT * FROM parcelas WHERE id = ?', [id]);
+  }
+};
+
+const cuentaCatastral = {
+  // Crea la CCC una sola vez por parcela; no la vuelve a tocar (es
+  // inmutable una vez asignada, aunque la geometria/atributos se editen despues).
+  ensureForParcela(parcela) {
+    return this.findByParcela(parcela.id).then(existing => {
+      if (existing) return existing;
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const codigoCcc = buildCodigoCcc(parcela);
+      return promisifyRun(
+        `INSERT INTO cuenta_catastral (id, parcela_id, codigo_ccc, departamento, distrito, zona, manzana, lote, padron_nro, created_at, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+        [id, parcela.id, codigoCcc, parcela.departamento, parcela.distrito, parcela.zona, parcela.manzana, parcela.lote, parcela.padron, now, now]
+      ).then(() => promisifyGet('SELECT * FROM cuenta_catastral WHERE id = ?', [id]));
+    });
+  },
+  findByParcela(parcelaId) {
+    return promisifyGet('SELECT * FROM cuenta_catastral WHERE parcela_id = ?', [parcelaId]);
+  },
+  findByCodigo(codigoCcc) {
+    return promisifyGet('SELECT * FROM cuenta_catastral WHERE codigo_ccc = ?', [codigoCcc]);
+  }
+};
+
+const personas = {
+  // No se migra automaticamente desde el string PROPIETARIO del GeoJSON: no
+  // hay cedula en ese dato, y la cedula es la clave unica de esta tabla (ver
+  // auditoria estrategica, punto 2). El alta es explicita, vía el endpoint
+  // POST /api/parcelas/:id/propietarios.
+  findOrCreateByCedula({ cedula, nombre, apellido, fecha_nacimiento, telefono, correo }) {
+    const ced = String(cedula || '').trim();
+    if (!ced) return Promise.reject(new Error('cedula requerida'));
+    return this.findByCedula(ced).then(existing => {
+      if (existing) return existing;
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
+      return promisifyRun(
+        `INSERT INTO personas (id, cedula, nombre, apellido, fecha_nacimiento, telefono, correo, created_at, updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?)`,
+        [id, ced, nombre || null, apellido || null, fecha_nacimiento || null, telefono || null, correo || null, now, now]
+      ).then(() => promisifyGet('SELECT * FROM personas WHERE id = ?', [id]));
+    });
+  },
+  findByCedula(cedula) {
+    return promisifyGet('SELECT * FROM personas WHERE cedula = ?', [String(cedula || '').trim()]);
+  }
+};
+
+const parcelaPropietario = {
+  // Relacion N:M con historial: la misma persona puede tener mas de una
+  // relacion sobre la misma parcela (p. ej. PROPIETARIO y luego HEREDERO),
+  // pero (parcela, persona, tipo_relacion) es unico — reintentar el mismo
+  // alta actualiza porcentaje/fechas en vez de duplicar fila.
+  upsert({ parcela_id, persona_id, tipo_relacion = 'PROPIETARIO', porcentaje = null, fecha_desde = null, fecha_hasta = null }) {
+    const sql = `INSERT INTO parcela_propietario (id, parcela_id, persona_id, tipo_relacion, porcentaje, fecha_desde, fecha_hasta, created_at)
+      VALUES (?,?,?,?,?,?,?,?)
+      ON CONFLICT(parcela_id, persona_id, tipo_relacion) DO UPDATE SET
+        porcentaje = excluded.porcentaje, fecha_desde = excluded.fecha_desde, fecha_hasta = excluded.fecha_hasta`;
+    return promisifyRun(sql, [crypto.randomUUID(), parcela_id, persona_id, tipo_relacion, porcentaje, fecha_desde, fecha_hasta, new Date().toISOString()])
+      .then(() => this.listByParcela(parcela_id));
+  },
+  listByParcela(parcelaId) {
+    return promisifyQuery(
+      `SELECT pp.*, p.cedula, p.nombre, p.apellido
+       FROM parcela_propietario pp JOIN personas p ON p.id = pp.persona_id
+       WHERE pp.parcela_id = ? ORDER BY datetime(pp.created_at) ASC`,
+      [parcelaId]
+    );
+  }
+};
+
+const matriculas = {
+  // Sincroniza finca/matricula desde el GeoJSON SOLO mientras la fila sigue
+  // 'SIN_VERIFICAR'. En cuanto un escribano la verifica/corrige (estado !=
+  // SIN_VERIFICAR via update()), una resincronizacion por edicion de geometria
+  // ya no pisa ese trabajo.
+  ensureForParcela(parcela) {
+    if (!parcela.finca_raw && !parcela.matricula_raw) return this.findByParcela(parcela.id);
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const sql = `INSERT INTO matriculas (id, parcela_id, matricula, finca, created_at, updated_at)
+      VALUES (?,?,?,?,?,?)
+      ON CONFLICT(parcela_id) DO UPDATE SET
+        matricula = CASE WHEN estado = 'SIN_VERIFICAR' THEN excluded.matricula ELSE matricula END,
+        finca = CASE WHEN estado = 'SIN_VERIFICAR' THEN excluded.finca ELSE finca END,
+        updated_at = CASE WHEN estado = 'SIN_VERIFICAR' THEN excluded.updated_at ELSE updated_at END`;
+    return promisifyRun(sql, [id, parcela.id, parcela.matricula_raw, parcela.finca_raw, now, now])
+      .then(() => this.findByParcela(parcela.id));
+  },
+  findByParcela(parcelaId) {
+    return promisifyGet('SELECT * FROM matriculas WHERE parcela_id = ?', [parcelaId]);
+  },
+  update(id, fields = {}) {
+    const sets = []; const params = [];
+    for (const key of ['matricula', 'finca', 'folio', 'protocolo', 'escribano', 'estado']) {
+      if (fields[key] !== undefined) { sets.push(`${key} = ?`); params.push(fields[key]); }
+    }
+    if (!sets.length) return Promise.resolve({ changes: 0 });
+    sets.push('updated_at = ?'); params.push(new Date().toISOString());
+    params.push(id);
+    return promisifyRun(`UPDATE matriculas SET ${sets.join(', ')} WHERE id = ?`, params);
+  }
+};
+
+const parcelLineage = {
+  // Version server-side de js/state.js `parcelLineage` (hasta ahora solo en
+  // localStorage, ver AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md P-08).
+  append(entry) {
+    const id = crypto.randomUUID();
+    const sql = `INSERT INTO parcel_lineage (id, expediente_id, codigo_origen, codigo_destino, tipo_evento, fecha, meta_json, created_at)
+      VALUES (?,?,?,?,?,?,?,?)`;
+    return promisifyRun(sql, [
+      id, entry.expediente_id, entry.codigo_origen || null, entry.codigo_destino || null,
+      entry.tipo_evento, entry.fecha || new Date().toISOString(),
+      entry.meta ? JSON.stringify(entry.meta) : null, new Date().toISOString()
+    ]).then(() => promisifyGet('SELECT * FROM parcel_lineage WHERE id = ?', [id]));
+  },
+  listByExpediente(expedienteId) {
+    return promisifyQuery('SELECT * FROM parcel_lineage WHERE expediente_id = ? ORDER BY datetime(created_at) ASC', [expedienteId])
+      .then(rows => rows.map(r => {
+        try { r.meta = r.meta_json ? JSON.parse(r.meta_json) : null; } catch { r.meta = null; }
+        return r;
+      }));
+  }
+};
+
+// Orquesta la sincronizacion completa para un expediente: una parcela por
+// feature + su CCC + su matricula (si trae FINCA/MATRICULA). Se llama con el
+// OBJETO geojson ya sanitizado (no releido de state_json, para no depender
+// de como quede codificada esa columna — ver nota en server-api.js).
+async function syncParcelasFromGeojson(expedienteId, geojson) {
+  const features = Array.isArray(geojson?.features) ? geojson.features : [];
+  const resultados = [];
+  for (let i = 0; i < features.length; i++) {
+    const props = features[i]?.properties || {};
+    const parcela = await parcelas.upsertFromFeature(expedienteId, i, props);
+    const ccc = await cuentaCatastral.ensureForParcela(parcela);
+    const matricula = await matriculas.ensureForParcela(parcela);
+    resultados.push({ parcela, cuenta_catastral: ccc, matricula });
+  }
+  return resultados;
+}
+
+const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log, parcelas, cuentaCatastral, personas, parcelaPropietario, matriculas, parcelLineage };
 const dbAPI = { ...api, health, transaction };
 
 // Migraciones JSON legacy: el esquema actual ya se crea con CREATE TABLE IF NOT EXISTS.
@@ -897,5 +1210,7 @@ module.exports = {
   dbAPI, migrateFromJson, runJsonMigration, files_json_value, normalizeFilesJson,
   // Modulo 9 — mesa de entrada
   WORKFLOW_EXPEDIENTE, estadoValido, puedeTransitar, exigeHomologacion,
-  expediente_historial, transicionarExpediente
+  expediente_historial, transicionarExpediente,
+  // Fase 11 — parcela como entidad direccionable (CCC, personas, matriculas, linaje)
+  syncParcelasFromGeojson
 };
