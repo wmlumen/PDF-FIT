@@ -364,6 +364,47 @@ db.serialize(() => {
   )`);
   db.run('CREATE INDEX IF NOT EXISTS idx_restricciones_tipo ON restricciones_ambientales(tipo)');
   db.run('CREATE INDEX IF NOT EXISTS idx_restricciones_activo ON restricciones_ambientales(activo)');
+
+  // Fase 11, M-2 (POUT — ver docs/PLAN_FASE11_BACKLOG.md). `usos_suelo` es el
+  // catalogo normativo de zonas (13 zonas AMA, seedeado desde
+  // scripts/import-pout-zonas.mjs con los datos reales de
+  // docs/pout-manuales/generador/_pout_modelo.py). `zonas_pout` son los
+  // poligonos reales por municipio (cargados desde los shapefiles de
+  // docs/pout-manuales/); `codigo_zona` puede ser NULL cuando el shapefile
+  // trae una zona municipal sin equivalente en el catalogo de 13 zonas
+  // (p. ej. "Casco histórico", "Subestación de 220KV") — se deja constancia
+  // explicita en vez de forzar un mapeo inventado.
+  db.run(`CREATE TABLE IF NOT EXISTS usos_suelo (
+    id TEXT PRIMARY KEY,
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    tipo TEXT,
+    descripcion TEXT,
+    uso_permitido TEXT,
+    uso_condicionado TEXT,
+    usos_no_permitidos TEXT,
+    altura TEXT,
+    tasa_ocupacion TEXT,
+    tasa_permeabilidad TEXT,
+    edificabilidad TEXT,
+    retiros TEXT,
+    fuente TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS zonas_pout (
+    id TEXT PRIMARY KEY,
+    municipio TEXT NOT NULL,
+    codigo_zona TEXT,
+    nombre_zona_fuente TEXT,
+    geojson TEXT NOT NULL,
+    fuente TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_zonas_pout_municipio ON zonas_pout(municipio)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_zonas_pout_codigo ON zonas_pout(codigo_zona)');
 });
 
 // async wrappers for DB calls
@@ -1210,7 +1251,63 @@ const restriccionesAmbientales = {
   }
 };
 
-const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log, parcelas, cuentaCatastral, personas, parcelaPropietario, matriculas, parcelLineage, restriccionesAmbientales };
+const usosSuelo = {
+  // Fase 11, M-2: catalogo normativo (13 zonas AMA). Se carga una vez con
+  // scripts/import-pout-zonas.mjs, desde los datos reales de
+  // docs/pout-manuales/generador/_pout_modelo.py — no se inventa en este archivo.
+  upsertByCodigo(data) {
+    const now = new Date().toISOString();
+    const arr = (v) => JSON.stringify(Array.isArray(v) ? v : []);
+    const sql = `INSERT INTO usos_suelo (id, codigo, nombre, tipo, descripcion, uso_permitido, uso_condicionado, usos_no_permitidos, altura, tasa_ocupacion, tasa_permeabilidad, edificabilidad, retiros, fuente, created_at, updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ON CONFLICT(codigo) DO UPDATE SET
+        nombre=excluded.nombre, tipo=excluded.tipo, descripcion=excluded.descripcion,
+        uso_permitido=excluded.uso_permitido, uso_condicionado=excluded.uso_condicionado,
+        usos_no_permitidos=excluded.usos_no_permitidos, altura=excluded.altura,
+        tasa_ocupacion=excluded.tasa_ocupacion, tasa_permeabilidad=excluded.tasa_permeabilidad,
+        edificabilidad=excluded.edificabilidad, retiros=excluded.retiros,
+        fuente=excluded.fuente, updated_at=excluded.updated_at`;
+    return promisifyRun(sql, [
+      crypto.randomUUID(), data.codigo, data.nombre, data.tipo || null, data.descripcion || null,
+      arr(data.uso_permitido), arr(data.uso_condicionado), arr(data.usos_no_permitidos),
+      data.altura || null, String(data.tasa_ocupacion ?? ''), String(data.tasa_permeabilidad ?? ''),
+      String(data.edificabilidad ?? ''), data.retiros || null, data.fuente || null, now, now
+    ]).then(() => this.findByCodigo(data.codigo));
+  },
+  findByCodigo(codigo) {
+    return promisifyGet('SELECT * FROM usos_suelo WHERE codigo = ?', [codigo]);
+  },
+  listAll() {
+    return promisifyQuery('SELECT * FROM usos_suelo ORDER BY codigo ASC');
+  }
+};
+
+const zonasPout = {
+  // Fase 11, M-2: poligonos reales por municipio (ver scripts/import-pout-zonas.mjs).
+  insert(data) {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const sql = `INSERT INTO zonas_pout (id, municipio, codigo_zona, nombre_zona_fuente, geojson, fuente, created_at, updated_at)
+      VALUES (?,?,?,?,?,?,?,?)`;
+    return promisifyRun(sql, [
+      id, data.municipio, data.codigo_zona || null, data.nombre_zona_fuente || null,
+      typeof data.geojson === 'string' ? data.geojson : JSON.stringify(data.geojson),
+      data.fuente || null, now, now
+    ]).then(() => id);
+  },
+  listByMunicipio(municipio) {
+    return promisifyQuery('SELECT * FROM zonas_pout WHERE municipio = ?', [municipio]);
+  },
+  countByMunicipio() {
+    return promisifyQuery('SELECT municipio, COUNT(*) AS n FROM zonas_pout GROUP BY municipio');
+  },
+  // Para reimportar un municipio de forma idempotente (ver scripts/import-pout-zonas.mjs).
+  deleteByMunicipio(municipio) {
+    return promisifyRun('DELETE FROM zonas_pout WHERE municipio = ?', [municipio]);
+  }
+};
+
+const api = { users, plans, projects, expedientes, payments, usage, public_reports, recovery, temp_projects, admin_audit, admin_audit_log, parcelas, cuentaCatastral, personas, parcelaPropietario, matriculas, parcelLineage, restriccionesAmbientales, usosSuelo, zonasPout };
 const dbAPI = { ...api, health, transaction };
 
 // Migraciones JSON legacy: el esquema actual ya se crea con CREATE TABLE IF NOT EXISTS.

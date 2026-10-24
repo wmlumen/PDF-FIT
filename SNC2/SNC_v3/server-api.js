@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt';
 import { PLANS, resolvePlan, canCreateProject, canCreateExpediente, canExport } from './js/plans.js';
 import { calcularCatalogoCompleto } from './js/vepMetrics.js';
 import { evaluarRestriccionesAmbientales } from './js/ambientalEngine.js';
+import { evaluarCompatibilidadUso } from './js/poutEngine.js';
 import * as turf from '@turf/turf';
 import { ENV } from './config.env.js';
 import { createRequire } from 'node:module';
@@ -1330,6 +1331,59 @@ app.post('/api/parcelas/:id/evaluar-ambiental', authMiddleware, async (req, res)
   } catch (err) {
     logger.error('evaluar ambiental error', err);
     res.status(500).json({ error: 'Error evaluando restricciones ambientales' });
+  }
+});
+
+// Fase 11, M-2 (POUT — ver docs/PLAN_FASE11_BACKLOG.md, js/poutEngine.js y
+// scripts/import-pout-zonas.mjs). `usos_suelo` es el catálogo normativo (13
+// zonas AMA); `zonas_pout` son polígonos reales por municipio.
+app.get('/api/pout/usos-suelo', authMiddleware, async (req, res) => {
+  try {
+    const catalogo = await dbAPI.usosSuelo.listAll();
+    res.json(catalogo.map(u => ({
+      ...u,
+      uso_permitido: JSON.parse(u.uso_permitido || '[]'),
+      uso_condicionado: JSON.parse(u.uso_condicionado || '[]'),
+      usos_no_permitidos: JSON.parse(u.usos_no_permitidos || '[]')
+    })));
+  } catch (err) {
+    logger.error('list usos_suelo error', err);
+    res.status(500).json({ error: 'Error listando el catálogo de usos de suelo' });
+  }
+});
+
+app.get('/api/pout/zonas/cobertura', authMiddleware, async (req, res) => {
+  try {
+    res.json(await dbAPI.zonasPout.countByMunicipio());
+  } catch (err) {
+    logger.error('pout cobertura error', err);
+    res.status(500).json({ error: 'Error listando cobertura POUT por municipio' });
+  }
+});
+
+// Evalua una geometria propuesta + un uso de suelo contra la zonificacion
+// real del municipio. No persiste nada; misma logica de ownership y de
+// recibir la geometria en el body que /evaluar-ambiental.
+app.post('/api/parcelas/:id/evaluar-pout', authMiddleware, async (req, res) => {
+  try {
+    const owned = await loadOwnedParcela(req.params.id, req.user.userId);
+    if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
+    const { geometria, uso_propuesto, municipio } = req.body || {};
+    if (!geometria) return res.status(400).json({ error: 'geometria requerida (Feature o Geometry GeoJSON)' });
+    if (!uso_propuesto) return res.status(400).json({ error: 'uso_propuesto requerido (texto, p. ej. "Vivienda unifamiliar")' });
+    // No se infiere de parcela.departamento: departamento (p. ej. "Central") no
+    // es lo mismo que municipio (p. ej. "Capiatá") — inferirlo mal daria una
+    // evaluacion silenciosamente incorrecta. Se exige explicito.
+    if (!municipio) return res.status(400).json({ error: 'municipio requerido (p. ej. "capiata")' });
+    const [zonas, usosSuelo] = await Promise.all([
+      dbAPI.zonasPout.listByMunicipio(String(municipio).toLowerCase()),
+      dbAPI.usosSuelo.listAll()
+    ]);
+    const resultado = evaluarCompatibilidadUso(geometria, zonas, usosSuelo, uso_propuesto, turf);
+    res.json(resultado);
+  } catch (err) {
+    logger.error('evaluar pout error', err);
+    res.status(500).json({ error: 'Error evaluando compatibilidad POUT' });
   }
 });
 
