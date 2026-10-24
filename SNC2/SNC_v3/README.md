@@ -147,6 +147,7 @@ Notas:
 - [Auditoría técnica 2026-10-18](docs/AUDITORIA_SNC_v3_2026-10-18.md) (seguridad — veredicto vigente)
 - [Auditoría de arquitectura y rendimiento 2026-10-23](docs/AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md) (complementaria, no de seguridad)
 - [Auditoría estratégica de modelo de datos (Fase 11) 2026-10-23](docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md) (Cuenta Corriente Catastral, Persona↔Parcela, registral, BI)
+- [Backlog Fase 11 y rendimiento](docs/PLAN_FASE11_BACKLOG.md) (qué sigue, en orden, sin bloquear la Fase 0/1 de seguridad)
 - [Plan de remediación](docs/PLAN_REMEDIACION_AUDITORIA.md)
 - [Espejo de auditoría para agentes](graphify-out/auditoria/README.md) · [`auditoria.json`](graphify-out/auditoria/auditoria.json)
 - [Grafo del repositorio (reporte)](graphify-out/GRAPH_REPORT.md)
