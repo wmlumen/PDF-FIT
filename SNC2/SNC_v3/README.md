@@ -148,6 +148,7 @@ Notas:
 - [Auditoría de arquitectura y rendimiento 2026-10-23](docs/AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md) (complementaria, no de seguridad)
 - [Auditoría estratégica de modelo de datos (Fase 11) 2026-10-23](docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md) (Cuenta Corriente Catastral, Persona↔Parcela, registral, BI)
 - [Backlog Fase 11 y rendimiento](docs/PLAN_FASE11_BACKLOG.md) (qué sigue, en orden, sin bloquear la Fase 0/1 de seguridad)
+- [Mapeo propuesta PostgreSQL 2026-10-24](docs/MAPEO_PROPUESTA_POSTGRESQL_2026-10-24.md) (qué ya existe con otro nombre, qué falta, qué sí exige migrar motor)
 - [Plan de remediación](docs/PLAN_REMEDIACION_AUDITORIA.md)
 - [Espejo de auditoría para agentes](graphify-out/auditoria/README.md) · [`auditoria.json`](graphify-out/auditoria/auditoria.json)
 - [Grafo del repositorio (reporte)](graphify-out/GRAPH_REPORT.md)

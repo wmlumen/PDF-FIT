@@ -6,6 +6,10 @@
 > [`AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md`](AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md).
 > La auditoría de seguridad del 2026-10-18 y su plan de remediación siguen siendo la prioridad — este
 > backlog es independiente y no la reemplaza ni la retrasa (ver §4 "Orden con la Fase 0/1 de seguridad").
+>
+> Los ítems M-8 a M-11 (§2) salen de contrastar una propuesta de arquitectura PostgreSQL del usuario
+> contra el esquema real — ver el mapeo completo en
+> [`MAPEO_PROPUESTA_POSTGRESQL_2026-10-24.md`](MAPEO_PROPUESTA_POSTGRESQL_2026-10-24.md).
 
 ---
 
@@ -47,6 +51,10 @@
 | M-5 | **Modelo registral más allá de `matriculas`**: cadena dominial (transferencias históricas), alertas de embargo/hipoteca | Fase 11 (`matriculas`) ✅ | tabla nueva `transferencias_dominio` o similar | Un intento de transferir/fraccionar una parcela con `matriculas.estado = 'EMBARGADA'` (nuevo valor de `estado`) se bloquea o advierte |
 | M-6 | **Data Warehouse / modelo estrella**: `FactExpedientes`, `DimParcela`, `DimPropietario`, `DimDistrito`, `DimTiempo` | M-1 a M-5 (tiene sentido con datos operacionales reales) | — | Explícitamente de backlog largo: no empezar sin al menos 4-5 tablas operacionales pobladas con datos reales de un municipio |
 | M-7 | **Migración SQLite → PostgreSQL/PostGIS** | — (proyecto de infraestructura aparte) | — | Fuera de alcance de este backlog; diseñar el esquema de destino incorporando M-1 a M-5 antes de migrar, no migrar el modelo plano actual |
+| M-8 | `escrituras` + `escritura_parcela` (notarial real; hoy `js/app-notarial.js` solo lee atributos sueltos del GeoJSON) | Fase 11 (`matriculas`) ✅ | `db.cjs`, `server-api.js` | Mismo patrón que `matriculas`: tabla nueva, endpoint con ownership, test de regresión |
+| M-9 | `departamentos`/`distritos`/`barrios` como catálogo propio (hoy texto libre en `parcelas.departamento`/`.distrito`) | — | `db.cjs` | Migración que no rompe los valores existentes; `parcelas` pasa a tener FK en vez de texto suelto |
+| M-10 | `auditoria` genérica más allá de `admin_audit_log` (hoy solo cubre acciones `/api/admin/*`) | — | `db.cjs`, `server-api.js` | Definir qué operaciones instrumentar sin duplicar `expediente_historial` (que ya tiene cadena de hash) |
+| M-11 | Vistas SQL (`CREATE VIEW`) para los indicadores que `js/vepMetrics.js` hoy calcula recorriendo filas en JS | `js/vepMetrics.js` ✅ | `db.cjs` | Al menos `IND-CAT-01` resuelto como `VIEW` consultable directo, no solo vía la función JS |
 
 ---
 
