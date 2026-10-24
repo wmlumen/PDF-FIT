@@ -1006,6 +1006,13 @@ const parcelas = {
   },
   findById(id) {
     return promisifyGet('SELECT * FROM parcelas WHERE id = ?', [id]);
+  },
+  // Para el dashboard de indicadores (admin): agregado de todas las parcelas,
+  // sin filtrar por proyecto/usuario (solo detras de adminMiddleware).
+  // Con LIMIT explicito — ver P-07 de AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md
+  // (no repetir el patron de "listado sin tope" que esa auditoria señalo).
+  listAll({ limit = 5000 } = {}) {
+    return promisifyQuery('SELECT * FROM parcelas ORDER BY datetime(created_at) DESC LIMIT ?', [Number(limit) || 5000]);
   }
 };
 

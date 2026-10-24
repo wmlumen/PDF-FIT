@@ -498,6 +498,7 @@ function setupTabs() {
       switchTab(btn.dataset.tab);
       if (btn.dataset.tab === 'dependencias') loadDependencias();
       if (btn.dataset.tab === 'map-layout') initMapLayoutAdminTab();
+      if (btn.dataset.tab === 'vep-metrics') loadVepMetricsTab();
     });
   });
 }
@@ -655,6 +656,80 @@ async function loadDependencias() {
   } catch (e) {
     listEl.innerHTML = `<p class="text-red-400 text-sm">Error: ${e.message}</p>`;
   }
+}
+
+// ============================================================
+// PANEL DE INDICADORES MUNICIPALES VEP/MEF (TAB 10)
+// Consume GET /api/admin/metrics/vep (js/vepMetrics.js del lado servidor).
+// Ningun numero se inventa en el cliente: lo que el motor marca como
+// `disponible: false` se muestra tal cual, con el motivo.
+// ============================================================
+function formatearNumero(valor, decimales = 0) {
+  if (typeof valor !== 'number' || !Number.isFinite(valor)) return '—';
+  return valor.toLocaleString('es-PY', { maximumFractionDigits: decimales, minimumFractionDigits: decimales });
+}
+
+function renderVepReportingCards(reporting) {
+  const cards = [
+    { label: 'Parcelas evaluadas', valor: formatearNumero(reporting.totalParcelas) },
+    { label: 'Superficie total', valor: `${formatearNumero(reporting.superficieTotalHa, 2)} ha` },
+    { label: 'Distritos representados', valor: formatearNumero(reporting.distritosRepresentados) },
+    { label: 'Matrículas verificadas', valor: formatearNumero(reporting.matriculas.verificadas) },
+    { label: 'Propietarios únicos', valor: formatearNumero(reporting.propietarios.personasUnicas) },
+    { label: 'Parcelas sin propietario', valor: formatearNumero(reporting.propietarios.parcelasSinPropietario) }
+  ];
+  return cards.map(c => `
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
+      <div class="text-2xl font-bold text-white">${c.valor}</div>
+      <div class="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">${c.label}</div>
+    </div>`).join('');
+}
+
+function renderVepIndicadoresLista(indicadores) {
+  return Object.entries(indicadores).map(([codigo, info]) => {
+    if (info.disponible === false) {
+      return `<div class="flex items-start gap-2 text-gray-500">
+        <span class="text-gray-600 shrink-0">${codigo}</span>
+        <span>no disponible — ${info.motivo}</span>
+      </div>`;
+    }
+    const valor = typeof info.valor === 'number' ? `${formatearNumero(info.valor, 2)} ${info.unidad || ''}`.trim() : JSON.stringify(info.valor);
+    return `<div class="flex items-start gap-2 text-emerald-400">
+      <span class="shrink-0">${codigo}</span>
+      <span>${info.nombre || ''} = <strong>${valor}</strong></span>
+    </div>`;
+  }).join('');
+}
+
+export async function loadVepMetricsTab() {
+  const loadingEl = document.getElementById('vepMetricsLoading');
+  const contentEl = document.getElementById('vepMetricsContent');
+  const errorEl = document.getElementById('vepMetricsError');
+  if (!loadingEl || !contentEl || !errorEl) return;
+  loadingEl.classList.remove('hidden');
+  contentEl.classList.add('hidden');
+  errorEl.classList.add('hidden');
+  try {
+    const data = await fetchJSON('/api/admin/metrics/vep');
+    document.getElementById('vepReportingCards').innerHTML = renderVepReportingCards(data.reportingBasico);
+    const cat01 = data.indicadores['IND-CAT-01'];
+    if (cat01?.disponible === false) {
+      document.getElementById('vepIndCat01').textContent = 'No disponible';
+      document.getElementById('vepIndCat01Nota').textContent = cat01.motivo;
+    } else {
+      document.getElementById('vepIndCat01').textContent = `${formatearNumero(cat01.valor, 1)} %`;
+      document.getElementById('vepIndCat01Nota').textContent = `Meta VEP: ≥ ${cat01.metaVEP}% · ${cat01.aproximacion}`;
+    }
+    document.getElementById('vepIndicadoresLista').innerHTML = renderVepIndicadoresLista(data.indicadores);
+    loadingEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+  } catch (e) {
+    loadingEl.classList.add('hidden');
+    errorEl.classList.remove('hidden');
+    errorEl.textContent = `No se pudieron cargar los indicadores: ${e.message}`;
+  }
+  const btnRefresh = document.getElementById('refreshVepMetrics');
+  if (btnRefresh) btnRefresh.onclick = () => loadVepMetricsTab();
 }
 
 // ============================================================

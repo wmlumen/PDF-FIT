@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { PLANS, resolvePlan, canCreateProject, canCreateExpediente, canExport } from './js/plans.js';
+import { calcularCatalogoCompleto } from './js/vepMetrics.js';
 import { ENV } from './config.env.js';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -1666,6 +1667,26 @@ app.get('/api/admin/finance', authMiddleware, adminMiddleware, async (req, res) 
     const providerFees = paid.reduce((acc, row) => acc + Number(row.provider_fee || 0), 0);
     res.json({ summary: { transactions: payments.length, paid: paid.length, pending: pending.length, totals, providerFees, providerFeeStatus: providerFees > 0 ? 'reported' : 'not_reported' }, payments: payments.slice(0, 200) });
   } catch (error) { logger.error('finance error', error); res.status(500).json({ error: 'No se pudo cargar la información financiera' }); }
+});
+
+// Fase 11, paso 5 (dashboard de indicadores — ver docs/PLAN_FASE11_BACKLOG.md, M-3):
+// agregado de TODAS las parcelas (sin filtrar por proyecto/usuario), solo para
+// admin. No confundir con GET /api/expedientes/:id/parcelas, que es por
+// expediente y con ownership normal.
+app.get('/api/admin/metrics/vep', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const parcelas = await dbAPI.parcelas.listAll({ limit: req.query.limit });
+    const detalle = await Promise.all(parcelas.map(async (parcela) => ({
+      ...parcela,
+      matricula: await dbAPI.matriculas.findByParcela(parcela.id),
+      propietarios: await dbAPI.parcelaPropietario.listByParcela(parcela.id)
+    })));
+    const catalogo = calcularCatalogoCompleto({ parcelasDetalle: detalle });
+    res.json({ evaluadas: detalle.length, ...catalogo });
+  } catch (err) {
+    logger.error('vep metrics error', err);
+    res.status(500).json({ error: 'Error calculando indicadores' });
+  }
 });
 
 app.post('/api/payments/checkout-session', authMiddleware, async (req, res) => {
