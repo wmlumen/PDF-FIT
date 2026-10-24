@@ -121,6 +121,17 @@ poblada al guardar el expediente** (una fila por feature del GeoJSON), con `cuen
   manual end-to-end por HTTP (registro, proyecto, expediente con GeoJSON, lectura de parcelas con CCC
   y matrícula, alta de propietario por cédula, linaje, y aislamiento: un segundo usuario recibe 404 al
   intentar leer la parcela del primero).
+- **Paso 5 (motor de indicadores):** `js/vepMetrics.js` implementado — el módulo que
+  `docs/INDICADORES_MUNICIPALES_VEP.md` nombraba en su diagrama pero no existía en el repo (§0 de este
+  informe). Calcula de verdad el reporting básico (Nivel 1: totales, superficie, matrículas,
+  propietarios únicos) y `IND-CAT-01` (con la aproximación explícita de usar `matricula.estado =
+  VERIFICADA` como proxy de título inscripto, documentada en el propio código), más un helper espacial
+  genérico (`calcularInterseccionEspacial`, `calcularAfectacionPorBuffer`) que resuelve `IND-AMB-04` ya
+  mismo y queda listo para `IND-AMB-02`/`IND-RSG-01`/`IND-RSG-03` en cuanto haya una capa de referencia
+  cargada. Los otros 14 indicadores de la especificación (recaudación, red vial, censo, RSU, patentes)
+  devuelven `{ disponible: false, motivo: '...' }` en vez de un número simulado — ninguno de esos
+  tiene la fuente de datos integrada en SNC_v3 todavía. Test: `tests/vep-metrics.test.mjs`. Sigue
+  pendiente: conectarlo a un panel/dashboard en la UI (este paso fue solo el motor de cálculo).
 
 **Hallazgo colateral (no corregido en este cambio, fuera de alcance):** al probar contra una base de
 datos nueva se detectó que el arranque de `db.cjs` (bloque "Mesa de entrada", migración de columnas
