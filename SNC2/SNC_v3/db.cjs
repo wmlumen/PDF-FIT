@@ -90,6 +90,11 @@ db.serialize(() => {
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   )`);
+  // Perf (auditoria rendimiento 2026-10-23, P-03): projects.user_id y
+  // expedientes.project_id se consultan en cada listado (listByUser/listByProject)
+  // y no tenian indice; sin esto, listar crece O(n) con el total de filas.
+  db.run('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_expedientes_project ON expedientes(project_id)');
 
   // Modulo 9 — Mesa de entrada: columnas de estado registral.
   // Se agregan con ALTER TABLE idempotente porque la tabla ya existe en DBs
@@ -207,6 +212,10 @@ db.serialize(() => {
     webhook_status TEXT,
     webhook_data TEXT
   )`);
+  // Perf (auditoria rendimiento 2026-10-23, P-03): consultados en listados por
+  // usuario y en el webhook (findByProviderId), sin indice.
+  db.run('CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_payments_provider ON payments(provider_id)');
 
   db.run(`CREATE TABLE IF NOT EXISTS usage (
     key TEXT PRIMARY KEY,

@@ -70,7 +70,8 @@ class StateManager {
         // Detectar entorno de test (Node.js sin window o sin window.location.origin)
         const isNode = typeof window === 'undefined' || typeof window?.location?.origin === 'undefined';
         const baseUrl = isNode ? 'http://localhost:5556' : window.location.origin;
-        
+        this._isNode = isNode;
+
         this._state = {
             projection: saved.projection || 'EPSG:32721',
             currentDisplayProjection: saved.currentDisplayProjection || 'EPSG:32721',
@@ -114,6 +115,14 @@ class StateManager {
         };
         
         this._subscribers = new Map();
+        this._persistTimer = null;
+        this._persistPending = false;
+        this._persistDebounceMs = 400;
+        if (!isNode && typeof window !== 'undefined') {
+            const flush = () => this.flushPersist();
+            window.addEventListener('beforeunload', flush);
+            window.addEventListener('pagehide', flush);
+        }
         this.backend = {
             baseUrl: baseUrl,
             token: (isNode ? '' : localStorage.getItem('snc_api_token') || ''),
@@ -123,13 +132,40 @@ class StateManager {
         };
     }
 
-    _persist() {
+    // Perf (auditoria rendimiento 2026-10-23, P-08): _persist() serializaba el
+    // expediente completo (geojson + historial de versiones) a localStorage de
+    // forma sincrona en CADA llamada a set() sobre esas claves, bloqueando el
+    // hilo principal en cada edicion. Se debounca el guardado y se fuerza un
+    // flush sincrono antes de cerrar/recargar la pagina para no perder la
+    // ultima edicion.
+    _persistNow() {
         try {
             const { geojson, excelData, projection, currentDisplayProjection, sourceGeoFileName, sourceDataFileName, parcelLineage, projectVersions } = this._state;
             localStorage.setItem(EXPEDIENTE_STORAGE_KEY, JSON.stringify({ geojson, excelData, projection, currentDisplayProjection, sourceGeoFileName, sourceDataFileName, parcelLineage, projectVersions }));
         } catch (error) {
             logger.warn('No se pudo guardar el expediente local:', error);
         }
+    }
+
+    _persist() {
+        // En Node (tests, SSR) no hay hilo de UI que proteger ni beforeunload
+        // que dispare el flush: persistir de inmediato, como antes.
+        if (this._isNode) { this._persistNow(); return; }
+        this._persistPending = true;
+        if (this._persistTimer) clearTimeout(this._persistTimer);
+        this._persistTimer = setTimeout(() => {
+            this._persistTimer = null;
+            this._persistPending = false;
+            this._persistNow();
+        }, this._persistDebounceMs);
+    }
+
+    /** Guarda de inmediato si hay una persistencia pendiente (p. ej. antes de cerrar la pestaña). */
+    flushPersist() {
+        if (!this._persistPending) return;
+        if (this._persistTimer) { clearTimeout(this._persistTimer); this._persistTimer = null; }
+        this._persistPending = false;
+        this._persistNow();
     }
 
     _persistBackendMeta() {

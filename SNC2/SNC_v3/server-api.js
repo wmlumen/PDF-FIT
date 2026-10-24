@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import crypto from 'node:crypto';
@@ -38,6 +39,10 @@ const JWT_SECRET = ENV.JWT_SECRET;
 const JWT_EXPIRES = ENV.JWT_EXPIRES;
 
 const app = express();
+
+// Perf (auditoria rendimiento 2026-10-23, P-05): sin compresion, las respuestas
+// JSON con GeoJSON/state_json y los estaticos .geojson viajaban sin gzip/brotli.
+app.use(compression());
 
 // Publicar únicamente recursos que el navegador necesita. Nunca servir la raíz
 // del repositorio: contiene SQLite, hashes, configuración y código backend.
