@@ -701,6 +701,76 @@ function renderVepIndicadoresLista(indicadores) {
   }).join('');
 }
 
+function renderVepDatosTabla(parcelas = []) {
+  if (!parcelas.length) return '<tr><td colspan="6" class="py-3 text-gray-500">Sin parcelas sincronizadas todavía.</td></tr>';
+  const estadoColor = (estado) => estado === 'VERIFICADA' ? 'text-emerald-400' : estado === 'SIN_VERIFICAR' ? 'text-amber-400' : 'text-gray-500';
+  return parcelas.map(p => `
+    <tr class="border-b border-gray-900">
+      <td class="py-1.5 pr-3 font-mono">${p.codigo || '—'}</td>
+      <td class="py-1.5 pr-3">${p.departamento || '—'}</td>
+      <td class="py-1.5 pr-3">${p.distrito || '—'}</td>
+      <td class="py-1.5 pr-3">${formatearNumero(p.superficie_m2, 1)}</td>
+      <td class="py-1.5 pr-3 ${estadoColor(p.matricula_estado)}">${p.matricula_estado}</td>
+      <td class="py-1.5 pr-3">${p.propietarios}</td>
+    </tr>`).join('');
+}
+
+function renderBarra(label, valor, total, colorClass) {
+  const pct = total > 0 ? Math.round((valor / total) * 100) : 0;
+  return `
+    <div>
+      <div class="flex justify-between text-[11px] text-gray-400 mb-1">
+        <span>${label}</span><span>${formatearNumero(valor)} (${pct}%)</span>
+      </div>
+      <div class="h-2 bg-gray-950 rounded-full border border-gray-800 overflow-hidden">
+        <div class="${colorClass} h-full" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
+function renderVepAnalisis(reporting) {
+  const totalParcelas = reporting.totalParcelas || 0;
+  const m = reporting.matriculas;
+  document.getElementById('vepAnalisisMatriculas').innerHTML =
+    renderBarra('Verificadas', m.verificadas, totalParcelas, 'bg-emerald-500') +
+    renderBarra('Sin verificar', m.sinVerificar, totalParcelas, 'bg-amber-500') +
+    renderBarra('Sin registrar', m.sinRegistrar, totalParcelas, 'bg-gray-600');
+  const p = reporting.propietarios;
+  document.getElementById('vepAnalisisPropietarios').innerHTML =
+    renderBarra('Con propietario registrado', p.parcelasConPropietario, totalParcelas, 'bg-sky-500') +
+    renderBarra('Sin propietario registrado', p.parcelasSinPropietario, totalParcelas, 'bg-gray-600');
+}
+
+function renderVepAdministracion() {
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem('snc_api_user') || '{}'); } catch { /* ignore */ }
+  document.getElementById('vepAdminSesion').innerHTML = `
+    <div><strong>Usuario:</strong> ${user.email || '—'}</div>
+    <div><strong>Rol:</strong> <span class="text-amber-400">${user.role || '—'}</span></div>`;
+}
+
+function setVepView(view) {
+  document.querySelectorAll('.vep-view-btn').forEach(btn => {
+    const active = btn.dataset.vepView === view;
+    btn.classList.toggle('active', active);
+    btn.classList.toggle('bg-amber-500/10', active);
+    btn.classList.toggle('border-amber-500/50', active);
+    btn.classList.toggle('text-amber-300', active);
+    btn.classList.toggle('border-gray-800', !active);
+    btn.classList.toggle('bg-gray-950', !active);
+    btn.classList.toggle('text-gray-400', !active);
+  });
+  document.querySelectorAll('.vep-view').forEach(panel => {
+    panel.classList.toggle('hidden', panel.id !== `vepView-${view}`);
+  });
+}
+
+function setupVepViewSelector() {
+  document.querySelectorAll('.vep-view-btn').forEach(btn => {
+    btn.onclick = () => setVepView(btn.dataset.vepView);
+  });
+}
+
 export async function loadVepMetricsTab() {
   const loadingEl = document.getElementById('vepMetricsLoading');
   const contentEl = document.getElementById('vepMetricsContent');
@@ -711,6 +781,7 @@ export async function loadVepMetricsTab() {
   errorEl.classList.add('hidden');
   try {
     const data = await fetchJSON('/api/admin/metrics/vep');
+    // Vista Resumen
     document.getElementById('vepReportingCards').innerHTML = renderVepReportingCards(data.reportingBasico);
     const cat01 = data.indicadores['IND-CAT-01'];
     if (cat01?.disponible === false) {
@@ -721,6 +792,13 @@ export async function loadVepMetricsTab() {
       document.getElementById('vepIndCat01Nota').textContent = `Meta VEP: ≥ ${cat01.metaVEP}% · ${cat01.aproximacion}`;
     }
     document.getElementById('vepIndicadoresLista').innerHTML = renderVepIndicadoresLista(data.indicadores);
+    // Vista Datos
+    document.getElementById('vepDatosTabla').innerHTML = renderVepDatosTabla(data.parcelas);
+    // Vista Análisis
+    renderVepAnalisis(data.reportingBasico);
+    // Vista Administración
+    renderVepAdministracion();
+
     loadingEl.classList.add('hidden');
     contentEl.classList.remove('hidden');
   } catch (e) {
@@ -728,6 +806,7 @@ export async function loadVepMetricsTab() {
     errorEl.classList.remove('hidden');
     errorEl.textContent = `No se pudieron cargar los indicadores: ${e.message}`;
   }
+  setupVepViewSelector();
   const btnRefresh = document.getElementById('refreshVepMetrics');
   if (btnRefresh) btnRefresh.onclick = () => loadVepMetricsTab();
 }

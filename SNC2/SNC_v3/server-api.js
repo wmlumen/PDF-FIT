@@ -1773,7 +1773,15 @@ app.get('/api/admin/metrics/vep', authMiddleware, adminMiddleware, async (req, r
       propietarios: await dbAPI.parcelaPropietario.listByParcela(parcela.id)
     })));
     const catalogo = calcularCatalogoCompleto({ parcelasDetalle: detalle });
-    res.json({ evaluadas: detalle.length, ...catalogo });
+    // "Datos" del panel admin (vista tipo Power BI, ver docs/PLAN_FASE11_BACKLOG.md
+    // nota del 2026-10-24): fila por parcela, sin volcar el geojson completo.
+    const filas = detalle.map(p => ({
+      id: p.id, codigo: p.codigo, departamento: p.departamento, distrito: p.distrito,
+      superficie_m2: p.sup_sig_m ?? p.sup_legal ?? null,
+      matricula_estado: p.matricula?.estado || 'sin_registrar',
+      propietarios: p.propietarios.length
+    }));
+    res.json({ evaluadas: detalle.length, parcelas: filas, ...catalogo });
   } catch (err) {
     logger.error('vep metrics error', err);
     res.status(500).json({ error: 'Error calculando indicadores' });

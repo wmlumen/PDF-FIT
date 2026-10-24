@@ -859,15 +859,15 @@
       <!-- TAB 10: INDICADORES MUNICIPALES (VEP/MEF)                    -->
       <!-- ============================================================ -->
       <section role="tabpanel" id="panel-vep-metrics" class="tab-panel" aria-labelledby="tab-vep-metrics">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
               <span>📊</span> Indicadores Municipales (VEP/MEF)
             </h2>
             <p class="text-xs text-gray-400">
-              Calculados sobre las parcelas reales sincronizadas por cada expediente (Cuenta Catastral,
-              matrícula, propietarios). Ningún número de esta pantalla es simulado: lo que no tiene una
-              fuente de datos integrada en SNC_v3 aparece explícitamente como no disponible, con el motivo.
+              Calculados sobre las parcelas reales sincronizadas por cada expediente. Ningún número de
+              esta pantalla es simulado: lo que no tiene una fuente de datos integrada en SNC_v3
+              aparece explícitamente como no disponible, con el motivo.
             </p>
           </div>
           <button id="refreshVepMetrics" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition border border-gray-700">
@@ -875,23 +875,103 @@
           </button>
         </div>
 
+        <!-- Selector de vista, al estilo Informe/Datos/Modelo de Power BI Desktop:
+             son vistas de ESTA pantalla sobre los mismos datos, no una integración
+             con Power BI real (ver docs/PLAN_FASE11_BACKLOG.md, nota 2026-10-24). -->
+        <div class="flex flex-wrap gap-2 mb-4 border-b border-gray-800 pb-3" id="vepViewSelector">
+          <button type="button" data-vep-view="resumen" class="vep-view-btn active px-3 py-1.5 rounded-lg border text-xs font-semibold transition bg-amber-500/10 border-amber-500/50 text-amber-300">
+            <i class="fas fa-chart-pie text-[11px] mr-1"></i> Resumen
+          </button>
+          <button type="button" data-vep-view="datos" class="vep-view-btn px-3 py-1.5 rounded-lg border border-gray-800 bg-gray-950 text-gray-400 hover:text-white text-xs font-semibold transition">
+            <i class="fas fa-table text-[11px] mr-1"></i> Datos
+          </button>
+          <button type="button" data-vep-view="analisis" class="vep-view-btn px-3 py-1.5 rounded-lg border border-gray-800 bg-gray-950 text-gray-400 hover:text-white text-xs font-semibold transition">
+            <i class="fas fa-chart-bar text-[11px] mr-1"></i> Análisis
+          </button>
+          <button type="button" data-vep-view="administracion" class="vep-view-btn px-3 py-1.5 rounded-lg border border-gray-800 bg-gray-950 text-gray-400 hover:text-white text-xs font-semibold transition">
+            <i class="fas fa-user-shield text-[11px] mr-1"></i> Administración
+          </button>
+        </div>
+
         <div id="vepMetricsLoading" class="text-sm text-gray-400">Cargando indicadores…</div>
 
-        <div id="vepMetricsContent" class="hidden space-y-6">
-          <!-- Reporting básico: Nivel 1, siempre disponible -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="vepReportingCards"></div>
-
-          <!-- IND-CAT-01 -->
-          <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
-            <h3 class="text-sm font-bold text-white mb-1">IND-CAT-01 · Tasa de Titularidad Formal</h3>
-            <div id="vepIndCat01" class="text-3xl font-bold text-amber-400 mt-2">—</div>
-            <p id="vepIndCat01Nota" class="text-[11px] text-gray-500 mt-2"></p>
+        <div id="vepMetricsContent" class="hidden">
+          <!-- Vista Resumen (como "Informe" en Power BI): KPI + indicador real + catálogo -->
+          <div id="vepView-resumen" class="vep-view space-y-6">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="vepReportingCards"></div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-1">IND-CAT-01 · Tasa de Titularidad Formal</h3>
+              <div id="vepIndCat01" class="text-3xl font-bold text-amber-400 mt-2">—</div>
+              <p id="vepIndCat01Nota" class="text-[11px] text-gray-500 mt-2"></p>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-3">Catálogo de indicadores (docs/INDICADORES_MUNICIPALES_VEP.md)</h3>
+              <div id="vepIndicadoresLista" class="space-y-1.5 text-xs font-mono"></div>
+            </div>
           </div>
 
-          <!-- Catálogo completo: disponibles y no disponibles, con su motivo -->
-          <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
-            <h3 class="text-sm font-bold text-white mb-3">Catálogo de indicadores (docs/INDICADORES_MUNICIPALES_VEP.md)</h3>
-            <div id="vepIndicadoresLista" class="space-y-1.5 text-xs font-mono"></div>
+          <!-- Vista Datos (como "Datos/Tabla" en Power BI): una fila por parcela real -->
+          <div id="vepView-datos" class="vep-view hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl overflow-x-auto">
+              <h3 class="text-sm font-bold text-white mb-3">Parcelas (fila por registro real, sin geometría)</h3>
+              <table class="w-full text-xs text-left">
+                <thead>
+                  <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="py-1.5 pr-3">Código</th>
+                    <th class="py-1.5 pr-3">Departamento</th>
+                    <th class="py-1.5 pr-3">Distrito</th>
+                    <th class="py-1.5 pr-3">Superficie (m²)</th>
+                    <th class="py-1.5 pr-3">Matrícula</th>
+                    <th class="py-1.5 pr-3">Propietarios</th>
+                  </tr>
+                </thead>
+                <tbody id="vepDatosTabla" class="text-gray-300"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Vista Análisis (como "Modelo"/gráficos en Power BI, en CSS plano: sin dependencia de una librería de charts nueva) -->
+          <div id="vepView-analisis" class="vep-view hidden space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-3">Matrículas por estado</h3>
+              <div id="vepAnalisisMatriculas" class="space-y-2"></div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-3">Parcelas con / sin propietario registrado</h3>
+              <div id="vepAnalisisPropietarios" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- Vista Administración (equivalente honesto a RLS de Power BI: SNC_v3 no
+               tiene seguridad por fila todavía, solo por rol vía adminMiddleware —
+               se muestra lo que hay de verdad, no una simulación de RLS) -->
+          <div id="vepView-administracion" class="vep-view hidden space-y-4">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-1">Sesión actual</h3>
+              <p class="text-xs text-gray-400 mb-3">Este panel solo es visible con rol admin/superadmin (verificado por <code class="text-amber-400">adminMiddleware</code> en el servidor, no solo oculto en el cliente).</p>
+              <div id="vepAdminSesion" class="text-sm text-gray-300"></div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-3">Seguridad por rol (equivalente real de SNC_v3 a "RLS")</h3>
+              <p class="text-[11px] text-gray-500 mb-3">
+                Power BI define RLS por fila de datos. SNC_v3 hoy filtra por <strong>endpoint</strong>
+                según el rol (no hay reglas por fila todavía) — ver <code class="text-amber-400">PLAN_FASE11_BACKLOG.md</code>.
+              </p>
+              <table class="w-full text-xs text-left">
+                <thead>
+                  <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="py-1.5 pr-3">Rol</th>
+                    <th class="py-1.5 pr-3">Acceso a este panel</th>
+                    <th class="py-1.5 pr-3">Endpoints propios</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-300">
+                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3">member</td><td class="py-1.5 pr-3 text-red-400">✗ 403</td><td class="py-1.5 pr-3">Solo sus propios proyectos/expedientes</td></tr>
+                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3">admin_municipal / admin_notarial</td><td class="py-1.5 pr-3 text-red-400">✗ 403</td><td class="py-1.5 pr-3">Igual que member hoy — sin panel propio todavía</td></tr>
+                  <tr><td class="py-1.5 pr-3">admin / superadmin</td><td class="py-1.5 pr-3 text-emerald-400">✓ 200</td><td class="py-1.5 pr-3">Todos los endpoints <code>/api/admin/*</code></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
