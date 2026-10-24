@@ -26,16 +26,38 @@ db.serialize(() => {
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
   db.run('CREATE INDEX IF NOT EXISTS idx_bbox ON parcelas (minX, maxX, minY, maxY)');
-  // Pilar 1: Índice espacial R-Tree nativo de SQLite (búsqueda < 3ms)
+  // Pilar 1: Índice espacial R-Tree nativo de SQLite (búsqueda < 3ms).
+  // La columna `id` del r-tree DEBE ser un entero de 64 bits (requisito del
+  // módulo rtree de SQLite): se usa el `rowid` implícito de `parcelas`
+  // (es TEXT PRIMARY KEY, no WITHOUT ROWID, así que cada fila igual tiene un
+  // rowid entero propio) como clave compartida entre ambas tablas.
   db.run(`CREATE VIRTUAL TABLE IF NOT EXISTS idx_parcelas_geometria USING rtree(
     id, minX, maxX, minY, maxY
   )`, (err) => {
-    if (err && !err.message.includes('already exists')) {
-      cacheLog('rtree_create_error', { error: err.message });
-    } else {
-      cacheLog('rtree_created', {});
-    }
+    if (err && !err.message.includes('already exists')) cacheLog('rtree_create_error', { error: err.message });
+    else cacheLog('rtree_created', {});
   });
+  // Backfill: hasta esta corrección, el r-tree se creaba pero nunca se
+  // poblaba (ver AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md, P-10) —
+  // getFeaturesByBbox/getFeatureContainingPoint consultaban el índice
+  // B-tree de minX/maxX/minY/maxY en su lugar. Esto sincroniza cualquier
+  // fila existente (de corridas anteriores) al r-tree. Se emite como
+  // sentencia HERMANA dentro del mismo db.serialize() (no anidada en el
+  // callback de arriba): serialize() solo garantiza el orden de ejecución
+  // para sentencias emitidas sincrónicamente en su propio callback — si se
+  // encadena dentro de un callback async, una consulta hecha por otro módulo
+  // justo después de importar este archivo puede colarse antes y encontrar
+  // el r-tree todavía vacío (se reprodujo así en tests/sovereign-vector.test.mjs).
+  // Es idempotente (INSERT OR REPLACE), así que correrlo en cada arranque no duplica nada.
+  db.run(
+    `INSERT OR REPLACE INTO idx_parcelas_geometria (id, minX, maxX, minY, maxY)
+     SELECT rowid, minX, maxX, minY, maxY FROM parcelas
+     WHERE minX IS NOT NULL AND maxX IS NOT NULL AND minY IS NOT NULL AND maxY IS NOT NULL`,
+    (backfillErr) => {
+      if (backfillErr) cacheLog('rtree_backfill_error', { error: backfillErr.message });
+      else cacheLog('rtree_backfill_ok', {});
+    }
+  );
 });
 
 const LOG_PATH = path.join(dbDir, 'cacheDb.log');
@@ -68,6 +90,14 @@ function promisifyRun(sql, params = []) {
   });
 }
 
+async function pruneRtreeOrphans() {
+  // Despues de borrar filas de `parcelas`, sus entradas en el r-tree quedan
+  // huerfanas (el modulo rtree no tiene ON DELETE CASCADE). Limpiarlas evita
+  // que getFeaturesByBbox/getFeatureContainingPoint devuelvan rowids que ya
+  // no existen en `parcelas`.
+  await promisifyRun('DELETE FROM idx_parcelas_geometria WHERE id NOT IN (SELECT rowid FROM parcelas)');
+}
+
 async function pruneCache() {
   try {
     const countRow = await promisify('SELECT COUNT(*) AS n FROM parcelas');
@@ -80,6 +110,8 @@ async function pruneCache() {
 
     await promisifyRun('DELETE FROM parcelas WHERE updated_at < datetime("now", ?)', [`-${RETENTION_DAYS} days`]);
     cacheLog('cache_pruned_retention', { retentionDays: RETENTION_DAYS });
+
+    await pruneRtreeOrphans();
   } catch (err) {
     cacheLog('cache_prune_error', { error: err.message });
   }
@@ -120,8 +152,9 @@ export function saveFeature(feature) {
       maxY = excluded.maxY,
       updated_at = CURRENT_TIMESTAMP`;
 
+  const idText = featureId.toString();
   return promisifyRun(sql, [
-    featureId.toString(),
+    idText,
     (props.padron ?? props.PADRON)?.toString() || null,
     props.dist ?? props.DIST ?? null,
     props.zona ?? props.ZONA ?? null,
@@ -129,15 +162,32 @@ export function saveFeature(feature) {
     props.lote ?? props.LOTE ?? null,
     JSON.stringify(feature),
     minX, minY, maxX, maxY
-  ]).catch(err => {
+  ]).then(async (result) => {
+    // Mantener el r-tree sincronizado con `parcelas` en cada guardado (no
+    // solo en el arranque): ver nota de P-10 en el bloque de creacion de
+    // idx_parcelas_geometria mas arriba.
+    const row = await promisify('SELECT rowid AS rid FROM parcelas WHERE id = ?', [idText]);
+    const rid = row[0]?.rid;
+    if (rid != null) {
+      await promisifyRun(
+        'INSERT OR REPLACE INTO idx_parcelas_geometria (id, minX, maxX, minY, maxY) VALUES (?, ?, ?, ?, ?)',
+        [rid, minX, maxX, minY, maxY]
+      ).catch(err => cacheLog('rtree_sync_error', { featureId: idText, error: err.message }));
+    }
+    return result;
+  }).catch(err => {
     cacheLog('save_feature_error', { featureId, error: err.message });
     throw err;
   });
 }
 
 export function getFeaturesByBbox(minX, minY, maxX, maxY) {
+  // Busqueda por el r-tree (indice espacial real, O(log n)) en vez del
+  // escaneo del indice B-tree compuesto sobre minX/maxX/minY/maxY.
   return promisify(
-    `SELECT geojson FROM parcelas WHERE (minX <= ? AND maxX >= ?) AND (minY <= ? AND maxY >= ?)`,
+    `SELECT p.geojson FROM idx_parcelas_geometria r
+     JOIN parcelas p ON p.rowid = r.id
+     WHERE r.minX <= ? AND r.maxX >= ? AND r.minY <= ? AND r.maxY >= ?`,
     [maxX, minX, maxY, minY]
   ).then(rows => rows.map(r => JSON.parse(r.geojson)));
 }
@@ -151,7 +201,9 @@ export async function saveFeaturesBatch(features) {
 
 export function getFeatureContainingPoint(lat, lng) {
   return promisify(
-    `SELECT geojson FROM parcelas WHERE minX <= ? AND maxX >= ? AND minY <= ? AND maxY >= ?`,
+    `SELECT p.geojson FROM idx_parcelas_geometria r
+     JOIN parcelas p ON p.rowid = r.id
+     WHERE r.minX <= ? AND r.maxX >= ? AND r.minY <= ? AND r.maxY >= ?`,
     [lng, lng, lat, lat]
   ).then(rows => {
     const pt = turf.point([lng, lat]);
