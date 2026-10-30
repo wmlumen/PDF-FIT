@@ -1273,12 +1273,26 @@
           <button onclick="window.App?.closeCertification()" class="rounded p-2 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-times"></i></button>
         </div>
       </div>
-      <div id="certificationBody" class="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+      <div id="certificationBody" class="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-800 overflow-y-auto">
         <div class="p-4">
           <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Plano de Auditoría</div>
           <div class="relative h-[420px] w-full rounded-xl border border-slate-700 bg-slate-950 overflow-hidden">
             <canvas id="certCanvas" class="h-full w-full"></canvas>
             <div class="pointer-events-none absolute bottom-2 left-2 rounded-lg bg-black/60 px-2 py-1 text-[10px] font-mono text-slate-300">Fondo parcelario + polígono certificado</div>
+          </div>
+        </div>
+        <div class="p-4 space-y-4 text-xs">
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Expediente</div>
+            <div id="certExpediente" class="space-y-1 rounded-xl border border-slate-700 bg-slate-950 p-3"></div>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Coordenadas y superficie</div>
+            <div id="certCoords" class="space-y-1 rounded-xl border border-slate-700 bg-slate-950 p-3"></div>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Archivos del expediente</div>
+            <div id="certFiles" class="space-y-1 rounded-xl border border-slate-700 bg-slate-950 p-3"></div>
           </div>
         </div>
       </div>
@@ -1306,6 +1320,7 @@
   <script src="/vendor/jszip.min.js"></script>
   <script src="/vendor/xlsx.full.min.js"></script>
   <script src="/vendor/jspdf.umd.min.js"></script>
+  <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
   <script src="/vendor/shpwrite.js"></script>
   <script src="/vendor/dxf-parser.js"></script>
   <script>window.dxfParser = new window.DxfParser();</script>
@@ -1388,6 +1403,49 @@ import OverviewMap from '/js/overviewMap.js';
   import { showToast } from '/js/utils.js';
 
   const CRS_LABEL = (c) => CRS_LABELS[c] || c;
+
+  // ─── Reemplazo de window.prompt()/confirm() para pedir texto o confirmar ────
+  // Algunos entornos (paneles embebidos, vistas previas) bloquean los diálogos
+  // nativos del navegador sin avisar: el botón parecía "no hacer nada". Estos
+  // reemplazan prompt()/confirm() con un modal propio, con el mismo resultado
+  // (string | null para prompt; true | false para confirm).
+  const miniDlgEsc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function miniDialog({ title, message, defaultValue = '', kind }) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 z-[5000] flex items-center justify-center bg-black/70 p-4';
+      overlay.innerHTML = `
+        <div class="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+          <h3 class="mb-2 text-sm font-bold text-white">${miniDlgEsc(title)}</h3>
+          ${message ? `<p class="mb-3 text-xs text-slate-300">${miniDlgEsc(message)}</p>` : ''}
+          ${kind === 'prompt' ? `<input type="text" class="mb-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-sky-500 focus:outline-none" value="${miniDlgEsc(defaultValue)}">` : ''}
+          <div class="flex justify-end gap-2">
+            <button type="button" data-act="cancel" class="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-slate-700">Cancelar</button>
+            <button type="button" data-act="ok" class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-500">${kind === 'prompt' ? 'Aceptar' : 'Confirmar'}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector('input');
+      input?.focus();
+      input?.select();
+      const vacio = kind === 'prompt' ? null : false;
+      const cerrar = (value) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(value); };
+      const onKey = (e) => {
+        if (e.key === 'Escape') cerrar(vacio);
+        if (e.key === 'Enter' && kind === 'prompt') cerrar(input.value);
+      };
+      document.addEventListener('keydown', onKey);
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) { cerrar(vacio); return; }
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        if (btn.dataset.act === 'cancel') cerrar(vacio);
+        else if (btn.dataset.act === 'ok') cerrar(kind === 'prompt' ? input.value : true);
+      });
+    });
+  }
+  const promptAsync = (message, defaultValue = '', title = 'SNC Engine') => miniDialog({ title, message, defaultValue, kind: 'prompt' });
+  const confirmAsync = (message, title = 'Confirmar') => miniDialog({ title, message, kind: 'confirm' });
 
   // Guarda la proyección de exportación elegida para que la use el exportador.
   function exportCrs() {
@@ -1998,19 +2056,19 @@ import OverviewMap from '/js/overviewMap.js';
     finishDrop();
   }
 
-  function createFolder() {
-    const name = (window.prompt('Nombre de la carpeta:') || '').trim();
+  async function createFolder() {
+    const name = ((await promptAsync('Nombre de la carpeta:', '', 'Nueva carpeta')) || '').trim();
     if (!name) return;
     LayerManager.registerGroup({ id: `g_user_${Date.now()}`, title: name, parentId: null });
     updateLayerControlPanel();
     window.dispatchEvent(new CustomEvent('snc:layers-changed'));
   }
 
-  function deleteFolder(id) {
+  async function deleteFolder(id) {
     const n = LayerManager.get(id);
     if (!n || n.kind !== 'group') return;
     const hasLayers = n.children.length > 0;
-    if (!window.confirm(`¿Eliminar la carpeta "${n.title}"?${hasLayers ? ' Sus capas pasan al nivel principal.' : ''}`)) return;
+    if (!(await confirmAsync(`¿Eliminar la carpeta "${n.title}"?${hasLayers ? ' Sus capas pasan al nivel principal.' : ''}`, 'Eliminar carpeta'))) return;
     LayerManager.removeGroup(id);
     applyDrawOrderToMap();
     window.dispatchEvent(new CustomEvent('snc:layers-changed'));
@@ -2151,7 +2209,7 @@ import OverviewMap from '/js/overviewMap.js';
   }
 
   async function createUserLayer(fromExpediente) {
-    const name = (window.prompt('Nombre de la capa:') || '').trim();
+    const name = ((await promptAsync('Nombre de la capa:', '', fromExpediente ? 'Capa desde expediente' : 'Nueva capa')) || '').trim();
     if (!name) return;
     const source = fromExpediente ? (window.State?.get?.('geojson')?.features || []) : [];
     if (fromExpediente && !source.length) {
@@ -2182,10 +2240,10 @@ import OverviewMap from '/js/overviewMap.js';
     await toggleLayerVisibility(newId, true);
   }
 
-  function deleteUserLayer(id) {
+  async function deleteUserLayer(id) {
     const n = LayerManager.get(id);
     if (!n || n.sourcePath !== 'usuario') return;
-    if (!window.confirm(`¿Eliminar la capa "${n.title}"? No se puede deshacer.`)) return;
+    if (!(await confirmAsync(`¿Eliminar la capa "${n.title}"? No se puede deshacer.`, 'Eliminar capa'))) return;
     window.MapEngine?.removePiribebuyLayer?.(id);
     LayerManager.remove(id);
     applyDrawOrderToMap();

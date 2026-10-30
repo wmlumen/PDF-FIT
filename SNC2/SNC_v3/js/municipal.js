@@ -7,6 +7,18 @@ import { State } from './state.js';
 import { CONFIG_MUNICIPAL, METADATOS_GEODESICOS } from './config.js';
 import { calcularMetricasPlanasUTM } from './utils.js';
 
+// Tipos de trámite que subdividen tierra y por lo tanto exigen homologación de
+// la Junta Municipal y cesión vial/de espacios verdes (Ley 3966/10). Los demás
+// tipos del selector "Tipo de Trámite" (Unificación, Mensura Judicial,
+// Regularización Catastral SNC) registran una parcela ya existente: no crean
+// lotes nuevos y no les corresponde esta exigencia.
+const TIPOS_TRAMITE_FRACCIONAMIENTO = ['FRACCIONAMIENTO', 'LOTEAMIENTO', 'LOTEO', 'APERTURA_CALLES'];
+
+function esTramiteDeFraccionamiento(expediente = {}) {
+    const tipo = String(expediente.tipoTramite || expediente.TIPO_TRAMITE || 'FRACCIONAMIENTO').toUpperCase();
+    return TIPOS_TRAMITE_FRACCIONAMIENTO.some(t => tipo.includes(t));
+}
+
 export class ValidadorMunicipal {
     constructor(config = {}) {
         this.frenteMinimo = config.frenteMinimo || CONFIG_MUNICIPAL.frenteMinimo;
@@ -350,10 +362,7 @@ export class ValidadorMunicipal {
      */
     validarHomologacionMunicipal(expediente = {}) {
         const bloqueos = [];
-        const tipo = String(expediente.tipoTramite || expediente.TIPO_TRAMITE || 'FRACCIONAMIENTO').toUpperCase();
-        const requiereHomologacion = ['FRACCIONAMIENTO', 'LOTEAMIENTO', 'LOTEO', 'APERTURA_CALLES'].some(t => tipo.includes(t));
-
-        if (!requiereHomologacion) return bloqueos;
+        if (!esTramiteDeFraccionamiento(expediente)) return bloqueos;
 
         const resJunta = expediente.numeroResolucionJunta || expediente.RESOLUCION_JUNTA || expediente.RES_JUNTA;
         const fechaProm = expediente.fechaPromulgacionIntendente || expediente.FECHA_PROMULGACION || expediente.PROMULGACION_INTENDENTE;
@@ -660,8 +669,13 @@ export class ValidadorMunicipal {
         // Indicadores VEP Ciudades Sustentables (MEF)
         reporte.indicadoresVEP = this.evaluarIndicadoresSustentablesVEP(geojson);
 
-        // Validar balance de fraccionamiento
-        const balance = this.validarBalanceLoteamiento(geojson.features, areaTotalMatriz);
+        // Validar balance de fraccionamiento (cesión vial/espacios verdes): solo aplica
+        // cuando el trámite subdivide tierra. Exigirlo para registrar una parcela ya
+        // existente (Unificación, Mensura Judicial, Regularización Catastral SNC)
+        // bloqueaba la certificación sin motivo.
+        const balance = esTramiteDeFraccionamiento(metadata)
+            ? this.validarBalanceLoteamiento(geojson.features, areaTotalMatriz)
+            : { valido: true, noAplica: true, motivo: 'El trámite declarado no subdivide tierra.' };
         reporte.balanceLoteamiento = balance;
 
         if (!balance.valido) {

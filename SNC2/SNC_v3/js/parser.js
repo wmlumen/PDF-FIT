@@ -229,7 +229,9 @@ export async function handleGeoFile(file, { append = false, silent = false, reth
         } else if (extension === 'geojson' || extension === 'json') {
             geojson = await parseGeoJSON(file);
         } else if (extension === 'csv' || extension === 'txt') {
-            geojson = await parseCoordinateFile(file);
+            const primeraLinea = (await file.slice(0, 2000).text()).split(/\r?\n/)[0] || '';
+            const esWKT = /(^|,|;|\t)\s*wkt\s*($|,|;|\t)/i.test(primeraLinea);
+            geojson = esWKT ? await parseWKTCSV(file) : await parseCoordinateFile(file);
         } else if (extension === 'shp') {
             // Cargar automáticamente archivos asociados (.dbf, .shx, .prj) 
             // para compatibilidad tipo QGIS
@@ -725,6 +727,78 @@ async function parseGeoJSON(file) {
 }
 
 /**
+ * Convierte un texto WKT (POINT/LINESTRING/POLYGON/MULTIPOLYGON) a geometría GeoJSON.
+ * Soporta anillos interiores (huecos) en POLYGON/MULTIPOLYGON. No soporta Z/M ni SRID.
+ */
+function splitParenGroupsWKT(str) {
+    const groups = [];
+    let depth = 0, start = -1;
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === '(') { if (depth === 0) start = i; depth++; }
+        else if (str[i] === ')') { depth--; if (depth === 0) groups.push(str.slice(start, i + 1)); }
+    }
+    return groups;
+}
+function stripOuterParensWKT(s) { return s.trim().replace(/^\(/, '').replace(/\)$/, ''); }
+function parseCoordListWKT(s) {
+    return stripOuterParensWKT(s).split(',').map(pair => pair.trim().split(/\s+/).map(Number));
+}
+function parseWKT(wktRaw) {
+    const str = String(wktRaw || '').trim();
+    const m = str.match(/^([A-Za-z]+)\s*\(([\s\S]*)\)$/);
+    if (!m) throw new Error(`WKT no reconocido: "${str.slice(0, 40)}"`);
+    const tipo = m[1].toUpperCase();
+    const inner = m[2];
+    if (tipo === 'POINT') {
+        return { type: 'Point', coordinates: inner.trim().split(/\s+/).map(Number) };
+    }
+    if (tipo === 'LINESTRING') {
+        return { type: 'LineString', coordinates: parseCoordListWKT(`(${inner})`) };
+    }
+    if (tipo === 'POLYGON') {
+        return { type: 'Polygon', coordinates: splitParenGroupsWKT(inner).map(parseCoordListWKT) };
+    }
+    if (tipo === 'MULTIPOLYGON') {
+        const poligonos = splitParenGroupsWKT(inner).map(polyStr =>
+            splitParenGroupsWKT(stripOuterParensWKT(polyStr)).map(parseCoordListWKT)
+        );
+        return { type: 'MultiPolygon', coordinates: poligonos };
+    }
+    throw new Error(`Tipo WKT no soportado: ${tipo}`);
+}
+
+/**
+ * Parsea un CSV con una columna WKT (p.ej. "WKT,nombre,descripcion"): una fila por
+ * geometría. No pasa por detectCSVType (ese heurístico solo reconoce X/Y).
+ */
+async function parseWKTCSV(file) {
+    const text = (await file.text()).replace(/^﻿/, '');
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) throw new Error('El CSV debe contener encabezados y al menos una geometría.');
+    const delimiter = detectCoordinateDelimiter(lines[0]);
+    const headers = parseDelimitedLine(lines[0], delimiter).map(h => h.trim().toLowerCase());
+    const wktIdx = headers.indexOf('wkt');
+    if (wktIdx === -1) throw new Error('El CSV no tiene columna WKT.');
+    const nombreIdx = headers.findIndex(h => h === 'nombre' || h === 'name' || h === 'codigo');
+    const descIdx = headers.findIndex(h => h === 'descripcion' || h === 'description');
+
+    const features = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseDelimitedLine(lines[i], delimiter);
+        if (!values[wktIdx]) continue;
+        try {
+            const geometry = parseWKT(values[wktIdx]);
+            const codigo = sanitizeString((nombreIdx !== -1 && values[nombreIdx]) || `WKT_${features.length + 1}`);
+            features.push({ type: 'Feature', properties: { CODIGO: codigo, descripcion: descIdx !== -1 ? values[descIdx] : '' }, geometry });
+        } catch (err) {
+            parsingLogs.push(`Fila ${i + 1}: ${err.message}`);
+        }
+    }
+    if (features.length === 0) throw new Error('No se encontraron geometrías WKT válidas en el archivo.');
+    return { type: 'FeatureCollection', features };
+}
+
+/**
  * Parsea archivo de coordenadas (CSV/TXT)
  */
 async function parseCoordinateFile(file) {
@@ -1151,9 +1225,10 @@ async function parseCSV(file) {
                     return;
                 }
                 
-                const headers = lines[0].split(delimiter).map(h => sanitizeString(h.trim()));
+                const delimiter = detectCoordinateDelimiter(lines[0]);
+                const headers = parseDelimitedLine(lines[0], delimiter).map(h => sanitizeString(h.trim()));
                 const data = [];
-                
+
                 for (let i = 1; i < lines.length; i++) {
                     const values = parseDelimitedLine(lines[i], delimiter);
                     if (values.length >= headers.length && values.some(v => v.trim())) {
