@@ -9,7 +9,7 @@ import * as MapEngine from '../mapEngine.js';
 import * as Validator from '../validator.js';
 import * as Export from '../export.js';
 import * as DataTable from '../dataTable.js';
-import { showToast, showLoading, actualizarContadoresUI, actualizarEstadoProyecto, hideLoading } from '../utils.js';
+import { showToast, showLoading, actualizarContadoresUI, actualizarEstadoProyecto, hideLoading, sanitizeString } from '../utils.js';
 import { CAMPOS_REQUERIDOS } from '../config.js';
 import { PLANS, resolvePlan } from '../plans.js';
 import '../cogoUI.js';
@@ -224,7 +224,6 @@ const App = {
 
     try {
       const result = await Validator.runValidation();
-      this.renderValidationAudit(result.results || []);
 
       updateProgressStep(4);
 
@@ -239,10 +238,12 @@ const App = {
         } else {
           let html = '';
           if (result.valid) {
-            html = '<div style="text-align:center; padding:2rem;"><div style="color:#10b981; font-size:3rem;">✅</div><h3>Validación Exitosa</h3><p>Todos los requisitos de la Res. 551/2023 se cumplen.</p></div>';
+            html = '<div style="text-align:center; padding:2rem;"><div style="color:#10b981; font-size:3rem;">✅</div><p>Todos los requisitos de la Res. 551/2023 se cumplen.</p></div>';
           } else {
-            html = '<div style="text-align:center; padding:2rem;"><div style="color:#ef4444; font-size:3rem;">❌</div><h3>Validación Fallida</h3><p>Revise los errores en el panel semáforo.</p></div>';
+            html = '<div style="text-align:center; padding:2rem;"><div style="color:#ef4444; font-size:3rem;">❌</div><p>Revise los errores en el panel semáforo.</p></div>';
           }
+
+          html += this.renderValidationAudit(result.results || []);
 
           const missingTabularData = result.results?.some(item => item.campo === 'DATOS');
           if (missingTabularData) {
@@ -282,7 +283,9 @@ const App = {
 
         if (modalTitle) modalTitle.textContent = result.valid ? '✅ Validación Exitosa' : '❌ Validación Fallida';
         if (confirmBtn) {
-          confirmBtn.textContent = result.valid ? 'Generar Certificado' : 'Cerrar';
+          // Con error ya está el botón "Cerrar" fijo del modal: no repetirlo.
+          confirmBtn.style.display = result.valid ? '' : 'none';
+          confirmBtn.textContent = 'Generar Certificado';
           confirmBtn.onclick = () => {
             if (result.valid) {
               this.certify();
@@ -429,7 +432,21 @@ const App = {
   },
 
   /** Renderiza el panel de auditoría en la UI. */
+  /** Arma el panel semáforo (lista de resultados coloreada por estado) que se muestra en el modal de validación. */
   renderValidationAudit(results) {
+    if (!results.length) return '';
+    const colores = { ok: '#10b981', advertencia: '#f59e0b', alerta: '#f59e0b', error: '#ef4444' };
+    const iconos = { ok: 'fa-check-circle', advertencia: 'fa-triangle-exclamation', alerta: 'fa-triangle-exclamation', error: 'fa-circle-xmark' };
+    const filas = results.map(r => {
+      const color = colores[r.estado] || '#64748b';
+      const icono = iconos[r.estado] || 'fa-circle-question';
+      const valor = r.valor !== undefined && r.valor !== null && r.valor !== '' ? ` <span style="opacity:.7">(${sanitizeString(String(r.valor))})</span>` : '';
+      return `<li style="display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid rgba(100,116,139,.15);">
+        <i class="fas ${icono}" style="color:${color}; margin-top:2px; flex:0 0 auto;"></i>
+        <div><strong style="color:${color};">${sanitizeString(r.campo || '')}</strong>${valor}<div style="font-size:.85rem; opacity:.85;">${sanitizeString(r.mensaje || '')}</div></div>
+      </li>`;
+    }).join('');
+    return `<div style="margin:16px 0;"><h4 style="margin:0 0 8px;">Panel semáforo (${results.length} criterios)</h4><ul style="list-style:none; margin:0; padding:0; max-height:260px; overflow-y:auto;">${filas}</ul></div>`;
   },
 
   /** Cierra el modal de validación. */
