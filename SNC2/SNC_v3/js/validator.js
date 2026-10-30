@@ -623,26 +623,27 @@ function validarRegistrosHuerfanos(geojson, excelData) {
  * Criterio 8: Proyección EPSG:32721
  */
 function validarProyeccion(mode = 'view') {
-    // mode 'view' = solo informativo; modo 'export' = estricto EPSG:32721
+    // El archivo final siempre se reproyecta a EPSG:32721 (generateShapefile() ->
+    // reprojectToUTM()), sin importar el origen: esto es solo informativo para
+    // CRS georreferenciados conocidos. Únicamente bloquea la exportación una
+    // fuente sin georreferenciar (p.ej. DXF en coordenadas locales/de obra, sin
+    // vínculo con un CRS real), donde no hay forma de reproyectar de manera fiable.
     const currentProj = State.get('projection') || State.get('currentDisplayProjection') || 'EPSG:32721';
 
     if (currentProj === 'EPSG:4326' || currentProj === 'WGS84') {
-        if (mode === 'export') {
-            return { campo: 'PROYECCIÓN', valor: currentProj, estado: 'error', mensaje: 'La visualización WGS84 no es válida para exportación. Se requiere EPSG:32721.' };
-        }
         return { campo: 'PROYECCIÓN', valor: currentProj, estado: 'ok', mensaje: 'Geometría de visualización WGS84 detectada; se reproyectará automáticamente a UTM 21S en el archivo final.' };
     }
     if (currentProj === 'EPSG:32721') {
         return { campo: 'PROYECCIÓN', valor: currentProj, estado: 'ok', mensaje: 'Proyección válida para exportación: EPSG:32721 (UTM Zona 21 Sur).' };
     }
-    if (currentProj === 'EPSG:32720' && mode === 'view') {
-        return { campo: 'PROYECCIÓN', valor: currentProj, estado: 'ok', mensaje: `Proyección visual: ${currentProj}. Para exportación se requiere EPSG:32721.` };
+    if (currentProj === 'EPSG:32720') {
+        return { campo: 'PROYECCIÓN', valor: currentProj, estado: 'ok', mensaje: `Proyección detectada: ${currentProj}; se reproyectará automáticamente a UTM 21S en el archivo final.` };
     }
     return {
         campo: 'PROYECCIÓN',
         valor: String(currentProj),
-        estado: 'error',
-        mensaje: `Proyección detectada: ${currentProj}. El SNC requiere obligatoriamente EPSG:32721 para la presentación final.`
+        estado: mode === 'export' ? 'error' : 'advertencia',
+        mensaje: `Proyección "${currentProj}" no georreferenciada: no se puede reproyectar automáticamente a EPSG:32721. Georreferencie el archivo antes de exportar.`
     };
 }
 

@@ -1791,28 +1791,35 @@ export async function generateShapefile() {
         }
     }
     
-    // Usar shpwrite.parse para obtener componentes separados
-    return new Promise((resolve, reject) => {
-        try {
-            if (typeof shpwrite === 'undefined') {
-                throw new Error('La librería shpwrite.js no está cargada. Verifique la conexión o el archivo.');
-            }
-            // shpwrite.parse devuelve: { shp: ArrayBuffer, shx: ArrayBuffer, dbf: ArrayBuffer }
-            const shpFiles = shpwrite.parse(utmGeojson);
-            
-            // Convertir ArrayBuffers a Blobs
-            const result = {
-                shp: new Blob([shpFiles.shp], { type: 'application/octet-stream' }),
-                shx: new Blob([shpFiles.shx], { type: 'application/octet-stream' }),
-                dbf: new Blob([shpFiles.dbf], { type: 'application/octet-stream' }),
-                prj: WKT_32721
-            };
-            
-            resolve(result);
-        } catch (err) {
-            reject(new Error(`Error generando shapefile: ${err.message}`));
-        }
+    // La versión vendorizada de shp-write (node_modules/shp-write@0.3.2) no expone
+    // shpwrite.parse(). shpwrite.zip()/.download() tampoco sirven: arman su propio
+    // ZIP con una copia interna de JSZip 2.x que llama a zip.generate(), método que
+    // la JSZip 3.x instalada en este proyecto eliminó ("This method has been
+    // removed in JSZip 3.0"). Se usa el único método de bajo nivel que no depende
+    // de JSZip, write(properties, tipo, geometrías, callback), con el mismo
+    // preformateo de coordenadas que hace internamente shp-write/src/geojson.js
+    // para parcelas tipo Polygon (sin anillos interiores: limitación propia de
+    // esta versión de la librería).
+    if (typeof shpwrite === 'undefined') {
+        throw new Error('La librería shpwrite.js no está cargada. Verifique la conexión o el archivo.');
+    }
+    const parcelas = utmGeojson.features.filter(f => f.geometry?.type === 'Polygon');
+    if (!parcelas.length) {
+        throw new Error('No hay parcelas tipo Polygon para generar el shapefile.');
+    }
+    const geometrias = [parcelas.map(f => f.geometry.coordinates[0])];
+    const propiedades = parcelas.map(f => f.properties);
+    const shpFiles = await new Promise((resolve, reject) => {
+        shpwrite.write(propiedades, 'POLYGON', geometrias, (err, files) => {
+            if (err) reject(err); else resolve(files);
+        });
     });
+    return {
+        shp: new Blob([shpFiles.shp.buffer], { type: 'application/octet-stream' }),
+        shx: new Blob([shpFiles.shx.buffer], { type: 'application/octet-stream' }),
+        dbf: new Blob([shpFiles.dbf.buffer], { type: 'application/octet-stream' }),
+        prj: WKT_32721
+    };
 }
 
 /**
