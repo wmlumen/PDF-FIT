@@ -91,7 +91,7 @@ function promisifyRun(sql, params = []) {
 }
 
 async function pruneRtreeOrphans() {
-  // Despues de borrar filas de `parcelas`, sus entradas en el r-tree quedan
+  // Después de borrar filas de `parcelas`, sus entradas en el r-tree quedan
   // huerfanas (el modulo rtree no tiene ON DELETE CASCADE). Limpiarlas evita
   // que getFeaturesByBbox/getFeatureContainingPoint devuelvan rowids que ya
   // no existen en `parcelas`.
@@ -164,7 +164,7 @@ export function saveFeature(feature) {
     minX, minY, maxX, maxY
   ]).then(async (result) => {
     // Mantener el r-tree sincronizado con `parcelas` en cada guardado (no
-    // solo en el arranque): ver nota de P-10 en el bloque de creacion de
+    // solo en el arranque): ver nota de P-10 en el bloque de creación de
     // idx_parcelas_geometria mas arriba.
     const row = await promisify('SELECT rowid AS rid FROM parcelas WHERE id = ?', [idText]);
     const rid = row[0]?.rid;
@@ -182,7 +182,7 @@ export function saveFeature(feature) {
 }
 
 export function getFeaturesByBbox(minX, minY, maxX, maxY) {
-  // Busqueda por el r-tree (indice espacial real, O(log n)) en vez del
+  // Búsqueda por el r-tree (indice espacial real, O(log n)) en vez del
   // escaneo del indice B-tree compuesto sobre minX/maxX/minY/maxY.
   return promisify(
     `SELECT p.geojson FROM idx_parcelas_geometria r

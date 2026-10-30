@@ -6,7 +6,7 @@ if (!s.includes('signatureManager.js')) {
   s = s.replace(/import { logger } from '\.\/logger\.js';(\r?\n)/, "import { logger } from './logger.js';$1import { SignatureAPI } from './signatureManager.js';$1");
 }
 
-// 2. Locate region
+// 2. Locate región
 const startStr = '// ==================== FIRMA DIGITAL SIMBÓLICA ====================';
 const endStr = 'generarFirmaDigitalCualificada(doc, profesionalData, true);';
 
@@ -25,6 +25,6 @@ if (pStart !== -1 && pEnd !== -1) {
   fs.writeFileSync('js/export.js', s, 'utf8');
   console.log('Patch applied successfully to js/export.js!');
 } else {
-  console.error('Target region not found:', pStart, pEnd);
+  console.error('Target región not found:', pStart, pEnd);
   process.exit(1);
 }

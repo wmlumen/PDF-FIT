@@ -57,8 +57,8 @@ async function run() {
 
   try {
     const ccc = result[0]?.cuenta_catastral;
-    ok('CCC se crea automaticamente con los campos territoriales', !!ccc?.codigo_ccc && ccc.codigo_ccc.includes('11-5-3-7-2-123'), JSON.stringify(ccc));
-  } catch (e) { ok('CCC se crea automaticamente con los campos territoriales', false, String(e && e.message)); }
+    ok('CCC se crea automáticamente con los campos territoriales', !!ccc?.codigo_ccc && ccc.codigo_ccc.includes('11-5-3-7-2-123'), JSON.stringify(ccc));
+  } catch (e) { ok('CCC se crea automáticamente con los campos territoriales', false, String(e && e.message)); }
 
   try {
     const matricula = result[0]?.matricula;
@@ -91,20 +91,20 @@ async function run() {
     ok('parcel_lineage persiste eventos server-side', listado.length === 1 && listado[0].tipo_evento === 'FRACCIONAMIENTO', JSON.stringify(listado));
   } catch (e) { ok('parcel_lineage persiste eventos server-side', false, String(e && e.message)); }
 
-  // Re-sincronizar (como si se guardara el expediente de nuevo tras una edicion
+  // Re-sincronizar (como si se guardara el expediente de nuevo tras una edición
   // de geometria) no debe duplicar filas ni perder los enganches existentes.
   try {
     await dbAPI.matriculas.update(result[0].matricula.id, { estado: 'VERIFICADA', matricula: 'M-VERIFICADA' });
     const resync = await syncParcelasFromGeojson(TEST_EXP, GEOJSON);
     ok('re-sync preserva el id de la parcela (no la duplica)', resync[0].parcela.id === result[0].parcela.id, JSON.stringify([resync[0].parcela.id, result[0].parcela.id]));
     ok('re-sync no pisa una matricula ya verificada', resync[0].matricula.matricula === 'M-VERIFICADA', JSON.stringify(resync[0].matricula));
-    ok('re-sync no cambia el codigo CCC ya asignado', resync[0].cuenta_catastral.codigo_ccc === result[0].cuenta_catastral.codigo_ccc, JSON.stringify([resync[0].cuenta_catastral.codigo_ccc, result[0].cuenta_catastral.codigo_ccc]));
+    ok('re-sync no cambia el código CCC ya asignado', resync[0].cuenta_catastral.codigo_ccc === result[0].cuenta_catastral.codigo_ccc, JSON.stringify([resync[0].cuenta_catastral.codigo_ccc, result[0].cuenta_catastral.codigo_ccc]));
     const listado = await dbAPI.parcelas.listByExpediente(TEST_EXP);
     ok('re-sync no duplica filas de parcelas', listado.length === 2, String(listado.length));
   } catch (e) {
     ok('re-sync preserva el id de la parcela (no la duplica)', false, String(e && e.message));
     ok('re-sync no pisa una matricula ya verificada', false);
-    ok('re-sync no cambia el codigo CCC ya asignado', false);
+    ok('re-sync no cambia el código CCC ya asignado', false);
     ok('re-sync no duplica filas de parcelas', false);
   }
 

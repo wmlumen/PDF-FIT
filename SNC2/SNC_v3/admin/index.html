@@ -20,8 +20,12 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
   </style>
+  <link rel="stylesheet" href="/css/ciudadano-movil.css">
+  <link rel="stylesheet" href="/css/visor-premium.css">
+  <!-- css del paquete Visor catastral Premium -->
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+  <a href="/admin/plataforma.html" class="vp-ir-plataforma">Administración de la plataforma: clientes, planes, módulos y pagos →</a>
   <!-- Top Bar / Super Admin Header -->
   <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -870,9 +874,12 @@
               aparece explícitamente como no disponible, con el motivo.
             </p>
           </div>
-          <button id="refreshVepMetrics" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition border border-gray-700">
-            Recalcular
-          </button>
+          <div class="flex items-center gap-2">
+            <span id="vepPerfilBadge" class="hidden px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full border"></span>
+            <button id="refreshVepMetrics" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition border border-gray-700">
+              Recalcular
+            </button>
+          </div>
         </div>
 
         <!-- Selector de vista, al estilo Informe/Datos/Modelo de Power BI Desktop:
@@ -928,6 +935,22 @@
                 <tbody id="vepDatosTabla" class="text-gray-300"></tbody>
               </table>
             </div>
+
+            <!-- Insumo propio del perfil Notarial: cola priorizada de trabajo real -->
+            <div id="vepBloqueNotarial" class="hidden bg-gray-900 border border-amber-900/40 rounded-xl p-5 shadow-xl mt-6">
+              <h3 class="text-sm font-bold text-white mb-1">Matrículas pendientes de verificar</h3>
+              <p class="text-[11px] text-gray-500 mb-3">Insumo propio de Notarial: estas son las que necesitan revisión, no un indicador general de catastro.</p>
+              <table class="w-full text-xs text-left">
+                <thead>
+                  <tr class="text-gray-400 border-b border-gray-800">
+                    <th class="py-1.5 pr-3">Código</th>
+                    <th class="py-1.5 pr-3">Distrito</th>
+                    <th class="py-1.5 pr-3">Propietarios</th>
+                  </tr>
+                </thead>
+                <tbody id="vepNotarialTabla" class="text-gray-300"></tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Vista Análisis (como "Modelo"/gráficos en Power BI, en CSS plano: sin dependencia de una librería de charts nueva) -->
@@ -940,35 +963,47 @@
               <h3 class="text-sm font-bold text-white mb-3">Parcelas con / sin propietario registrado</h3>
               <div id="vepAnalisisPropietarios" class="space-y-2"></div>
             </div>
+
+            <!-- Insumo propio del perfil Ambiental: conteo real, no estimado -->
+            <div id="vepBloqueAmbiental" class="hidden bg-gray-900 border border-emerald-900/40 rounded-xl p-5 shadow-xl">
+              <h3 class="text-sm font-bold text-white mb-1">Restricciones ambientales activas por tipo</h3>
+              <p class="text-[11px] text-gray-500 mb-3">Insumo propio de Ambiental: conteo real de <code class="text-emerald-400">restricciones_ambientales</code> cargadas (M-1), no una estimación.</p>
+              <div id="vepAnalisisAmbiental" class="space-y-2 text-xs text-gray-300"></div>
+            </div>
           </div>
 
           <!-- Vista Administración (equivalente honesto a RLS de Power BI: SNC_v3 no
-               tiene seguridad por fila todavía, solo por rol vía adminMiddleware —
-               se muestra lo que hay de verdad, no una simulación de RLS) -->
+               filtra por FILA de datos todavía — filtra por SECCIÓN visible según
+               rol/departamento, un recorte real hecho en el servidor, ver M-13 en
+               docs/PLAN_FASE11_BACKLOG.md) -->
           <div id="vepView-administracion" class="vep-view hidden space-y-4">
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
               <h3 class="text-sm font-bold text-white mb-1">Sesión actual</h3>
-              <p class="text-xs text-gray-400 mb-3">Este panel solo es visible con rol admin/superadmin (verificado por <code class="text-amber-400">adminMiddleware</code> en el servidor, no solo oculto en el cliente).</p>
+              <p class="text-xs text-gray-400 mb-3">Este panel es visible para <code class="text-amber-400">admin</code>, <code class="text-amber-400">superadmin</code>, <code class="text-amber-400">admin_municipal</code> y <code class="text-amber-400">admin_notarial</code> por igual (verificado por <code class="text-amber-400">adminMiddleware</code> en el servidor) — lo que cambia entre ellos es QUÉ secciones ve cada uno, no si entra o no.</p>
               <div id="vepAdminSesion" class="text-sm text-gray-300"></div>
             </div>
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl">
-              <h3 class="text-sm font-bold text-white mb-3">Seguridad por rol (equivalente real de SNC_v3 a "RLS")</h3>
+              <h3 class="text-sm font-bold text-white mb-3">Secciones por perfil (equivalente real de SNC_v3 a "RLS")</h3>
               <p class="text-[11px] text-gray-500 mb-3">
-                Power BI define RLS por fila de datos. SNC_v3 hoy filtra por <strong>endpoint</strong>
-                según el rol (no hay reglas por fila todavía) — ver <code class="text-amber-400">PLAN_FASE11_BACKLOG.md</code>.
+                Power BI define RLS por fila de datos; SNC_v3 hoy recorta por <strong>sección</strong>
+                según rol + <code class="text-amber-400">users.department</code> (mismo campo que ya usa
+                el catálogo de direcciones municipales) — un recorte real hecho en el servidor, no CSS
+                ocultando algo que igual viajó.
               </p>
               <table class="w-full text-xs text-left">
                 <thead>
                   <tr class="text-gray-400 border-b border-gray-800">
-                    <th class="py-1.5 pr-3">Rol</th>
-                    <th class="py-1.5 pr-3">Acceso a este panel</th>
-                    <th class="py-1.5 pr-3">Endpoints propios</th>
+                    <th class="py-1.5 pr-3">Perfil</th>
+                    <th class="py-1.5 pr-3">Cómo se asigna</th>
+                    <th class="py-1.5 pr-3">Secciones</th>
+                    <th class="py-1.5 pr-3">Insumo propio</th>
                   </tr>
                 </thead>
                 <tbody class="text-gray-300">
-                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3">member</td><td class="py-1.5 pr-3 text-red-400">✗ 403</td><td class="py-1.5 pr-3">Solo sus propios proyectos/expedientes</td></tr>
-                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3">admin_municipal / admin_notarial</td><td class="py-1.5 pr-3 text-red-400">✗ 403</td><td class="py-1.5 pr-3">Igual que member hoy — sin panel propio todavía</td></tr>
-                  <tr><td class="py-1.5 pr-3">admin / superadmin</td><td class="py-1.5 pr-3 text-emerald-400">✓ 200</td><td class="py-1.5 pr-3">Todos los endpoints <code>/api/admin/*</code></td></tr>
+                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3 text-amber-300">catastro</td><td class="py-1.5 pr-3">rol admin/superadmin, o department=catastro</td><td class="py-1.5 pr-3">todas</td><td class="py-1.5 pr-3">—</td></tr>
+                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3 text-amber-300">notarial</td><td class="py-1.5 pr-3">rol admin_notarial, o department=notarial</td><td class="py-1.5 pr-3">Resumen, Datos</td><td class="py-1.5 pr-3">Matrículas pendientes de verificar</td></tr>
+                  <tr class="border-b border-gray-900"><td class="py-1.5 pr-3 text-amber-300">ambiental</td><td class="py-1.5 pr-3">department=ambiental</td><td class="py-1.5 pr-3">Resumen, Análisis</td><td class="py-1.5 pr-3">Restricciones activas por tipo</td></tr>
+                  <tr><td class="py-1.5 pr-3 text-amber-300">municipal</td><td class="py-1.5 pr-3">admin_municipal sin department reconocido</td><td class="py-1.5 pr-3">solo Resumen</td><td class="py-1.5 pr-3">— (el perfil con menos insumos)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1097,5 +1132,6 @@
   <!-- Selector de mapa base hamburguesa -->
   <script src="/js/mapLayoutManager.js"></script>
   <script src="/js/basemapMenu.js"></script>
+  <script type="module" src="/js/visorPremium.js"></script>
 </body>
 </html>

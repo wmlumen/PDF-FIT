@@ -67,7 +67,7 @@ t('Sistema: las columnas del sistema existen', () => {
 
 // ─── deriveName ──────────────────────────────────────────────────────────────
 console.log('\n3) Derivar nombre de campo');
-t('titulo con espacios y acentos', () => {
+t('título con espacios y acentos', () => {
     eq(deriveName('Nombre de la calle'), 'NOMBRE_DE_LA_CALLE');
     // El dígito se conserva; el carácter no alfanumérico se reemplaza.
     eq(deriveName('Área (m²)'), 'AREA_M2');

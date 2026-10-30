@@ -18,8 +18,8 @@ const LAYERS = [
   { shp: 'VERTEDERO', out: 'vertedero', group: 'vertedero' },
   { shp: 'VERTEDERO INTEGRADO', out: 'vertedero_integrado', group: 'vertedero' },
   { shp: 'CENTRO', out: 'centro', group: 'vertedero' },
-  { shp: 'area vertedero 500 mts', out: 'vertedero_500', group: 'vertedero' },
-  { shp: 'area vertedero 1000 mts', out: 'vertedero_1000', group: 'vertedero' },
+  { shp: 'área vertedero 500 mts', out: 'vertedero_500', group: 'vertedero' },
+  { shp: 'área vertedero 1000 mts', out: 'vertedero_1000', group: 'vertedero' },
   { shp: 'VUELO_CASCO', out: 'vuelo_casco', group: 'casco' },
 ];
 

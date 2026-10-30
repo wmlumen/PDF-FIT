@@ -718,7 +718,7 @@ export function open(opts) {
 }
 
 /**
- * Publica el alto ocupado por el panel en la variable CSS --at-open-h.
+ * Pública el alto ocupado por el panel en la variable CSS --at-open-h.
  * La leyenda del mapa la usa para subir y no quedar tapada. Solo cuenta
  * cuando el panel está realmente desplegado (no minimizado ni oculto).
  */

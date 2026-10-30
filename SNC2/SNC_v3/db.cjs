@@ -169,7 +169,7 @@ db.serialize(() => {
 
   // Reparacion de la cadena pre-AUTOINCREMENT (Bug M9-1).
   // La tabla se creo con una secuencia global: el hash de las filas tempranas se
-  // calculo con MAX(seq)+1 por expediente, no con el seq real insertado, asi que
+  // cálculo con MAX(seq)+1 por expediente, no con el seq real insertado, asi que
   // la cadena quedaba rota desde la fila 1. Se recalcula cada fila con su seq
   // real (el AUTOINCREMENT ya asignado) y el hash_prev del predecessor real.
   db.all('SELECT expediente_id FROM expediente_historial GROUP BY expediente_id', [], (err, grupos) => {
@@ -346,7 +346,7 @@ db.serialize(() => {
 
   // Fase 11, M-1 (ambiental — ver docs/PLAN_FASE11_BACKLOG.md): restricciones
   // cargadas por un administrador (humedal, faja ribereña, reserva, vertedero
-  // + buffer, zona inundable...). `geojson` guarda la geometria de la propia
+  // + buffer, zona inundable...). `geojson` guarda la geometría de la propia
   // restriccion; `buffer_metros` es opcional (p. ej. 1000m alrededor de un
   // vertedero puntual). `nivel_restriccion` decide si una interseccion
   // bloquea (no_apto) o solo condiciona un fraccionamiento/mensura.
@@ -369,7 +369,7 @@ db.serialize(() => {
   // catalogo normativo de zonas (13 zonas AMA, seedeado desde
   // scripts/import-pout-zonas.mjs con los datos reales de
   // docs/pout-manuales/generador/_pout_modelo.py). `zonas_pout` son los
-  // poligonos reales por municipio (cargados desde los shapefiles de
+  // polígonos reales por municipio (cargados desde los shapefiles de
   // docs/pout-manuales/); `codigo_zona` puede ser NULL cuando el shapefile
   // trae una zona municipal sin equivalente en el catalogo de 13 zonas
   // (p. ej. "Casco histórico", "Subestación de 220KV") — se deja constancia
@@ -749,7 +749,7 @@ function calcularHash(entry, hashPrev) {
 
 const expediente_historial = {
   // Inserta una fila enlazada con la anterior.
-  // El hash se sella despues del INSERT porque depende del seq real que asigna
+  // El hash se sella después del INSERT porque depende del seq real que asigna
   // AUTOINCREMENT (calcularlo con MAX(seq)+1 rompia la cadena, Bug M9-1).
   async append(entry) {
     const prev = await promisifyGet(
@@ -820,8 +820,8 @@ async function transicionarExpediente(expedienteId, hacia, actor, opciones = {})
     if (!row) { const e = new Error('Expediente no encontrado'); e.code = 'NOT_FOUND'; throw e; }
     // NULL/undefined se normalizan a BORRADOR (el default real de la columna).
     // Un estado vacio o desconocido NO se normaliza: se deja tal cual y la
-    // validacion de abajo lo rechaza. Usar `|| 'BORRADOR'` convertiria '' en
-    // 'BORRADOR' y saltaria la validacion (Bug M9-2).
+    // validación de abajo lo rechaza. Usar `|| 'BORRADOR'` convertiria '' en
+    // 'BORRADOR' y saltaria la validación (Bug M9-2).
     const estadoActual = (row.estado === null || row.estado === undefined)
       ? 'BORRADOR'
       : String(row.estado);
@@ -1010,7 +1010,7 @@ function extractFeatureProp(props, upperKey, lowerKey) {
 }
 
 // Identificador de Cuenta Corriente Catastral. No hay un formato oficial SNC
-// todavia (ver auditoria estrategica, punto 1): se arma con los campos
+// todavía (ver auditoria estrategica, punto 1): se arma con los campos
 // territoriales disponibles + un sufijo de la parcela para garantizar unicidad
 // aunque dos features compartan departamento/distrito/zona/manzana/lote/padron.
 function buildCodigoCcc(parcela) {
@@ -1023,7 +1023,7 @@ function buildCodigoCcc(parcela) {
 const parcelas = {
   // Una fila por feature del GeoJSON de un expediente. Upsert por
   // (expediente_id, feature_index): nunca se borran filas aunque un feature
-  // desaparezca de una edicion posterior (principio catastral "nunca eliminar
+  // desaparezca de una edición posterior (principio catastral "nunca eliminar
   // parcelas" — ver auditoria estrategica, punto 3), y se preserva el `id`
   // entre resguardos para no romper cuenta_catastral/matriculas/propietarios
   // ya enganchados a esa parcela.
@@ -1103,8 +1103,8 @@ const cuentaCatastral = {
 };
 
 const personas = {
-  // No se migra automaticamente desde el string PROPIETARIO del GeoJSON: no
-  // hay cedula en ese dato, y la cedula es la clave unica de esta tabla (ver
+  // No se migra automáticamente desde el string PROPIETARIO del GeoJSON: no
+  // hay cedula en ese dato, y la cedula es la clave única de esta tabla (ver
   // auditoria estrategica, punto 2). El alta es explicita, vía el endpoint
   // POST /api/parcelas/:id/propietarios.
   findOrCreateByCedula({ cedula, nombre, apellido, fecha_nacimiento, telefono, correo }) {
@@ -1129,7 +1129,7 @@ const personas = {
 const parcelaPropietario = {
   // Relacion N:M con historial: la misma persona puede tener mas de una
   // relacion sobre la misma parcela (p. ej. PROPIETARIO y luego HEREDERO),
-  // pero (parcela, persona, tipo_relacion) es unico — reintentar el mismo
+  // pero (parcela, persona, tipo_relacion) es único — reintentar el mismo
   // alta actualiza porcentaje/fechas en vez de duplicar fila.
   upsert({ parcela_id, persona_id, tipo_relacion = 'PROPIETARIO', porcentaje = null, fecha_desde = null, fecha_hasta = null }) {
     const sql = `INSERT INTO parcela_propietario (id, parcela_id, persona_id, tipo_relacion, porcentaje, fecha_desde, fecha_hasta, created_at)
@@ -1152,7 +1152,7 @@ const parcelaPropietario = {
 const matriculas = {
   // Sincroniza finca/matricula desde el GeoJSON SOLO mientras la fila sigue
   // 'SIN_VERIFICAR'. En cuanto un escribano la verifica/corrige (estado !=
-  // SIN_VERIFICAR via update()), una resincronizacion por edicion de geometria
+  // SIN_VERIFICAR via update()), una resincronizacion por edición de geometría
   // ya no pisa ese trabajo.
   ensureForParcela(parcela) {
     if (!parcela.finca_raw && !parcela.matricula_raw) return this.findByParcela(parcela.id);
@@ -1183,7 +1183,7 @@ const matriculas = {
 };
 
 const parcelLineage = {
-  // Version server-side de js/state.js `parcelLineage` (hasta ahora solo en
+  // Versión server-side de js/state.js `parcelLineage` (hasta ahora solo en
   // localStorage, ver AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md P-08).
   append(entry) {
     const id = crypto.randomUUID();
@@ -1242,7 +1242,7 @@ const restriccionesAmbientales = {
   listActivas() {
     return promisifyQuery('SELECT * FROM restricciones_ambientales WHERE activo = 1 ORDER BY datetime(created_at) DESC');
   },
-  // Para la gestion en el panel admin: incluye las inactivas.
+  // Para la gestión en el panel admin: incluye las inactivas.
   listAll() {
     return promisifyQuery('SELECT * FROM restricciones_ambientales ORDER BY datetime(created_at) DESC');
   },
@@ -1283,7 +1283,7 @@ const usosSuelo = {
 };
 
 const zonasPout = {
-  // Fase 11, M-2: poligonos reales por municipio (ver scripts/import-pout-zonas.mjs).
+  // Fase 11, M-2: polígonos reales por municipio (ver scripts/import-pout-zonas.mjs).
   insert(data) {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();

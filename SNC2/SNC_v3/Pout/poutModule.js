@@ -102,15 +102,11 @@
     if (typeof L === 'undefined') return notificar('Leaflet no cargado');
     const el = $('#pout-map');
     if (!el || state.map) return;
-    state.map = L.map(el).setView([-25.3, -57.6], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(state.map);
-    // Marcador parque central genérico PY
-    L.marker([-25.2945, -57.6387]).addTo(state.map)
-      .bindPopup('<b>Paraguay</b>').openPopup();
-    // Capa vial MOPC activada por defecto
-    toggleCapa('mopc');
+    state.map = L.map(el, { preferCanvas: true }).setView([-25.3, -57.6], 7);
+    // Mapa base por el proxy del servidor (la CSP no admite teselas externas directas).
+    L.tileLayer('/api/v3/teselas/osm/{z}/{x}/{y}', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(state.map);
+    // Capas POUT del Área Metropolitana (Pout/poutCapasAma.js)
+    if (window.poutCapasAma) window.poutCapasAma(state.map);
   }
   function toggleCapa(tipo) {
     state.capas[tipo] = !state.capas[tipo];

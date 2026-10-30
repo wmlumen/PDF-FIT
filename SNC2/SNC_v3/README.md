@@ -151,6 +151,10 @@ Notas:
 - [Mapeo propuesta PostgreSQL 2026-10-24](docs/MAPEO_PROPUESTA_POSTGRESQL_2026-10-24.md) (qué ya existe con otro nombre, qué falta, qué sí exige migrar motor)
 - [Plan de remediación](docs/PLAN_REMEDIACION_AUDITORIA.md)
 - [Espejo de auditoría para agentes](graphify-out/auditoria/README.md) · [`auditoria.json`](graphify-out/auditoria/auditoria.json)
+- [Grafo de seguimiento](docs/grafo_seguimiento.md) · [`estado_proyecto.json`](docs/tracking/estado_proyecto.json) — estado actual, tareas por carril, progreso y bloqueos
+
+> Mantener este README y la auditoría actualizados es parte del trabajo: si se cierra un hallazgo,
+> actualizar el plan y, si cambia el estado global, la cabecera de este archivo.
 - [Grafo del repositorio (reporte)](graphify-out/GRAPH_REPORT.md)
 - [Protocolo multi-IA](AGENTS.md)
 - [Estructura y reglas de seguridad](docs/PROJECT_STRUCTURE.md)

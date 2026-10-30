@@ -64,7 +64,7 @@ const resultadoCombinado = evaluarRestriccionesAmbientales(parcelaCombinada, [hu
 assert.equal(resultadoCombinado.resultado, RESULTADOS.NO_APTO);
 assert.equal(resultadoCombinado.afectaciones.length, 2);
 
-// --- Geometria invalida en una restriccion no rompe la evaluacion de las demas ---
+// --- Geometría invalida en una restriccion no rompe la evaluacion de las demas ---
 const restriccionRota = { id: 'r4', tipo: 'OTRO', nivel_restriccion: NIVELES_RESTRICCION.BLOQUEA, geojson: '{esto no es json' };
 const resultadoConRota = evaluarRestriccionesAmbientales(parcelaEnHumedal, [restriccionRota, humedal], turf);
 assert.equal(resultadoConRota.resultado, RESULTADOS.NO_APTO);

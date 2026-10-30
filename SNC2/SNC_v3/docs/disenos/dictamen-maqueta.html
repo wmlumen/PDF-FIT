@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Análisis Territorial - SNC_v3 | Catastro Nacional</title>
+    
+    <!-- Tipografía de Alto Rendimiento: Inter, Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet para visor cartográfico si está disponible -->
+    <link rel="stylesheet" href="/vendor/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';">
+    <script src="/vendor/leaflet.js" onerror="this.onerror=null;this.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';"></script>
+
+    <style>
+        /* ============================================================
+           SISTEMA DE DISEÑO TÉCNICO EDITORIAL CATASTRAL (SNC_v3 10x)
+           Tokens de Color, Tipografía, Sombras y Elevaciones
+           ============================================================ */
+        :root {
+            /* Paleta Institucional Catastral Oficial */
+            --snc-navy-900: #0a192f;
+            --snc-navy-800: #002b49;
+            --snc-navy-700: #003d66;
+            --snc-navy-600: #005086;
+            --snc-navy-50:  #f0f7fc;
+            
+            --snc-gold-600: #b45309;
+            --snc-gold-500: #c59b27;
+            --snc-gold-400: #d97706;
+            --snc-gold-50:  #fef9ee;
+
+            /* Superficies y Neutros de Alta Fidelidad */
+            --bg-canvas: #eceff3;
+            --bg-sheet: #ffffff;
+            --bg-card: #f8fafc;
+            --bg-card-alt: #f1f5f9;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --border-strong: #94a3b8;
+
+            /* Escala Tipográfica y Legibilidad */
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --text-inverse: #ffffff;
+
+            /* Tokens de Estado Semántico */
+            --badge-ok-bg: #ecfdf5;
+            --badge-ok-border: #a7f3d0;
+            --badge-ok-text: #065f46;
+            --badge-ok-dot: #10b981;
+
+            --badge-pending-bg: #fffbeb;
+            --badge-pending-border: #fde68a;
+            --badge-pending-text: #92400e;
+            --badge-pending-dot: #f59e0b;
+
+            --badge-alert-bg: #fef2f2;
+            --badge-alert-border: #fecaca;
+            --badge-alert-text: #991b1b;
+            --badge-alert-dot: #ef4444;
+
+            --badge-info-bg: #eff6ff;
+            --badge-info-border: #bfdbfe;
+            --badge-info-text: #1e40af;
+            --badge-info-dot: #3b82f6;
+
+            /* Tipografías */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-display: 'Plus Jakarta Sans', var(--font-sans);
+            --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+            /* Sombras Arquitectónicas */
+            --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 6px 12px -2px rgba(15, 23, 42, 0.08), 0 3px 6px -2px rgba(15, 23, 42, 0.04);
+            --shadow-sheet: 0 20px 35px -10px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.06);
+
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+
+        /* ============================================================
+           RESET Y DISPOSICIÓN GLOBAL
+           ============================================================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 14px;
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            line-height: 1.55;
+            padding: 2.5rem 1rem 4rem;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============================================================
+           BARRA FLOTANTE DE ACCIONES (NO IMPRESA)
+           ============================================================ */
+        .action-toolbar {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            transition: all 0.25s ease;
+        }
+
+        .action-toolbar:hover {
+            background: rgba(15, 23, 42, 0.96);
+            box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .toolbar-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-right: 0.75rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toolbar-status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--snc-navy-700);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.45rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            background: #0284c7;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+
+        .btn-action-primary {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+        }
+
+        .btn-action-primary:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.6);
+        }
+
+        /* ============================================================
+           HOJA DEL DOCUMENTO (A4 PROPORTIONS & EXECUTIVE ELEVATION)
+           ============================================================ */
+        .document-sheet {
+            max-width: 960px;
+            margin: 2.5rem auto 0;
+            background-color: var(--bg-sheet);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sheet);
+            border: 1px solid var(--border-subtle);
+            padding: 3rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Barra decorativa tricolor en el margen superior */
+        .document-sheet::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #d52b1e 0%, #d52b1e 33.3%, #ffffff 33.3%, #ffffff 66.6%, #0038a8 66.6%, #0038a8 100%);
+        }
+
+        /* ============================================================
+           CABECERA INSTITUCIONAL OFICIAL
+           ============================================================ */
+        .header-territorial {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.75rem;
+            align-items: center;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border-subtle);
+            margin-bottom: 2.25rem;
+            position: relative;
+        }
+
+        .header-emblem {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border: 1px solid var(--border-medium);
+            border-radius: 50%;
+            padding: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .eyebrow-country {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--snc-navy-700);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .eyebrow-country::after {
+            content: "";
+            display: inline-block;
+            width: 32px;
+            height: 1.5px;
+            background-color: var(--snc-gold-500);
+        }
+
+        .institution-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--snc-navy-900);
+            line-height: 1.2;
+            letter-spacing: -0.015em;
+        }
+
+        .institution-sub {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .report-main-title {
+            margin-top: 0.5rem;
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--snc-gold-600);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* QR y Certificación Digital en Cabecera */
+        .header-stamp {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .qr-placeholder {
+            width: 64px;
+            height: 64px;
+            background: #ffffff;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stamp-id {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Barra de Metadatos Rápidos */
+        .meta-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--snc-navy-700);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 2.25rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-strip-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .meta-strip-label {
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+        }
+
+        .meta-strip-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--snc-navy-900);
+        }
+
+        /* ============================================================
+           SECCIONES EDITORIALES TÉCNICAS
+           ============================================================ */
+        .section {
+            margin-bottom: 2.5rem;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            padding-bottom: 0.6rem;
+            border-bottom: 1.5px solid var(--snc-navy-800);
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--snc-navy-900);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background-color: var(--snc-navy-800);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+
+        .section-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ============================================================
+           FICHA TÉCNICA (INFO GRID 10X)
+           ============================================================ */
+        .info-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .info-cell {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .info-cell:hover {
+            border-color: var(--border-medium);
+            background-color: var(--bg-card-alt);
+        }
+
+        .info-cell .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .info-cell .value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-cell .value-mono {
+            font-family: var(--font-mono);
+            letter-spacing: -0.01em;
+        }
+
+        /* ============================================================
+           RESUMEN ESTADÍSTICO - TARJETAS KPI EXECUTIVE (10x)
+           ============================================================ */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: linear-gradient(180deg, #ffffff 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.15rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow-xs);
+            position: relative;
+            overflow: hidden;
+            border-top: 3px solid var(--snc-navy-700);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--snc-navy-600);
+        }
+
+        .kpi-card.kpi-warning {
+            border-top-color: var(--snc-gold-500);
+        }
+
+        .kpi-card.kpi-alert {
+            border-top-color: #ef4444;
+        }
+
+        .kpi-card.kpi-success {
+            border-top-color: #10b981;
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .kpi-icon {
+            font-size: 1rem;
+            color: var(--snc-navy-600);
+            opacity: 0.8;
+        }
+
+        .kpi-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.35rem;
+            margin: 0.2rem 0;
+        }
+
+        .kpi-value {
+            font-family: var(--font-mono);
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--snc-navy-900);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kpi-unit {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .kpi-footer {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-top: 1px dashed var(--border-subtle);
+            padding-top: 0.4rem;
+        }
+
+        /* ============================================================
+           TABLAS TÉCNICAS DE ALTA DEFINICIÓN
+           ============================================================ */
+        .table-wrap {
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            box-shadow: var(--shadow-xs);
+            overflow: hidden;
+            margin: 1rem 0 1.5rem;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        table.data-table thead th {
+            background-color: var(--snc-navy-900);
+            color: #ffffff;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--snc-gold-500);
+        }
+
+        table.data-table tbody tr {
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background-color 0.15s ease;
+        }
+
+        table.data-table tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        table.data-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        table.data-table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        table.data-table td {
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+
+        /* Alineaciones y Numéricas */
+        .col-num {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--snc-navy-900);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .col-center {
+            text-align: center;
+        }
+
+        .col-lead {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Píldoras de Estado (Status Badges) */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            border-radius: 9999px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .status-badge::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-ok {
+            background-color: var(--badge-ok-bg);
+            color: var(--badge-ok-text);
+            border: 1px solid var(--badge-ok-border);
+        }
+        .status-ok::before {
+            background-color: var(--badge-ok-dot);
+            box-shadow: 0 0 4px var(--badge-ok-dot);
+        }
+
+        .status-pending {
+            background-color: var(--badge-pending-bg);
+            color: var(--badge-pending-text);
+            border: 1px solid var(--badge-pending-border);
+        }
+        .status-pending::before {
+            background-color: var(--badge-pending-dot);
+        }
+
+        .status-alert {
+            background-color: var(--badge-alert-bg);
+            color: var(--badge-alert-text);
+            border: 1px solid var(--badge-alert-border);
+        }
+        .status-alert::before {
+            background-color: var(--badge-alert-dot);
+        }
+
+        /* Tags de Uso de Suelo */
+        .use-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background-color: var(--bg-card-alt);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-medium);
+        }
+
+        /* ============================================================
+           VISOR CARTOGRÁFICO TÉCNICO (MAPA 10X)
+           ============================================================ */
+        .map-wrapper {
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-lg);
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin: 1.25rem 0;
+            position: relative;
+        }
+
+        /* Marco de Coordenadas Geodésicas */
+        .map-header-bar {
+            background: var(--snc-navy-900);
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+        }
+
+        .map-title-tag {
+            font-family: var(--font-display);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .map-crs-badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #93c5fd;
+        }
+
+        .map-viewport {
+            width: 100%;
+            height: 380px;
+            background: #e5e7eb;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Cartografía de Respaldo SVG (Vectorial Puro) */
+        .map-blueprint-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background-color: #f8fafc;
+        }
+
+        /* Rosa de los Vientos Flotante */
+        .map-compass {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border-medium);
+            border-radius: 50%;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* Leyenda Cartográfica Flotante */
+        .map-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 0.6rem 0.85rem;
+            box-shadow: var(--shadow-md);
+            font-size: 0.72rem;
+            max-width: 260px;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            color: var(--snc-navy-900);
+            margin-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 0.2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-symbol {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .legend-parcel { background: rgba(59, 130, 246, 0.25); border-color: #1d4ed8; }
+        .legend-water { background: rgba(6, 182, 212, 0.35); border-color: #0891b2; }
+        .legend-slope { background: rgba(245, 158, 11, 0.3); border-color: #d97706; }
+        .legend-boundary { border: 2px dashed #dc2626; background: transparent; }
+
+        /* Barra de Escala Gráfica */
+        .map-scale-bar {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            padding: 0.3rem 0.6rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .scale-rule {
+            width: 80px;
+            height: 4px;
+            background: repeating-linear-gradient(90deg, #0f172a 0px, #0f172a 20px, #ffffff 20px, #ffffff 40px);
+            border: 1px solid #0f172a;
+        }
+
+        .map-caption {
+            background-color: var(--bg-card);
+            padding: 0.6rem 1rem;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* ============================================================
+           SECCIÓN DE RECOMENDACIONES Y DICTAMEN TÉCNICO
+           ============================================================ */
+        .callout-box {
+            background: linear-gradient(135deg, var(--snc-gold-50) 0%, #ffffff 100%);
+            border: 1px solid var(--badge-pending-border);
+            border-left: 4px solid var(--snc-gold-500);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .callout-box h4 {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--snc-gold-600);
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendations-list {
+            list-style: none;
+            counter-reset: rec-counter;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .recommendations-list li {
+            counter-increment: rec-counter;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .recommendations-list li::before {
+            content: counter(rec-counter);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background-color: var(--snc-gold-500);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ============================================================
+           BLOQUE DE FIRMAS TÉCNICAS Y CERTIFICACIÓN
+           ============================================================ */
+        .signatures-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .signature-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .signature-line {
+            width: 80%;
+            height: 1px;
+            background-color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .signature-name {
+            font-family: var(--font-display);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--snc-navy-900);
+        }
+
+        .signature-title {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .signature-meta {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* ============================================================
+           PIE DE PÁGINA INSTITUCIONAL
+           ============================================================ */
+        .document-footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .footer-left {
+            max-width: 65%;
+        }
+
+        .footer-right {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-weight: 500;
+        }
+
+        /* ============================================================
+           REGLAS DE IMPRESIÓN PERFECCIONADAS (@media print)
+           ============================================================ */
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm 15mm 15mm;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .action-toolbar {
+                display: none !important;
+            }
+
+            .document-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .document-sheet::before {
+                display: none !important;
+            }
+
+            .kpi-card {
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+
+            .table-wrap {
+                box-shadow: none !important;
+                border: 1px solid #94a3b8 !important;
+            }
+
+            table.data-table thead th {
+                background-color: #0a192f !important;
+                color: #ffffff !important;
+            }
+
+            .map-viewport {
+                height: 320px !important;
+            }
+
+            .section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+
+        /* ============================================================
+           RESPONSIVIDAD Y DISPOSITIVOS MÓVILES
+           ============================================================ */
+        @media (max-width: 820px) {
+            body {
+                padding: 4.5rem 0.5rem 2rem;
+            }
+
+            .document-sheet {
+                padding: 1.75rem 1.25rem;
+                border-radius: var(--radius-md);
+            }
+
+            .header-territorial {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .header-emblem {
+                margin: 0 auto;
+            }
+
+            .eyebrow-country {
+                justify-content: center;
+            }
+
+            .header-stamp {
+                margin: 0 auto;
+            }
+
+            .kpi-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .signatures-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .document-footer {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+
+            .footer-left, .footer-right {
+                max-width: 100%;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar-title {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- MAQUETA DE DISEÑO SIN VALIDEZ: datos, personas, matrículas, firma y hash ficticios. No publicar. Se usa como referencia visual de municipal/informe-lote.html. -->
+
+    <!-- BARRA FLOTANTE DE ACCIÓN (10x UX & EXPORTACIÓN) -->
+    <aside class="action-toolbar" aria-label="Herramientas de reporte">
+        <div class="toolbar-title">
+            <span class="toolbar-status-dot" title="SNC Online"></span>
+            <span>SNC_v3 • Análisis Territorial</span>
+        </div>
+        <button id="btn-imprimir" class="btn-action btn-action-primary" onclick="imprimirDocumento()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Imprimir / PDF A4</span>
+        </button>
+        <button class="btn-action" onclick="toggleModoAjuste()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path>
+                <path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path>
+            </svg>
+            <span id="btn-ajuste-texto">Ancho Completo</span>
+        </button>
+    </aside>
+
+    <!-- DOCUMENTO OFICIAL A4 / CANVAS EJECUTIVO -->
+    <main class="document-sheet" id="documento-canvas">
+
+        <!-- CABECERA INSTITUCIONAL CON EMBLEMA Y SELLOS OFICIALES -->
+        <header class="header-territorial">
+            <!-- Emblema de la República del Paraguay (SVG Vectorial Autónomo) -->
+            <div class="header-emblem" title="Escudo Nacional de la República del Paraguay">
+                <svg viewBox="0 0 100 100" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#c59b27" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="43" stroke="#002b49" stroke-width="1.5" stroke-dasharray="2 2"/>
+                    <!-- Estrella de Mayo / Sello Nacional -->
+                    <polygon points="50,18 58,36 78,36 62,49 68,69 50,56 32,69 38,49 22,36 42,36" fill="#c59b27" stroke="#92400e" stroke-width="1"/>
+                    <circle cx="50" cy="46" r="6" fill="#ffffff" stroke="#002b49" stroke-width="1.5"/>
+                    <path d="M 28 78 Q 50 88 72 78" stroke="#065f46" stroke-width="3" stroke-linecap="round" fill="none"/>
+                </svg>
+            </div>
+
+            <!-- Títulos Institucionales -->
+            <div class="header-titles">
+                <div class="eyebrow-country">República del Paraguay • Gobierno Nacional</div>
+                <h1 class="institution-title">Dirección General del Servicio Nacional de Catastro</h1>
+                <div class="institution-sub">Ministerio de Economía y Finanzas (MEF)</div>
+                <div class="report-main-title">Dictamen Técnico de Cobertura y Análisis Territorial</div>
+            </div>
+
+            <!-- Estampilla de Validación Criptográfica y QR -->
+            <div class="header-stamp">
+                <div class="qr-placeholder" title="Código QR de Verificación Catastral">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="#0f172a">
+                        <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v4h-4v-4zm-4 4h2v4h-2v-4zm4 2h2v2h-2v-2zm-2-6h2v2h-2v-2zm-6 2h2v6h-2v-6zm2-4h4v2h-4v-2z"/>
+                    </svg>
+                </div>
+                <div class="stamp-id">EXP-2026-001</div>
+                <div style="font-size: 0.6rem; color: #10b981; font-weight: 700; margin-top: 2px;">FIRMA VÁLIDA</div>
+            </div>
+        </header>
+
+        <!-- FRANJA DE METADATOS TÉCNICOS CATASTRALES -->
+        <div class="meta-strip">
+            <div class="meta-strip-item">
+                <span class="meta-strip-label">Fecha de Emisión:</span>
+                <span class="meta-strip-value">28 de Octubre, 2026</span>
+            </div>
+            <div class="meta-strip-item">
+                <span class="meta-strip-label">Sistema Geodésico:</span>
+                <span class="meta-strip-value">WGS84 / UTM Huso 21S (EPSG:32721)</span>
+            </div>
+            <div class="meta-strip-item">
+                <span class="meta-strip-label">Resolución:</span>
+                <span class="meta-strip-value">SNC 551/2023</span>
+            </div>
+            <div class="meta-strip-item">
+                <span class="meta-strip-label">Motor API:</span>
+                <span class="meta-strip-value">SNC Core v0.22.4 (Port 5556)</span>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 1: FICHA TÉCNICA DEL EXPEDIENTE -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">1</span>
+                    <span>Información del Expediente Catastral</span>
+                </h2>
+                <span class="section-note">Datos de radicación registral</span>
+            </div>
+            
+            <div class="info-card-grid">
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Expediente ID
+                    </div>
+                    <div class="value value-mono" style="color: var(--snc-navy-700);">EXP-2026-001</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        Departamento
+                    </div>
+                    <div class="value">Central (11)</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                        Distrito
+                    </div>
+                    <div class="value">Capiatá / Piribebuy</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        Municipio
+                    </div>
+                    <div class="value">Municipalidad Local (Ley 3966)</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        Superficie Relevada
+                    </div>
+                    <div class="value value-mono">1,307.48 hectáreas</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Parcelas Procesadas
+                    </div>
+                    <div class="value value-mono">130,234 unidades</div>
+                </div>
+
+                <div class="info-cell">
+                    <div class="label">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Estado de Validación
+                    </div>
+                    <div class="value">
+                        <span class="status-badge status-pending">En Trámite de Dictamen</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: ANÁLISIS DE COBERTURA CATASTAL (KPIS & RESUMEN) -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">2</span>
+                    <span>Análisis de Cobertura Catastral y Métricas de Territorio</span>
+                </h2>
+                <span class="section-note">Cálculo geoespacial automatizado</span>
+            </div>
+
+            <!-- TARJETAS EJECUTIVAS KPI (10X) -->
+            <div class="kpi-container">
+                <div class="kpi-card kpi-success">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Superficie Total</span>
+                        <span class="kpi-icon">📐</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value">1,307.48</span>
+                        <span class="kpi-unit">ha</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span>13,074,800 m² analizados</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Total Parcelas</span>
+                        <span class="kpi-icon">🏛️</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value">130,234</span>
+                        <span class="kpi-unit">padrones</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span>Superficie media: 0.0101 ha</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-warning">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Restricción Hídrica</span>
+                        <span class="kpi-icon">💧</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value">21,147</span>
+                        <span class="kpi-unit">u (16.2%)</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span>Faja de amortiguamiento MADES</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-alert">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Pendiente &gt; 15%</span>
+                        <span class="kpi-icon">⛰️</span>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value">4,412</span>
+                        <span class="kpi-unit">u (3.4%)</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span>Zona crítica de escorrentía</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA ESTADÍSTICA DE ATRIBUTOS GEOGRÁFICOS -->
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Variable / Indicador Territorial</th>
+                            <th class="col-num">Magnitud Catastral</th>
+                            <th class="col-center">Unidad de Medida</th>
+                            <th>Incidencia sobre el Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-lead">Superficie Georreferenciada Total</td>
+                            <td class="col-num">1,307.48</td>
+                            <td class="col-center"><span class="use-tag">ha</span></td>
+                            <td>100.0% de cobertura poligonal</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Inmuebles Catastrados Registrados</td>
+                            <td class="col-num">130,234</td>
+                            <td class="col-center"><span class="use-tag">unidades</span></td>
+                            <td>Densidad alta (zona consolidada)</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Superficie Predial Promedio</td>
+                            <td class="col-num">0.0101</td>
+                            <td class="col-center"><span class="use-tag">ha/predio</span></td>
+                            <td>Equivalente a 101.0 m² por parcela</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Parcelas Afectadas por Cursos de Agua</td>
+                            <td class="col-num">21,147</td>
+                            <td class="col-center"><span class="use-tag">unidades</span></td>
+                            <td>
+                                <span class="status-badge status-pending">16.2% Sujeto a Faja Protectora</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Topografía Accidente (Pendiente &gt; 15%)</td>
+                            <td class="col-num">4,412</td>
+                            <td class="col-center"><span class="use-tag">unidades</span></td>
+                            <td>
+                                <span class="status-badge status-alert">3.4% Restricción Constructiva</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: MUESTRA DE PARCELAS EVALUADAS -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">3</span>
+                    <span>Muestra Representativa de Parcelas Evaluadas</span>
+                </h2>
+                <span class="section-note">Padrón catastral y uso de suelo</span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Padrón Catastral</th>
+                            <th class="col-num">Superficie (ha)</th>
+                            <th>Uso de Suelo (POUT)</th>
+                            <th class="col-center">Estado Técnico</th>
+                            <th>Observaciones del Validador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-lead" style="font-family: var(--font-mono);">001-001</td>
+                            <td class="col-num">1,250.00</td>
+                            <td><span class="use-tag">🌾 Agrícola Intensivo</span></td>
+                            <td class="col-center"><span class="status-badge status-ok">Activa / Regular</span></td>
+                            <td>Sin solapamientos ni afectación a cauces hídricos</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead" style="font-family: var(--font-mono);">001-002</td>
+                            <td class="col-num">85.30</td>
+                            <td><span class="use-tag">🐄 Pastoreo Rural</span></td>
+                            <td class="col-center"><span class="status-badge status-pending">En Trámite</span></td>
+                            <td>Documentación de mensura judicial incompleta</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead" style="font-family: var(--font-mono);">001-003</td>
+                            <td class="col-num">432.15</td>
+                            <td><span class="use-tag">🌲 Reserva Forestal</span></td>
+                            <td class="col-center"><span class="status-badge status-alert">Alerta de Límite</span></td>
+                            <td>Supera tolerancia de área respecto al título matriz (+5.2%)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: VISOR CARTOGRÁFICO DE ALTA FIDELIDAD -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">4</span>
+                    <span>Georreferenciación y Cartografía Catastral</span>
+                </h2>
+                <span class="section-note">Plano georreferenciado oficial</span>
+            </div>
+
+            <div class="map-wrapper">
+                <!-- Barra superior de metadatos cartográficos -->
+                <div class="map-header-bar">
+                    <div class="map-title-tag">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                        <span>Visor Territorial UTM 21S — Capiatá / Piribebuy</span>
+                    </div>
+                    <div class="map-crs-badge">EPSG:32721 (UTM 21S) • WGS84</div>
+                </div>
+
+                <!-- Visor / Contenedor Leaflet y Cartografía Vectorial Dinámica -->
+                <div id="map-container" class="map-viewport">
+                    <!-- Cartografía Vectorial de Respaldo Impecable (SVG de Alta Resolución) -->
+                    <svg class="map-blueprint-svg" viewBox="0 0 800 380" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Malla de Coordenadas Geodésicas (Grid Ticks) -->
+                        <defs>
+                            <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+                            </pattern>
+                            <pattern id="diagonal-water" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="0" x2="0" y2="10" stroke="#0ea5e9" stroke-width="2" opacity="0.3" />
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid-pattern)"/>
+                        
+                        <!-- Curvas de nivel topográficas sutiles -->
+                        <path d="M 0,180 Q 200,120 400,190 T 800,150" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="4 4"/>
+                        <path d="M 0,260 Q 250,220 500,280 T 800,240" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+                        <!-- Curso Hídrico / Arroyo con Buffer de Protección MADES -->
+                        <path d="M 0,310 C 180,310 260,220 420,240 S 680,110 800,90" fill="none" stroke="#bae6fd" stroke-width="38" stroke-linecap="round"/>
+                        <path d="M 0,310 C 180,310 260,220 420,240 S 680,110 800,90" fill="none" stroke="#0284c7" stroke-width="6" stroke-linecap="round"/>
+                        <text x="310" y="225" font-family="'JetBrains Mono', monospace" font-size="10" fill="#0369a1" font-weight="600" transform="rotate(-6 310 225)">~ Arroyo Yhacã / Faja de Protección 30m ~</text>
+
+                        <!-- Manzanas y Parcelas Catastrales Georreferenciadas -->
+                        <!-- Polígono Parcela 001-001 (Agrícola) -->
+                        <polygon points="120,60 320,50 360,170 140,190" fill="rgba(34, 197, 94, 0.12)" stroke="#16a34a" stroke-width="2"/>
+                        <circle cx="235" cy="118" r="3" fill="#16a34a"/>
+                        <text x="210" y="112" font-family="'JetBrains Mono', monospace" font-size="11" fill="#14532d" font-weight="700">PADRÓN 001-001</text>
+                        <text x="215" y="128" font-family="'Inter', sans-serif" font-size="9" fill="#15803d">1,250.00 ha</text>
+
+                        <!-- Polígono Parcela 001-002 (Pastoreo) -->
+                        <polygon points="340,50 560,40 590,140 370,165" fill="rgba(245, 158, 11, 0.12)" stroke="#d97706" stroke-width="2"/>
+                        <circle cx="465" cy="98" r="3" fill="#d97706"/>
+                        <text x="440" y="94" font-family="'JetBrains Mono', monospace" font-size="11" fill="#78350f" font-weight="700">PADRÓN 001-002</text>
+                        <text x="450" y="110" font-family="'Inter', sans-serif" font-size="9" fill="#b45309">85.30 ha</text>
+
+                        <!-- Polígono Parcela 001-003 (Forestal / Alerta de Cierre) -->
+                        <polygon points="430,190 710,130 760,280 470,300" fill="rgba(239, 68, 68, 0.1)" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 3"/>
+                        <circle cx="595" cy="225" r="3" fill="#dc2626"/>
+                        <text x="565" y="218" font-family="'JetBrains Mono', monospace" font-size="11" fill="#7f1d1d" font-weight="700">PADRÓN 001-003</text>
+                        <text x="585" y="234" font-family="'Inter', sans-serif" font-size="9" fill="#b91c1c">432.15 ha [!]</text>
+
+                        <!-- Vértices Geodésicos / Mojones con Coordenadas -->
+                        <g font-family="'JetBrains Mono', monospace" font-size="9" fill="#475569">
+                            <circle cx="120" cy="60" r="4" fill="#002b49" stroke="#ffffff" stroke-width="1.5"/>
+                            <text x="125" y="55">V1 (452100, 7198400)</text>
+
+                            <circle cx="710" cy="130" r="4" fill="#002b49" stroke="#ffffff" stroke-width="1.5"/>
+                            <text x="635" y="125">V2 (454300, 7198250)</text>
+
+                            <circle cx="760" cy="280" r="4" fill="#002b49" stroke="#ffffff" stroke-width="1.5"/>
+                            <text x="680" y="295">V3 (454500, 7196800)</text>
+
+                            <circle cx="140" cy="190" r="4" fill="#002b49" stroke="#ffffff" stroke-width="1.5"/>
+                            <text x="80" y="205">V4 (452250, 7197100)</text>
+                        </g>
+                    </svg>
+
+                    <!-- Rosa de los vientos (North Arrow) -->
+                    <div class="map-compass" title="Norte Geográfico">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none">
+                            <polygon points="12,2 15,11 12,9" fill="#dc2626"/>
+                            <polygon points="12,2 9,11 12,9" fill="#ef4444"/>
+                            <polygon points="12,22 15,13 12,15" fill="#475569"/>
+                            <polygon points="12,22 9,13 12,15" fill="#64748b"/>
+                            <text x="12" y="1" font-family="'Plus Jakarta Sans', sans-serif" font-size="6" font-weight="800" fill="#dc2626" text-anchor="middle">N</text>
+                        </svg>
+                    </div>
+
+                    <!-- Leyenda Flotante -->
+                    <div class="map-legend">
+                        <div class="legend-title">Capas Catastrales</div>
+                        <div class="legend-item">
+                            <span class="legend-symbol legend-parcel"></span>
+                            <span>Parcelas Catastradas</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol legend-water"></span>
+                            <span>Cauce y Retiro Hídrico (30m)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol legend-slope"></span>
+                            <span>Pendiente Crítica &gt; 15%</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol legend-boundary"></span>
+                            <span>Límite Poligonal en Conflicto</span>
+                        </div>
+                    </div>
+
+                    <!-- Escala Gráfica -->
+                    <div class="map-scale-bar">
+                        <div class="scale-rule"></div>
+                        <span>0 &nbsp; 250 &nbsp; 500 m</span>
+                    </div>
+                </div>
+
+                <!-- Pie del mapa con datum y elipsoide -->
+                <div class="map-caption">
+                    <div><strong>Proyección Oficial:</strong> Transversa de Mercator Universal (UTM Huso 21 Sur) | Datum WGS84</div>
+                    <div style="font-family: var(--font-mono);">Meridiano Central: 57° W | Factor de Escala: 0.9996</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 5: VALIDACIONES SNC 551/2023 -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">5</span>
+                    <span>Validaciones Normativas del Sistema Catastral (SNC 551/2023)</span>
+                </h2>
+                <span class="section-note">Chequeo topológico y cruce de capas</span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Prueba de Control Topológico / Normativo</th>
+                            <th class="col-center">Resultado</th>
+                            <th>Diagnóstico Técnico Detallado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-lead">Gap de Catastro (Continuidad Territorial)</td>
+                            <td class="col-center"><span class="status-badge status-ok">Conforme</span></td>
+                            <td>Sin solapamientos ni fisuras con polígonos colindantes aprobados.</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Restricción Hídrica (Ley N° 3239/2007 de Aguas)</td>
+                            <td class="col-center"><span class="status-badge status-pending">Requiere Deslinde</span></td>
+                            <td>El Padrón 001-003 intersecta la faja obligatoria de 30 metros del curso hídrico.</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Compatibilidad POUT Municipal (Ley N° 3966/2010)</td>
+                            <td class="col-center"><span class="status-badge status-ok">Conforme</span></td>
+                            <td>Zonificación compatible con el Plan de Ordenamiento Urbano y Territorial local.</td>
+                        </tr>
+                        <tr>
+                            <td class="col-lead">Cierre Perimetral Geodésico</td>
+                            <td class="col-center"><span class="status-badge status-ok">Conforme</span></td>
+                            <td>Error lineal de cierre de 0.018 m (Tolerancia admisible: &plusmn;0.050 m).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 6: DICTAMEN TÉCNICO Y RECOMENDACIONES -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-num">6</span>
+                    <span>Dictamen y Recomendaciones Técnicas</span>
+                </h2>
+                <span class="section-note">Obligatoriedad vinculante</span>
+            </div>
+
+            <div class="callout-box">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>Instrucciones Técnicas para la Formalización Registral</span>
+                </h4>
+                
+                <ol class="recommendations-list">
+                    <li>
+                        <span><strong>Regularización Documental:</strong> Completar las piezas técnicas del Padrón 001-002 con informe pericial y constancia municipal de no objeción en un plazo máximo de 30 días hábiles.</span>
+                    </li>
+                    <li>
+                        <span><strong>Deslinde de Servidumbre Hídrica:</strong> Presentar el plano de afectación ribereña visado por el MADES para las 21,147 parcelas identificadas en la cuenca de amortiguamiento.</span>
+                    </li>
+                    <li>
+                        <span><strong>Ajuste de Tolerancia Superficiaria:</strong> Rectificar el polígono del Padrón 001-003 debido a una discrepancia superior al 5% respecto al título de dominio original.</span>
+                    </li>
+                    <li>
+                        <span><strong>Validación Municipal Definitiva:</strong> Remitir copia del expediente georreferenciado a la Dirección de Obras y Catastro Municipal conforme a la Ley Orgánica Municipal N° 3966/2010.</span>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 7: CUADRO OFICIAL DE FIRMAS Y RESPONSABILIDAD -->
+        <section class="section">
+            <div class="signatures-grid">
+                <div class="signature-box">
+                    <div style="height: 48px;"></div>
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Ing. Agrim. Carlos R. Velázquez</div>
+                    <div class="signature-title">Profesional Técnico Georreferenciador</div>
+                    <div class="signature-meta">Reg. MOPC N° 4.812 • Matrícula SNC N° 924</div>
+                </div>
+
+                <div class="signature-box">
+                    <div style="height: 48px;"></div>
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Lic. Marta Benítez Duarte</div>
+                    <div class="signature-title">Dirección de Cartografía y Geodesia</div>
+                    <div class="signature-meta">Servicio Nacional de Catastro (SNC)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PIE DE PÁGINA INSTITUCIONAL -->
+        <footer class="document-footer">
+            <div class="footer-left">
+                <strong>Servicio Nacional de Catastro (SNC)</strong> — Documento oficial emitido bajo el marco de la Norma SNC N° 551/2023.<br>
+                Este certificado goza de validez jurídica para trámites ante la Dirección General de los Registros Públicos (DGRP) y Municipalidades.
+            </div>
+            <div class="footer-right">
+                <div>Hash: SHA256-7F8A-3C8E-92B1</div>
+                <div>Página 1 de 1</div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- SCRIPTS DE COMPORTAMIENTO Y VISOR -->
+    <script>
+        // Función de impresión optimizada A4
+        function imprimirDocumento() {
+            window.print();
+        }
+
+        // Alternador de ancho completo / A4 para mejor lectura en pantallas anchas
+        let anchoAjustado = false;
+        function toggleModoAjuste() {
+            const sheet = document.getElementById('documento-canvas');
+            const texto = document.getElementById('btn-ajuste-texto');
+            if (!sheet) return;
+            
+            anchoAjustado = !anchoAjustado;
+            if (anchoAjustado) {
+                sheet.style.maxWidth = '1400px';
+                if (texto) texto.textContent = 'Modo A4';
+            } else {
+                sheet.style.maxWidth = '960px';
+                if (texto) texto.textContent = 'Ancho Completo';
+            }
+        }
+
+        // Inicialización reactiva de Leaflet si la librería está cargada
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof L !== 'undefined') {
+                try {
+                    const mapEl = document.getElementById('map-container');
+                    if (mapEl) {
+                        // Reemplazar el contenedor con mapa interactivo real Leaflet
+                        const map = L.map('map-container', {
+                            center: [-25.4667, -57.0500], // Coordenadas aproximadas Piribebuy/Capiatá
+                            zoom: 13,
+                            zoomControl: true,
+                            attributionControl: false
+                        });
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 18
+                        }).addTo(map);
+
+                        // Polígonos de muestra de parcelas catastrales
+                        const parcela1 = L.polygon([
+                            [-25.460, -57.058],
+                            [-25.458, -57.042],
+                            [-25.469, -57.039],
+                            [-25.472, -57.055]
+                        ], {
+                            color: '#16a34a',
+                            fillColor: '#22c55e',
+                            fillOpacity: 0.25,
+                            weight: 2
+                        }).addTo(map);
+                        parcela1.bindPopup('<b>Padrón: 001-001</b><br>Superficie: 1,250.00 ha<br>Uso: Agrícola');
+
+                        const parcela2 = L.polygon([
+                            [-25.474, -57.052],
+                            [-25.471, -57.038],
+                            [-25.480, -57.034],
+                            [-25.483, -57.048]
+                        ], {
+                            color: '#d97706',
+                            fillColor: '#f59e0b',
+                            fillOpacity: 0.25,
+                            weight: 2
+                        }).addTo(map);
+                        parcela2.bindPopup('<b>Padrón: 001-002</b><br>Superficie: 85.30 ha<br>Uso: Pastoreo');
+
+                        map.fitBounds(parcela1.getBounds().extend(parcela2.getBounds()), { padding: [30, 30] });
+                    }
+                } catch (e) {
+                    console.log('Leaflet fallback to SVG blueprint active:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

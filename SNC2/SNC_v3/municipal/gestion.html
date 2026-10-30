@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión municipal | SNC v3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <link rel="stylesheet" href="/css/plataforma.css">
+</head>
+<body>
+  <header class="pf-cab">
+    <div><h1 id="gm-titulo">Gestión municipal</h1><div class="pf-sub" id="gm-sub">Catastro distrital · locales y patentes · inspecciones · liquidaciones · planificación</div></div>
+    <nav aria-label="Secciones">
+      <button type="button" data-v="locales" class="activo">Locales y patentes</button><button type="button" data-v="usos">Usos y actividades</button><button type="button" data-v="residencial">Zonas residenciales</button><button type="button" data-v="inspecciones">Inspecciones</button>
+      <button type="button" data-v="liquidaciones">Liquidaciones</button><button type="button" data-v="planificacion">Planificación</button><button type="button" data-v="avisos">Avisos a contribuyentes</button>
+      <a class="pf-boton sec" href="/municipal/">Portal</a>
+    </nav>
+  </header>
+  <main>
+    <p class="pf-msg" id="pf-msg" role="status"></p>
+    <section data-vista="locales">
+      <div class="pf-grid">
+        <div class="pf-card"><h2>Estado de los locales comerciales</h2><div class="gm-resumen" id="gm-resumen"></div>
+          <div class="pf-fila"><label>Ver <select id="gm-filtro" aria-label="Filtrar por estado"><option value="">Todos</option></select></label><input id="gm-buscar" placeholder="Buscar nombre, rubro o Cta. Cte." aria-label="Buscar"></div>
+          <div class="pf-envoltura gm-alto"><table class="pf-tabla"><thead><tr><th>Local</th><th>Rubro</th><th>Cta. Cte.</th><th>Patente</th><th>Estado</th><th></th></tr></thead><tbody id="gm-locales"></tbody></table></div></div>
+        <div class="pf-card"><h2 id="gm-form-titulo">Alta de local</h2><div class="gm-mapa" id="gm-mapa"></div><p class="pf-sub">Toque el mapa para ubicar el local.</p>
+          <form class="pf-form" id="gm-form"><input type="hidden" name="id"><input type="hidden" name="osm_id">
+            <label>Nombre<input name="nombre" required></label><label>Rubro<input name="rubro"></label><label>RUC<input name="ruc"></label><label>Cta. Cte.<input name="ctacte" placeholder="190073-08/00-000"></label>
+            <label>N° de patente<input name="patente_nro"></label><label>Vence<input name="patente_vence" type="date"></label>
+            <label>Latitud<input name="lat" type="number" step="any"></label><label>Longitud<input name="lng" type="number" step="any"></label>
+            <label class="gm-check"><input type="checkbox" name="inhabilitado"> Inhabilitado</label><label>Motivo de inhabilitación<input name="motivo_inhabilitacion"></label>
+            <div class="pf-fila"><button class="pf-boton" type="submit">Guardar local</button><button class="pf-boton sec" type="button" id="gm-limpiar">Nuevo</button></div></form></div>
+      </div>
+    </section>
+    <section data-vista="usos" hidden>
+      <div class="pf-card"><h2>Usos y actividades del distrito</h2><p class="pf-sub">Comercios por tipo, salud, educación, gobierno, culto, industria y recreación según el mapa (OpenStreetMap), cruzados con la parcela SNC y su cuenta DNIT. Es un indicio: verificar en campo.</p>
+        <div class="gm-resumen" id="gu-cruces"></div><div class="gm-resumen" id="gu-sectores"></div>
+        <div class="pf-fila"><label>Sector <select id="gu-sector" aria-label="Sector"><option value="">Todos</option></select></label>
+          <label>Ver <select id="gu-filtro" aria-label="Cruce"><option value="">Todos</option><option value="sin_habilitar">Requieren habilitación y no están registrados</option><option value="sin_edif">Actividad en lote sin edificación declarada (DNIT)</option><option value="sin_cuenta">Sin parcela / cuenta vinculada</option></select></label>
+          <input id="gu-buscar" placeholder="Buscar nombre, tipo o cuenta" aria-label="Buscar"><span class="pf-sub" id="gu-total"></span></div>
+        <div class="gm-mapa gm-mapa-alto" id="gu-mapa"></div>
+        <div class="pf-envoltura gm-alto"><table class="pf-tabla"><thead><tr><th>Nombre</th><th>Sector · tipo</th><th>Cuenta DNIT</th><th>Impuesto 2026</th><th>Edif. declarada</th><th>Habilitación</th><th></th></tr></thead><tbody id="gu-tabla"></tbody></table></div></div>
+    </section>
+    <section data-vista="residencial" hidden>
+      <div class="pf-card"><h2>Zonas residenciales (asentamientos de viviendas)</h2><p class="pf-sub">Áreas grises del mapa OpenStreetMap, con su barrio y las parcelas SNC que contienen (Cta. Cte. urbanas y padrones rurales). En rojo: zonas habitadas sin parcela en el catastro.</p>
+        <div class="gm-resumen" id="gr-resumen"></div>
+        <div class="pf-fila"><label>Ver <select id="gr-filtro" aria-label="Filtro"><option value="">Todas</option><option value="sin">Sin parcela SNC</option><option value="sin_cuenta">Con parcelas sin cuenta DNIT</option><option value="rural">Con padrones rurales (posible urbanización no registrada)</option></select></label><input id="gr-buscar" placeholder="Buscar barrio o nombre" aria-label="Buscar"></div>
+        <div class="gm-mapa gm-mapa-alto" id="gr-mapa"></div>
+        <div class="pf-envoltura gm-alto"><table class="pf-tabla"><thead><tr><th>Barrio / nombre</th><th>ha</th><th>Parcelas</th><th>Cta. Cte.</th><th>Padrones</th><th>Sin cuenta</th><th>Parcelas/ha</th><th>Impuesto 2026</th><th>Edif. declarada</th></tr></thead><tbody id="gr-tabla"></tbody></table></div>
+        <p class="pf-sub" id="gr-detalle"></p></div>
+    </section>
+    <section data-vista="inspecciones" hidden>
+      <div class="pf-grid">
+        <div class="pf-card"><h2>Asignar inspección</h2><form class="pf-form" id="gm-form-insp"><input type="hidden" name="local_id"><input type="hidden" name="osm_id">
+          <label>Local o cuenta<input name="referencia" readonly placeholder="Elija un local en la pestaña Locales"></label><label>Cta. Cte. (opcional)<input name="ctacte"></label>
+          <label>Motivo<select name="motivo"><option>Patente vencida</option><option>Local sin patente</option><option>Comercio no declarado</option><option>Construcción no declarada</option><option>Denuncia</option><option>Otro</option></select></label>
+          <label>Inspector (email)<input name="inspector" type="email" required></label><div class="pf-fila"><button class="pf-boton" type="submit">Asignar</button></div></form></div>
+        <div class="pf-card"><h2>Inspecciones</h2><div class="pf-envoltura gm-alto"><table class="pf-tabla"><thead><tr><th>#</th><th>Motivo</th><th>Inspector</th><th>Estado</th><th>Resultado</th></tr></thead><tbody id="gm-insp"></tbody></table></div></div>
+      </div>
+    </section>
+    <section data-vista="liquidaciones" hidden>
+      <div class="pf-card"><h2>Liquidación del Impuesto Inmobiliario 2026 (DNIT)</h2>
+        <div class="pf-fila"><select id="gm-liq-tipo" aria-label="Tipo"><option value="urbano">Urbanas (Cta. Cte.)</option><option value="rural">Rurales (padrón)</option></select><input id="gm-liq-q" placeholder="Cta. Cte. o padrón" aria-label="Buscar cuenta"><button class="pf-boton" type="button" id="gm-liq-buscar">Buscar</button><span class="pf-sub" id="gm-liq-total"></span></div>
+        <div class="pf-envoltura gm-alto"><table class="pf-tabla"><thead id="gm-liq-cab"></thead><tbody id="gm-liq"></tbody></table></div>
+        <div class="pf-fila"><button class="pf-boton sec" type="button" id="gm-liq-ant">Anterior</button><button class="pf-boton sec" type="button" id="gm-liq-sig">Siguiente</button></div></div>
+    </section>
+    <section data-vista="planificacion" hidden>
+      <div class="pf-card"><h2>Planificación urbana y territorial (POUT)</h2><p class="pf-sub">Leyes de creación, ordenanzas, plan de ordenamiento y declaraciones de impacto ambiental del municipio (fuente: MADES).</p><ul class="gm-docs" id="gm-docs"></ul>
+        <p class="pf-sub">El área urbana aprobada (ejido) se ve en el visor Premium, opción «Cascos urbanos». La zonificación del POUT está en los planos PDF; para usarla en el mapa hay que digitalizarla.</p></div>
+    </section>
+    <section data-vista="avisos" hidden>
+      <div class="pf-card"><h2>Avisos a contribuyentes</h2><div id="gm-avisos"></div></div>
+    </section>
+  </main>
+  <script src="/vendor/leaflet.js"></script>
+  <script type="module" src="/js/gestionMunicipal.js"></script>
+</body>
+</html>

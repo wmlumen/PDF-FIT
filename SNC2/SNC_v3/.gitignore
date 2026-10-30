@@ -9,3 +9,43 @@ SNC_PID.txt
 
 # Credencial de servicio: nunca versionar
 serviceAccountKey.json
+
+# Base de cuentas catastrales DNIT y sus reportes (scripts/dnit-cuentas.mjs): datos regenerables, no versionar
+data/dnit_cuentas.sqlite*
+data/dnit/
+data/respaldo/
+data/analisis/
+data/parcelario/
+data/edificios/
+data/osm/
+data/plataforma.sqlite
+
+# Otras bases y extractos regenerables en data/ (ver AGENTS.md 3.1): no versionar
+data/*.sqlite
+data/*.db
+data/*.log
+data/data.txt
+data/municipal/*.sqlite
+data/1.Paraguay/
+data/parquet/
+data/teselas/
+data/curvas/
+data/mades_pout/
+data/pout_ama/
+data/pout_filadelfia/
+data/pout_municipal/
+data/snc_estadisticas/
+data/tmp_barrios/
+
+# PDFs de referencia de terceros (manuales POUT, 786 MB): no versionar
+docs/pout-manuales/
+
+# Artefactos de build, logs y carpetas de trabajo local: no versionar
+dist/
+logs/
+backup/
+.chrome-test/
+A_Eliminar/
+graphify-out/.graphify_backup_*/
+graphify-out/cache/
+graphify-out/*.bak_*

@@ -47,7 +47,8 @@ async function runTests() {
       body: JSON.stringify({
         email: testEmail,
         password: testPassword,
-        name: 'Ingeniero Agrimensor'
+        name: 'Ingeniero Agrimensor',
+        usage: 'profesional_catastral'
       })
     });
     const regData = await regRes.json();
@@ -55,6 +56,7 @@ async function runTests() {
     assertCondition(Boolean(regData.token), 'Registro devuelve token JWT');
     assertCondition(regData.user?.role === 'member', 'Registro asigna rol member (A1-6)');
     assertCondition(regData.user?.email === testEmail, 'Registro devuelve email normalizado');
+    assertCondition(regData.user?.uso === 'profesional_catastral', 'Registro guarda y devuelve el uso previsto');
 
     // 3. Registro duplicado (debe fallar 409)
     const dupRes = await fetch(`${BASE}/api/auth/register`, {

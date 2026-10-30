@@ -41,7 +41,8 @@ test('Auth - Persistencia y gestión de sesión en State', () => {
         id: 'user-123',
         email: 'catastro@py.gov',
         name: 'Ing. Agrimensor',
-        plan: 'pro'
+        plan: 'pro',
+        uso: 'profesional_catastral'
     };
 
     // Asignar sesión
@@ -51,6 +52,7 @@ test('Auth - Persistencia y gestión de sesión en State', () => {
     assert.strictEqual(State.getBackendToken(), mockToken, 'El token debe estar guardado en State');
     assert.deepStrictEqual(State.getBackendUser(), mockUser, 'El usuario debe estar guardado en State');
     assert.strictEqual(State.getBackendUser().plan, 'pro');
+    assert.strictEqual(State.getBackendUser().uso, 'profesional_catastral');
 
     // Cerrar sesión
     State.setBackendToken('');
@@ -58,4 +60,24 @@ test('Auth - Persistencia y gestión de sesión en State', () => {
 
     assert.strictEqual(State.getBackendToken(), '', 'El token debe quedar vacío tras logout');
     assert.strictEqual(State.getBackendUser(), null, 'El usuario debe quedar en null tras logout');
+});
+
+test('Auth - Validación de perfiles de uso en Registro / Alta', () => {
+    const USOS_VALIDOS = new Set([
+        'profesional_catastral',
+        'notaria_escribania',
+        'gestion_municipal',
+        'inmobiliaria_tasacion',
+        'ciudadano_particular',
+        'investigacion_academico'
+    ]);
+
+    assert.strictEqual(USOS_VALIDOS.has('profesional_catastral'), true);
+    assert.strictEqual(USOS_VALIDOS.has('notaria_escribania'), true);
+    assert.strictEqual(USOS_VALIDOS.has('gestion_municipal'), true);
+    assert.strictEqual(USOS_VALIDOS.has('inmobiliaria_tasacion'), true);
+    assert.strictEqual(USOS_VALIDOS.has('ciudadano_particular'), true);
+    assert.strictEqual(USOS_VALIDOS.has('investigacion_academico'), true);
+    assert.strictEqual(USOS_VALIDOS.has(''), false, 'Uso vacío debe ser inválido');
+    assert.strictEqual(USOS_VALIDOS.has(null), false, 'Uso null debe ser inválido');
 });

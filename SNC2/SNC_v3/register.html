@@ -53,6 +53,21 @@
                  style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff">
         </div>
 
+        <!-- ¿Para qué uso será? (Perfil de cliente) -->
+        <div class="flex flex-col gap-1.5">
+          <label for="reg-usage" class="text-sm text-[#94a3b8] font-medium">¿Para qué uso será el sistema? <span class="text-amber-400">*</span></label>
+          <select id="reg-usage" name="usage" required
+                  style="background:#1e293b;border:1px solid #333;border-radius:10px;padding:10px 12px;color:#fff;cursor:pointer">
+            <option value="" disabled selected>Selecciona el perfil o uso previsto...</option>
+            <option value="profesional_catastral">Profesional Catastral / Agrimensor / Topógrafo (SNC 551/2023)</option>
+            <option value="notaria_escribania">Escribanía / Notaría Pública (Certificados y Títulos)</option>
+            <option value="gestion_municipal">Gestión Municipal / Catastro Distrital / POUT</option>
+            <option value="inmobiliaria_tasacion">Inmobiliaria / Tasador / Desarrollador Inmobiliario</option>
+            <option value="ciudadano_particular">Ciudadano / Propietario (Consultas y Liquidación DNIT)</option>
+            <option value="investigacion_academico">Docencia / Investigación / Académico</option>
+          </select>
+        </div>
+
         <!-- Contraseña -->
         <div class="flex flex-col gap-1.5">
           <label for="reg-password" class="text-sm text-[#94a3b8] font-medium">Contraseña</label>
@@ -230,6 +245,8 @@
 
     var name = nameInput.value.trim();
     var email = emailInput.value.trim().toLowerCase();
+    var usageSelect = document.getElementById('reg-usage');
+    var usage = usageSelect ? usageSelect.value : '';
     var pw = pwInput.value;
     var confirm = confirmInput.value;
 
@@ -240,6 +257,11 @@
     }
     if (!validarEmail(email)) {
       mostrarError(errorEl, 'Ingresa un correo electrónico válido.');
+      return;
+    }
+    if (!usage) {
+      mostrarError(errorEl, 'Por favor indica para qué uso será el sistema.');
+      if (usageSelect) usageSelect.focus();
       return;
     }
     var pwError = validarPassword(pw);
@@ -257,7 +279,7 @@
     fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: pw, name: name })
+      body: JSON.stringify({ email: email, password: pw, name: name, usage: usage })
     })
       .then(function (res) {
         return res.json().then(function (data) {

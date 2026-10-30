@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { detectMojibake } from '../scripts/fix-mojibake.mjs';
 
-test('Codificacion UTF-8 - Ningun archivo del repositorio debe contener mojibake', () => {
+test('Codificacion UTF-8 - Ningún archivo del repositorio debe contener mojibake', () => {
   const targetDir = process.cwd();
   const EXTENSIONS = new Set([
     '.html', '.js', '.mjs', '.cjs', '.json', '.md', '.css', '.txt', '.geojson', '.svg'

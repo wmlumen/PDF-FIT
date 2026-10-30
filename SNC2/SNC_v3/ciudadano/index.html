@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="/vendor/leaflet.css">
+  <link rel="stylesheet" href="/css/ciudadano-movil.css">
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Favicon -->
@@ -35,6 +36,8 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
     #map { height: 100%; width: 100%; background: #020617; }
   </style>
+  <link rel="stylesheet" href="/css/visor-premium.css">
+  <!-- css del paquete Visor catastral Premium -->
 </head>
 <body class="bg-slate-950 text-slate-200 h-screen overflow-hidden flex flex-col font-sans">
 
@@ -87,6 +90,10 @@
         <i class="fas fa-file-signature text-amber-400"></i>
         <span class="hidden sm:inline">Expediente</span>
       </button>
+      <button id="btn-vincular-cta" onclick="window.CiudadanoNotifUI?.open()" class="px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-xs font-semibold rounded-lg text-emerald-300 hover:text-white transition flex items-center gap-1.5" title="Vincular mi Cta. Cte. Catastral y recibir notificaciones">
+        <i class="fas fa-bell text-emerald-400"></i>
+        <span class="hidden sm:inline">Vincular Cta. Cte. & Alertas</span>
+      </button>
 
       <span class="w-px h-6 bg-slate-800 mx-1"></span>
       <button onclick="window.openCatastro?.()" class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-xs font-medium rounded-lg text-indigo-300 transition flex items-center gap-2" title="Abrir visor oficial en Catastro Nacional">
@@ -103,7 +110,7 @@
   <div class="flex-1 flex relative overflow-hidden">
 
     <!-- SIDEBAR / PANEL LATERAL -->
-    <aside class="w-80 bg-slate-900/95 backdrop-blur border-r border-slate-800 flex flex-col z-[1000] shrink-0">
+    <aside id="ciudadano-panel" class="w-80 bg-slate-900/95 backdrop-blur border-r border-slate-800 flex flex-col z-[1000] shrink-0">
       <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5">
 
         <!-- BADGE FUENTE MUNICIPAL -->
@@ -337,6 +344,11 @@
         </div>
 
         <div class="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
+          <!-- VINCULAR A MI CELULAR Y NOTIFICACIONES -->
+          <button id="btn-vincular-inspector" onclick="window.CiudadanoNotifUI?.open(document.getElementById('lote-codigo')?.textContent)" class="w-full py-2 bg-indigo-700/80 hover:bg-indigo-600 border border-indigo-500/50 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow">
+            <i class="fas fa-bell text-amber-300"></i> Vincular a mi Celular para Alertas
+          </button>
+
           <!-- BOTÓN COMPARTIR PARCELA (ENLACE + QR) -->
           <button id="btn-share-parcel" onclick="window.shareParcel?.()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow">
             <i class="fas fa-share-nodes"></i> Compartir Inmueble (Enlace & QR)
@@ -455,7 +467,14 @@
 
   <!-- Entry Point Ciudadano Dedicado -->
   <script type="module" src="/js/app-ciudadano.js"></script>
+  <!-- Celular y GPS (PM-04/PM-05) -->
+  <script type="module" src="/js/ciudadanoMovil.js"></script>
+  <!-- Catastro oficial y busqueda de direcciones (PM-35/PM-38) -->
+  <script type="module" src="/js/catastroOficialUI.js"></script>
+  <!-- Notificaciones y Vinculacion Ciudadana -->
+  <script type="module" src="/js/ciudadanoNotifUI.js"></script>
   <script src="/js/mapLayoutManager.js"></script>
   <script src="/js/basemapMenu.js"></script>
+  <script type="module" src="/js/visorPremium.js"></script>
 </body>
 </html>

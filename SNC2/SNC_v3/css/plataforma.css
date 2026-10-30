@@ -1,0 +1,52 @@
+/* Administración de la plataforma y del cliente (js/plataformaAdmin.js, js/municipioAdmin.js) */
+:root { --pf-bg: #0b1220; --pf-card: #111a2e; --pf-borde: #1e2a44; --pf-txt: #e2e8f0; --pf-tenue: #94a3b8; --pf-acento: #fbbf24; --pf-ok: #22c55e; --pf-mal: #ef4444; --pf-med: #f59e0b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--pf-bg); color: var(--pf-txt); font: 14px/1.5 Inter, system-ui, sans-serif; }
+.pf-cab { display: flex; align-items: center; gap: 12px; padding: 14px max(16px, 3vw); border-bottom: 1px solid var(--pf-borde); background: #0f172a; position: sticky; top: 0; z-index: 5; }
+.pf-cab h1 { font-size: 17px; margin: 0; } .pf-cab .pf-sub { color: var(--pf-tenue); font-size: 12px; }
+.pf-cab nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.pf-cab nav button { background: transparent; color: var(--pf-tenue); border: 1px solid var(--pf-borde); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 600; }
+.pf-cab nav button.activo { color: #0f172a; background: var(--pf-acento); border-color: var(--pf-acento); }
+main { padding: 16px max(16px, 3vw) 48px; max-width: 1400px; margin: 0 auto; }
+.pf-card { background: var(--pf-card); border: 1px solid var(--pf-borde); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.pf-card h2 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--pf-acento); }
+.pf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 14px; align-items: start; }
+.pf-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pf-tabla th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--pf-tenue); border-bottom: 1px solid var(--pf-borde); padding: 6px 8px; }
+.pf-tabla td { border-bottom: 1px solid var(--pf-borde); padding: 7px 8px; vertical-align: top; }
+.pf-tabla tr.pf-sel td { background: #172238; } .pf-tabla tbody tr { cursor: pointer; } .pf-tabla tbody tr:hover td { background: #141f35; }
+.pf-envoltura { overflow-x: auto; }
+.pf-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 12px; }
+.pf-form label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; font-weight: 700; color: var(--pf-tenue); text-transform: uppercase; letter-spacing: .04em; }
+.pf-form input, .pf-form select, .pf-form textarea, .pf-fila input, .pf-fila select { background: #0b1220; color: var(--pf-txt); border: 1px solid var(--pf-borde); border-radius: 8px; padding: 7px 9px; font: 500 13px Inter, system-ui, sans-serif; }
+.pf-boton { background: var(--pf-acento); color: #0f172a; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+.pf-boton.sec { background: #1e293b; color: var(--pf-txt); border: 1px solid var(--pf-borde); }
+.pf-boton.mal { background: var(--pf-mal); color: #fff; } .pf-boton.ok { background: var(--pf-ok); color: #052e16; }
+.pf-fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 8px; }
+.pf-chip { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: #1e293b; color: var(--pf-tenue); }
+.pf-chip.al_dia, .pf-chip.activo, .pf-chip.verificado { background: #052e16; color: #86efac; }
+.pf-chip.prueba, .pf-chip.gracia, .pf-chip.pendiente { background: #3b2a05; color: #fcd34d; }
+.pf-chip.vencido, .pf-chip.suspendido, .pf-chip.rechazado { background: #3f0d0d; color: #fca5a5; }
+.pf-modulos { display: grid; gap: 4px; }
+.pf-mod { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--pf-borde); border-radius: 8px; }
+.pf-mod.on { border-color: #166534; } .pf-mod small { color: var(--pf-tenue); }
+.pf-mod select { background: #0b1220; color: var(--pf-txt); border: 1px solid var(--pf-borde); border-radius: 6px; padding: 3px 6px; }
+.pf-msg { min-height: 20px; color: var(--pf-acento); font-size: 13px; margin: 6px 0; }
+.pf-vacio { color: var(--pf-tenue); font-style: italic; }
+/* Gestión municipal */
+.gm-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.gm-res { background: #0b1220; border: 1px solid var(--pf-borde); border-left: 3px solid var(--pf-borde); border-radius: 8px; padding: 6px 8px; cursor: pointer; text-align: left; color: var(--pf-txt); font: inherit; }
+.gm-res b { display: block; font-size: 18px; } .gm-res small { color: var(--pf-tenue); }
+.gm-res.vigente { border-left-color: var(--pf-ok); } .gm-res.vencida { border-left-color: var(--pf-med); } .gm-res.sin_patente { border-left-color: #a855f7; }
+.gm-res.inhabilitada { border-left-color: var(--pf-mal); } .gm-res.no_declarada { border-left-color: #22d3ee; }
+.pf-chip.vigente { background: #052e16; color: #86efac; } .pf-chip.vencida { background: #3b2a05; color: #fcd34d; } .pf-chip.sin_patente { background: #2e1065; color: #d8b4fe; }
+.pf-chip.inhabilitada { background: #3f0d0d; color: #fca5a5; } .pf-chip.no_declarada { background: #083344; color: #67e8f9; }
+.gm-alto { max-height: 520px; overflow: auto; }
+.gm-mapa { height: 260px; border-radius: 10px; border: 1px solid var(--pf-borde); margin-bottom: 8px; }
+.gm-check { flex-direction: row !important; align-items: center; gap: 6px !important; }
+.gm-docs { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.gm-docs a { display: block; padding: 8px 10px; border: 1px solid var(--pf-borde); border-radius: 8px; color: var(--pf-txt); text-decoration: none; }
+.gm-docs a:hover { border-color: var(--pf-acento); }
+.gm-mapa-alto { height: 340px; }
+.gu-punto { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; background: var(--gu-color, #94a3b8); }
+.gm-res.activo { outline: 2px solid var(--pf-acento); }

@@ -1849,6 +1849,1503 @@
           "Los endpoints externos pueden cambiar sin aviso: documentar la version del contrato en api/docs/openapi.yaml."
         ]
       }
+    },
+    {
+      "id": "pendiente:analisis-territorial-mapa-visor",
+      "tipo": "verificacion",
+      "nombre": "PENDIENTE — Integración de Mapa Georreferenciado en Análisis Territorial",
+      "archivo": "data/analisis/AnalisisTerritorial.html",
+      "linea": 0,
+      "datos": {
+        "estado": "ABIERTO",
+        "prioridad": 1,
+        "modulo": "Análisis Territorial y Cartografía Municipal",
+        "contexto": "El informe de Análisis Territorial (data/analisis/AnalisisTerritorial.html) cuenta con indicadores estadísticos y económicos del Impuesto Inmobiliario 2026, pero requiere un mapa interactivo (Leaflet) integrado que renderice espacialmente el distrito seleccionado, las parcelas con edificación/baldías, las zonas POUT y las franjas de restricción hídrica MADES.",
+        "evidencia_real": {
+          "implementado_ok": "CSS institucional 10x aplicado a data/analisis/analisis.css (paleta Navy/Gold/Slate, tokens semánticos, tarjetas KPI, matrices FODA, tablas y modo print A4). Endpoint /analisis-territorial.html configurado en server-api.js:1673.",
+          "falta": [
+            "Contenedor Leaflet interactivo montado en AnalisisTerritorial.html (#mapa-territorial).",
+            "Lógica en data/analisis/analisis-app.js para escuchar el cambio de distrito (sel-dist) y ajustar el encuadre/bounds del mapa.",
+            "Superposición de capas GeoJSON: polígono del distrito (/data/distritos_py_light.geojson o /data/municipal/<distrito>), faja hídrica de 30m (MADES Ley 3239/07) y zonas POUT.",
+            "Popup interactivo sobre parcelas que muestre padrón, superficie, valuación fiscal y estado ambiental."
+          ],
+          "causa_raiz": "AnalisisTerritorial.html nació como dashboard gráfico con Chart.js pero sin integración espacial nativa al motor de mapas Leaflet del SNC."
+        },
+        "pendiente_detalle": [
+          "1. Agregar contenedor de mapa <div id=\"mapa-territorial\" class=\"lienzo alto\"> dentro de AnalisisTerritorial.html.",
+          "2. En data/analisis/analisis-app.js inicializar L.map(\"mapa-territorial\") con mapa base OSM/Carto e inyectar estilos de analisis.css.",
+          "3. Cargar /data/distritos_py_light.geojson para filtrar la geometría del distrito seleccionado y hacer map.fitBounds().",
+          "4. Vincular con capas de /data/municipal/<distrito> (ej. Piribebuy) si existen datos vectoriales detallados.",
+          "5. Conectar evaluación de restricciones ambientales con /api/parcelas/:id/evaluar-ambiental o el motor js/ambientalEngine.js."
+        ],
+        "como_retomar": "Abrir data/analisis/AnalisisTerritorial.html y data/analisis/analisis-app.js. Incluir /vendor/leaflet.js y /vendor/leaflet.css en el head (o CDN autorizada por CSP). Inicializar el mapa dentro de la función dibujar(d) de analisis-app.js llamando a un nuevo helper dibujarMapa(d).",
+        "api_a_reusar": [
+          "server-api.js:1673 (/analisis-territorial.html)",
+          "server-api.js:113 (/data/distritos_py_light.geojson)",
+          "server-api.js:117 (/data/municipal)",
+          "server-api.js:1680 (/api/spatial-identify)",
+          "js/mapEngine.js (referencia de Leaflet y CRS UTM 21S)"
+        ],
+        "riesgos_conocidos": [
+          "CSP estricta en server-api.js: script-src y style-src solo permiten self, unpkg, cdnjs, jsdelivr. Cargar Leaflet siempre desde /vendor/ o CDN permitida.",
+          "Rendimiento móvil: no cargar GeoJSON completos de gran tamaño sin simplificar.",
+          "Codificación UTF-8 sin BOM obligatoria en todo archivo (AGENTS.md §1.3)."
+        ]
+      }
+    },
+    {
+      "id": "tabla:locales@data/gestion_municipal.sqlite",
+      "tipo": "tabla",
+      "nombre": "locales",
+      "archivo": "data/gestion_municipal.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto",
+          "dist",
+          "ctacte",
+          "nombre",
+          "rubro",
+          "ruc",
+          "patente_nro",
+          "patente_vence",
+          "inhabilitado",
+          "motivo_inhabilitacion",
+          "lat",
+          "lng",
+          "osm_id",
+          "creado_por",
+          "creado_en",
+          "actualizado_en"
+        ],
+        "modulo": "gestionMunicipalServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:inspecciones@data/gestion_municipal.sqlite",
+      "tipo": "tabla",
+      "nombre": "inspecciones",
+      "archivo": "data/gestion_municipal.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto",
+          "dist",
+          "local_id",
+          "osm_id",
+          "ctacte",
+          "motivo",
+          "inspector",
+          "estado",
+          "resultado",
+          "observacion",
+          "asignada_por",
+          "asignada_en",
+          "realizada_en"
+        ],
+        "modulo": "gestionMunicipalServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:suscripciones@data/ciudadano.sqlite",
+      "tipo": "tabla",
+      "nombre": "suscripciones",
+      "archivo": "data/ciudadano.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto",
+          "dist",
+          "cuenta",
+          "telefono",
+          "canal",
+          "codigo_hash",
+          "codigo_vence",
+          "intentos",
+          "verificado",
+          "consentimiento_en",
+          "baja_en",
+          "alta_en"
+        ],
+        "modulo": "ciudadanoServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:notificaciones@data/ciudadano.sqlite",
+      "tipo": "tabla",
+      "nombre": "notificaciones",
+      "archivo": "data/ciudadano.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "suscripcion_id",
+          "telefono",
+          "canal",
+          "tipo",
+          "mensaje",
+          "estado",
+          "creada_en",
+          "enviada_en",
+          "clave"
+        ],
+        "modulo": "ciudadanoServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:planes@data/plataforma.sqlite",
+      "tipo": "tabla",
+      "nombre": "planes",
+      "archivo": "data/plataforma.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "nombre",
+          "precio_mensual",
+          "modulos_json",
+          "activo"
+        ],
+        "modulo": "plataformaServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:clientes@data/plataforma.sqlite",
+      "tipo": "tabla",
+      "nombre": "clientes",
+      "archivo": "data/plataforma.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "tipo",
+          "nombre",
+          "ruc",
+          "contacto_email",
+          "contacto_tel",
+          "muni_id",
+          "cod_dpto",
+          "cod_distrito",
+          "plan_id",
+          "estado",
+          "prueba_hasta",
+          "alta_en",
+          "notas"
+        ],
+        "modulo": "plataformaServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:cliente_modulos@data/plataforma.sqlite",
+      "tipo": "tabla",
+      "nombre": "cliente_modulos",
+      "archivo": "data/plataforma.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "cliente_id",
+          "modulo",
+          "habilitado",
+          "modulo)"
+        ],
+        "modulo": "plataformaServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:usuarios_cliente@data/plataforma.sqlite",
+      "tipo": "tabla",
+      "nombre": "usuarios_cliente",
+      "archivo": "data/plataforma.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "email",
+          "cliente_id",
+          "rol",
+          "alta_por",
+          "alta_en"
+        ],
+        "modulo": "plataformaServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:pagos@data/plataforma.sqlite",
+      "tipo": "tabla",
+      "nombre": "pagos",
+      "archivo": "data/plataforma.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "cliente_id",
+          "periodo",
+          "monto",
+          "medio",
+          "comprobante",
+          "estado",
+          "cargado_por",
+          "cargado_en",
+          "verificado_por",
+          "verificado_en",
+          "observacion"
+        ],
+        "modulo": "plataformaServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:asignaciones@data/edificios/relevamientos.sqlite",
+      "tipo": "tabla",
+      "nombre": "asignaciones",
+      "archivo": "data/edificios/relevamientos.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "dpto",
+          "dist",
+          "osm_id",
+          "id_parcela",
+          "usuario",
+          "fecha",
+          "dist",
+          "osm_id)"
+        ],
+        "modulo": "edificiosServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:relevamientos@data/edificios/relevamientos.sqlite",
+      "tipo": "tabla",
+      "nombre": "relevamientos",
+      "archivo": "data/edificios/relevamientos.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto",
+          "dist",
+          "id_parcela",
+          "ctacte",
+          "trazo",
+          "alero_m",
+          "niveles",
+          "pisos_json",
+          "m2_techo",
+          "m2_cubierta",
+          "construido_m2",
+          "declarado_m2",
+          "m2_a_completar",
+          "perimetro_m",
+          "lados_json",
+          "geojson",
+          "usuario",
+          "fecha"
+        ],
+        "modulo": "edificiosServicio.js",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/osm/usos_py.json",
+      "tipo": "tabla",
+      "nombre": "Usos OSM por sector (comercio, salud, educación…) con cuenta DNIT",
+      "archivo": "data/osm/usos_py.json",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "scripts/osm-usos.mjs",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:gestionMunicipalServicio.js",
+      "tipo": "clase",
+      "nombre": "gestionMunicipalServicio.js",
+      "archivo": "gestionMunicipalServicio.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:scripts/osm-usos.mjs",
+      "tipo": "clase",
+      "nombre": "scripts/osm-usos.mjs",
+      "archivo": "scripts/osm-usos.mjs",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/osm/residencial/",
+      "tipo": "tabla",
+      "nombre": "Zonas residenciales OSM con barrio, Cta. Cte. y padrones",
+      "archivo": "data/osm/residencial/",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "scripts/osm-residencial.mjs",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:scripts/osm-residencial.mjs",
+      "tipo": "clase",
+      "nombre": "scripts/osm-residencial.mjs",
+      "archivo": "scripts/osm-residencial.mjs",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/osm/edificios_py.fgb",
+      "tipo": "tabla",
+      "nombre": "Edificios OSM de todo el país",
+      "archivo": "data/osm/edificios_py.fgb",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "data/osm/extraer.cmd",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:edificiosServicio.js",
+      "tipo": "clase",
+      "nombre": "edificiosServicio.js",
+      "archivo": "edificiosServicio.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:data/osm/extraer.cmd",
+      "tipo": "clase",
+      "nombre": "data/osm/extraer.cmd",
+      "archivo": "data/osm/extraer.cmd",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/parcelario/",
+      "tipo": "tabla",
+      "nombre": "Parcelario SNC por distrito vinculado a cuentas DNIT",
+      "archivo": "data/parcelario/",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "scripts/snc-parcelario-pais.mjs",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:parcelarioLocal.js",
+      "tipo": "clase",
+      "nombre": "parcelarioLocal.js",
+      "archivo": "parcelarioLocal.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:scripts/snc-parcelario-pais.mjs",
+      "tipo": "clase",
+      "nombre": "scripts/snc-parcelario-pais.mjs",
+      "archivo": "scripts/snc-parcelario-pais.mjs",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/mades_pout/",
+      "tipo": "tabla",
+      "nombre": "Documentos de Planificación (POUT) del MADES",
+      "archivo": "data/mades_pout/",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "dataset:data/dnit_cuentas.sqlite",
+      "tipo": "tabla",
+      "nombre": "Liquidación del Impuesto Inmobiliario DNIT",
+      "archivo": "data/dnit_cuentas.sqlite",
+      "linea": 0,
+      "datos": {
+        "tipo_dato": "archivo",
+        "generador": "scripts/dnit-cuentas.mjs",
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:dnitServicio.js",
+      "tipo": "clase",
+      "nombre": "dnitServicio.js",
+      "archivo": "dnitServicio.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:scripts/dnit-cuentas.mjs",
+      "tipo": "clase",
+      "nombre": "scripts/dnit-cuentas.mjs",
+      "archivo": "scripts/dnit-cuentas.mjs",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:ciudadanoServicio.js",
+      "tipo": "clase",
+      "nombre": "ciudadanoServicio.js",
+      "archivo": "ciudadanoServicio.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "modulo:plataformaServicio.js",
+      "tipo": "clase",
+      "nombre": "plataformaServicio.js",
+      "archivo": "plataformaServicio.js",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "pagina:/municipal/informe-lote.html",
+      "tipo": "pagina",
+      "nombre": "informe-lote.html",
+      "archivo": "municipal/informe-lote.html",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "pagina:/municipal/admin.html",
+      "tipo": "pagina",
+      "nombre": "admin.html",
+      "archivo": "municipal/admin.html",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "pagina:/admin/plataforma.html",
+      "tipo": "pagina",
+      "nombre": "plataforma.html",
+      "archivo": "admin/plataforma.html",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/parcelario/vista",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/parcelario/vista",
+      "archivo": "server-api.js",
+      "linea": 1683,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/parcelario/vista",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/edificios/vista",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/edificios/vista",
+      "archivo": "server-api.js",
+      "linea": 1684,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/edificios/vista",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/municipio/tablero",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/municipio/tablero",
+      "archivo": "server-api.js",
+      "linea": 1686,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/municipio/tablero",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/municipio/archivo",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/municipio/archivo",
+      "archivo": "server-api.js",
+      "linea": 1689,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/municipio/archivo",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/plataforma/catalogo",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/plataforma/catalogo",
+      "archivo": "server-api.js",
+      "linea": 1698,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/plataforma/catalogo",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/plataforma/clientes",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/plataforma/clientes",
+      "archivo": "server-api.js",
+      "linea": 1699,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/plataforma/clientes",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/plataforma/clientes",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/plataforma/clientes",
+      "archivo": "server-api.js",
+      "linea": 1700,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/plataforma/clientes",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/plataforma/clientes/:id/modulos",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/plataforma/clientes/:id/modulos",
+      "archivo": "server-api.js",
+      "linea": 1701,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/plataforma/clientes/:id/modulos",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/plataforma/clientes/:id/usuarios",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/plataforma/clientes/:id/usuarios",
+      "archivo": "server-api.js",
+      "linea": 1702,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/plataforma/clientes/:id/usuarios",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/v3/plataforma/clientes/:id/usuarios/:email",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/v3/plataforma/clientes/:id/usuarios/:email",
+      "archivo": "server-api.js",
+      "linea": 1703,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/v3/plataforma/clientes/:id/usuarios/:email",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/plataforma/planes",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/plataforma/planes",
+      "archivo": "server-api.js",
+      "linea": 1704,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/plataforma/planes",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/plataforma/planes",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/plataforma/planes",
+      "archivo": "server-api.js",
+      "linea": 1705,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/plataforma/planes",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/plataforma/pagos/pendientes",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/plataforma/pagos/pendientes",
+      "archivo": "server-api.js",
+      "linea": 1706,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/plataforma/pagos/pendientes",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/plataforma/pagos/:id",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/plataforma/pagos/:id",
+      "archivo": "server-api.js",
+      "linea": 1707,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/plataforma/pagos/:id",
+        "auth": true,
+        "admin": true,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/mi-acceso",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/mi-acceso",
+      "archivo": "server-api.js",
+      "linea": 1709,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/mi-acceso",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/mi-cliente",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/mi-cliente",
+      "archivo": "server-api.js",
+      "linea": 1717,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/mi-cliente",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/mi-cliente/usuarios",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/mi-cliente/usuarios",
+      "archivo": "server-api.js",
+      "linea": 1718,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/mi-cliente/usuarios",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/v3/mi-cliente/usuarios/:email",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/v3/mi-cliente/usuarios/:email",
+      "archivo": "server-api.js",
+      "linea": 1719,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/v3/mi-cliente/usuarios/:email",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/mi-cliente/pagos",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/mi-cliente/pagos",
+      "archivo": "server-api.js",
+      "linea": 1720,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/mi-cliente/pagos",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/locales",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/locales",
+      "archivo": "server-api.js",
+      "linea": 1734,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/locales",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/gestion/locales",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/gestion/locales",
+      "archivo": "server-api.js",
+      "linea": 1735,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/gestion/locales",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/gestion/inspecciones",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/gestion/inspecciones",
+      "archivo": "server-api.js",
+      "linea": 1736,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/gestion/inspecciones",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/gestion/inspecciones/:id",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/gestion/inspecciones/:id",
+      "archivo": "server-api.js",
+      "linea": 1741,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/gestion/inspecciones/:id",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/usos",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/usos",
+      "archivo": "server-api.js",
+      "linea": 1742,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/usos",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/residencial",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/residencial",
+      "archivo": "server-api.js",
+      "linea": 1743,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/residencial",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/avisos",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/avisos",
+      "archivo": "server-api.js",
+      "linea": 1744,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/avisos",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": true,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/liquidaciones",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/liquidaciones",
+      "archivo": "server-api.js",
+      "linea": 1745,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/liquidaciones",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/planificacion",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/planificacion",
+      "archivo": "server-api.js",
+      "linea": 1746,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/planificacion",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/gestion/planificacion/:n",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/gestion/planificacion/:n",
+      "archivo": "server-api.js",
+      "linea": 1747,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/gestion/planificacion/:n",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));",
+      "archivo": "server-api.js",
+      "linea": 1749,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));",
+      "archivo": "server-api.js",
+      "linea": 1750,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));",
+      "archivo": "server-api.js",
+      "linea": 1751,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "pagina:/municipal/gestion.html",
+      "tipo": "pagina",
+      "nombre": "gestion.html",
+      "archivo": "municipal/gestion.html",
+      "linea": 0,
+      "datos": {
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/parcelario/limite",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/parcelario/limite",
+      "archivo": "server-api.js",
+      "linea": 1754,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/parcelario/limite",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/parcelario/distrito",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/parcelario/distrito",
+      "archivo": "server-api.js",
+      "linea": 1755,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/parcelario/distrito",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/edificios",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/edificios",
+      "archivo": "server-api.js",
+      "linea": 1760,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/edificios",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/edificios/asignar",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/edificios/asignar",
+      "archivo": "server-api.js",
+      "linea": 1765,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/edificios/asignar",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/relevamientos",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/relevamientos",
+      "archivo": "server-api.js",
+      "linea": 1770,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/relevamientos",
+        "auth": true,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/relevamientos",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/relevamientos",
+      "archivo": "server-api.js",
+      "linea": 1774,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/relevamientos",
+        "auth": false,
+        "admin": false,
+        "ambito_distrito": false,
+        "origen": "grafo-dominio-municipal"
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:departamentos",
+      "tipo": "tabla",
+      "nombre": "departamentos",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "nombre",
+          "cod_dpto",
+          "capital",
+          "region",
+          "created_at"
+        ],
+        "filas": 18
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:distritos_snc",
+      "tipo": "tabla",
+      "nombre": "distritos_snc",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "cod_dpto",
+          "cod_distrito",
+          "dpto_nombre",
+          "distrito_nombre",
+          "dpto_dist_key",
+          "superficie_oficial_km2",
+          "cdm_padron_tipo",
+          "created_at"
+        ],
+        "filas": 268
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:cascos_urbanos",
+      "tipo": "tabla",
+      "nombre": "cascos_urbanos",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto_cod",
+          "dist_cod",
+          "dpto_nombre",
+          "dist_nombre",
+          "tipo_area",
+          "sub_tipo",
+          "superficie_ha",
+          "fecha_creacion_snc",
+          "geometry_wkt",
+          "created_at"
+        ],
+        "filas": 482
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:pout_mades_documentos",
+      "tipo": "tabla",
+      "nombre": "pout_mades_documentos",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "id_portal",
+          "municipio",
+          "departamento",
+          "anho",
+          "numero_resolucion",
+          "url_portal",
+          "url_pdf",
+          "fecha_descarga",
+          "estado_documento"
+        ],
+        "filas": 36
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:barrios_localidades",
+      "tipo": "tabla",
+      "nombre": "barrios_localidades",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "dpto_cod",
+          "dist_cod",
+          "dpto_nombre",
+          "dist_nombre",
+          "barrio_nombre",
+          "tipo_asentamiento",
+          "geometry_wkt",
+          "created_at"
+        ],
+        "filas": 742
+      }
+    },
+    {
+      "id": "tabla:catastro_territorio:manzanas_asuncion",
+      "tipo": "tabla",
+      "nombre": "manzanas_asuncion",
+      "archivo": "data/catastro_territorio.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "zona",
+          "manzana",
+          "dpto_cod",
+          "dist_cod",
+          "geometry_wkt",
+          "created_at"
+        ],
+        "filas": 5851
+      }
+    },
+    {
+      "id": "tabla:patentes_comerciales:locales_comerciales",
+      "tipo": "tabla",
+      "nombre": "locales_comerciales",
+      "archivo": "data/municipal/patentes_comerciales.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "cta_cte",
+          "ruc",
+          "razon_social",
+          "nombre_fantasia",
+          "estado_patente",
+          "rubro",
+          "actividad_especifica",
+          "superficie_comercial_m2",
+          "direccion",
+          "dpto_cod",
+          "dist_cod",
+          "creado_en",
+          "actualizado_en"
+        ],
+        "filas": 6
+      }
+    },
+    {
+      "id": "tabla:patentes_comerciales:actas_inspeccion",
+      "tipo": "tabla",
+      "nombre": "actas_inspeccion",
+      "archivo": "data/municipal/patentes_comerciales.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "local_id",
+          "cta_cte",
+          "inspector_usuario",
+          "inspector_nombre",
+          "numero_acta",
+          "fecha_inspeccion",
+          "estado_comprobado",
+          "superficie_constatada_m2",
+          "observaciones",
+          "descargo_titular",
+          "resultado",
+          "creado_en"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:ciudadano_notificaciones:vinculaciones_cta_cte",
+      "tipo": "tabla",
+      "nombre": "vinculaciones_cta_cte",
+      "archivo": "data/ciudadano_notificaciones.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "usuario_id",
+          "email",
+          "cta_cte",
+          "dpto_cod",
+          "dist_cod",
+          "padron",
+          "telefono_movil",
+          "telefono_normalizado",
+          "notif_whatsapp",
+          "notif_sms",
+          "notif_email",
+          "verificado",
+          "creado_en"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "tabla:ciudadano_notificaciones:notificaciones_ciudadano",
+      "tipo": "tabla",
+      "nombre": "notificaciones_ciudadano",
+      "archivo": "data/ciudadano_notificaciones.sqlite",
+      "linea": 0,
+      "datos": {
+        "columnas": [
+          "id",
+          "usuario_id",
+          "cta_cte",
+          "tipo",
+          "titulo",
+          "mensaje",
+          "datos_json",
+          "leida",
+          "enviada_ws",
+          "enviada_sms",
+          "creado_en"
+        ],
+        "filas": 0
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/municipal/patentes",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/municipal/patentes",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/municipal/patentes",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "locales_comerciales"
+        ],
+        "pagina": "/municipal/index.html"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/municipal/patentes/resumen",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/municipal/patentes/resumen",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/municipal/patentes/resumen",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "locales_comerciales"
+        ],
+        "pagina": "/municipal/index.html"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/municipal/patentes/:id",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/municipal/patentes/:id",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/municipal/patentes/:id",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "locales_comerciales",
+          "actas_inspeccion"
+        ],
+        "pagina": "/municipal/index.html"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/municipal/patentes/inspeccionar",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/municipal/patentes/inspeccionar",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/municipal/patentes/inspeccionar",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "actas_inspeccion",
+          "locales_comerciales"
+        ],
+        "pagina": "/municipal/index.html"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/ciudadano/situacion-cta-cte",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/ciudadano/situacion-cta-cte",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/ciudadano/situacion-cta-cte",
+        "auth": false,
+        "admin": false,
+        "tablas": [
+          "dnit_cuentas",
+          "locales_comerciales"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/ciudadano/vincular-cta-cte",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/ciudadano/vincular-cta-cte",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/ciudadano/vincular-cta-cte",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "vinculaciones_cta_cte",
+          "notificaciones_ciudadano"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/ciudadano/mis-parcelas",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/ciudadano/mis-parcelas",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/ciudadano/mis-parcelas",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "vinculaciones_cta_cte"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
+    },
+    {
+      "id": "api:DELETE:/api/v3/ciudadano/desvincular-cta-cte",
+      "tipo": "endpoint",
+      "nombre": "DELETE /api/v3/ciudadano/desvincular-cta-cte",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "DELETE",
+        "ruta": "/api/v3/ciudadano/desvincular-cta-cte",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "vinculaciones_cta_cte"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
+    },
+    {
+      "id": "api:GET:/api/v3/ciudadano/notificaciones",
+      "tipo": "endpoint",
+      "nombre": "GET /api/v3/ciudadano/notificaciones",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "GET",
+        "ruta": "/api/v3/ciudadano/notificaciones",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "notificaciones_ciudadano"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
+    },
+    {
+      "id": "api:POST:/api/v3/ciudadano/notificaciones/:id/leida",
+      "tipo": "endpoint",
+      "nombre": "POST /api/v3/ciudadano/notificaciones/:id/leida",
+      "archivo": "server-api.js",
+      "linea": 0,
+      "datos": {
+        "metodo": "POST",
+        "ruta": "/api/v3/ciudadano/notificaciones/:id/leida",
+        "auth": true,
+        "admin": false,
+        "tablas": [
+          "notificaciones_ciudadano"
+        ],
+        "pagina": "/ciudadano/index.html"
+      }
     }
   ],
   "aristas": [
@@ -6639,6 +8136,962 @@
       "target": "pendiente:modulo-10-interoperabilidad-dgrp-mades-indert",
       "tipo": "sirve_a",
       "descripcion": "tabla:projects sirve_a pendiente:modulo-10-interoperabilidad-dgrp-mades-indert"
+    },
+    {
+      "source": "pendiente:analisis-territorial-mapa-visor",
+      "target": "data/analisis/AnalisisTerritorial.html",
+      "tipo": "implementa",
+      "descripcion": "Contenedor y vista del mapa"
+    },
+    {
+      "source": "pendiente:analisis-territorial-mapa-visor",
+      "target": "data/analisis/analisis-app.js",
+      "tipo": "logica",
+      "descripcion": "Inicialización de mapa y reactividad al distrito"
+    },
+    {
+      "source": "pendiente:analisis-territorial-mapa-visor",
+      "target": "server-api.js",
+      "tipo": "consumo",
+      "descripcion": "Endpoints de GeoJSON distrital y capas municipales"
+    },
+    {
+      "source": "modulo:gestionMunicipalServicio.js",
+      "target": "dataset:data/osm/usos_py.json",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:scripts/osm-usos.mjs",
+      "target": "dataset:data/osm/usos_py.json",
+      "tipo": "implementa",
+      "descripcion": "genera",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:gestionMunicipalServicio.js",
+      "target": "dataset:data/osm/residencial/",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:scripts/osm-residencial.mjs",
+      "target": "dataset:data/osm/residencial/",
+      "tipo": "implementa",
+      "descripcion": "genera",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:edificiosServicio.js",
+      "target": "dataset:data/osm/edificios_py.fgb",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:data/osm/extraer.cmd",
+      "target": "dataset:data/osm/edificios_py.fgb",
+      "tipo": "implementa",
+      "descripcion": "genera",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:parcelarioLocal.js",
+      "target": "dataset:data/parcelario/",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:scripts/snc-parcelario-pais.mjs",
+      "target": "dataset:data/parcelario/",
+      "tipo": "implementa",
+      "descripcion": "genera",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:gestionMunicipalServicio.js",
+      "target": "dataset:data/mades_pout/",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:dnitServicio.js",
+      "target": "dataset:data/dnit_cuentas.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:scripts/dnit-cuentas.mjs",
+      "target": "dataset:data/dnit_cuentas.sqlite",
+      "tipo": "implementa",
+      "descripcion": "genera",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:gestionMunicipalServicio.js",
+      "target": "tabla:locales@data/gestion_municipal.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:gestionMunicipalServicio.js",
+      "target": "tabla:inspecciones@data/gestion_municipal.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:ciudadanoServicio.js",
+      "target": "tabla:suscripciones@data/ciudadano.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:ciudadanoServicio.js",
+      "target": "tabla:notificaciones@data/ciudadano.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:plataformaServicio.js",
+      "target": "tabla:planes@data/plataforma.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:plataformaServicio.js",
+      "target": "tabla:clientes@data/plataforma.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:plataformaServicio.js",
+      "target": "tabla:cliente_modulos@data/plataforma.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:plataformaServicio.js",
+      "target": "tabla:usuarios_cliente@data/plataforma.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:plataformaServicio.js",
+      "target": "tabla:pagos@data/plataforma.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:edificiosServicio.js",
+      "target": "tabla:asignaciones@data/edificios/relevamientos.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:edificiosServicio.js",
+      "target": "tabla:asignaciones@data/edificios/relevamientos.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "modulo:edificiosServicio.js",
+      "target": "tabla:relevamientos@data/edificios/relevamientos.sqlite",
+      "tipo": "usa",
+      "descripcion": "lee/escribe",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "dataset:data/osm/usos_py.json",
+      "target": "dataset:data/parcelario/",
+      "tipo": "fk",
+      "descripcion": "punto en parcela → Cta. Cte./padrón",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "dataset:data/osm/residencial/",
+      "target": "dataset:data/parcelario/",
+      "tipo": "fk",
+      "descripcion": "parcelas dentro de la zona",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "dataset:data/parcelario/",
+      "target": "dataset:data/dnit_cuentas.sqlite",
+      "tipo": "fk",
+      "descripcion": "Cta. Cte./padrón",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/vista",
+      "target": "modulo:parcelarioLocal.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/vista",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/edificios/vista",
+      "target": "modulo:parcelarioLocal.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/edificios/vista",
+      "target": "modulo:edificiosServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/edificios/vista",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/municipio/tablero",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/municipio/archivo",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/catalogo",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/clientes",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/clientes",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes/:id/modulos",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes/:id/modulos",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes/:id/usuarios",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/clientes/:id/usuarios",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:DELETE:/api/v3/plataforma/clientes/:id/usuarios/:email",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:DELETE:/api/v3/plataforma/clientes/:id/usuarios/:email",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/planes",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/planes",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/planes",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/planes",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/pagos/pendientes",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/plataforma/pagos/pendientes",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/pagos/:id",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/plataforma/pagos/:id",
+      "target": "rol:admin",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/mi-acceso",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/mi-acceso",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/mi-cliente",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/mi-cliente",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/mi-cliente/usuarios",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/mi-cliente/usuarios",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:DELETE:/api/v3/mi-cliente/usuarios/:email",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:DELETE:/api/v3/mi-cliente/usuarios/:email",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/mi-cliente/pagos",
+      "target": "modulo:plataformaServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/mi-cliente/pagos",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/locales",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/locales",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/locales",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/locales",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/inspecciones",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/inspecciones",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/inspecciones/:id",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/gestion/inspecciones/:id",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/usos",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/usos",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/residencial",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/residencial",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/avisos",
+      "target": "modulo:ciudadanoServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/avisos",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/liquidaciones",
+      "target": "modulo:dnitServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/liquidaciones",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/planificacion",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/planificacion",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/planificacion/:n",
+      "target": "modulo:gestionMunicipalServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/gestion/planificacion/:n",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));",
+      "target": "modulo:ciudadanoServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));",
+      "target": "modulo:ciudadanoServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));",
+      "target": "modulo:ciudadanoServicio.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/limite",
+      "target": "modulo:parcelarioLocal.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/limite",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/distrito",
+      "target": "modulo:parcelarioLocal.js",
+      "tipo": "usa",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/parcelario/distrito",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/edificios",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/edificios/asignar",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:POST:/api/v3/relevamientos",
+      "target": "rol:municipal",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "api:GET:/api/v3/relevamientos",
+      "target": "rol:publico",
+      "tipo": "sirve_a",
+      "descripcion": "",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/mi-acceso",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/locales",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:POST:/api/v3/gestion/locales",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:POST:/api/v3/gestion/inspecciones",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:POST:/api/v3/gestion/inspecciones/:id",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/usos",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/residencial",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/avisos",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/liquidaciones",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/planificacion",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/gestion.html",
+      "target": "api:GET:/api/v3/gestion/planificacion/:n",
+      "tipo": "consumo",
+      "descripcion": "js/gestionMunicipal.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/informe-lote.html",
+      "target": "api:GET:/api/v3/edificios",
+      "tipo": "consumo",
+      "descripcion": "js/informeLote.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/informe-lote.html",
+      "target": "api:POST:/api/v3/relevamientos",
+      "tipo": "consumo",
+      "descripcion": "js/informeLote.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/informe-lote.html",
+      "target": "api:GET:/api/v3/relevamientos",
+      "tipo": "consumo",
+      "descripcion": "js/informeLote.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/admin.html",
+      "target": "api:GET:/api/v3/mi-cliente",
+      "tipo": "consumo",
+      "descripcion": "js/municipioAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/admin.html",
+      "target": "api:POST:/api/v3/mi-cliente/usuarios",
+      "tipo": "consumo",
+      "descripcion": "js/municipioAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/admin.html",
+      "target": "api:DELETE:/api/v3/mi-cliente/usuarios/:email",
+      "tipo": "consumo",
+      "descripcion": "js/municipioAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/admin.html",
+      "target": "api:POST:/api/v3/mi-cliente/pagos",
+      "tipo": "consumo",
+      "descripcion": "js/municipioAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:GET:/api/v3/plataforma/catalogo",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:GET:/api/v3/plataforma/clientes",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:POST:/api/v3/plataforma/clientes",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:POST:/api/v3/plataforma/clientes/:id/modulos",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:POST:/api/v3/plataforma/clientes/:id/usuarios",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:DELETE:/api/v3/plataforma/clientes/:id/usuarios/:email",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:GET:/api/v3/plataforma/planes",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:POST:/api/v3/plataforma/planes",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:GET:/api/v3/plataforma/pagos/pendientes",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/admin/plataforma.html",
+      "target": "api:POST:/api/v3/plataforma/pagos/:id",
+      "tipo": "consumo",
+      "descripcion": "js/plataformaAdmin.js",
+      "origen": "grafo-dominio-municipal"
+    },
+    {
+      "source": "pagina:/municipal/index.html",
+      "target": "api:GET:/api/v3/municipal/patentes",
+      "tipo": "consumo",
+      "descripcion": "js/patentesMunicipalUI.js",
+      "origen": "grafo-dominio-patentes"
+    },
+    {
+      "source": "pagina:/municipal/index.html",
+      "target": "api:POST:/api/v3/municipal/patentes/inspeccionar",
+      "tipo": "consumo",
+      "descripcion": "js/patentesMunicipalUI.js",
+      "origen": "grafo-dominio-patentes"
+    },
+    {
+      "source": "pagina:/ciudadano/index.html",
+      "target": "api:GET:/api/v3/ciudadano/situacion-cta-cte",
+      "tipo": "consumo",
+      "descripcion": "js/ciudadanoNotifUI.js",
+      "origen": "grafo-dominio-ciudadano"
+    },
+    {
+      "source": "pagina:/ciudadano/index.html",
+      "target": "api:POST:/api/v3/ciudadano/vincular-cta-cte",
+      "tipo": "consumo",
+      "descripcion": "js/ciudadanoNotifUI.js",
+      "origen": "grafo-dominio-ciudadano"
+    },
+    {
+      "source": "pagina:/ciudadano/index.html",
+      "target": "api:GET:/api/v3/ciudadano/notificaciones",
+      "tipo": "consumo",
+      "descripcion": "js/ciudadanoNotifUI.js",
+      "origen": "grafo-dominio-ciudadano"
+    },
+    {
+      "source": "api:GET:/api/v3/municipal/patentes",
+      "target": "tabla:patentes_comerciales:locales_comerciales",
+      "tipo": "usa",
+      "descripcion": "Consulta locales comerciales con 5 estados de patente",
+      "origen": "grafo-dominio-patentes"
+    },
+    {
+      "source": "api:POST:/api/v3/municipal/patentes/inspeccionar",
+      "target": "tabla:patentes_comerciales:actas_inspeccion",
+      "tipo": "usa",
+      "descripcion": "Registra acta de fiscalización en terreno",
+      "origen": "grafo-dominio-patentes"
+    },
+    {
+      "source": "api:GET:/api/v3/ciudadano/situacion-cta-cte",
+      "target": "tabla:patentes_comerciales:locales_comerciales",
+      "tipo": "usa",
+      "descripcion": "Informa locales comerciales vinculados a la Cta. Cte.",
+      "origen": "grafo-dominio-ciudadano"
+    },
+    {
+      "source": "api:POST:/api/v3/ciudadano/vincular-cta-cte",
+      "target": "tabla:ciudadano_notificaciones:vinculaciones_cta_cte",
+      "tipo": "usa",
+      "descripcion": "Asocia teléfono y Cta Cte del ciudadano para avisos",
+      "origen": "grafo-dominio-ciudadano"
+    },
+    {
+      "source": "api:GET:/api/v3/ciudadano/notificaciones",
+      "target": "tabla:ciudadano_notificaciones:notificaciones_ciudadano",
+      "tipo": "usa",
+      "descripcion": "Obtiene avisos de vencimientos, fiscalizaciones y catastro",
+      "origen": "grafo-dominio-ciudadano"
     }
   ]
 }

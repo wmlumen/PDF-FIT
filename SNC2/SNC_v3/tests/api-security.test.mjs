@@ -77,7 +77,7 @@ assertEqual(capped[0].name.length, 10, 'sanitizeFilesArray preserva name corto')
 const longItem = sanitizeFilesArray([{ name:'a'.repeat(200), size:'abc', url:'y'.repeat(2000) }])[0];
 assertEqual(longItem.name.length, 120, 'sanitizeFilesArray trunca name largo a 120');
 assertEqual(longItem.url.length, 500, 'sanitizeFilesArray trunca url largo a 500');
-assertEqual(longItem.size, 0, 'sanitizeFilesArray normaliza size no numerico');
+assertEqual(longItem.size, 0, 'sanitizeFilesArray normaliza size no numérico');
 assertEqual(sanitizeFilesArray('not-array').length, 0, 'sanitizeFilesArray maneja entrada no array');
 
 // sanitizeBuyer

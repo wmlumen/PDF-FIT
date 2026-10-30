@@ -48,7 +48,7 @@
 //    • Exportar dashboards (CSV/PNG) para uso institucional.
 //
 // 8. API nacional con MEF/STP
-//    • GET /api/pout/municipios/:codigo → devuelve el POUT del municipio.
+//    • GET /api/pout/municipios/:código → devuelve el POUT del municipio.
 //    • POST /api/pout/export/:tipo → descarga Excel, SHP, GeoJSON o PDF institucional.
 //
 // 9. Módulo reutilizable (para otros proyectos paraguayos)

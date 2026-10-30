@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>POUT Municipal — SNC_v3</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
   <link rel="stylesheet" href="/Pout/poutModule.css">
   <style>/* Heredados de Sistema-POUT-Municipal.html */
   :root {
@@ -153,7 +154,27 @@
             Capas oficiales integradas: IGN Paraguay (Límites/Divipolis), MAG/ArcGIS (Distrital_Datos_Destacados),
             MADES (Zonas de protección), MOPC (Red vial). Sistemas: SIRGAS 2000 UTM 21S/20S y WGS84.
           </p>
+          <div class="pout-ama-barra">
+            <label for="poutDpto">Buscar POUT por departamento</label>
+            <select id="poutDpto"><option value="">— Elegir departamento —</option></select>
+            <span id="poutDptoResumen" class="muted"></span>
+          </div>
+          <div id="poutDptoLista" class="pout-dpto-lista"></div>
+          <div class="pout-ama-barra">
+            <label for="poutAmaMuni">Municipio con POUT cargado</label>
+            <select id="poutAmaMuni"><option value="">Todos (Área Metropolitana)</option></select>
+            <label class="pout-ama-chk"><input type="checkbox" id="poutAmaZonas" checked> Zonificación</label>
+            <label class="pout-ama-chk"><input type="checkbox" id="poutAmaAfect"> Afectaciones</label>
+            <span id="poutAmaEstado" class="muted"></span>
+          </div>
           <div id="pout-map"></div>
+          <div id="poutAmaLeyenda" class="pout-ama-leyenda"></div>
+          <div id="poutMuniCapas" class="pout-muni-capas" hidden></div>
+          <div id="poutTabla" class="pout-tabla" hidden>
+            <div class="pout-tabla-barra"><b id="poutTablaTitulo"></b><input id="poutTablaBuscar" type="search" placeholder="Filtrar filas…"><span id="poutTablaCuenta" class="muted"></span>
+              <button id="poutTablaCsv" type="button" class="btn btn--secondary">Exportar CSV</button><button id="poutTablaCerrar" type="button" class="btn btn--secondary">Cerrar</button></div>
+            <div class="pout-tabla-caja"><table><thead id="poutTablaCab"></thead><tbody id="poutTablaCuerpo"></tbody></table></div>
+          </div>
           <div class="action-row" style="margin-top:0.5rem;">
             <button id="btnPoutLayerMag"   class="btn btn--secondary">🏛️ MAG distritos</button>
             <button id="btnPoutLayerMades" class="btn btn--secondary">⚠ MADES riesgos</button>
@@ -257,5 +278,6 @@
   <!-- Leaflet JS servido localmente -->
   <script src="/vendor/leaflet.js"></script>
   <script src="/Pout/poutModule.js"></script>
+  <script src="/Pout/poutCapasAma.js"></script>
 </body>
 </html>

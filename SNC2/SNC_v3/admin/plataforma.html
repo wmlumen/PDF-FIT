@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración de la plataforma | SNC v3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/plataforma.css">
+</head>
+<body>
+  <header class="pf-cab">
+    <div><h1>Administración de la plataforma</h1><div class="pf-sub">Clientes, planes, módulos habilitados, usuarios y pagos · SNC v3</div></div>
+    <nav aria-label="Secciones"><button type="button" data-v="clientes" class="activo">Clientes</button><button type="button" data-v="pagos">Pagos por verificar</button><button type="button" data-v="planes">Planes y módulos</button></nav>
+  </header>
+  <main>
+    <p class="pf-msg" id="pf-msg" role="status"></p>
+    <section data-vista="clientes" class="pf-grid">
+      <div class="pf-card"><h2>Clientes</h2><div class="pf-envoltura"><table class="pf-tabla"><thead><tr><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Estado</th><th>Pago</th><th>Módulos</th></tr></thead><tbody id="pf-clientes"></tbody></table></div>
+        <div class="pf-fila"><button type="button" class="pf-boton" id="pf-nuevo">Alta de cliente</button></div></div>
+      <div class="pf-card" id="pf-detalle"><h2>Ficha del cliente</h2><p class="pf-vacio">Elija un cliente o dé de alta uno nuevo.</p></div>
+    </section>
+    <section data-vista="pagos" hidden><div class="pf-card"><h2>Pagos informados por verificar</h2><div class="pf-envoltura"><table class="pf-tabla"><thead><tr><th>Cliente</th><th>Período</th><th>Monto</th><th>Medio / comprobante</th><th>Informado</th><th>Acción</th></tr></thead><tbody id="pf-pagos"></tbody></table></div></div></section>
+    <section data-vista="planes" hidden><div class="pf-card"><h2>Planes y módulos incluidos</h2><div id="pf-planes"></div></div></section>
+  </main>
+  <script type="module" src="/js/plataformaAdmin.js"></script>
+</body>
+</html>

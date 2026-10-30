@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe municipal del lote | SNC v3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <link rel="stylesheet" href="/css/informe-lote.css">
+</head>
+<body>
+  <!-- Informe municipal de un lote según su actividad. Datos públicos: SNC (parcela), DNIT (liquidación 2026),
+       OpenStreetMap (edificios) y relevamientos del visor. Diseño tomado de la maqueta docs/disenos/dictamen-maqueta.html. -->
+  <aside class="action-toolbar" aria-label="Herramientas del informe">
+    <div class="toolbar-title"><span class="toolbar-status-dot"></span><span>SNC v3 · Informe municipal del lote</span></div>
+    <button id="btn-imprimir" type="button" class="btn-action btn-action-primary"><span>Imprimir / PDF A4</span></button>
+  </aside>
+
+  <main class="document-sheet" id="documento">
+    <header class="header-territorial">
+      <div class="header-titles">
+        <div class="eyebrow-country">República del Paraguay</div>
+        <div class="institution-title" id="il-municipio">Municipalidad</div>
+        <div class="institution-sub">Informe técnico del lote · Ley N° 3966/2010 Orgánica Municipal</div>
+        <h1 class="report-main-title">Informe catastral del lote según su actividad</h1>
+      </div>
+      <div class="header-stamp"><div class="stamp-id" id="il-id">—</div></div>
+    </header>
+
+    <form class="il-form section" id="il-form" autocomplete="off">
+      <label for="il-ref">Lote, padrón, finca o Cta. Cte.
+        <input id="il-ref" name="ref" placeholder="Ej.: D-12-19-73-8, 27-2815-18, finca 741" required></label>
+      <label for="il-act">Actividad
+        <select id="il-act" name="act">
+          <option value="residencial">Residencial (vivienda)</option>
+          <option value="comercial">Comercial / servicios</option>
+          <option value="industrial">Industrial / depósito</option>
+          <option value="agropecuaria">Agropecuaria / rural</option>
+          <option value="fraccionamiento">Fraccionamiento / loteamiento</option>
+        </select></label>
+      <button type="submit" class="btn-action btn-action-primary">Generar informe</button>
+      <div class="il-lista" id="il-lista"></div>
+      <p class="section-note" id="il-estado"></p>
+    </form>
+
+    <div id="il-informe" class="il-oculto">
+      <div class="meta-strip">
+        <div class="meta-strip-item"><div class="meta-strip-label">Fecha de emisión</div><div class="meta-strip-value" id="il-fecha">—</div></div>
+        <div class="meta-strip-item"><div class="meta-strip-label">Sistema geodésico</div><div class="meta-strip-value">WGS84 / UTM 21S (EPSG:32721)</div></div>
+        <div class="meta-strip-item"><div class="meta-strip-label">Actividad evaluada</div><div class="meta-strip-value" id="il-actividad">—</div></div>
+        <div class="meta-strip-item"><div class="meta-strip-label">Fuentes</div><div class="meta-strip-value">SNC · DNIT 2026 · OpenStreetMap</div></div>
+      </div>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">1</span><h2 class="section-title">Identificación del inmueble</h2><span class="section-note">Catastro nacional (SNC)</span></div>
+        <div class="info-card-grid" id="il-ident"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">2</span><h2 class="section-title">Superficie y medidas del lote</h2><span class="section-note">Calculado sobre el polígono oficial, en UTM 21S</span></div>
+        <div class="kpi-container" id="il-kpis"></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Lado</th><th class="col-num">Largo (m)</th><th>Desde vértice (Este, Norte)</th></tr></thead><tbody id="il-lados"></tbody></table></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">3</span><h2 class="section-title">Liquidación del Impuesto Inmobiliario 2026</h2><span class="section-note">Planillas publicadas por la DNIT</span></div>
+        <div class="info-card-grid" id="il-dnit"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">4</span><h2 class="section-title">Construcciones</h2><span class="section-note">Techo y área cubierta: mapa (OpenStreetMap) y relevamientos del visor</span></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Origen</th><th class="col-num">m² techo</th><th class="col-num">Área cubierta (m²)</th><th class="col-num">Pisos</th><th class="col-num">Construido (m²)</th></tr></thead><tbody id="il-construcciones"></tbody></table></div>
+        <div class="info-card-grid" id="il-comparacion"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">5</span><h2 class="section-title">Ubicación</h2><span class="section-note">Lote resaltado sobre el parcelario oficial</span></div>
+        <div class="il-mapa" id="il-mapa"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header"><span class="section-num">6</span><h2 class="section-title">Verificaciones según la actividad</h2><span class="section-note" id="il-act-nota"></span></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Verificación</th><th class="col-center">Resultado</th><th>Detalle</th></tr></thead><tbody id="il-checks"></tbody></table></div>
+        <p class="il-aviso">Informe de referencia generado con datos públicos (SNC, DNIT, OpenStreetMap). No reemplaza certificados catastrales ni registrales ni la habilitación municipal. Los puntos marcados «Verificar» requieren revisión del funcionario según la ordenanza vigente del municipio.</p>
+      </section>
+
+      <section class="section il-oculto" id="il-pout-sec">
+        <div class="section-header"><span class="section-num">7</span><h2 class="section-title">Ordenamiento territorial (POUT)</h2><span class="section-note">Plan de Ordenamiento Urbano y Territorial del municipio</span></div>
+        <div class="info-card-grid" id="il-pout"></div>
+        <p class="il-aviso" id="il-pout-fuente"></p>
+      </section>
+
+      <section class="section">
+        <div class="signatures-grid">
+          <div class="signature-box"><div class="il-firma"></div><div class="signature-title">Responsable técnico de Catastro municipal</div><div class="signature-meta">Nombre, firma y sello</div></div>
+          <div class="signature-box"><div class="il-firma"></div><div class="signature-title">Responsable de Obras / Habilitaciones</div><div class="signature-meta">Nombre, firma y sello</div></div>
+        </div>
+      </section>
+
+      <footer class="document-footer"><div class="footer-left" id="il-pie">—</div><div class="footer-right">SNC v3</div></footer>
+    </div>
+  </main>
+
+  <script src="/vendor/leaflet.js"></script>
+  <script src="/vendor/proj4.js"></script>
+  <script type="module" src="/js/informeLote.js"></script>
+</body>
+</html>

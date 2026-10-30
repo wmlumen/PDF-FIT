@@ -252,7 +252,7 @@ Los 11 tests cubren lógica pura (`validator`, `export`, `parser`, `cogo`, `geop
 ### A-11 · El frontend de autenticación no está versionado
 **Evidencia:** de las 13 páginas HTML del proyecto, Git solo versiona **3** (`index.html`, `index-municipal.html`, `test-municipal.html`). Están sin trackear: `admin.html`, `login-directo.html`, `register.html`, `recover.html`, `members.html`, `geoconverter.html`, `presentacion.html`, `privacy.html`, `terms.html` (y `fluxograma.html` está explícitamente ignorado en `.gitignore:72`). También quedaron fuera `favicon.svg` y `apple-touch-icon.png`.
 
-**Impacto:** un clon limpio del repositorio **no puede** servir login, registro, recuperación, membresía ni panel de administración; `server-api.js:52-64` los declara como públicos y `firebase.json` los publica solo desde el disco de esta máquina. Es decir, el despliegue real no es reproducible a partir del repositorio, y se pierde el historial de cambios de esas pantallas (que concentran la autenticación y parte del XSS revisado en `admin.html`).
+**Impacto:** un clon limpio del repositorio **no puede** servir login, registro, recuperación, membresía ni panel de administración; `server-api.js:52-64` los declara como públicos y `firebase.json` los pública solo desde el disco de esta máquina. Es decir, el despliegue real no es reproducible a partir del repositorio, y se pierde el historial de cambios de esas pantallas (que concentran la autenticación y parte del XSS revisado en `admin.html`).
 
 **Remediación:** `git add` de las 9 páginas y de los íconos; revisar si `fluxograma.html` debe seguir ignorado (es una página de diagnóstico de 147 KB, no un artefacto generado); añadir un check en CI que compare los HTML de `PUBLIC_HTML_FILES` con `git ls-files`.
 

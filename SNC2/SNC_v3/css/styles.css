@@ -2877,3 +2877,15 @@ body.theme-navy-yellow #map-legend .ml-zoom:hover { background: rgba(250, 204, 2
 /* KPI STRIP */
 #kpi-strip { pointer-events: auto; max-width: calc(100vw - 300px); }
 #kpi-strip [id^="kpi-"] { min-width: 2rem; text-align: center; }
+
+/* SELECCIÓN DE PARCELA: contorno "neón" con línea animada (marching ants) */
+.snc-selected-glow {
+    stroke: #22d3ee !important;
+    stroke-width: 4 !important;
+    stroke-dasharray: 10 6;
+    filter: drop-shadow(0 0 4px #22d3ee) drop-shadow(0 0 10px #06b6d4);
+    animation: snc-marching-ants 0.8s linear infinite;
+}
+@keyframes snc-marching-ants {
+    to { stroke-dashoffset: -32; }
+}

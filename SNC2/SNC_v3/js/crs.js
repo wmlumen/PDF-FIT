@@ -249,6 +249,11 @@ export function normalizeEpsg(raw) {
  * Busca pistas de CRS en los metadatos y atributos del FeatureCollection.
  * @returns {string|null} código canónico o null.
  */
+function explicitCrsBlock(fc) {
+    const crs = fc && fc.crs;
+    return !!(crs && (normalizeEpsg(crs.properties && crs.properties.name) || normalizeEpsg(crs.properties && crs.properties.href) || normalizeEpsg(crs.name)));
+}
+
 function crsFromMetadata(fc) {
     // 1) Bloque `crs` estilo GeoJSON 2008.
     const crs = fc && fc.crs;
@@ -340,6 +345,19 @@ function scoreZone(sample, zone) {
 export function detectCRS(fc) {
     // 1) Metadatos explícitos: máxima confianza.
     const meta = crsFromMetadata(fc);
+    // Una pista sacada de los ATRIBUTOS (p. ej. ZONA = 21) no puede contradecir coordenadas que ya están en
+    // grados: en catastro "ZONA" es la zona catastral, no la UTM, y un GeoJSON ya reproyectado a WGS84 la
+    // conserva. Sin esta guarda se reproyectaba dos veces y las parcelas colapsaban cerca del polo sur.
+    if (meta && !explicitCrsBlock(fc) && meta !== 'EPSG:4326') {
+        const range = crsFromRange(fc);
+        if (range && range.code === 'EPSG:4326') {
+            return {
+                code: 'EPSG:4326', confidence: 0.9, source: 'range',
+                reason: `${range.reason} (se ignora la pista ${meta} de los atributos: las coordenadas ya están en grados)`,
+                zone: null, candidates: []
+            };
+        }
+    }
     if (meta) {
         return {
             code: meta, confidence: 1, source: 'metadata',
@@ -503,4 +521,23 @@ export function analyzeCRS(fc, targetCode = 'EPSG:4326') {
         ok: true,
         message: `Se reproyectará ${labelOf(src)} → ${labelOf(targetCode)}`
     };
+}
+
+/** ¿Alguna coordenada del GeoJSON cae en Paraguay, en grados o en UTM 20S/21S/22S? */
+export function geojsonPlausibleEnParaguay(fc) {
+    let vistos = 0, plausibles = 0;
+    const walk = (c) => {
+        if (!Array.isArray(c) || vistos > 200) return;
+        if (typeof c[0] === 'number' && typeof c[1] === 'number') {
+            vistos++;
+            const [x, y] = c;
+            const grados = x >= -63 && x <= -54 && y >= -28 && y <= -19;
+            const utm = x >= 100000 && x <= 900000 && y >= 6800000 && y <= 7900000;
+            if (grados || utm) plausibles++;
+            return;
+        }
+        c.forEach(walk);
+    };
+    for (const f of (fc && fc.features) || []) walk(f && f.geometry && f.geometry.coordinates);
+    return vistos === 0 || plausibles > 0;
 }

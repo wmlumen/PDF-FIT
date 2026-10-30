@@ -74,7 +74,7 @@ assert.equal(resultadoIndustrialApto.resultado, RESULTADOS_POUT.APTO);
 const resultadoIndustrialNoApto = evaluarCompatibilidadUso(parcelaIndustrial, zonasPout, usosSuelo, 'Viviendas unifamiliares', turf);
 assert.equal(resultadoIndustrialNoApto.resultado, RESULTADOS_POUT.NO_APTO);
 
-// --- un Point (la consulta mas tipica: "en que zona cae este predio") tambien funciona ---
+// --- un Point (la consulta mas tipica: "en que zona cae este predio") también funciona ---
 const puntoDentroZonaResidencial = turf.point([1, 1]);
 const resultadoPorPunto = evaluarCompatibilidadUso(puntoDentroZonaResidencial, zonasPout, usosSuelo, 'Vivienda unifamiliar', turf);
 assert.equal(resultadoPorPunto.resultado, RESULTADOS_POUT.APTO);

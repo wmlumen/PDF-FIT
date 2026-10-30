@@ -354,6 +354,7 @@ async function loadPiribebuyMap() {
     }
 
     adminMap = L.map('admin-map', { center: [-26.85790, -58.30369], zoom: 16 });
+    window.SNCMapa = adminMap;   // lo usa el paquete Visor catastral Premium (js/visorPremium.js)
     const baseLayers = {
       osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors · SNC v3 Super Admin GIS', maxZoom: 19,
@@ -661,7 +662,7 @@ async function loadDependencias() {
 // ============================================================
 // PANEL DE INDICADORES MUNICIPALES VEP/MEF (TAB 10)
 // Consume GET /api/admin/metrics/vep (js/vepMetrics.js del lado servidor).
-// Ningun numero se inventa en el cliente: lo que el motor marca como
+// Ningún número se inventa en el cliente: lo que el motor marca como
 // `disponible: false` se muestra tal cual, con el motivo.
 // ============================================================
 function formatearNumero(valor, decimales = 0) {
@@ -741,6 +742,61 @@ function renderVepAnalisis(reporting) {
     renderBarra('Sin propietario registrado', p.parcelasSinPropietario, totalParcelas, 'bg-gray-600');
 }
 
+const VEP_PERFIL_LABEL = {
+  catastro: { label: 'Catastro', clase: 'border-amber-500/50 text-amber-300 bg-amber-500/10' },
+  notarial: { label: 'Notarial', clase: 'border-purple-500/50 text-purple-300 bg-purple-500/10' },
+  ambiental: { label: 'Ambiental', clase: 'border-emerald-500/50 text-emerald-300 bg-emerald-500/10' },
+  municipal: { label: 'Municipal', clase: 'border-gray-600 text-gray-300 bg-gray-800' }
+};
+
+function renderVepPerfilBadge(perfil) {
+  const badge = document.getElementById('vepPerfilBadge');
+  if (!badge) return;
+  const info = VEP_PERFIL_LABEL[perfil];
+  if (!info) { badge.classList.add('hidden'); return; }
+  badge.textContent = info.label;
+  badge.className = `px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full border ${info.clase}`;
+}
+
+// Oculta del selector las vistas que la respuesta del servidor no trajo
+// (M-13: recorte real hecho en el servidor, no solo un botón deshabilitado).
+function aplicarSeccionesVisibles(secciones = []) {
+  document.querySelectorAll('.vep-view-btn').forEach(btn => {
+    const visible = secciones.includes(btn.dataset.vepView);
+    btn.classList.toggle('hidden', !visible);
+  });
+  // Si la vista activa quedó oculta, caer a "resumen" (siempre presente).
+  const activa = document.querySelector('.vep-view-btn.active');
+  if (activa && activa.classList.contains('hidden')) setVepView('resumen');
+}
+
+function renderVepNotarial(matriculasPendientes) {
+  const bloque = document.getElementById('vepBloqueNotarial');
+  if (!bloque) return;
+  if (!Array.isArray(matriculasPendientes)) { bloque.classList.add('hidden'); return; }
+  bloque.classList.remove('hidden');
+  const tbody = document.getElementById('vepNotarialTabla');
+  tbody.innerHTML = matriculasPendientes.length
+    ? matriculasPendientes.map(f => `
+        <tr class="border-b border-gray-900">
+          <td class="py-1.5 pr-3 font-mono">${f.codigo || '—'}</td>
+          <td class="py-1.5 pr-3">${f.distrito || '—'}</td>
+          <td class="py-1.5 pr-3">${f.propietarios}</td>
+        </tr>`).join('')
+    : '<tr><td colspan="3" class="py-3 text-gray-500">Sin matrículas pendientes — todas verificadas o sin registrar.</td></tr>';
+}
+
+function renderVepAmbiental(porTipo) {
+  const bloque = document.getElementById('vepBloqueAmbiental');
+  if (!bloque) return;
+  if (!porTipo) { bloque.classList.add('hidden'); return; }
+  bloque.classList.remove('hidden');
+  const entradas = Object.entries(porTipo);
+  document.getElementById('vepAnalisisAmbiental').innerHTML = entradas.length
+    ? entradas.map(([tipo, n]) => `<div class="flex justify-between"><span>${tipo}</span><strong>${formatearNumero(n)}</strong></div>`).join('')
+    : '<p class="text-gray-500">Sin restricciones ambientales activas cargadas todavía.</p>';
+}
+
 function renderVepAdministracion() {
   let user = {};
   try { user = JSON.parse(localStorage.getItem('snc_api_user') || '{}'); } catch { /* ignore */ }
@@ -783,21 +839,27 @@ export async function loadVepMetricsTab() {
     const data = await fetchJSON('/api/admin/metrics/vep');
     // Vista Resumen
     document.getElementById('vepReportingCards').innerHTML = renderVepReportingCards(data.reportingBasico);
-    const cat01 = data.indicadores['IND-CAT-01'];
+    const cat01 = data.indicadores?.['IND-CAT-01'];
     if (cat01?.disponible === false) {
       document.getElementById('vepIndCat01').textContent = 'No disponible';
       document.getElementById('vepIndCat01Nota').textContent = cat01.motivo;
-    } else {
+    } else if (cat01) {
       document.getElementById('vepIndCat01').textContent = `${formatearNumero(cat01.valor, 1)} %`;
       document.getElementById('vepIndCat01Nota').textContent = `Meta VEP: ≥ ${cat01.metaVEP}% · ${cat01.aproximacion}`;
     }
-    document.getElementById('vepIndicadoresLista').innerHTML = renderVepIndicadoresLista(data.indicadores);
-    // Vista Datos
-    document.getElementById('vepDatosTabla').innerHTML = renderVepDatosTabla(data.parcelas);
-    // Vista Análisis
-    renderVepAnalisis(data.reportingBasico);
+    if (data.indicadores) document.getElementById('vepIndicadoresLista').innerHTML = renderVepIndicadoresLista(data.indicadores);
+    // Vista Datos (solo si el servidor la mandó para este perfil)
+    if (data.parcelas) document.getElementById('vepDatosTabla').innerHTML = renderVepDatosTabla(data.parcelas);
+    // Vista Análisis (reportingBasico viaja siempre que "resumen" esté — todos los perfiles la tienen)
+    if (data.reportingBasico) renderVepAnalisis(data.reportingBasico);
+    // Insumos propios por perfil (M-13): solo se renderizan/muestran si el
+    // servidor los mandó — ausentes para los perfiles que no corresponden.
+    renderVepNotarial(data.matriculasPendientes);
+    renderVepAmbiental(data.restriccionesAmbientalesPorTipo);
     // Vista Administración
+    renderVepPerfilBadge(data.perfil);
     renderVepAdministracion();
+    aplicarSeccionesVisibles(data.secciones || []);
 
     loadingEl.classList.add('hidden');
     contentEl.classList.remove('hidden');

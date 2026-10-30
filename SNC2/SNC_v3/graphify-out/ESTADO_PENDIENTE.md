@@ -59,6 +59,28 @@ Exige Resolución de la Junta Municipal + Promulgación del Intendente como cond
 Implementada evaluación espacial de franja de servidumbre hídrica de 30m (Ley 3239/07), áreas silvestres protegidas SINASIP (Ley 352/94),
 bosques protectores (Ley 4241/10) y tierras indígenas (INDI/Ley 904/81) en `js/interoperabilidad.js` y catalogado en servicios OGC.
 
+## Prioridad 1 — Módulo Cartográfico de Análisis Territorial (Pendiente Abierto)
+
+### pendiente:analisis-territorial-mapa-visor [ABIERTO]
+- **Módulo:** Análisis Territorial y Cartografía Municipal (`data/analisis/AnalisisTerritorial.html`).
+- **Contexto:** El informe de Análisis Territorial cuenta con indicadores estadísticos y económicos del Impuesto Inmobiliario 2026 y CSS 10x institucional (`data/analisis/analisis.css`), pero requiere un mapa interactivo (Leaflet) integrado que renderice espacialmente el distrito seleccionado, las parcelas con edificación/baldías, las zonas POUT y las franjas de restricción hídrica MADES.
+- **Implementado OK:**
+  - CSS institucional 10x en `data/analisis/analisis.css` (tokens Navy/Gold/Slate, KPI cards, reporte editorial, matrices FODA, tablas y modo print A4).
+  - Enrutamiento Express en `server-api.js:1673` para servir `data/analisis/AnalisisTerritorial.html` en `/analisis-territorial.html`.
+- **Falta para continuar el mapa:**
+  1. Contenedor `<div id="mapa-territorial" class="lienzo alto">` en `AnalisisTerritorial.html`.
+  2. Inicialización reactiva de `L.map()` en `data/analisis/analisis-app.js` enlazada al evento `change` del selector de distritos (`sel-dist`).
+  3. Carga y renderizado de geometrías GeoJSON distritales (`/data/distritos_py_light.geojson` o capas locales `/data/municipal/<distrito>`).
+  4. Capas temáticas: franja hídrica de 30m (Ley 3239/07), zonas POUT de uso de suelo y parcelas con/sin edificación.
+  5. Controles de mapa: capa base (OSM/Carto), escala métrica, norte y leyenda interactiva.
+- **Cómo retomar:** Cargar `/vendor/leaflet.js` y `/vendor/leaflet.css` en `AnalisisTerritorial.html` (respetando la CSP de `server-api.js`), y agregar la función `dibujarMapa(distrito)` en `analisis-app.js` dentro del ciclo `dibujar(d)`.
+- **APIs a reusar:**
+  - `server-api.js:1673` (`/analisis-territorial.html`)
+  - `server-api.js:113` (`/data/distritos_py_light.geojson`)
+  - `server-api.js:117` (`/data/municipal`)
+  - `server-api.js:1680` (`/api/spatial-identify`)
+  - `js/mapEngine.js` (patrón de inicialización Leaflet y CRS UTM 21S)
+
 ## Orden de arranque sugerido
 
 1. **PostGIS** — desbloquea perfiles viales, franja hídrica y gaps.

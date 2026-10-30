@@ -26,11 +26,11 @@
 // calculan hoy. Mantenido explícito (no generado) para que agregar la fuente
 // real de alguno sea un diff de una línea, no una sorpresa.
 export const INDICADORES_NO_DISPONIBLES = {
-  'IND-CAT-02': 'Requiere area urbana total y censo de asentamientos de hecho (INE/SENAVITAT) — no integrado en SNC_v3',
-  'IND-CAT-03': 'Requiere area cedida para calles por loteamiento vs area bruta de la parcela matriz — no se registra hoy en el flujo de fraccionamiento',
-  'IND-CAT-04': 'Requiere area de plazas/edificios publicos cedidos por loteamiento — no se registra hoy en el flujo de fraccionamiento',
-  'IND-CAT-05': 'Requiere poblacion estimada por zona (INE) — no integrado en SNC_v3',
-  'IND-AMB-01': 'Requiere poblacion urbana total (INE) y capa de espacios verdes publicos (VEP) cargada — no integrado',
+  'IND-CAT-02': 'Requiere área urbana total y censo de asentamientos de hecho (INE/SENAVITAT) — no integrado en SNC_v3',
+  'IND-CAT-03': 'Requiere área cedida para calles por loteamiento vs área bruta de la parcela matriz — no se registra hoy en el flujo de fraccionamiento',
+  'IND-CAT-04': 'Requiere área de plazas/edificios publicos cedidos por loteamiento — no se registra hoy en el flujo de fraccionamiento',
+  'IND-CAT-05': 'Requiere población estimada por zona (INE) — no integrado en SNC_v3',
+  'IND-AMB-01': 'Requiere población urbana total (INE) y capa de espacios verdes publicos (VEP) cargada — no integrado',
   'IND-AMB-02': 'Requiere capa de fajas ribereñas protectoras (VEP/MADES) cargada en el visor para intersectar — calculable con calcularInterseccionEspacial() en cuanto esa capa este disponible',
   'IND-AMB-03': 'Requiere registro de cobertura de recoleccion de RSU por parcela — no integrado en SNC_v3',
   'IND-AMB-04': 'Calculable: ver calcularAfectacionPorBuffer()',
@@ -41,8 +41,8 @@ export const INDICADORES_NO_DISPONIBLES = {
   'IND-VIA-02': 'Requiere capa de avenidas colectoras con ancho por tramo — no integrado en SNC_v3',
   'IND-VIA-03': 'Requiere capa de red vial con tipo de pavimento por tramo — no integrado en SNC_v3',
   'IND-VIA-04': 'Requiere capa de bicisendas (AMABICI) y de red vial estructurante — no integrado en SNC_v3',
-  'IND-REC-01': 'Requiere el sistema de recaudacion tributaria municipal (emision y cobro del impuesto inmobiliario) — SNC_v3 no lo integra, solo gestiona expedientes catastrales',
-  'IND-REC-02': 'Requiere metraje de frente de cada parcela y costo por metro lineal segun ordenanza — no se registra hoy',
+  'IND-REC-01': 'Requiere el sistema de recaudación tributaria municipal (emision y cobro del impuesto inmobiliario) — SNC_v3 no lo integra, solo gestiona expedientes catastrales',
+  'IND-REC-02': 'Requiere metraje de frente de cada parcela y costo por metro lineal según ordenanza — no se registra hoy',
   'IND-REC-03': 'Requiere relevamiento de comercios en campo vs. patentes activas — no integrado en SNC_v3'
 };
 
@@ -120,7 +120,7 @@ export function calcularIndCat01TasaTitularidad(parcelasDetalle = []) {
     valor: (superficieConTitulo / superficieTotal) * 100,
     unidad: '%',
     metaVEP: 85,
-    aproximacion: 'usa matricula.estado = VERIFICADA como proxy de titulo inscripto en el DGRP; no hay integracion real con el Registro Publico (ver AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md, punto 4)'
+    aproximacion: 'usa matricula.estado = VERIFICADA como proxy de título inscripto en el DGRP; no hay integracion real con el Registro Publico (ver AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md, punto 4)'
   };
 }
 

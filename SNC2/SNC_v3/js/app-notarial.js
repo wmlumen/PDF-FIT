@@ -30,6 +30,7 @@ export const AppNotarial = {
       zoom: 16,
       zoomControl: true
     });
+    window.SNCMapa = mapInstance;   // lo usa el paquete Visor catastral Premium (js/visorPremium.js)
 
     this.baseLayers = {
       osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

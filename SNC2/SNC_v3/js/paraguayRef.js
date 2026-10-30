@@ -474,6 +474,54 @@ async function loadLayer(layer) {
         logger.debug(`✅ Capa de Distritos lista.`);
         return allDistritosGeoJSON;
 
+    } else if (layer === 'barrios') {
+        if (_LAYERS_CACHE.barrios) {
+            return _LAYERS_CACHE.barrios;
+        }
+        try {
+            logger.debug('🔄 Cargando capa de barrios (barrios_asuncion_central_light.geojson)...');
+            const resp = await fetch('data/barrios_asuncion_central_light.geojson');
+            if (resp.ok) {
+                _LAYERS_CACHE.barrios = await resp.json();
+                logger.debug('✅ Capa de Barrios lista.');
+                return _LAYERS_CACHE.barrios;
+            }
+        } catch (e) {
+            logger.error('Error cargando capa de barrios:', e);
+        }
+        return null;
+    } else if (layer === 'manzanas') {
+        if (_LAYERS_CACHE.manzanas) {
+            return _LAYERS_CACHE.manzanas;
+        }
+        try {
+            logger.debug('🔄 Cargando capa de manzanas (manzanas_asuncion_light.geojson)...');
+            const resp = await fetch('data/manzanas_asuncion_light.geojson');
+            if (resp.ok) {
+                _LAYERS_CACHE.manzanas = await resp.json();
+                logger.debug('✅ Capa de Manzanas lista.');
+                return _LAYERS_CACHE.manzanas;
+            }
+        } catch (e) {
+            logger.error('Error cargando capa de manzanas:', e);
+        }
+        return null;
+    } else if (layer === 'casco_urbano' || layer === 'ejido_urbano') {
+        if (_LAYERS_CACHE.cascoUrbano) {
+            return _LAYERS_CACHE.cascoUrbano;
+        }
+        try {
+            logger.debug('🔄 Cargando capa de cascos y ejidos urbanos (casco_urbano_snc.geojson)...');
+            const resp = await fetch('data/casco_urbano_snc.geojson');
+            if (resp.ok) {
+                _LAYERS_CACHE.cascoUrbano = await resp.json();
+                logger.debug('✅ Capa de Cascos Urbanos SNC lista.');
+                return _LAYERS_CACHE.cascoUrbano;
+            }
+        } catch (e) {
+            logger.error('Error cargando capa de cascos urbanos:', e);
+        }
+        return null;
     } else if (layer === 'all') { // Added for MapEngine to get the raw data
         return allDistritosGeoJSON;
     }

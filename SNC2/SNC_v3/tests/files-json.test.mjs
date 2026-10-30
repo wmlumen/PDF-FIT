@@ -26,7 +26,7 @@ ok('array -> mismo array', normalizeFilesJson([1, 2]).length === 2);
 ok('string JSON de array -> array', normalizeFilesJson('[{"id":"x"}]')[0].id === 'x');
 ok('string con doble encoding -> array', normalizeFilesJson('"[{\\"id\\":\\"y\\"}]"')[0].id === 'y');
 ok('string basura -> []', normalizeFilesJson('no es json').length === 0);
-ok('numero -> []', normalizeFilesJson(42).length === 0);
+ok('número -> []', normalizeFilesJson(42).length === 0);
 
 // --- invariante clave: escribir y leer debe ser idempotente ---
 const original = [{ id: 'f1', name: 'plano.pdf', url: 'http://x', size: 10 }];

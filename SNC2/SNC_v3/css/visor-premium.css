@@ -1,0 +1,81 @@
+/* Paquete "Visor catastral Premium" (js/visorPremium.js) */
+.vp-barra { position: absolute; top: 12px; right: 12px; z-index: 1000; display: flex; flex-direction: column; gap: 6px; }
+.vp-barra .map-selector-btn, .vp-boton { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(148,163,184,.35); background: #0f172a; color: #e2e8f0; cursor: pointer; display: grid; place-items: center; }
+.vp-boton { color: #fbbf24; }
+.vp-boton.vp-activo { background: #fbbf24; color: #0f172a; border-color: #f59e0b; }
+.vp-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.vp-panel { position: absolute; top: 64px; right: 64px; z-index: 1001; width: min(340px, calc(100% - 80px)); max-height: calc(100% - 76px); overflow: auto;
+  background: #0f172a; color: #e2e8f0; border: 1px solid rgba(251,191,36,.45); border-radius: 12px; padding: 12px 14px; box-shadow: 0 12px 30px rgba(0,0,0,.45); font: 13px/1.45 system-ui, sans-serif; }
+.vp-panel header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.vp-panel header strong { color: #fbbf24; font-size: 14px; }
+.vp-plan { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; background: #fbbf24; color: #0f172a; border-radius: 999px; padding: 2px 8px; }
+.vp-cerrar { margin-left: auto; background: none; border: 0; color: #94a3b8; font-size: 20px; cursor: pointer; line-height: 1; }
+.vp-nota { color: #94a3b8; font-size: 12px; margin: 0 0 8px; }
+.vp-op { display: flex; gap: 8px; align-items: flex-start; padding: 7px 4px; border-top: 1px solid rgba(148,163,184,.15); cursor: pointer; }
+.vp-op input { margin-top: 3px; accent-color: #fbbf24; }
+.vp-op b { color: #f8fafc; }
+.vp-op small { color: #94a3b8; }
+.vp-leyenda { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0; font-size: 12px; }
+.vp-e::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1.5px solid; }
+.vp-e.si::before { background: #f59e0b; border-color: #b45309; }
+.vp-e.no::before { background: rgba(34,197,94,.25); border-color: #15803d; }
+.vp-e.nd::before { background: transparent; border-color: #64748b; border-style: dashed; }
+.vp-ayuda { font-size: 12px; color: #cbd5e1; margin: 6px 0; }
+.vp-ayuda code { background: #1e293b; padding: 1px 5px; border-radius: 4px; }
+.vp-analisis { display: block; text-align: center; margin-top: 8px; padding: 8px; border-radius: 8px; background: #1d4ed8; color: #fff; text-decoration: none; font-weight: 600; }
+.vp-analisis:hover { background: #2563eb; }
+@media (max-width: 640px) { .vp-panel { right: 8px; left: 8px; width: auto; top: 60px; } }
+/* Edificios OSM frente a la liquidación */
+.vp-c::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.vp-c.no_declarada::before { background: #dc2626; } .vp-c.menor_declarada::before { background: #f97316; } .vp-c.mayor_declarada::before { background: #7c3aed; }
+.vp-c.coincide::before { background: #16a34a; } .vp-c.sin_parcela::before { background: #22d3ee; border: 1.5px solid #0891b2; } .vp-c.otro::before { background: #334155; } .vp-c.pendiente::before { background: rgba(219,39,119,.25); border: 1.5px dashed #db2777; }
+.vp-edif dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0; font-size: 12px; }
+.vp-edif dt { color: #64748b; } .vp-edif dd { margin: 0; font-weight: 600; }
+.vp-comp { margin: 4px 0; padding: 4px 6px; border-radius: 6px; font-weight: 600; font-size: 12px; background: #f1f5f9; }
+.vp-comp.vp-no_declarada { background: #fee2e2; color: #991b1b; } .vp-comp.vp-menor_declarada { background: #ffedd5; color: #9a3412; }
+.vp-comp.vp-mayor_declarada { background: #ede9fe; color: #5b21b6; } .vp-comp.vp-coincide { background: #dcfce7; color: #166534; }
+.vp-cand { display: block; width: 100%; margin: 3px 0; padding: 5px 8px; border-radius: 6px; border: 1px solid #db2777; background: #fdf2f8; color: #831843; cursor: pointer; text-align: left; font-weight: 600; }
+.vp-cand:disabled { opacity: .6; cursor: wait; }
+/* Dibujo de construcciones */
+.vp-dibujo { margin: 4px 0 8px; padding: 8px; border-radius: 8px; background: #111c33; border: 1px solid rgba(251,191,36,.3); }
+.vp-fila { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 6px 0; }
+.vp-fila button, .vp-fila a { padding: 5px 9px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; cursor: pointer; font-size: 12px; text-decoration: none; }
+.vp-fila .vp-primario { background: #fbbf24; color: #0f172a; border-color: #f59e0b; font-weight: 700; }
+.vp-fila button:disabled { opacity: .5; cursor: not-allowed; }
+.vp-fila label { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: #cbd5e1; }
+.vp-fila input, .vp-fila select { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 3px 6px; width: auto; max-width: 190px; }
+.vp-fila input[type="number"] { width: 64px; }
+.vp-medidas { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 6px 0; font-size: 12px; }
+.vp-medidas dt { color: #94a3b8; } .vp-medidas dd { margin: 0; font-weight: 700; color: #f8fafc; overflow-wrap: anywhere; }
+.vp-falta { color: #f87171 !important; }
+.vp-lado span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 700 11px system-ui, sans-serif; color: #0f172a; background: #fbbf24; padding: 1px 4px; border-radius: 4px; }
+.vp-cursor-dibujo { cursor: crosshair !important; }
+.vp-cursor-dibujo .leaflet-interactive { cursor: crosshair !important; }
+
+/* m² por piso (edificación en altura) */
+.vp-pisos { display: grid; gap: 4px; margin: 4px 0; }
+.vp-pisos label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; }
+.vp-pisos input { width: 90px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; padding: 3px 6px; }
+/* Mapa base "Mi lienzo": fondo en blanco */
+.vp-lienzo, .vp-lienzo.leaflet-container { background: #ffffff !important; }
+.vp-vertice { background: #fbbf24; border: 2px solid #0f172a; border-radius: 50%; cursor: move; }
+.vp-arrastrable { cursor: move; }
+.vp-ajuste { margin: 6px 0; padding: 6px 8px; border-radius: 6px; background: #0b1426; border: 1px dashed #334155; }
+.vp-ajuste input[type="number"] { width: 80px; }
+.vp-ambito { font-size: 10px; font-weight: 700; background: #1e3a8a; color: #dbeafe; border-radius: 999px; padding: 2px 8px; }
+
+.vp-ir-plataforma { display: block; padding: 8px 16px; background: #fbbf24; color: #0f172a; font-weight: 700; text-decoration: none; text-align: center; }
+
+/* Menú «Opciones de capa» del árbol de Capas (index.html): estilos propios, sin depender de Tailwind JIT. */
+#lp-row-menu { position: fixed; z-index: 4400; width: 210px; padding: 4px; border: 1px solid #334155; border-radius: 10px; background: #0f172a; box-shadow: 0 12px 28px rgba(0,0,0,.45); }
+#lp-row-menu .lp-row-menu-titulo { padding: 6px 8px 5px; margin-bottom: 2px; border-bottom: 1px solid #1e293b; font-size: 11px; font-weight: 700; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#lp-row-menu .lp-menu-item { display: flex; width: 100%; align-items: center; gap: 8px; padding: 7px 8px; border: 0; border-radius: 6px; background: transparent; color: #e2e8f0; font-size: 12px; text-align: left; cursor: pointer; white-space: nowrap; }
+#lp-row-menu .lp-menu-item:hover, #lp-row-menu .lp-menu-item:focus-visible { background: #1e293b; color: #fff; outline: none; }
+#lp-row-menu .lp-menu-item i { width: 14px; text-align: center; color: #93c5fd; }
+/* Botón ⋯ de cada capa: visible y con área de toque suficiente. */
+#lp-tree .lp-menu { min-width: 24px; height: 22px; border-radius: 5px; color: #cbd5e1 !important; opacity: .85; }
+#lp-tree .lp-menu:hover, #lp-tree .lp-menu:focus-visible { background: #1e293b; color: #fff !important; opacity: 1; }
+/* Las opciones van en columna (antes se acomodaban en fila y quedaban ilegibles). */
+#lp-row-menu { display: flex !important; flex-direction: column !important; align-items: stretch !important; height: auto !important; max-height: calc(100vh - 16px); overflow-y: auto; }
+#lp-row-menu > .lp-menu-item { flex: none !important; width: 100% !important; height: auto !important; min-height: 32px; }
+#lp-row-menu > .lp-row-menu-titulo { flex: none; }

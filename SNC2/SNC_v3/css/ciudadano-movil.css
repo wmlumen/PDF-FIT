@@ -1,0 +1,114 @@
+/* Portal Ciudadano — celular y GPS (js/ciudadanoMovil.js, PM-04/PM-05) */
+
+/* Botón "Mi ubicación" en la barra de herramientas del mapa */
+.cm-gps { background: rgba(15, 23, 42, .9); border: 1px solid #334155; color: #fff; }
+.cm-gps.cm-activo { background: #2563eb; border-color: #60a5fa; }
+
+/* Ficha de ubicación */
+.cm-ficha {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 1200;
+  width: min(360px, calc(100% - 24px)); background: rgba(15, 23, 42, .96); color: #e2e8f0;
+  border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.cm-ficha header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cm-ficha strong { color: #93c5fd; font-size: 14px; }
+.cm-ficha .cm-cerrar { background: #1e293b; border: 1px solid #475569; color: #e2e8f0; border-radius: 8px; padding: 4px 10px; font-size: 12px; }
+.cm-ficha dl { display: grid; grid-template-columns: 78px 1fr; gap: 4px 10px; margin: 0; }
+.cm-ficha dt { color: #94a3b8; }
+.cm-ficha dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+/* Catastro oficial y buscador (js/catastroOficialUI.js, PM-35/PM-38) */
+.co-boton { background: rgba(15, 23, 42, .9); border: 1px solid #334155; color: #fff; }
+.co-boton.co-activo { background: #0e7490; border-color: #22d3ee; }
+.co-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.co-buscador {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1150;
+  width: min(440px, calc(100% - 128px)); display: flex; background: rgba(15, 23, 42, .95);
+  border: 1px solid #334155; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+}
+.co-buscador input { flex: 1; min-width: 0; background: transparent; border: 0; color: #e2e8f0; padding: 9px 12px; font-size: 14px; outline: none; }
+.co-buscador input::placeholder { color: #94a3b8; }
+.co-buscador > button { background: #4f46e5; color: #fff; border: 0; border-radius: 0 9px 9px 0; padding: 0 14px; }
+.co-buscador:focus-within { border-color: #818cf8; }
+.co-resultados { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 50vh; overflow-y: auto;
+  background: rgba(15, 23, 42, .98); border: 1px solid #334155; border-radius: 10px; padding: 4px; }
+.co-resultados button { display: block; width: 100%; text-align: left; background: transparent; border: 0; color: #e2e8f0;
+  padding: 8px 10px; border-radius: 6px; font-size: 13px; line-height: 1.35; }
+.co-resultados button:hover, .co-resultados button:focus-visible { background: #1e293b; outline: none; }
+.co-info, .co-fuente { margin: 0; padding: 8px 10px; font-size: 12px; color: #94a3b8; }
+.co-fuente { font-size: 11px; border-top: 1px solid #1e293b; }
+.co-popup dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0; font-size: 12px; }
+.co-popup dt { color: #64748b; } .co-popup dd { margin: 0; font-weight: 600; }
+.co-popup small { color: #64748b; font-size: 10px; }
+
+/* Asa del cajón: solo visible en el celular */
+.cm-asa { display: none; }
+
+@media (max-width: 768px) {
+  /* El panel lateral pasa a ser un cajón inferior sobre el mapa */
+  body.cm-movil #ciudadano-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; width: 100% !important; max-height: 72vh;
+    border-right: 0; border-top: 1px solid #334155; border-radius: 16px 16px 0 0;
+    transform: translateY(calc(100% - 52px - env(safe-area-inset-bottom, 0px)));
+    transition: transform .25s ease; z-index: 1300; box-shadow: 0 -10px 30px rgba(0, 0, 0, .45);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  body.cm-movil.cm-panel-abierto #ciudadano-panel { transform: translateY(0); }
+  body.cm-movil .cm-asa {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; height: 52px;
+    justify-content: center; background: transparent; border: 0; color: #cbd5e1; font-size: 13px; font-weight: 600;
+  }
+  .cm-asa-barra { width: 44px; height: 5px; border-radius: 3px; background: #475569; }
+
+  /* Cabecera compacta: solo íconos */
+  body.cm-movil header.h-16 { height: 52px; padding-left: 10px; padding-right: 10px; }
+  body.cm-movil header.h-16 p { display: none; }
+
+  /* Leyenda y minimapa ocupan demasiado en el celular (el gestor de capas les pone display en linea) */
+  body.cm-movil #map-bottom-left-stack { display: none !important; }
+
+  /* Sin desborde horizontal: en el celular el ciudadano solo ve su portal (sin enlaces a Pro/Municipal/Notarial) */
+  body.cm-movil { overflow-x: hidden; }
+  body.cm-movil header.h-16 a[href="/"],
+  body.cm-movil header.h-16 a[href="/municipal"],
+  body.cm-movil header.h-16 a[href="/notarial/"],
+  body.cm-movil header.h-16 #btn-expediente-data,
+  body.cm-movil header.h-16 .w-px { display: none; }
+  body.cm-movil header.h-16 h1 { font-size: 13px; white-space: nowrap; }
+
+  /* Buscador: entre los botones de zoom (izq.) y el menú de mapas (der.) */
+  body.cm-movil .co-buscador { top: 8px; width: calc(100% - 120px); }
+
+  /* La ficha queda por encima del asa del cajón */
+  body.cm-movil .cm-ficha { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  body.cm-movil #parcel-inspector { right: 8px; left: 8px; width: auto; max-width: none; top: 8px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Leyenda de parcelas del radio del GPS (con / sin edificación) */
+.cm-leyenda-edif { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0 0; font-size: 12px }
+.cm-e::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1.5px solid }
+.cm-e.si::before { background: #f59e0b; border-color: #b45309 }
+.cm-e.no::before { background: rgba(34, 197, 94, .25); border-color: #15803d }
+.cm-e.nd::before { background: transparent; border-color: #64748b; border-style: dashed }
+
+/* Rótulo de Cta. Cte. en el centro de cada parcela oficial (tamaño y giro se asignan por código) */
+.co-rotulo { pointer-events: none; }
+.co-rotulo span {
+  position: absolute; left: 0; top: 0; white-space: nowrap; font: 700 11px/1 system-ui, sans-serif;
+  color: #0f172a; letter-spacing: .02em; transform-origin: center center;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff;
+}
+
+.co-informe { display: block; margin: 6px 0; padding: 6px 8px; border-radius: 6px; background: #1d4ed8; color: #fff !important; text-align: center; font-weight: 600; text-decoration: none; }
+
+/* Barra de búsqueda: ✕ para ocultarla (mismo tono, más claro) y botón con lupa para volver a mostrarla */
+.co-buscador[hidden], .co-abrir[hidden] { display: none !important; }
+.co-buscador .co-cerrar { flex: none; width: 34px; border: 0; border-left: 1px solid rgba(148,163,184,.25); background: transparent; color: #a5b4fc; font-size: 15px; cursor: pointer; }
+.co-buscador .co-cerrar:hover, .co-buscador .co-cerrar:focus-visible { color: #e0e7ff; background: rgba(99,102,241,.18); outline: none; }
+.co-abrir { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid rgba(99,102,241,.55); background: #4f46e5; color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer; }
+.co-abrir:hover, .co-abrir:focus-visible { background: #6366f1; outline: none; }
+.co-buscador > button[type="submit"] { border-radius: 0; }
+.co-buscador .co-cerrar { border-radius: 0 9px 9px 0; }
+.co-abrir { z-index: 1150; }

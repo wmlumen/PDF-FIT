@@ -67,7 +67,7 @@ function coincideUso(listaUsos, usoPropuesto) {
 }
 
 function geometriaIntersecta(consulta, featureZona, turfApi) {
-  // turf.intersect exige poligono contra poligono; para un Point (el caso mas
+  // turf.intersect exige polígono contra polígono; para un Point (el caso mas
   // comun al consultar "en que zona cae este predio") hay que usar
   // booleanPointInPolygon en su lugar, o el intersect falla/ignora en
   // silencio y todo da "sin_zonificacion" aunque el punto si este adentro.

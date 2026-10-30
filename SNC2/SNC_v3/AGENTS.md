@@ -5,6 +5,20 @@ Este repositorio es operado por múltiples agentes de Inteligencia Artificial (H
 
 ---
 
+## ★ Regla de turnos entre IAs (vale para todas, sin excepción)
+
+Las IAs **se turnan**; ninguna corrige ni rehace el trabajo de otra por su cuenta.
+
+1. **Tomar el turno.** Antes de editar, escribir en el bloque "Turno actual" de `docs/TURNOS_IA.md`: IA, fecha/hora, tarea y archivos. Si el bloque ya tiene otra IA con archivos en común, **no se tocan**: se espera o se le pregunta al usuario. (El `cli.mjs` citado en §2 no existe en el repo; mientras no exista, este archivo es el lock.)
+2. **Al terminar el turno** dejar "Turno actual" en `libre` y agregar una entrada en `docs/TURNOS_IA.md`: fecha, IA, tarea, archivos tocados, cómo verificarlo y qué queda pendiente.
+3. **No corregir lo ajeno.** Si una IA encuentra un error en el trabajo de otra, **no lo arregla ni lo revierte**: lo anota en `docs/TURNOS_IA.md` (sección "Observaciones para el autor") con archivo:línea y evidencia. Lo corrige el autor en su próximo turno, o otra IA solo si el usuario lo pide explícitamente.
+4. **No reescribir por estilo.** Prohibido reformatear, renombrar o "mejorar" código de otra IA fuera de la tarea asignada (incluye CSS y diseño).
+5. **Generados no se editan a mano.** `AnalisisTerritorial.html` y `data/analisis/*` salen de `scripts/analisis-territorial.mjs` + su plantilla; se cambia la fuente y se regenera.
+6. **Un solo servidor.** No levantar otra instancia en el puerto 5556 ni matar procesos de otra IA: avisar al usuario.
+7. **Al empezar el turno** leer las últimas entradas de `docs/TURNOS_IA.md` y respetar lo que otra IA dejó pendiente o en curso.
+
+---
+
 ## 0. Contexto obligatorio: auditoría abierta (2026-10-18)
 
 Antes de la primera acción en este repositorio, leer en este orden:
@@ -12,6 +26,10 @@ Antes de la primera acción en este repositorio, leer en este orden:
 1. [`docs/AUDITORIA_SNC_v3_2026-10-18.md`](docs/AUDITORIA_SNC_v3_2026-10-18.md) — 38 hallazgos (8 críticos) con evidencia `archivo:línea`. Veredicto vigente: **no apto para producción**.
 2. [`docs/PLAN_REMEDIACION_AUDITORIA.md`](docs/PLAN_REMEDIACION_AUDITORIA.md) — tareas accionables, criterios de cierre y zonas congeladas.
 3. [`README.md`](README.md) — estado del proyecto, bloqueantes y arranque rápido.
+4. [`docs/PLAN_MEJORA_PRODUCTO_2026-10-27.md`](docs/PLAN_MEJORA_PRODUCTO_2026-10-27.md) — plan de mejora de producto en 5 carriles paralelos (39 tareas `PM-xx`; versión JSON en `docs/PLAN_MEJORA_PRODUCTO_BACKLOG.json`). Tomar una tarea por vez y respetar el bloqueo por Fase 0.
+5. [`docs/PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md`](docs/PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md) — revisión experta del panel de análisis territorial y plan para publicar sus datos (fases A a F). La fase A (calidad de datos) va antes que cualquier otra.
+6. [`docs/CATALOGO_GRAFICOS.md`](docs/CATALOGO_GRAFICOS.md) — catálogo de tipos de gráfico para SNC v3 (qué dato va en cada uno, qué muestra la vista ampliada y pendientes). Consultarlo antes de crear o cambiar un gráfico.
+- [`docs/DATOS_OSM_MUNICIPAL.md`](docs/DATOS_OSM_MUNICIPAL.md): datasets OSM (edificios, usos, zonas residenciales) y su vínculo con parcelas y cuentas DNIT.
 
 > Espejo para agentes: los mismos documentos están en [`graphify-out/auditoria/`](graphify-out/auditoria/README.md), junto a `auditoria.json` (38 hallazgos con id, severidad, fase y estado) y al plan de remediación.
 
@@ -51,6 +69,35 @@ La estructura viva del repositorio y sus relaciones están indexadas en `graphif
 * **`graphify-out/graph.html`**: Visor gráfico interactivo (abrir en navegador para inspección visual).
 * **`graphify-out/auditoria/`**: espejo del informe de auditoría y del plan de remediación, más `auditoria.json` (38 hallazgos con id, severidad, fase y estado). `npm run audit:graph` indexa **todo el corpus indexable** (código, tests, docs, HTML y configuración; excluye credenciales, datos y binarios) en `graph.json`; el espejo se regenera con `npm run audit:sync` y se verifica con `npm run audit:sync -- --check`. No se edita a mano.
 
+## 1.2 Grafo de Seguimiento — `docs/grafo_seguimiento.md`
+
+Documenta el estado del proyecto (2026-10-28) y el progreso del trabajo de actualización catastral.
+
+| Estado del proyecto | Detalle |
+|---|---|
+| **Actividad** | 2026-10-28 · 11 tareas · 6 avanzadas |
+| **Tareas completadas** | 3 (T09 PDF · T11 Seguimiento · Validaciones parciales) |
+| **Tareas en curso** | 2 (T01 API DNIT · T10 Validaciones) |
+| **Tareas bloqueadas** | 5 (T02–T04, T06–T08, T05) |
+| **Tareas pendientes** | 1 (T04 Mapa Leaflet) |
+| **Progreso global** | 63% |
+
+### Desglose por carril
+
+| Carril | Tareas | Estado |
+|---|---|---|
+| **Baseline**: HTML/CSS/JS + API | T09, T11, T01 | En progreso / Completado |
+| **Expansión FODA** | T02, T03 | Bloqueadas (fuente de datos) |
+| **Mapa** | T04 | Pendiente |
+| **Arquitectura SNC v4** | T05–T08 | Bloqueadas (requiere PostGIS/GeoServer + fuentes externas) |
+
+### Reglas de actualización
+
+1. **Cada cambio** en `scripts/analisis-territorial.mjs` o `data/analisis/` actualiza `docs/tracking/estado_proyecto.json` con la nueva fecha y estado.
+2. **Las tareas no pueden cerrarse** sin un test o un `curl` reproducible (criterio de la Fase 0).
+3. **Las líneas de base congeladas**: `firebase.json`, `.env`, `config.env.js`, `serviceAccountKey.json`, salvo autorización expresa.
+4. **Nueva sección** en `AGENTS.md` para cada carril crítico: `docs/grafo_seguimiento.md`.
+
 La CLI de coordinación (`node .opencode/coordination/cli.mjs route`) consulta automáticamente ambos grafos en `graphify-out/` para darte la ruta exacta en milisegundos con 0 costo de tokens.
 Al completar cambios estructurales grandes, actualiza el grafo con:
 ```bash
@@ -60,7 +107,7 @@ npm run graph:refresh   # graphify update . + reindexado de auditoría/plan
 
 ---
 
-## 1.2 Regla Congelada: Servidor Backend y Dependencias del Frontend
+## 1.3 Regla Congelada: Servidor Backend y Dependencias del Frontend
 
 * **Servidor Backend Único e Inmutable:** `server-api.js` (ES Module, puerto 5556). Queda **estrictamente prohibido** alterar el script `"start"` de `package.json` hacia `server-api.cjs` o stubs parciales.
 * **Integridad de Dependencias Vendor:** `package.json` DEBE mantener fijas en `dependencies`:
@@ -69,7 +116,7 @@ npm run graph:refresh   # graphify update . + reindexado de auditoría/plan
 
 ---
 
-## 1.3 Regla Obligatoria: Codificación UTF-8 Estricta (Cero Mojibake)
+## 1.4 Regla Obligatoria: Codificación UTF-8 Estricta (Cero Mojibake)
 
 * **Todos los archivos** (`.html`, `.js`, `.mjs`, `.cjs`, `.json`, `.md`, `.css`, `.geojson`) DEBEN ser guardados exclusivamente en **UTF-8 sin BOM**.
 * ❌ **ESTRICTAMENTE PROHIBIDO:** Usar editores o scripts de PowerShell que graben en `Windows-1252` o `ISO-8859-1`, lo que corrompe caracteres en mojibake (doble codificación de tildes, eñes o guiones).

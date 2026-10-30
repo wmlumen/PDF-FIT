@@ -5,6 +5,7 @@
 
 import { calcularMetricasPlanasUTM, sanitizeString } from './utils.js';
 import { logger } from './logger.js';
+import { geojsonPlausibleEnParaguay } from './crs.js';
 
 // Cada subsistema (Catastro PY Pro, Municipal, Ciudadano) corre en el mismo
 // origen (localhost:5556) pero NO debe compartir el proyecto activo entre si:
@@ -43,7 +44,15 @@ function loadPersistedExpediente() {
             localStorage.removeItem('snc_v3_expediente_activo');
         }
         const saved = localStorage.getItem(EXPEDIENTE_STORAGE_KEY);
-        return saved ? JSON.parse(saved) : {};
+        const data = saved ? JSON.parse(saved) : {};
+        // Un expediente guardado con coordenadas fuera de Paraguay (p. ej. dañado por una doble
+        // reproyección: todas las parcelas cerca de -85°, -153°) se descarta para no llevar el mapa al polo.
+        if (data.geojson && !geojsonPlausibleEnParaguay(data.geojson)) {
+            logger.warn('Expediente local descartado: sus coordenadas no caen en Paraguay.');
+            localStorage.removeItem(EXPEDIENTE_STORAGE_KEY);
+            return {};
+        }
+        return data;
     } catch (error) {
         logger.warn('No se pudo recuperar el expediente local:', error);
         return {};
@@ -136,8 +145,8 @@ class StateManager {
     // expediente completo (geojson + historial de versiones) a localStorage de
     // forma sincrona en CADA llamada a set() sobre esas claves, bloqueando el
     // hilo principal en cada edicion. Se debounca el guardado y se fuerza un
-    // flush sincrono antes de cerrar/recargar la pagina para no perder la
-    // ultima edicion.
+    // flush sincrono antes de cerrar/recargar la página para no perder la
+    // última edicion.
     _persistNow() {
         try {
             const { geojson, excelData, projection, currentDisplayProjection, sourceGeoFileName, sourceDataFileName, parcelLineage, projectVersions } = this._state;

@@ -14,7 +14,7 @@ const parcelasDetalle = [
   { id: 'p3', distrito: '7', sup_sig_m: null, sup_legal: 1000, matricula: null, propietarios: [{ cedula: '222' }, { cedula: '111' }] }
 ];
 
-// --- Reporting basico (Nivel 1): no depende de ninguna fuente externa ---
+// --- Reporting básico (Nivel 1): no depende de ninguna fuente externa ---
 const reporting = calcularReportingBasico(parcelasDetalle);
 assert.equal(reporting.totalParcelas, 3);
 assert.equal(reporting.superficieTotalM2, 2000); // 600 + 400 + 1000 (sup_legal cuando falta sup_sig_m)

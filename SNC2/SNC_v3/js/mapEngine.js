@@ -75,6 +75,9 @@ let osnapManager = null;
 let parcelasLayer = null;
 let deptosLayer = null;
 let distritosLayer = null;
+let barriosLayer = null;
+let manzanasLayer = null;
+let cascoUrbanoLayer = null;
 let transitionLine = null;
 let topologyErrorLayer = null;
 let selectedVerticesLayer = null;
@@ -87,6 +90,7 @@ let parcelNumberAssignmentActive = false;
 let nextParcelNumber = 1;
 const geometryHistory = new GeometryHistory(50);
 let selectedFeatureIndex = -1;
+let highlightedLayer = null;
 let vertexEditSession = null;
 let vertexEditMode = 'move';
 let keyboardShortcutsReady = false;
@@ -253,6 +257,17 @@ export async function init() {
                     layers: [layers.osm]
                 });
                 setupMapPanes(map);
+
+                // Deseleccionar al clickear el mapa vacío (fuera de cualquier
+                // polígono): cierra el inspector y apaga el resaltado neón.
+                // Los clicks sobre una parcela o capa ya llaman
+                // L.DomEvent.stopPropagation, así que este handler solo se
+                // dispara cuando el click no cayó sobre ninguna geometría.
+                // No interviene si hay una edición de vértices en curso.
+                map.on('click', () => {
+                    if (vertexEditSession) return;
+                    closeParcelInspector();
+                });
 
                 // Inicializar LayerGuard con el mapa
                 LayerGuard.init(map);
@@ -822,6 +837,7 @@ function assignNumberFromMap(feature) {
 export function closeParcelInspector() {
     if (!vertexEditSession) selectedFeatureIndex = -1;
     clearVertexMarkers();
+    clearSelectedFeatureHighlight();
     const inspector = document.getElementById('parcel-inspector');
     inspector?.classList.add('hidden');
     inspector?.querySelector('#parcel-inspector-vertices')?.replaceChildren();
@@ -909,10 +925,32 @@ function showParcelInspector(feature) {
     }
 
     inspector.classList.remove('hidden');
+    highlightSelectedFeature(feature);
     if (vertices.length > 0) {
         const bounds = L.latLngBounds(vertices.map(([lng, lat]) => [lat, lng]));
         if (bounds.isValid()) map.fitBounds(bounds, { paddingTopLeft: [50, 50], paddingBottomRight: [360, 50], maxZoom: 19 });
     }
+}
+
+/**
+ * Resalta la parcela seleccionada con un contorno "neón" animado (marching
+ * ants), para que sea obvio cuál objeto está activo en el inspector.
+ */
+function highlightSelectedFeature(feature) {
+    if (highlightedLayer?._path) highlightedLayer._path.classList.remove('snc-selected-glow');
+    highlightedLayer = null;
+    if (!parcelasLayer || !feature) return;
+    parcelasLayer.eachLayer(layer => {
+        if (layer.feature === feature && layer._path) {
+            layer._path.classList.add('snc-selected-glow');
+            highlightedLayer = layer;
+        }
+    });
+}
+
+function clearSelectedFeatureHighlight() {
+    if (highlightedLayer?._path) highlightedLayer._path.classList.remove('snc-selected-glow');
+    highlightedLayer = null;
 }
 
 /** Actualiza un vértice desde coordenadas UTM y persiste el expediente. */
@@ -997,6 +1035,32 @@ export async function commitExternalGeometry(nextGeojson, label = 'Operación ge
 export function getMap() { return map; }
 
 /** Limpia la capa del expediente únicamente al iniciar un expediente nuevo. */
+// La capa del expediente (lo que dibuja el mapa) también figura en el árbol «Capas» y se prende/apaga desde ahí.
+let sincExpediente = false;
+function registrarCapaExpediente(geojson) {
+    try {
+        if (!LayerManager.has?.('g_expediente')) LayerManager.registerGroup({ id: 'g_expediente', title: 'Expediente' });
+        const n = LayerManager.registerLayer({ id: 'parcelas', title: 'Parcelas del expediente', parentId: 'g_expediente', geometryType: 'Polygon',
+            sourceType: 'geojson', sourcePath: 'Expediente activo', theme: 'Usuario', style: { color: '#4f46e5', fillColor: '#818cf8', fillOpacity: 0.25 } });
+        n.featureCount = geojson?.features?.length || 0;
+        n.visible = true;
+        if (!sincExpediente) {
+            sincExpediente = true;
+            LayerManager.on('visibility', ({ id }) => {
+                if (id !== 'parcelas' && id !== 'g_expediente') return;
+                const vis = !!LayerManager.get('parcelas')?.visible;
+                if (!parcelasLayer || !map) return;
+                if (vis && !map.hasLayer(parcelasLayer)) parcelasLayer.addTo(map);
+                if (!vis && map.hasLayer(parcelasLayer)) map.removeLayer(parcelasLayer);
+                refreshActiveLayersUI?.();
+                window.dispatchEvent?.(new CustomEvent('snc:layers-changed'));
+            });
+        }
+        LayerManager._emit?.('change', { type: 'update', id: 'parcelas' });
+        window.dispatchEvent?.(new CustomEvent('snc:layers-changed'));   // el árbol de index.html se redibuja
+    } catch (e) { logger?.warn?.("No se pudo registrar la capa del expediente", e); }
+}
+
 export function clearProjectLayer() {
     if (vertexEditSession) cancelVertexEdit();
     geometryHistory.reset(null);
@@ -1005,6 +1069,7 @@ export function clearProjectLayer() {
     if (parcelasLayer && map?.hasLayer(parcelasLayer)) map.removeLayer(parcelasLayer);
     if (transitionLine && map?.hasLayer(transitionLine)) map.removeLayer(transitionLine);
     parcelasLayer = null;
+    if (LayerManager.has?.('parcelas')) LayerManager.remove('parcelas');
     if (parcelNumberLabelsLayer && map) map.removeLayer(parcelNumberLabelsLayer);
     parcelNumberLabelsLayer = null;
     stopParcelNumberAssignment();
@@ -1160,7 +1225,7 @@ export function loadGeoJSON(geojson) {
 
     // Detectar si la propiedad cruza el meridiano -60 (Zona de Transición)
     try {
-        // Solo calcular bbox y area si hay al menos un poligono o linea
+        // Solo calcular bbox y área si hay al menos un polígono o línea
         if (geojson.features.some(f => f.geometry.type !== 'Point')) {
             const bbox = turf.bbox(geojson);
             if (bbox[0] < -60 && bbox[2] > -60) {
@@ -1290,7 +1355,8 @@ export function loadGeoJSON(geojson) {
                     <div class="text-[9px] text-slate-400 mt-2 italic text-center">Click para más detalles</div>
                 </div>
             `, { closeButton: false });
-            layer.on('click', () => {
+            layer.on('click', event => {
+                if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
                 if (assignNumberFromMap(feature)) return;
                 window.DataTable?.selectByParcelNumber?.(feature.properties?.PARCELA_NUMERO, true);
                 showParcelInspector(feature);
@@ -1307,6 +1373,7 @@ export function loadGeoJSON(geojson) {
     }
     if (parcelasLayer) parcelasLayer.options.id = 'parcelas';
     renderedGeojson = geojson;
+    registrarCapaExpediente(geojson);
     renderParcelNumberLabels();
 
     // Ajustar vista
@@ -1527,6 +1594,165 @@ export async function toggleDistritos(visible) {
         if (distritosLayer) {
             map.removeLayer(distritosLayer);
             showToast('📍 Capas PY: 🔵 Distritos desactivados', 'info');
+        }
+    }
+}
+
+/**
+ * Activa/desactiva la capa de barrios y localidades (Asunción y Central).
+ * @param {boolean} visible Si se muestra la capa.
+ */
+export async function toggleBarrios(visible) {
+    if (!map) {
+        showToast('Mapa no inicializado', 'error');
+        return;
+    }
+
+    if (visible) {
+        if (barriosLayer) {
+            map.addLayer(barriosLayer);
+            showToast('📍 Capas PY: 🟡 Barrios activados', 'info');
+        } else {
+            showToast('Cargando barrios...', 'info');
+            const barriosGeoJSON = await ParaguayRef.loadLayer('barrios');
+            if (barriosGeoJSON) {
+                barriosLayer = L.geoJSON(barriosGeoJSON, {
+                    style: {
+                        color: '#f59e0b', // Amber / Orange
+                        weight: 1.5,
+                        fillColor: '#fef3c7',
+                        fillOpacity: 0.25
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties || {};
+                        const name = props.barrio || props.BARLO_DESC || 'N/A';
+                        const dist = props.dist_desc || props.DIST_DESC || '';
+                        layer.bindPopup(`<strong>Barrio / Localidad:</strong> ${name}<br><small>${dist}</small>`);
+                    }
+                }).addTo(map);
+                if (barriosLayer) barriosLayer.options.id = 'barrios';
+                try {
+                    const bounds = barriosLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+                } catch (e) {
+                    logger.warn('Error ajustando vista a barrios:', e);
+                }
+                showToast('📍 Capas PY: 🟡 Barrios cargados', 'success');
+            } else {
+                showToast('📍 Capas PY: 🟡 No se pudieron cargar los barrios', 'error');
+            }
+        }
+    } else {
+        if (barriosLayer) {
+            map.removeLayer(barriosLayer);
+            showToast('📍 Capas PY: 🟡 Barrios desactivados', 'info');
+        }
+    }
+}
+
+/**
+ * Activa/desactiva la capa de manzanas urbanas (Asunción).
+ * @param {boolean} visible Si se muestra la capa.
+ */
+export async function toggleManzanas(visible) {
+    if (!map) {
+        showToast('Mapa no inicializado', 'error');
+        return;
+    }
+
+    if (visible) {
+        if (manzanasLayer) {
+            map.addLayer(manzanasLayer);
+            showToast('📍 Capas PY: 🟢 Manzanas activadas', 'info');
+        } else {
+            showToast('Cargando manzanas...', 'info');
+            const manzanasGeoJSON = await ParaguayRef.loadLayer('manzanas');
+            if (manzanasGeoJSON) {
+                manzanasLayer = L.geoJSON(manzanasGeoJSON, {
+                    style: {
+                        color: '#10b981', // Emerald
+                        weight: 1,
+                        fillColor: '#d1fae5',
+                        fillOpacity: 0.3
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties || {};
+                        const mz = props.manzana || props.MANZANA || 'S/N';
+                        const bar = props.barrio || props.BARLO_DESC || '';
+                        layer.bindPopup(`<strong>Manzana:</strong> ${mz}<br><small>Barrio: ${bar}</small>`);
+                    }
+                }).addTo(map);
+                if (manzanasLayer) manzanasLayer.options.id = 'manzanas';
+                try {
+                    const bounds = manzanasLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+                } catch (e) {
+                    logger.warn('Error ajustando vista a manzanas:', e);
+                }
+                showToast('📍 Capas PY: 🟢 Manzanas cargadas', 'success');
+            } else {
+                showToast('📍 Capas PY: 🟢 No se pudieron cargar las manzanas', 'error');
+            }
+        }
+    } else {
+        if (manzanasLayer) {
+            map.removeLayer(manzanasLayer);
+            showToast('📍 Capas PY: 🟢 Manzanas desactivadas', 'info');
+        }
+    }
+}
+
+/**
+ * Activa/desactiva la capa de cascos y ejidos urbanos oficiales del SNC (snc:ly_urba).
+ * @param {boolean} visible Si se muestra la capa.
+ */
+export async function toggleCascoUrbano(visible) {
+    if (!map) {
+        showToast('Mapa no inicializado', 'error');
+        return;
+    }
+
+    if (visible) {
+        if (cascoUrbanoLayer) {
+            map.addLayer(cascoUrbanoLayer);
+            showToast('📍 Capas SNC: 🏛️ Casco Urbano activado', 'info');
+        } else {
+            showToast('Cargando cascos urbanos oficiales SNC...', 'info');
+            const cascoGeoJSON = await ParaguayRef.loadLayer('casco_urbano');
+            if (cascoGeoJSON) {
+                cascoUrbanoLayer = L.geoJSON(cascoGeoJSON, {
+                    style: {
+                        color: '#ef4444', // Red / Crimson
+                        weight: 2,
+                        dashArray: '4, 4',
+                        fillColor: '#fee2e2',
+                        fillOpacity: 0.25
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties || {};
+                        const dist = props.distrito || 'Distrito';
+                        const dpto = props.departamen || props.dpto || '';
+                        const sit = props.situacion || 'Ley / Ordenanza';
+                        const ha = props.superficie_ha ? `${props.superficie_ha.toLocaleString('es-PY')} ha` : 'N/A';
+                        layer.bindPopup(`<strong>🏛️ Casco / Ejido Urbano SNC</strong><br><strong>${dist}</strong> (${dpto})<br><small>Norma: ${sit}</small><br><small>Superficie oficial: ${ha}</small>`);
+                    }
+                }).addTo(map);
+                if (cascoUrbanoLayer) cascoUrbanoLayer.options.id = 'casco_urbano';
+                try {
+                    const bounds = cascoUrbanoLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+                } catch (e) {
+                    logger.warn('Error ajustando vista a cascos urbanos:', e);
+                }
+                showToast('📍 Capas SNC: 🏛️ 482 Cascos Urbanos cargados', 'success');
+            } else {
+                showToast('📍 Capas SNC: 🏛️ No se pudieron cargar los cascos urbanos', 'error');
+            }
+        }
+    } else {
+        if (cascoUrbanoLayer) {
+            map.removeLayer(cascoUrbanoLayer);
+            showToast('📍 Capas SNC: 🏛️ Casco Urbano desactivado', 'info');
         }
     }
 }
@@ -2077,6 +2303,9 @@ export function invalidateSize() {
 
 const PIRIBEBUY_LAYER_STYLES = {
     barrios: { color: "#f59e0b", weight: 2, fillColor: "#fbbf24", fillOpacity: 0.12 },
+    py_barrios: { color: "#0d9488", weight: 1, dashArray: "4 3", fillColor: "#5eead4", fillOpacity: 0.10 },
+    py_residencial: { color: "#6b7280", weight: 1, fillColor: "#9ca3af", fillOpacity: 0.35 },
+    py_cascos: { color: "#7c3aed", weight: 2, fillColor: "#a78bfa", fillOpacity: 0.22 },
     vias: { color: "#f8fafc", weight: 2 },
     hidro: { color: "#38bdf8", weight: 2 },
     vertedero: { color: "#ef4444", weight: 2, fillColor: "#ef4444", fillOpacity: 0.25 },
@@ -2124,7 +2353,12 @@ export function exportPiribebuyLayer(id, targetCode = 'EPSG:4326') {
 // data/municipal/piribebuy, sino en data/ directamente (versiones ligeras).
 const NATIONAL_REFERENCE_FILES = {
     py_deptos: '../data/deptos_py_light.geojson',
-    py_distritos: '../data/distritos_py_light.geojson'
+    py_distritos: '../data/distritos_py_light.geojson',
+    // Barrios y localidades DGEEC partidos por el casco urbano (scripts/barrios-sin-cascos.py): parte urbana y parte rural, mismo nombre.
+    py_barrios: '../data/barrios_py_light.geojson',
+    py_cascos: '../data/casco_urbano_snc.geojson',
+    // Zonas residenciales de OSM (gris en el mapa base) con su barrio y cuentas DNIT (scripts/residencial-capa.py).
+    py_residencial: '../data/residencial_py_light.geojson'
 };
 
 function piribebuyUrl(node, id) {
@@ -2191,6 +2425,8 @@ export function removePiribebuyLayer(id) {
 
 export async function togglePiribebuyLayer(id, visible, options = {}) {
     if (!map) throw new Error("El mapa no está inicializado");
+    // Capas que no son archivos: el expediente y las del visor Premium se prenden/apagan por su propio oyente de visibilidad.
+    if (id === 'parcelas' || String(id).startsWith('vp-')) return;
     const node = LayerManager.get(id);
     if (!node || node.kind === "group") throw new Error(`Capa Piribebuy desconocida: ${id}`);
 
@@ -2216,13 +2452,22 @@ export async function togglePiribebuyLayer(id, visible, options = {}) {
         enrichFeatures(geojson);
         const style = node.style || PIRIBEBUY_LAYER_STYLES[id] || {};
         layer = L.geoJSON(geojson, {
-            style: () => style,
+            // Barrios DGEEC: la parte dentro del casco urbano (zona urbana) se distingue de la parte rural.
+            style: f => (id === 'py_barrios' && f?.properties?.zona === 'urbana' ? { ...style, color: '#b45309', fillColor: '#fcd34d', dashArray: null }
+                : id === 'py_residencial' && f?.properties?.sin_parcela_snc ? { ...style, color: '#dc2626', weight: 2, fillColor: '#f87171' } : style),
             onEachFeature: (feature, featureLayer) => {
                 featureLayer.on('click', event => {
-                    L.popup({ maxWidth: 360 })
+                    if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+                    clearSelectedFeatureHighlight();
+                    if (featureLayer._path) {
+                        featureLayer._path.classList.add('snc-selected-glow');
+                        highlightedLayer = featureLayer;
+                    }
+                    const popup = L.popup({ maxWidth: 360 })
                         .setLatLng(event.latlng)
                         .setContent(layerFeaturePopupHtml(LayerManager.get(id)?.title || id, feature))
                         .openOn(map);
+                    popup.on('remove', () => clearSelectedFeatureHighlight());
                 });
             },
             pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
@@ -2278,6 +2523,8 @@ export function getActiveLayersInfo() {
             features: layer._sncFeatures?.length || 0
         });
     });
+    // Si la capa del expediente está en el mapa, también tiene que figurar en el árbol «Capas».
+    if (parcelasLayer && !LayerManager.has?.('parcelas')) registrarCapaExpediente(renderedGeojson);
     if (parcelasLayer && map.hasLayer(parcelasLayer)) active.push({
         id: "parcelas", title: "Parcelas del expediente", geometryType: "Polygon",
         features: renderedGeojson?.features?.length || 0
@@ -2391,7 +2638,7 @@ export function getOsnapManager() {
 }
 
 // Exponer a window para compatibilidad con scripts globales
-window.MapEngine = { togglePiribebuyLayer, registerUserLayer, removePiribebuyLayer, recordCrsInfo, listPiribebuyCrs, exportPiribebuyLayer, syncPiribebuyScaleRange, setPiribebuyRenderer, setPiribebuyOpacity, setPiribebuyDrawOrder, getPiribebuyFeatures, zoomToPiribebuyLayer, getActiveLayersInfo, refreshActiveLayersUI, _piribebuyStyles: PIRIBEBUY_LAYER_STYLES, LAYER_ZORDER, sortLayersByZOrder, LAYER_PANES, setupMapPanes, init, loadGeoJSON, clearProjectLayer, focusWorkPolygon, restoreStartupView, toggleSNCReferenceLayer, toggleDeptos, toggleDistritos, toggleMeasureMode, toggleOsnap, toggleOsnapTracking, getOsnapManager, toggleSplitMode, toggleParcelNumberAssignment, selectParcelByNumber, convertPointsToPolygon, showTopologyErrors, clearTopologyErrors, closeParcelInspector, invalidateSize, getMap, _updateUtmCoordsDisplay, downloadEnvironmentCache, takeMapScreenshot, captureCertificateMapImages, setBaseLayer, toggleVertexEdit, setVertexEditMode, commitVertexEdit, cancelVertexEdit, undoGeometryEdit, redoGeometryEdit, updateVertexCoordinate, commitExternalGeometry };
+window.MapEngine = { togglePiribebuyLayer, registerUserLayer, removePiribebuyLayer, recordCrsInfo, listPiribebuyCrs, exportPiribebuyLayer, syncPiribebuyScaleRange, setPiribebuyRenderer, setPiribebuyOpacity, setPiribebuyDrawOrder, getPiribebuyFeatures, zoomToPiribebuyLayer, getActiveLayersInfo, refreshActiveLayersUI, _piribebuyStyles: PIRIBEBUY_LAYER_STYLES, LAYER_ZORDER, sortLayersByZOrder, LAYER_PANES, setupMapPanes, init, loadGeoJSON, clearProjectLayer, focusWorkPolygon, restoreStartupView, toggleSNCReferenceLayer, toggleDeptos, toggleDistritos, toggleBarrios, toggleManzanas, toggleCascoUrbano, toggleMeasureMode, toggleOsnap, toggleOsnapTracking, getOsnapManager, toggleSplitMode, toggleParcelNumberAssignment, selectParcelByNumber, convertPointsToPolygon, showTopologyErrors, clearTopologyErrors, closeParcelInspector, invalidateSize, getMap, _updateUtmCoordsDisplay, downloadEnvironmentCache, takeMapScreenshot, captureCertificateMapImages, setBaseLayer, toggleVertexEdit, setVertexEditMode, commitVertexEdit, cancelVertexEdit, undoGeometryEdit, redoGeometryEdit, updateVertexCoordinate, commitExternalGeometry };
 
 export async function downloadEnvironmentCache() {
     if(!map) return;

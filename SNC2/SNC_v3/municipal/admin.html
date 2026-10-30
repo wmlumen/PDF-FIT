@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración del municipio | SNC v3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/plataforma.css">
+</head>
+<body>
+  <header class="pf-cab">
+    <div><h1 id="ma-titulo">Administración del municipio</h1><div class="pf-sub" id="ma-sub">Plan, módulos habilitados, usuarios y pagos</div></div>
+    <nav aria-label="Accesos"><a class="pf-boton sec" href="/municipal/">Volver al portal</a></nav>
+  </header>
+  <main>
+    <p class="pf-msg" id="pf-msg" role="status"></p>
+    <div class="pf-grid">
+      <div class="pf-card"><h2>Plan y estado</h2><div id="ma-plan"></div><h2>Módulos habilitados</h2><div class="pf-modulos" id="ma-modulos"></div></div>
+      <div class="pf-card"><h2>Usuarios del municipio</h2><div class="pf-envoltura"><table class="pf-tabla"><thead><tr><th>Email</th><th>Rol</th><th>Alta</th><th></th></tr></thead><tbody id="ma-usuarios"></tbody></table></div>
+        <form class="pf-fila" id="ma-form-usuario"><input type="email" name="email" placeholder="email@municipio.gov.py" required aria-label="Email">
+          <select name="rol" aria-label="Rol"><option value="tecnico">Técnico (edita y relevamientos)</option><option value="consulta">Consulta (solo ver)</option></select>
+          <button class="pf-boton" type="submit">Agregar usuario</button></form></div>
+      <div class="pf-card"><h2>Pagos</h2><div class="pf-envoltura"><table class="pf-tabla"><thead><tr><th>Período</th><th>Monto</th><th>Comprobante</th><th>Estado</th></tr></thead><tbody id="ma-pagos"></tbody></table></div>
+        <form class="pf-form" id="ma-form-pago"><label>Período<input name="periodo" type="month" required></label><label>Monto (Gs)<input name="monto" type="number" min="1" required></label>
+          <label>Medio<select name="medio"><option>transferencia</option><option>depósito</option><option>otro</option></select></label><label>N° de comprobante<input name="comprobante" required></label>
+          <button class="pf-boton" type="submit">Informar pago</button></form></div>
+    </div>
+  </main>
+  <script type="module" src="/js/municipioAdmin.js"></script>
+</body>
+</html>

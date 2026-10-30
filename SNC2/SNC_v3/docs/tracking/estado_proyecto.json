@@ -1,0 +1,237 @@
+{
+  "proyecto": "SNC_v3",
+  "version": "0.9.0",
+  "fecha_creacion": "2026-10-28",
+  "fecha_actualizacion": "2026-10-29",
+  "metadatos": {
+    "base_ley": "SNC N° 551/2023",
+    "sistema_geodesico": "SIRGAS-Cono Sur/WGS84",
+    "proyeccion": "UTM 20S/21S",
+    "cdm": "Cuenta Corriente Catastral (Urbano)",
+    "tolerancias_urbano": "1/10,000",
+    "tolerancias_rural": "1/5,000",
+    "server": "node server-api.js",
+    "puerto": 5556,
+    "api": "/api/v3/dnit/",
+    "generacion": "node scripts/analisis-territorial.mjs"
+  },
+  "resumen_estado": {
+    "total_tareas": 15,
+    "completadas": 7,
+    "en_curso": 2,
+    "bloqueadas": 5,
+    "pendientes": 1,
+    "progreso_global": "75%",
+    "nota": "Consolidación DB/Parquet, Login/Registro con perfil de uso, Fiscalización de Patentes y Portal Ciudadano completados"
+  },
+  "tareas": [
+    {
+      "id": "T01",
+      "titulo": "Conectar API DNIT a datos dinámicos",
+      "estado": "en_curso",
+      "duracion_estimada_h": 6,
+      "depende_de": [],
+      "entregable": "analisis-datos.js consulta API",
+      "archivos_afectados": [
+        "scripts/analisis-territorial.mjs",
+        "data/analisis/analisis-datos.js",
+        "server-api.js"
+      ],
+      "nota": "Generar datos desde API real en lugar de simulados"
+    },
+    {
+      "id": "T02",
+      "titulo": "Expandir FODA con indicadores de riesgo",
+      "estado": "bloqueado",
+      "depende_de": [
+        "T01"
+      ],
+      "entregable": "4 paneles + N indicadores de riesgo",
+      "archivos_afectados": [
+        "scripts/analisis-territorial.plantilla.html",
+        "data/analisis/analisis-app.js"
+      ],
+      "nota": "Falta fuente: datos ambientales (MADES, INFONA), jurídicos (DGRP), fiscales"
+    },
+    {
+      "id": "T03",
+      "titulo": "Agregar sección Recomendación Inteligente",
+      "estado": "bloqueado",
+      "depende_de": [
+        "T02"
+      ],
+      "entregable": "Sección de auto-dictamen/recommendación",
+      "archivos_afectados": [
+        "scripts/analisis-territorial.plantilla.html",
+        "data/analisis/analisis-app.js"
+      ],
+      "nota": "Requiere motor de decisión (DI) o reglas heurísticas"
+    },
+    {
+      "id": "T04",
+      "titulo": "Conectar mapa Leaflet a datos reales",
+      "estado": "pendiente",
+      "entregable": "Mapa con datos de DNIT",
+      "archivos_afectados": [
+        "js/mapEngine.js",
+        "data/analisis/analisis-app.js"
+      ],
+      "nota": "VINCIA o CRS (Cono Sur) para geolocalización"
+    },
+    {
+      "id": "T05",
+      "titulo": "Migrar a PostGIS / GeoServer (SNC v4)",
+      "estado": "bloqueado",
+      "entregable": "Nuevo stack",
+      "archivos_afectados": [
+        "server-api.js",
+        "package.json",
+        "docker-compose.yml"
+      ],
+      "nota": "Requiere PostGIS + GeoServer + rediseño de API"
+    },
+    {
+      "id": "T06",
+      "titulo": "Integrar capas ambientales (INFONA, MADES, Humedales)",
+      "estado": "bloqueado",
+      "depende_de": [
+        "T05"
+      ],
+      "entregable": "Capas ambientales cruzadas",
+      "archivos_afectados": [
+        "server-api.js",
+        "scripts/dnitServicio.js"
+      ],
+      "nota": "Fuente externa: INFONA (MADES), Humedales, Bosques, Cuencas"
+    },
+    {
+      "id": "T07",
+      "titulo": "Integrar capa notarial (DGRP, Títulos, Hipotecas, Embargos)",
+      "estado": "bloqueado",
+      "depende_de": [
+        "T05"
+      ],
+      "entregable": "Capas registrales cruzadas",
+      "archivos_afectados": [
+        "server-api.js",
+        "scripts/dnitServicio.js"
+      ],
+      "nota": "Fuente externa: DGRP Paraguay, Registro Nacional de Títulos, Hipotecas"
+    },
+    {
+      "id": "T08",
+      "titulo": "Integrar capa municipal (POUT, Plan Regulador, COS, CUS, Zonificación)",
+      "estado": "bloqueado",
+      "depende_de": [
+        "T05"
+      ],
+      "entregable": "Capas municipales cruzadas",
+      "archivos_afectados": [
+        "server-api.js",
+        "scripts/dnitServicio.js"
+      ],
+      "nota": "Fuente externa: POUT, COS, CUS, Plan Regulador, Ley 3966/2010"
+    },
+    {
+      "id": "T09",
+      "titulo": "Generar PDF auto-dictamen (SNC 551)",
+      "estado": "completado",
+      "entregable": "PDF por expediente",
+      "archivos_afectados": [
+        "scripts/dnitServicio.js",
+        "scripts/dnit-cuentas.mjs"
+      ],
+      "nota": "Conversión HTML → PDF con Puppeteer o similar"
+    },
+    {
+      "id": "T10",
+      "titulo": "Validaciones automáticas (cuentas, edificación, límites)",
+      "estado": "en_curso",
+      "depende_de": [
+        "T01"
+      ],
+      "entregable": "Reglas de validación",
+      "archivos_afectados": [
+        "scripts/dnit-cuentas.mjs",
+        "data/dnit_cuentas.sqlite"
+      ],
+      "nota": "Ley 3966/2010, límites catastrales, fraccionamiento"
+    },
+    {
+      "id": "T11",
+      "titulo": "Seguimiento de tareas por Fase (0 → 4)",
+      "estado": "completado",
+      "entregable": "PLAN_MEJORA_PRODUCTO_BACKLOG.json",
+      "archivos_afectados": [
+        "docs/PLAN_MEJORA_PRODUCTO_2026-10-27.md",
+        "PLAN_MEJORA_PRODUCTO_BACKLOG.json"
+      ],
+      "nota": "Carriles A–E, 39 tareas, Fase 0 cerrada"
+    },
+    {
+      "id": "T12",
+      "titulo": "Consolidación de base de datos territorial y Parquet OGC",
+      "estado": "completado",
+      "entregable": "catastro_territorio.sqlite + data/parquet/",
+      "archivos_afectados": [
+        "data/catastro_territorio.sqlite",
+        "data/parquet/",
+        "scripts/consolidar-db-parquet.py"
+      ],
+      "nota": "18 dptos, 268 distritos, 482 cascos urbanos, 36 POUT MADES, 742 barrios, 5851 manzanas"
+    },
+    {
+      "id": "T13",
+      "titulo": "Login, Registro y Alta de Usuario con Perfil de Uso",
+      "estado": "completado",
+      "entregable": "Modal accesible dual + selector de uso previsto",
+      "archivos_afectados": [
+        "index.html",
+        "register.html",
+        "js/authModal.js",
+        "server-api.js"
+      ],
+      "nota": "Selección obligatoria de perfil: profesional, escribanía, municipal, inmobiliaria, ciudadano"
+    },
+    {
+      "id": "T14",
+      "titulo": "Gestión Municipal: Fiscalización de Patentes Comerciales e Inspectores",
+      "estado": "completado",
+      "entregable": "Módulo municipal con 5 estados de patente y actas en terreno",
+      "archivos_afectados": [
+        "municipalPatentesServicio.js",
+        "data/municipal/patentes_comerciales.sqlite",
+        "js/patentesMunicipalUI.js",
+        "server-api.js"
+      ],
+      "nota": "Estados: con_patente, sin_patente, patente_vencida, inhabilitada, no_declarada"
+    },
+    {
+      "id": "T15",
+      "titulo": "Portal Ciudadano: Situación Cta. Cte., Semáforo Tributario y Avisos",
+      "estado": "completado",
+      "entregable": "Portal de vinculación de parcela y recepción de notificaciones",
+      "archivos_afectados": [
+        "ciudadanoNotificacionesServicio.js",
+        "data/ciudadano_notificaciones.sqlite",
+        "js/ciudadanoNotifUI.js",
+        "ciudadano/index.html",
+        "server-api.js"
+      ],
+      "nota": "Consulta integral tributaria (DNIT + Municipal), vinculación teléfono (+595) y alertas"
+    }
+  ],
+  "resumen_semanal": {
+    "semana": "2026-W44",
+    "tareas_completadas": 7,
+    "tareas_en_curso": 2,
+    "tareas_bloqueadas": 5,
+    "accion_principal": "T14 y T15: Módulos de Patentes Comerciales y Portal Ciudadano"
+  },
+  "recursos_adicionales": [
+    "docs/grafo_seguimiento.md",
+    "docs/PLAN_MEJORA_PRODUCTO_2026-10-27.md",
+    "docs/PLAN_MEJORA_PRODUCTO_BACKLOG.json",
+    ".opencode/coordination/"
+  ]
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visor 3D catastral | SNC v3</title>
+  <link rel="stylesheet" href="/vendor/maplibre/maplibre-gl.css">
+  <link rel="stylesheet" href="/css/visor3d.css">
+</head>
+<body>
+  <div id="mapa" role="application" aria-label="Mapa 3D con relieve"></div>
+  <div class="v3-mini" aria-label="Minimapa de ubicación: el cono indica hacia dónde mira la cámara"><div id="v3-minimapa"></div></div>
+
+  <aside class="v3-panel" id="v3-panel" aria-label="Controles del visor 3D">
+    <div class="v3-cab"><h1>Visor 3D catastral</h1><button type="button" class="v3-plegar" id="v3-plegar" aria-expanded="true" title="Plegar / desplegar el panel">−</button></div>
+    <div class="v3-cuerpo" id="v3-cuerpo">
+      <label>Distrito
+        <select id="v3-distrito" aria-label="Elegir distrito"><option value="">— Elegir distrito —</option></select></label>
+
+      <fieldset><legend>Mapa base</legend>
+        <label class="v3-op"><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
+        <label class="v3-op"><input type="radio" name="base" value="satelite"> Satélite</label>
+        <label class="v3-op"><input type="radio" name="base" value="ninguno"> Solo relieve</label>
+      </fieldset>
+
+      <fieldset><legend>Terreno (cotas)</legend>
+        <label class="v3-op"><input type="checkbox" id="v3-terreno" checked> Relieve 3D</label>
+        <label class="v3-op"><input type="checkbox" id="v3-sombra" checked> Sombreado del relieve</label>
+        <label class="v3-op"><input type="checkbox" id="v3-hipso"> Altura en colores (tinta hipsométrica)</label>
+        <label class="v3-op"><input type="checkbox" id="v3-curvas"> Curvas de nivel con cotas</label>
+        <div class="v3-hipso-ley" id="v3-hipso-ley" hidden><span class="v3-rampa"></span><div class="v3-rampa-et"><span>50</span><span>250</span><span>450</span><span>700</span><span>850 m</span></div></div>
+        <label>Exageración vertical <output id="v3-exag-o">1,5×</output>
+          <input type="range" id="v3-exag" min="1" max="5" step="0.5" value="1.5"></label>
+        <p class="v3-cota" id="v3-cota">Cota del centro: —</p>
+      </fieldset>
+
+      <fieldset><legend>Capas</legend>
+        <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
+        <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
+        <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
+        <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
+        <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
+<label class="v3-op"><input type="checkbox" data-capa="pout"> <span class="v3-mues v3-pout"></span> POUT Filadelfia (zonas)</label>
+        <label>Color de los edificios
+          <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
+        <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
+          <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
+        <label>Altura por piso <output id="v3-piso-o">3 m</output>
+          <input type="range" id="v3-piso" min="2.5" max="5" step="0.5" value="3"></label>
+      </fieldset>
+
+      <fieldset><legend>Exportar topografía (UTM 21S)</legend>
+        <label>Zona <select id="v3-exp-zona"><option value="vista">Lo que se ve (centro, hasta ~6 km)</option><option value="distrito">Distrito elegido (recortado a su límite)</option></select></label>
+        <label>Formato <select id="v3-exp-formato"><option value="dxf">DXF – AutoCAD (curvas 3D)</option><option value="shp">SHP – Shapefile (zip)</option><option value="geojson">GeoJSON</option><option value="tif">GeoTIFF – modelo de elevación</option></select></label>
+        <label>Equidistancia <select id="v3-exp-iv"><option value="1">1 m</option><option value="2">2 m</option><option value="5" selected>5 m</option><option value="10">10 m</option><option value="25">25 m</option></select></label>
+        <button type="button" class="v3-boton" id="v3-exportar">Descargar</button>
+        <p class="v3-fuente">Datos SRTM (~30 m): aptos para anteproyecto y análisis; no reemplazan un relevamiento topográfico.</p>
+      </fieldset>
+
+      <div class="v3-leyenda" aria-label="Leyenda de edificios">
+        <span><i class="v3-edif-ok"></i>En parcela</span><span><i class="v3-edif-pend"></i>Asignar a mano</span><span><i class="v3-edif-sin"></i>Sin parcela</span>
+      </div>
+      <p class="v3-estado" id="v3-estado" role="status">Acerque el mapa para ver edificios y parcelas.</p>
+      <p class="v3-ayuda">Arrastrar: mover · Clic derecho + arrastrar (o Ctrl): girar e inclinar · R: vista inicial · F: pantalla completa</p>
+      <p class="v3-fuente">Relieve: Terrarium (AWS, datos SRTM). Base: © OpenStreetMap / Esri. Catastro: SNC · DNIT 2026.</p>
+    </div>
+  </aside>
+
+  <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
+  <script type="module" src="/js/visor3d.js"></script>
+</body>
+</html>

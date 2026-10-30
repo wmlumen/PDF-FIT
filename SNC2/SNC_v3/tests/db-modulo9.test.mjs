@@ -59,7 +59,7 @@ async function run() {
   } catch (e) { ok('manipulacion detectada', false, String(e && e.message)); }
 
   // 3 & 4. Transiciones invalidas
-  // Nota: el par (desde, hacia) se evalua contra la maquina de estados.
+  // Nota: el par (desde, hacia) se evalúa contra la maquina de estados.
   // Los valores null/undefined NO pueden fijarse en la columna `estado`
   // (NOT NULL DEFAULT 'BORRADOR'): SQLite conserva el valor anterior, asi que
   // no corresponden a un caso real y se excluyen del conteo. El caso desde=''

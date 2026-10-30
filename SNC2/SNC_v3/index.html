@@ -29,7 +29,10 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  </head>
+    <link rel="stylesheet" href="/css/ciudadano-movil.css">
+  <link rel="stylesheet" href="/css/visor-premium.css">
+  <!-- css del paquete Visor catastral Premium -->
+</head>
   <script type="importmap">
   {
     "imports": {
@@ -140,6 +143,12 @@
       </button>
       <button id="btn-run-formularios" onclick="window.openRunFormularios()" class="btn-tool header-icon-btn" data-tooltip="Formularios Registrales y Catastrales RUN" aria-label="Formularios Registrales y Catastrales RUN" title="Formularios Registrales RUN">
         <i class="fas fa-file-lines text-pink-400"></i>
+      </button>
+      <button id="btn-patentes-fiscalizacion" onclick="window.PatentesMunicipalUI?.open()" class="btn-tool header-icon-btn" data-tooltip="Inspectores y Patentes Comerciales (Ley 3966)" aria-label="Inspectores y Patentes" title="Inspectores y Patentes">
+        <i class="fas fa-store text-emerald-400"></i>
+      </button>
+      <button id="btn-ciudadano-notificaciones" onclick="window.CiudadanoNotifUI?.open()" class="btn-tool header-icon-btn" data-tooltip="Mi Inmueble, Situación y Notificaciones" aria-label="Mi Inmueble y Notificaciones" title="Mi Inmueble y Notificaciones">
+        <i class="fas fa-bell text-amber-400"></i>
       </button>
       <button id="btn-header-auth" onclick="window.AuthModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Iniciar Sesión" aria-label="Iniciar Sesión" title="Iniciar Sesión">
         <i class="fas fa-arrow-right-to-bracket text-indigo-400"></i>
@@ -769,20 +778,30 @@
     </div>
   </div>
 
-  <!-- AUTH / LOGIN MODAL ACCESIBLE -->
-  <div id="authModal" class="fixed inset-0 z-[4200] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="login-title">
-    <div class="login-card w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/95 shadow-2xl p-6" role="region">
+  <!-- AUTH / LOGIN Y REGISTRO MODAL ACCESIBLE -->
+  <div id="authModal" class="fixed inset-0 z-[4200] hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-card w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/95 shadow-2xl p-6 my-auto" role="region">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-sm font-bold">
             <i class="fas fa-user-lock"></i>
           </div>
           <div>
-            <h2 id="login-title" class="text-base font-bold text-white">Iniciar Sesión</h2>
+            <h2 id="login-title" class="text-base font-bold text-white">Acceso al Sistema</h2>
             <p class="text-[11px] text-slate-400">Catastro PY Pro — SNC 551/2023</p>
           </div>
         </div>
         <button type="button" onclick="window.AuthModal?.close()" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white" title="Cerrar" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+      </div>
+
+      <!-- Selector de Modo: Iniciar Sesión / Crear Cuenta -->
+      <div class="flex border border-slate-700/80 mb-4 bg-slate-950/60 p-1 rounded-xl gap-1">
+        <button type="button" id="tab-login-btn" onclick="window.AuthModal?.setMode('login')" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition bg-indigo-600 text-white shadow">
+          <i class="fas fa-arrow-right-to-bracket mr-1.5"></i>Iniciar Sesión
+        </button>
+        <button type="button" id="tab-register-btn" onclick="window.AuthModal?.setMode('register')" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-400 hover:text-white">
+          <i class="fas fa-user-plus mr-1.5"></i>Crear Cuenta / Alta
+        </button>
       </div>
 
       <div id="login-alert" class="login-alert hidden p-2.5 rounded-lg text-xs font-medium mb-3 bg-red-950/80 border border-red-800 text-red-200" role="alert" aria-live="polite">
@@ -790,44 +809,125 @@
         <span id="login-alert-message"></span>
       </div>
 
-      <form id="login-form" novalidate class="space-y-4">
-        <div>
-          <label for="username" class="block text-xs font-semibold text-slate-300 mb-1">Usuario o Correo Electrónico</label>
-          <div class="relative flex items-center">
-            <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-envelope"></i></span>
-            <input type="email" id="username" name="username" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="profesional@ejemplo.com" autocomplete="username" inputmode="email" required aria-required="true" aria-invalid="false">
+      <!-- VISTA 1: FORMULARIO DE LOGIN -->
+      <div id="login-view">
+        <form id="login-form" novalidate class="space-y-4">
+          <div>
+            <label for="username" class="block text-xs font-semibold text-slate-300 mb-1">Usuario o Correo Electrónico</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-envelope"></i></span>
+              <input type="email" id="username" name="username" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="profesional@ejemplo.com" autocomplete="username" inputmode="email" required aria-required="true" aria-invalid="false">
+            </div>
+            <span id="username-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
           </div>
-          <span id="username-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
-        </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label for="password" class="block text-xs font-semibold text-slate-300">Contraseña</label>
-            <a href="#" onclick="alert('Contacte al soporte: informes@snccatastro.gob.py'); return false;" class="text-[10px] text-indigo-400 hover:underline">¿Olvidaste tu contraseña?</a>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="password" class="block text-xs font-semibold text-slate-300">Contraseña</label>
+              <a href="#" onclick="alert('Contacte al soporte técnico: informes@snccatastro.gob.py'); return false;" class="text-[10px] text-indigo-400 hover:underline">¿Olvidaste tu contraseña?</a>
+            </div>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-lock"></i></span>
+              <input type="password" id="password" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="••••••••••••" autocomplete="current-password" required aria-required="true" aria-invalid="false">
+              <button type="button" id="btn-toggle-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseña" aria-pressed="false">
+                <i id="icon-eye-show" class="fas fa-eye text-xs"></i>
+                <i id="icon-eye-hide" class="fas fa-eye-slash text-xs hidden"></i>
+              </button>
+            </div>
+            <span id="password-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
           </div>
-          <div class="relative flex items-center">
-            <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-lock"></i></span>
-            <input type="password" id="password" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="••••••••••••" autocomplete="current-password" required aria-required="true" aria-invalid="false">
-            <button type="button" id="btn-toggle-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseña" aria-pressed="false">
-              <i id="icon-eye-show" class="fas fa-eye text-xs"></i>
-              <i id="icon-eye-hide" class="fas fa-eye-slash text-xs hidden"></i>
-            </button>
+
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-400 select-none">
+              <input type="checkbox" id="remember-me" name="remember" class="accent-indigo-500 rounded">
+              <span>Recordar en este equipo</span>
+            </label>
           </div>
-          <span id="password-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
-        </div>
 
-        <div class="flex items-center justify-between pt-1">
-          <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-400 select-none">
-            <input type="checkbox" id="remember-me" name="remember" class="accent-indigo-500 rounded">
-            <span>Recordar en este equipo</span>
-          </label>
-        </div>
+          <button type="submit" id="login-button" class="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="btn-text">Ingresar al Sistema</span>
+            <span class="btn-spinner hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
+          </button>
 
-        <button type="submit" id="login-button" class="w-full h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition disabled:opacity-50 disabled:cursor-not-allowed">
-          <span class="btn-text">Ingresar al Sistema</span>
-          <span class="btn-spinner hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
-        </button>
-      </form>
+          <p class="text-center text-xs text-slate-400 pt-2">
+            ¿No tienes cuenta aún? <a href="#" onclick="window.AuthModal?.setMode('register'); return false;" class="text-indigo-400 hover:underline font-semibold">Regístrate / Alta gratis</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- VISTA 2: FORMULARIO DE REGISTRO / ALTA DE USUARIO O CLIENTE -->
+      <div id="register-view" class="hidden">
+        <form id="register-form" novalidate class="space-y-3.5">
+          <div>
+            <label for="reg-name-modal" class="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo <span class="text-amber-400">*</span></label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-user"></i></span>
+              <input type="text" id="reg-name-modal" name="name" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Ej.: Ing. Juan Pérez" autocomplete="name" required>
+            </div>
+            <span id="reg-name-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+          </div>
+
+          <div>
+            <label for="reg-email-modal" class="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico <span class="text-amber-400">*</span></label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-envelope"></i></span>
+              <input type="email" id="reg-email-modal" name="email" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="juan.perez@ejemplo.com" autocomplete="email" required>
+            </div>
+            <span id="reg-email-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+          </div>
+
+          <!-- PREGUNTA DE USO PREVISTO / TIPO DE CLIENTE -->
+          <div>
+            <label for="reg-usage-modal" class="block text-xs font-semibold text-amber-300 mb-1">
+              <i class="fas fa-question-circle mr-1"></i>¿Para qué uso será el sistema? <span class="text-amber-400">*</span>
+            </label>
+            <div class="relative flex items-center">
+              <select id="reg-usage-modal" name="usage" required class="w-full h-10 px-3 rounded-lg border border-amber-500/50 bg-slate-950 text-xs text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer">
+                <option value="" disabled selected>Seleccione el perfil o uso previsto...</option>
+                <option value="profesional_catastral">Profesional Catastral / Agrimensor / Topógrafo (SNC 551/2023)</option>
+                <option value="notaria_escribania">Escribanía / Notaría Pública (Certificados y Títulos)</option>
+                <option value="gestion_municipal">Gestión Municipal / Catastro Distrital / POUT</option>
+                <option value="inmobiliaria_tasacion">Inmobiliaria / Tasador / Loteamientos</option>
+                <option value="ciudadano_particular">Ciudadano / Propietario (Consultas y Liquidación DNIT)</option>
+                <option value="investigacion_academico">Docencia / Investigación / Académico</option>
+              </select>
+            </div>
+            <span id="reg-usage-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+          </div>
+
+          <div>
+            <label for="reg-password-modal" class="block text-xs font-semibold text-slate-300 mb-1">Contraseña <span class="text-amber-400">*</span></label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-lock"></i></span>
+              <input type="password" id="reg-password-modal" name="password" class="w-full h-10 pl-8 pr-10 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Mínimo 8 caracteres" autocomplete="new-password" required>
+              <button type="button" id="btn-toggle-reg-password" class="absolute right-2.5 p-1 text-slate-400 hover:text-white" aria-label="Mostrar contraseña">
+                <i id="reg-icon-eye-show" class="fas fa-eye text-xs"></i>
+                <i id="reg-icon-eye-hide" class="fas fa-eye-slash text-xs hidden"></i>
+              </button>
+            </div>
+            <span id="reg-password-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+            <p class="text-[10px] text-slate-500 mt-1">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 símbolo.</p>
+          </div>
+
+          <div>
+            <label for="reg-confirm-modal" class="block text-xs font-semibold text-slate-300 mb-1">Confirmar Contraseña <span class="text-amber-400">*</span></label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-slate-500 text-xs"><i class="fas fa-shield-alt"></i></span>
+              <input type="password" id="reg-confirm-modal" name="confirm" class="w-full h-10 pl-8 pr-3 rounded-lg border border-slate-700 bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Repite tu contraseña" autocomplete="new-password" required>
+            </div>
+            <span id="reg-confirm-error" class="text-[10px] text-red-400 mt-1 block" hidden></span>
+          </div>
+
+          <button type="submit" id="register-button" class="w-full h-10 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="reg-btn-text">Dar de Alta y Acceder</span>
+            <span class="reg-btn-spinner hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
+          </button>
+
+          <p class="text-center text-xs text-slate-400 pt-2">
+            ¿Ya tienes cuenta? <a href="#" onclick="window.AuthModal?.setMode('login'); return false;" class="text-indigo-400 hover:underline font-semibold">Iniciar Sesión</a>
+          </p>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -1286,7 +1386,7 @@ import OverviewMap from '/js/overviewMap.js';
 
   const CRS_LABEL = (c) => CRS_LABELS[c] || c;
 
-  // Guarda la proyeccion de exportacion elegida para que la use el exportador.
+  // Guarda la proyección de exportación elegida para que la use el exportador.
   function exportCrs() {
     const v = document.getElementById('piribebuy-export-crs')?.value || 'EPSG:32721';
     try { localStorage.setItem('snc_export_crs', v); } catch {}
@@ -1294,7 +1394,7 @@ import OverviewMap from '/js/overviewMap.js';
   }
   window.PiribebuyCrs = { exportCrs, CRS_LABEL, CRS_WKT };
 
-  // Restaurar la proyeccion de exportacion guardada.
+  // Restaurar la proyección de exportación guardada.
   (function restoreExportCrs(){
     try {
       const saved = localStorage.getItem('snc_export_crs');
@@ -1395,6 +1495,9 @@ import OverviewMap from '/js/overviewMap.js';
     const key = items.map(i => `${i.id}:${i.source}:${i.corrected}`).join('|');
     if (!force && key === crsReportLastKey) return;
     crsReportLastKey = key;
+    // El aviso flotante «Proyección aplicada» no se muestra (pedido del usuario): la reproyección se hace igual, en silencio.
+    hideCrsReport();
+    return;
     const lines = crsReportLines(items);
     // El texto copiado al portapapeles mantiene el detalle por capa, aunque
     // en pantalla se vea agrupado y compacto.
@@ -1544,6 +1647,13 @@ import OverviewMap from '/js/overviewMap.js';
     LayerManager.registerLayer({ id: 'py_distritos', title: 'Distritos', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson' });
     LayerManager.get('py_deptos').visible = false;
     LayerManager.get('py_distritos').visible = false;
+    // Barrios (DGEEC) partidos por el casco urbano (SNC): la parte dentro del casco es urbana y la de afuera rural (mismo nombre).
+    LayerManager.registerLayer({ id: 'py_barrios', title: 'Barrios y localidades (DGEEC) · urbana / rural', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson', style: window.MapEngine?._piribebuyStyles?.py_barrios || null });
+    LayerManager.registerLayer({ id: 'py_cascos', title: 'Cascos urbanos (SNC)', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson', style: window.MapEngine?._piribebuyStyles?.py_cascos || null });
+    LayerManager.registerLayer({ id: 'py_residencial', title: 'Zonas residenciales (OSM) · rojo: sin parcela SNC', parentId: 'g_paraguay', geometryType: 'Polygon', sourceType: 'geojson', style: window.MapEngine?._piribebuyStyles?.py_residencial || null });
+    LayerManager.get('py_residencial').visible = false;
+    LayerManager.get('py_barrios').visible = false;
+    LayerManager.get('py_cascos').visible = false;
 
     // Grupo "Mis archivos": capas que el propio usuario agrega como
     // referencia (no se suben al servidor, viven solo en esta sesión).
@@ -1634,7 +1744,7 @@ import OverviewMap from '/js/overviewMap.js';
     updateLayerControlPanel();
   }
 
-  const layerPanelState = { expanded: new Set(['g_piri', 'g_base', 'g_vert', 'g_casco', 'g_mag']) };
+  const layerPanelState = { expanded: new Set(['g_piri', 'g_base', 'g_vert', 'g_casco', 'g_mag', 'g_expediente', 'g_premium']) };
 
   function visibleTreeRoots() {
     return LayerManager.roots.filter(id => LayerManager.get(id)?.sourceType !== 'basemap');
@@ -1963,12 +2073,16 @@ import OverviewMap from '/js/overviewMap.js';
     if (n?.sourceType === 'geojson') items.push(['duplicate', 'fa-copy', 'Duplicar capa']);
     if (n?.sourceType === 'geojson') items.push(['export', 'fa-download', 'Exportar GeoJSON']);
     if (n?.sourcePath === 'usuario') items.push(['delete', 'fa-trash', 'Eliminar capa']);
+    items.splice(2, 0, ['legend', 'fa-list', n?.legend?.showInLegend === false ? 'Mostrar en la leyenda' : 'Quitar de la leyenda']);
     const menu = document.createElement('div');
     menu.id = 'lp-row-menu';
+    // role=menu: js/buttonIcons.js no convierte estos botones en «solo ícono» (antes se veían sin texto).
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', `Opciones de ${n?.title || 'la capa'}`);
     menu.className = 'fixed z-[4400] w-44 rounded-lg border border-slate-700 bg-slate-900 p-1 text-[10px] text-slate-200 shadow-xl';
     menu.style.top = `${r.bottom + 4}px`;
-    menu.style.left = `${Math.max(8, r.right - 176)}px`;
-    menu.innerHTML = items.map(([action, icon, label]) => `<button type="button" data-menu-action="${action}" data-id="${id}" class="flex w-full items-center gap-2 rounded px-2 py-1 text-left hover:bg-slate-800 ${action === 'delete' ? 'text-red-300' : ''}"><i class="fas ${icon} w-3 text-center text-slate-400"></i>${label}</button>`).join('');
+    menu.style.left = `${Math.max(8, Math.min(innerWidth - 218, r.right + 6))}px`; menu.style.top = `${Math.max(8, Math.min(innerHeight - 300, r.top))}px`;
+    menu.innerHTML = `<div class="lp-row-menu-titulo">${escapeAttr(n?.title || id)}</div>` + items.map(([action, icon, label]) => `<button type="button" role="menuitem" data-menu-action="${action}" data-id="${id}" class="lp-menu-item flex w-full items-center gap-2 rounded px-2 py-1 text-left hover:bg-slate-800 ${action === 'delete' ? 'text-red-300' : ''}"><i class="fas ${icon} w-3 text-center text-slate-400"></i>${label}</button>`).join('');
     document.body.appendChild(menu);
     rowMenuEl = menu;
   }
@@ -1983,6 +2097,9 @@ import OverviewMap from '/js/overviewMap.js';
       if (title) startRename(id, title);
     } else if (action === 'table') {
       window.dispatchEvent(new CustomEvent('snc:open-attribute-table', { detail: { layerId: id } }));
+    } else if (action === 'legend') {
+      const n = LayerManager.get(id);
+      if (n) { n.legend = { ...(n.legend || {}), showInLegend: n.legend?.showInLegend === false }; LayerManager._emit?.('change', { type: 'legend', id }); }
     } else if (action === 'duplicate') {
       duplicateLayer(id);
     } else if (action === 'export') {
@@ -2614,5 +2731,8 @@ import OverviewMap from '/js/overviewMap.js';
     }
   })();
   </script>
+  <script type="module" src="/js/patentesMunicipalUI.js"></script>
+  <script type="module" src="/js/ciudadanoNotifUI.js"></script>
+  <script type="module" src="/js/visorPremium.js"></script>
 </body>
 </html>

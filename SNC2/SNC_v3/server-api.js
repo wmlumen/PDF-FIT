@@ -39,6 +39,19 @@ import { sendRecoveryEmail, sendWelcomeEmail, sendAdminAlert } from './js/mailer
 import * as redticketPkg from './js/redticket-api.cjs';
 import { verifyWebhook } from './js/redticket-payments.js';
 import { logger } from './js/logger.js';
+import * as oficial from './oficialCatastro.js';
+import * as dnit from './dnitServicio.js';
+import * as edificios from './edificiosServicio.js';
+import * as parcelario from './parcelarioLocal.js';
+import * as municipio from './municipioServicio.js';
+import * as plataforma from './plataformaServicio.js';
+import * as gestion from './gestionMunicipalServicio.js';
+import * as ciudadano from './ciudadanoServicio.js';
+import * as patentesMunicipal from './municipalPatentesServicio.js';
+import * as notificacionesCiudadano from './ciudadanoNotificacionesServicio.js';
+import { colorearTerrarium } from './hipsometria.js';
+import * as curvas from './curvasServicio.js';
+import * as poutAma from './poutAmaServicio.js';
 const { hasRedTicketConfig, createCharge, getCharge, getCheckoutByToken } = redticketPkg;
 
 const PORT = ENV.PORT;
@@ -58,6 +71,18 @@ const STATIC_OPTIONS = { dotfiles: 'deny', fallthrough: true, index: false, maxA
 app.use('/css', express.static(join(__dirname, 'css'), STATIC_OPTIONS));
 app.use('/js', express.static(join(__dirname, 'js'), STATIC_OPTIONS));
 app.use('/img', express.static(join(__dirname, 'img'), STATIC_OPTIONS));
+app.use('/Pout', express.static(join(__dirname, 'Pout'), STATIC_OPTIONS));
+// Capas POUT municipales descargadas de visores públicos (scripts/arcgis-capas.py), sin datos personales.
+// Índice de las carpetas de capas municipales: la raíz de cada carpeta muestra su capas.json.
+app.get(['/data/pout_filadelfia/', '/data/pout_municipal/:muni/'], (req, res) => {
+  const dir = req.params.muni ? join(__dirname, 'data', 'pout_municipal', String(req.params.muni).replace(/[^\w-]/g, '')) : join(__dirname, 'data', 'pout_filadelfia');
+  const f = join(dir, 'capas.json');
+  if (!existsSync(f)) return res.status(404).json({ error: 'Sin capas' });
+  const m = JSON.parse(readFileSync(f, 'utf8'));
+  res.json({ ...m, capas: m.capas.map(c => ({ ...c, url: `${req.baseUrl}${req.path}${c.archivo}` })) });
+});
+app.use('/data/pout_filadelfia', express.static(join(__dirname, 'data', 'pout_filadelfia'), STATIC_OPTIONS));
+app.use('/data/pout_municipal', express.static(join(__dirname, 'data', 'pout_municipal'), STATIC_OPTIONS));
 // Fix P3-4 (2026-10-19): index.html referencia /favicon.svg pero no existía y
 // no había ruta que lo sirviera (404). Se publica como recurso estático.
 app.get('/favicon.svg', (req, res) => res.sendFile(join(__dirname, 'favicon.svg')));
@@ -78,6 +103,10 @@ for (const [route, file] of PUBLIC_HTML_FILES) {
 }
 
 // Municipal app (presentación oficial Ley 3966/2010)
+// Informe municipal de un lote según su actividad (diseño basado en docs/disenos/dictamen-maqueta.html).
+app.get('/municipal/informe-lote.html', (req, res) => res.sendFile(join(__dirname, 'municipal', 'informe-lote.html')));
+app.get('/municipal/admin.html', (req, res) => res.sendFile(join(__dirname, 'municipal', 'admin.html')));
+app.get('/admin/plataforma.html', (req, res) => res.sendFile(join(__dirname, 'admin', 'plataforma.html')));
 app.get(['/municipal', '/municipal/', '/municipal/index.html', '/index-municipal.html'], (req, res) => {
   res.sendFile(join(__dirname, 'municipal', 'index.html'));
 });
@@ -109,9 +138,25 @@ app.get('/data/deptos_py_light.geojson', (req, res) => {
 app.get('/data/distritos_py_light.geojson', (req, res) => {
   res.sendFile(join(__dirname, 'data', 'distritos_py_light.geojson'));
 });
+app.get('/data/barrios_asuncion_central_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'barrios_asuncion_central_light.geojson'));
+});
+app.get('/data/manzanas_asuncion_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'manzanas_asuncion_light.geojson'));
+});
+app.get('/data/residencial_py_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'residencial_py_light.geojson'));
+});
+app.get('/data/barrios_py_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'barrios_py_light.geojson'));
+});
+app.get('/data/casco_urbano_snc.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'casco_urbano_snc.geojson'));
+});
 // Datos municipales (capas por municipio, ej: piribebuy) — única carpeta de datos municipales.
 // Carpeta canónica numerada (ver AGENTS.md §3.1): data/2.Municipal/<muniId>/...
 app.use('/data/municipal', express.static(join(__dirname, 'data', '2.Municipal'), STATIC_OPTIONS));
+app.use('/data/edificios', express.static(join(__dirname, 'data', 'edificios'), STATIC_OPTIONS));
 // Alias retrocompatible: /data/piribebuy → /data/municipal/piribebuy.
 app.use('/data/piribebuy', express.static(join(__dirname, 'data', '2.Municipal', 'piribebuy'), STATIC_OPTIONS));
 
@@ -138,6 +183,7 @@ for (const [route, rel] of VENDOR_FILES) {
 
 // Font Awesome (CSS + webfonts): se sirve el paquete completo (solo CSS/fuentes).
 app.use('/vendor/fontawesome', express.static(join(__dirname, 'node_modules', '@fortawesome', 'fontawesome-free')));
+app.use('/vendor/maplibre', express.static(join(__dirname, 'vendor', 'maplibre'), STATIC_OPTIONS));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -234,6 +280,8 @@ function getClientIdentifier(req) {
   return `${ip}|${tokenPrefix}`;
 }
 function rateLimit(req, res, next) {
+  // Los mosaicos del visor 3D tienen su propio límite (ver /api/v3/teselas): un mapa pide cientos por vista.
+  if (req.path.startsWith('/api/v3/teselas/')) return next();
   const key = getClientIdentifier(req);
   const now = Date.now();
   const window = ENV.RATE_LIMIT_WINDOW_MS;
@@ -557,7 +605,7 @@ app.get('/api/plans', async (req, res) => {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, name } = req.body || {};
+    const { email, password, name, usage, uso, client_type } = req.body || {};
     if (!email || !password) return res.status(400).json({ error: 'email y password requeridos' });
     const normalizedEmail = String(email).trim().toLowerCase();
     const passwordCheck = enforcePasswordPolicy(password);
@@ -566,10 +614,14 @@ app.post('/api/auth/register', async (req, res) => {
     if (existing) return res.status(409).json({ error: 'Email ya registrado' });
     const isFirstUser = (await dbAPI.users.count()) === 0;
     const password_hash_v2 = await hashPasswordBcrypt(password);
+    const userUsage = String(usage || uso || client_type || '').trim().slice(0, 100);
     const newUser = { id: crypto.randomUUID(), email: normalizedEmail, password_hash: null, password_hash_v2, name: String(name || '').trim().slice(0, 120), plan: 'free', role: isFirstUser ? 'admin' : 'member', status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     await dbAPI.users.insert(newUser);
+    if (userUsage && dbAPI.users.updateStats) {
+      await dbAPI.users.updateStats(newUser.id, { uso_previsto: userUsage }).catch(() => {});
+    }
     const token = jwt.sign({ userId: newUser.id, email: newUser.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
-    res.status(201).json({ token, user: { id: newUser.id, email: newUser.email, name: newUser.name, plan: newUser.plan, role: newUser.role, status: newUser.status } });
+    res.status(201).json({ token, user: { id: newUser.id, email: newUser.email, name: newUser.name, plan: newUser.plan, role: newUser.role, status: newUser.status, uso: userUsage } });
   } catch (e) {
     logger.error('register error', e);
     res.status(500).json({ error: 'Error registrando usuario' });
@@ -1094,7 +1146,7 @@ app.post('/api/projects/:projectId/expedientes', authMiddleware, async (req, res
     // Fase 11: parcela como entidad direccionable (ver docs/AUDITORIA_ESTRATEGICA_MODELO_DATOS_2026-10-23.md).
     // Se sincroniza con el objeto ya sanitizado, no releido de la columna, para
     // no depender de como quede codificado state_json en la fila. Un error aca
-    // no debe tumbar la creacion del expediente (ya persistido): se loguea y sigue.
+    // no debe tumbar la creación del expediente (ya persistido): se loguea y sigue.
     if (sanitizedState?.geojson) {
       try { await syncParcelasFromGeojson(expediente.id, sanitizedState.geojson); }
       catch (syncErr) { logger.error('sync parcelas (create) error', syncErr); }
@@ -1312,9 +1364,9 @@ app.get('/api/ambiental/restricciones', authMiddleware, async (req, res) => {
   }
 });
 
-// Evalua una geometria propuesta (fraccionamiento/mensura) contra las
+// Evalúa una geometría propuesta (fraccionamiento/mensura) contra las
 // restricciones ambientales activas. No persiste nada: es una consulta.
-// La geometria se recibe en el body (lo que el usuario está por guardar), no
+// La geometría se recibe en el body (lo que el usuario está por guardar), no
 // se relee de `parcelas` porque esa tabla no guarda geometría (ver
 // AUDITORIA_RENDIMIENTO_ARQUITECTURA_2026-10-23.md y el comentario de
 // js/vepMetrics.js sobre por qué las funciones espaciales reciben la
@@ -1324,7 +1376,7 @@ app.post('/api/parcelas/:id/evaluar-ambiental', authMiddleware, async (req, res)
     const owned = await loadOwnedParcela(req.params.id, req.user.userId);
     if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
     const { geometria } = req.body || {};
-    if (!geometria) return res.status(400).json({ error: 'geometria requerida (Feature o Geometry GeoJSON)' });
+    if (!geometria) return res.status(400).json({ error: 'geometría requerida (Feature o Geometry GeoJSON)' });
     const restricciones = await dbAPI.restriccionesAmbientales.listActivas();
     const resultado = evaluarRestriccionesAmbientales(geometria, restricciones, turf);
     res.json(resultado);
@@ -1361,15 +1413,15 @@ app.get('/api/pout/zonas/cobertura', authMiddleware, async (req, res) => {
   }
 });
 
-// Evalua una geometria propuesta + un uso de suelo contra la zonificacion
+// Evalúa una geometría propuesta + un uso de suelo contra la zonificacion
 // real del municipio. No persiste nada; misma logica de ownership y de
-// recibir la geometria en el body que /evaluar-ambiental.
+// recibir la geometría en el body que /evaluar-ambiental.
 app.post('/api/parcelas/:id/evaluar-pout', authMiddleware, async (req, res) => {
   try {
     const owned = await loadOwnedParcela(req.params.id, req.user.userId);
     if (!owned) return res.status(404).json({ error: 'Parcela no encontrada' });
     const { geometria, uso_propuesto, municipio } = req.body || {};
-    if (!geometria) return res.status(400).json({ error: 'geometria requerida (Feature o Geometry GeoJSON)' });
+    if (!geometria) return res.status(400).json({ error: 'geometría requerida (Feature o Geometry GeoJSON)' });
     if (!uso_propuesto) return res.status(400).json({ error: 'uso_propuesto requerido (texto, p. ej. "Vivienda unifamiliar")' });
     // No se infiere de parcela.departamento: departamento (p. ej. "Central") no
     // es lo mismo que municipio (p. ej. "Capiatá") — inferirlo mal daria una
@@ -1636,6 +1688,376 @@ app.get('/api/entorno', authMiddleware, async (req, res) => {
 });
 
 const spatialIdentifyCache = new Map();
+// ==================== CATASTRO OFICIAL ABIERTO Y DIRECCIONES (PM-35, PM-38) ====================
+// Rutas públicas de solo lectura: reenvían al WFS de catastro.gov.py y a Nominatim/Photon con caché,
+// validación estricta (oficialCatastro.js) y sin registrar coordenadas ni textos buscados en los logs.
+function responderOficial(res, promesa) {
+  promesa.then(data => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.json(data);
+  }).catch(err => {
+    const status = err.status || (err.name === 'TimeoutError' ? 504 : 502);
+    if (status >= 500) logger.error('catastro oficial / direcciones:', err.message);
+    res.status(status).json({ ok: false, error: status === 504 ? 'El servicio externo tardó demasiado' : err.message });
+  });
+}
+
+app.get('/api/v3/oficial/parcelas', (req, res) => responderOficial(res, oficial.parcelasEnRecuadro(req.query)));
+// Parcelas desde el parcelario descargado: primero la vista, después el resto del distrito (parcelarioLocal.js).
+const responderLocal = (res, fn) => { try { res.setHeader('Cache-Control', 'private, max-age=600'); res.json(fn()); } catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); } };
+app.get('/api/v3/parcelario/vista', (req, res) => responderLocal(res, () => parcelario.parcelasEnVista(req.query)));
+app.get('/api/v3/edificios/vista', (req, res) => responderLocal(res, () => edificios.edificiosEnVista(req.query, parcelario.distritosEnVista(req.query))));
+// Tablero de gestión catastral del municipio (portal municipal) y sus listas de trabajo.
+app.get('/api/v3/municipio/tablero', async (req, res) => {
+  try { res.json(await municipio.tablero(req.query)); } catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+app.get('/api/v3/municipio/archivo', (req, res) => {
+  try { const a = municipio.archivo(req.query); res.attachment(a.nombre).type('text/csv').send(a.contenido); }
+  catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+// ─── Administración de la plataforma (plataformaServicio.js) ─────────────────────────────────────
+// Rutas nuevas: usan authMiddleware/adminMiddleware sin modificarlos (zonas congeladas por la auditoría).
+const soloGeneral = (req, res, next) => (['superadmin', 'admin'].includes(req.member?.role) ? next() : res.status(403).json({ ok: false, error: 'Solo la administración general de la plataforma' }));
+const responderPlat = (res, p) => p.then(d => res.json(d)).catch(e => res.status(e.status || 500).json({ ok: false, error: e.message }));
+const quien = req => req.member?.email || req.user?.email || req.user?.userId || 'usuario';
+app.get('/api/v3/plataforma/catalogo', authMiddleware, adminMiddleware, soloGeneral, (req, res) => res.json({ modulos: plataforma.MODULOS, tipos: plataforma.TIPOS_CLIENTE, roles: plataforma.ROLES_CLIENTE }));
+app.get('/api/v3/plataforma/clientes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.listarClientes()));
+app.post('/api/v3/plataforma/clientes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarCliente(req.body || {})));
+app.post('/api/v3/plataforma/clientes/:id/modulos', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.ajustarModulo(req.params.id, req.body?.modulo, req.body?.habilitado)));
+app.post('/api/v3/plataforma/clientes/:id/usuarios', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarUsuario(req.params.id, req.body || {}, quien(req), true)));
+app.delete('/api/v3/plataforma/clientes/:id/usuarios/:email', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.quitarUsuario(req.params.id, req.params.email, true)));
+app.get('/api/v3/plataforma/planes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.listarPlanes()));
+app.post('/api/v3/plataforma/planes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarPlan(req.body || {})));
+app.get('/api/v3/plataforma/pagos/pendientes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.pagosPendientes()));
+app.post('/api/v3/plataforma/pagos/:id', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.verificarPago(req.params.id, req.body?.estado, quien(req), req.body?.observacion)));
+// Acceso del usuario y administración de su propio cliente (admin del municipio, escribanía, etc.).
+app.get('/api/v3/mi-acceso', authMiddleware, (req, res) => responderPlat(res, plataforma.accesoDe(req.user?.email)));
+const adminDeCliente = async (req, res, next) => {
+  try {
+    const a = await plataforma.accesoDe(req.user?.email);
+    if (!a.cliente || a.rol !== 'admin_cliente') return res.status(403).json({ ok: false, error: 'Se requiere ser administrador del cliente' });
+    req.clienteId = a.cliente.id; next();
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+};
+app.get('/api/v3/mi-cliente', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.cliente(req.clienteId)));
+app.post('/api/v3/mi-cliente/usuarios', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.guardarUsuario(req.clienteId, req.body || {}, req.user?.email, false)));
+app.delete('/api/v3/mi-cliente/usuarios/:email', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.quitarUsuario(req.clienteId, req.params.email, false)));
+app.post('/api/v3/mi-cliente/pagos', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.informarPago(req.clienteId, req.body || {}, req.user?.email)));
+
+// ─── Gestión municipal: locales y patentes, inspecciones, liquidaciones, planificación (POUT) ─────
+// Lectura y escritura de datos internos con sesión; si el usuario pertenece a un cliente, solo su distrito.
+const enSuDistrito = async (req, res, next) => {
+  try {
+    const a = await plataforma.accesoDe(req.user?.email);
+    const d = String(req.query.dpto || req.body?.dpto || '').toUpperCase(), n = Number(req.query.dist ?? req.body?.dist);
+    if (a.cliente?.cod_dpto && (a.cliente.cod_dpto !== d || Number(a.cliente.cod_distrito) !== n)) return res.status(403).json({ ok: false, error: 'Solo puede trabajar sobre el distrito de su municipio' });
+    if (a.cliente && a.rol === 'consulta' && req.method !== 'GET') return res.status(403).json({ ok: false, error: 'Su usuario es de solo consulta' });
+    next();
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+};
+const resp = (res, p) => Promise.resolve(p).then(d => res.json(d)).catch(e => res.status(e.status || 500).json({ ok: false, error: e.message }));
+app.get('/api/v3/gestion/locales', authMiddleware, enSuDistrito, (req, res) => resp(res, gestion.locales(req.query)));
+app.post('/api/v3/gestion/locales', authMiddleware, enSuDistrito, (req, res) => resp(res, gestion.guardarLocal(req.body || {}, quien(req))));
+app.post('/api/v3/gestion/inspecciones', authMiddleware, enSuDistrito, (req, res) => resp(res, gestion.asignarInspeccion(req.body || {}, quien(req)).then(async r => {
+  // Si la inspección es sobre una cuenta, avisar a sus suscriptos verificados.
+  if (req.body?.ctacte) await ciudadano.avisar({ dpto: String(req.body.dpto).toUpperCase(), dist: req.body.dist, cuenta: ciudadano.normalizarCuenta(req.body.ctacte), tipo: 'inspeccion', mensaje: `SNC: el municipio programó una inspección para la cuenta ${req.body.ctacte}.`, clave: `insp|${r.id}` }).catch(() => 0);
+  return r;
+})));
+app.post('/api/v3/gestion/inspecciones/:id', authMiddleware, enSuDistrito, (req, res) => resp(res, gestion.registrarInspeccion(req.params.id, req.body || {}, quien(req))));
+app.get('/api/v3/gestion/usos', authMiddleware, enSuDistrito, (req, res) => resp(res, gestion.usos(req.query)));
+app.get('/api/v3/gestion/residencial', (req, res) => resp(res, Promise.resolve().then(() => gestion.residencial(req.query))));
+app.get('/api/v3/gestion/avisos', authMiddleware, enSuDistrito, (req, res) => resp(res, ciudadano.bandeja(String(req.query.dpto).toUpperCase(), req.query.dist)));
+app.get('/api/v3/gestion/liquidaciones', (req, res) => resp(res, dnit.listarLiquidaciones(req.query)));
+app.get('/api/v3/gestion/planificacion', (req, res) => resp(res, Promise.resolve({ documentos: gestion.documentosPout(req.query.distrito) })));
+app.get('/api/v3/gestion/planificacion/:n', (req, res) => { try { const a = gestion.archivoPout(req.params.n); res.type('application/pdf').sendFile(a.ruta); } catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); } });
+// Ciudadano: vincular su teléfono a una cuenta para recibir avisos (consentimiento + código de verificación).
+app.post('/api/v3/ciudadano/vincular', (req, res) => resp(res, ciudadano.vincular(req.body || {})));
+app.post('/api/v3/ciudadano/verificar', (req, res) => resp(res, ciudadano.verificar(req.body?.id, req.body?.codigo)));
+app.post('/api/v3/ciudadano/baja', (req, res) => resp(res, ciudadano.baja(req.body?.id)));
+app.get('/municipal/gestion.html', (req, res) => res.sendFile(join(__dirname, 'municipal', 'gestion.html')));
+
+app.get('/api/v3/parcelario/limite', (req, res) => responderLocal(res, () => parcelario.limiteDistrito(req.query)));
+app.get('/api/v3/parcelario/distrito', (req, res) => responderLocal(res, () => parcelario.parcelasDeDistrito(req.query)));
+app.get('/api/v3/oficial/parcela-en-punto', (req, res) => responderOficial(res, oficial.parcelaEnPunto(req.query)));
+// GPS del portal ciudadano: parcelas dentro del círculo de precisión, con su edificación según la liquidación DNIT.
+app.get('/api/v3/oficial/parcelas-en-radio', (req, res) => responderOficial(res, oficial.parcelasEnRadio(req.query).then(fc => dnit.edificacionDeParcelas(fc).catch(() => fc))));
+// Edificios de OpenStreetMap vinculados a parcelas y comparados con la liquidación (edificiosServicio.js).
+app.get('/api/v3/edificios', (req, res) => {
+  try { res.json(edificios.leerEdificios(req.query.dpto, req.query.dist)); }
+  catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+// Asignación manual de un edificio repartido entre varias parcelas: requiere sesión (queda registrado quién asignó).
+app.post('/api/v3/edificios/asignar', authMiddleware, async (req, res) => {
+  try { res.json(await edificios.asignarManual(req.body || {}, req.user?.email || req.user?.userId || 'usuario')); }
+  catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+// Construcciones dibujadas en el visor: techo, área cubierta y m² a completar frente a la liquidación.
+app.post('/api/v3/relevamientos', authMiddleware, async (req, res) => {
+  try { res.json(await edificios.guardarRelevamiento(req.body || {}, req.user?.email || req.user?.userId || 'usuario')); }
+  catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+app.get('/api/v3/relevamientos', async (req, res) => {
+  try {
+    const filas = await edificios.listarRelevamientos(req.query.dpto, req.query.dist);
+    if (req.query.formato === 'csv') {
+      const cols = ['id', 'ctacte', 'trazo', 'niveles', 'pisos_json', 'm2_techo', 'm2_cubierta', 'construido_m2', 'declarado_m2', 'm2_a_completar', 'perimetro_m', 'alero_m', 'lados_json', 'usuario', 'fecha'];
+      res.type('text/csv').send(cols.join(',') + '\n' + filas.map(f => cols.map(c => JSON.stringify(f[c] ?? '')).join(',')).join('\n') + '\n');
+    } else res.json({ relevamientos: filas });
+  } catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+app.get('/api/v3/oficial/buscar', (req, res) => {
+  const consulta = req.query.q ? oficial.interpretarConsultaCatastral(req.query.q) : req.query;
+  if (!consulta) return res.status(400).json({ ok: false, error: 'Use: finca 15783, A|5|#|14|885|20|#|#, D-12-19-58-5 o Cta. Cte.' });
+  // Ámbito del cliente (municipalidad): la búsqueda se limita a su distrito.
+  if (req.query.q && req.query.dpto && req.query.dist && !consulta.clave) { consulta.dpto = req.query.dpto; consulta.dist = req.query.dist; }
+  return responderOficial(res, oficial.buscarParcela(consulta));
+});
+app.get('/api/v3/oficial/capa/:capa', (req, res) => responderOficial(res, oficial.capaEnRecuadro(req.params.capa, req.query)));
+app.get('/api/v3/geocodificar', (req, res) => responderOficial(res, oficial.geocodificar(req.query.q)));
+
+// Cuentas catastrales con la liquidación del Impuesto Inmobiliario (DNIT) — base local data/dnit_cuentas.sqlite (PM-39).
+// /cuenta informa además si la planilla de esa cuenta tiene una actualización publicada sin importar.
+app.get('/api/v3/dnit/cuenta', (req, res) => responderOficial(res, dnit.consultarCuenta(req.query)));
+app.get('/api/v3/dnit/estado', (req, res) => responderOficial(res, dnit.estadoActualizacion({ departamento: req.query.departamento })));
+app.get('/api/v3/dnit/resumen', (req, res) => responderOficial(res, dnit.resumen()));
+
+// --- GESTIÓN MUNICIPAL / CATASTRO DISTRITAL / POUT / INSPECTORES Y PATENTES COMERCIALES (Ley 3966) ---
+app.get('/api/v3/municipal/patentes', (req, res) => {
+  try {
+    const locales = patentesMunicipal.listarLocales(req.query);
+    const resumen = patentesMunicipal.obtenerResumenDistrito(req.query.dpto || 'D', req.query.dist || '12');
+    res.json({ ok: true, locales, resumen });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/api/v3/municipal/patentes/resumen', (req, res) => {
+  try {
+    const resumen = patentesMunicipal.obtenerResumenDistrito(req.query.dpto || 'D', req.query.dist || '12');
+    res.json({ ok: true, resumen });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/api/v3/municipal/patentes/:id', (req, res) => {
+  try {
+    const local = patentesMunicipal.obtenerLocalPorId(req.params.id);
+    if (!local) return res.status(404).json({ ok: false, error: 'Local comercial no encontrado' });
+    res.json({ ok: true, local });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post('/api/v3/municipal/patentes/inspeccionar', authMiddleware, async (req, res) => {
+  try {
+    const inspectorNombre = req.user?.name || req.user?.email || 'Inspector Municipal';
+    const datos = {
+      ...req.body,
+      inspector: req.body?.inspector || inspectorNombre
+    };
+    const localGuardado = patentesMunicipal.registrarInspeccion(datos);
+    res.json({ ok: true, local: localGuardado });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
+// --- CIUDADANO / PROPIETARIO PARTICULAR: VINCULACIÓN CTA CTE, SITUACIÓN Y NOTIFICACIONES ---
+app.get('/api/v3/ciudadano/situacion-cta-cte', async (req, res) => {
+  try {
+    const { cta_cte, dpto, dist } = req.query;
+    if (!cta_cte) return res.status(400).json({ ok: false, error: 'cta_cte es requerido' });
+    const situacion = notificacionesCiudadano.obtenerSituacionCtaCte(cta_cte, dpto || 'D', dist || '12');
+    const patentes = patentesMunicipal.obtenerLocalesPorCtaCte(cta_cte);
+    res.json({ ok: true, situacion, patentes });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post('/api/v3/ciudadano/vincular-cta-cte', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id || req.user?.email;
+    const datos = { ...req.body, user_id: userId };
+    const vinculacion = notificacionesCiudadano.vincularCtaCte(datos);
+    res.json({ ok: true, vinculacion });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/api/v3/ciudadano/mis-parcelas', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id || req.user?.email;
+    const vinculaciones = notificacionesCiudadano.listarVinculaciones(userId);
+    const parcelasConSituacion = vinculaciones.map(v => ({
+      ...v,
+      situacion: notificacionesCiudadano.obtenerSituacionCtaCte(v.cta_cte, v.dpto, v.dist),
+      patentes: patentesMunicipal.obtenerLocalesPorCtaCte(v.cta_cte)
+    }));
+    res.json({ ok: true, parcelas: parcelasConSituacion });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.delete('/api/v3/ciudadano/desvincular-cta-cte', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id || req.user?.email;
+    const ok = notificacionesCiudadano.desvincularCtaCte(userId, req.body?.cta_cte);
+    res.json({ ok, desvinculado: ok });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/api/v3/ciudadano/notificaciones', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id || req.user?.email;
+    const notificaciones = notificacionesCiudadano.listarNotificaciones(userId);
+    res.json({ ok: true, notificaciones });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post('/api/v3/ciudadano/notificaciones/:id/leida', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id || req.user?.email;
+    const ok = notificacionesCiudadano.marcarNotificacionLeida(req.params.id, userId);
+    res.json({ ok });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+// Análisis territorial por distrito (HTML autónomo generado por scripts/analisis-territorial.mjs).
+app.use('/analisis-territorial', express.static(join(__dirname, 'data', 'analisis'), { index: false, maxAge: 0 }));
+app.get(['/analisis-territorial', '/analisis-territorial/', '/analisis-territorial.html', '/AnalisisTerritorial.html'], (req, res) => {
+  const archivo = join(__dirname, 'data', 'analisis', 'AnalisisTerritorial.html');
+  if (!existsSync(archivo)) return res.status(404).send('Todavía no se generó el análisis: node scripts/analisis-territorial.mjs');
+  res.setHeader('Cache-Control', 'no-cache');
+  return res.sendFile(archivo);
+});
+// Visor 3D Catastral
+app.get(['/visor-3d', '/visor-3d.html', '/Visor3D.html'], (req, res) => res.sendFile(join(__dirname, 'visor-3d.html')));
+// Mosaicos del visor 3D a través del propio servidor (la CSP solo permite conexiones al mismo origen), con copia local
+// en data/teselas/. Fuentes públicas sin clave: OpenStreetMap, imagen Esri World Imagery y elevación Terrarium (AWS).
+const FUENTES_TESELAS = {
+  osm: { url: (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`, max: 19, tipo: 'image/png' },
+  // Satélite: primero Esri «Clarity» (más nítido; 404 si no tiene), si no el World Imagery común.
+  satelite: { url: (z, x, y) => `https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,
+    respaldo: (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`, max: 19, tipo: 'image/jpeg' },
+  terreno: { url: (z, x, y) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`, max: 15, tipo: 'image/png' }
+};
+// Lista de distritos (código y nombre oficial del SNC) para el selector del visor 3D.
+let distritosVisor3d = null;
+app.get('/api/v3/visor3d/distritos', (req, res) => {
+  try {
+    distritosVisor3d ||= JSON.parse(readFileSync(join(__dirname, 'data', 'snc_estadisticas', 'ly_dist_utm.geojson'), 'utf8')).features
+      .map(f => ({ dpto: f.properties.cod_dpto, dist: Number(f.properties.cod_dist), nombre: f.properties.nom_dist })).sort((a, b) => a.dpto.localeCompare(b.dpto) || a.nombre.localeCompare(b.nombre, 'es'));
+    res.json({ distritos: distritosVisor3d });
+  } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+const limiteTeselas = new Map();   // ip → { n, nuevas: {fuente: n}, hasta }: 8000 mosaicos/min; descargas nuevas al exterior según la fuente
+const CUPO_NUEVAS = { osm: 600, satelite: 2400, terreno: 2400 };   // OpenStreetMap pide uso moderado
+// Tipografías del mapa (rótulos de cotas) a través del servidor, con copia local (fuentes de OpenMapTiles, licencia abierta).
+app.get('/api/v3/glifos/:fuente/:rango', async (req, res) => {
+  const fuente = String(req.params.fuente), rango = String(req.params.rango).replace(/\.pbf$/, '');
+  if (!/^[A-Za-z ]{3,40}$/.test(fuente) || !/^\d+-\d+$/.test(rango)) return res.status(400).end();
+  const f = join(__dirname, 'data', 'teselas', 'glifos', fuente, `${rango}.pbf`);
+  res.setHeader('Cache-Control', 'public, max-age=2592000');
+  if (existsSync(f)) return res.type('application/x-protobuf').sendFile(f);
+  try {
+    const r = await fetch(`https://fonts.openmaptiles.org/${encodeURIComponent(fuente)}/${rango}.pbf`, { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) return res.status(404).end();
+    const b = Buffer.from(await r.arrayBuffer()); mkdirSync(join(f, '..'), { recursive: true }); writeFileSync(f, b);
+    res.type('application/x-protobuf').send(b);
+  } catch { res.status(504).end(); }
+});
+// POUT del Área Metropolitana (poutAmaServicio.js): zona y norma en un punto o parcela, capas y resumen. Datos públicos referenciales.
+const poutResp = fn => async (req, res) => { try { res.json(await fn(req)); } catch (e) { res.status(e.status || 500).json({ error: e.status ? e.message : 'Error POUT' }); } };
+app.get('/api/v3/pout-ama/punto', poutResp(req => poutAma.enPunto(req.query)));
+app.get('/api/v3/pout-ama/parcela', poutResp(req => poutAma.deParcela(req.query)));
+app.get('/api/v3/pout-ama/capa/:tipo', poutResp(req => poutAma.capa(req.params.tipo, req.query.municipio)));
+app.get('/api/v3/pout-ama/resumen', poutResp(() => poutAma.resumen()));
+app.get('/api/v3/pout-ama/usos-suelo', poutResp(() => poutAma.usosSuelo()));
+
+// Curvas de nivel (visor 3D) y exportación de curvas / elevación en UTM 21S (curvasServicio.js, GDAL del QGIS).
+app.get('/api/v3/curvas', async (req, res) => {
+  try { res.setHeader('Cache-Control', 'public, max-age=86400'); res.json(await curvas.curvasGeojson(req.query)); }
+  catch (e) { res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+app.get('/api/v3/curvas/exportar', async (req, res) => {
+  let r = null;
+  try {
+    let q = { ...req.query }, limite = null;
+    if (req.query.dpto && req.query.dist) {
+      limite = parcelario.limiteDistrito({ dpto: req.query.dpto, dist: req.query.dist });
+      let w = 180, s = 90, e = -180, n = -90;
+      const rec = c => { if (typeof c[0] === 'number') { w = Math.min(w, c[0]); e = Math.max(e, c[0]); s = Math.min(s, c[1]); n = Math.max(n, c[1]); } else c.forEach(rec); };
+      rec(limite.geometry.coordinates);
+      q = { ...q, minX: w, minY: s, maxX: e, maxY: n, nombre: q.nombre || limite.properties.nombre };
+    }
+    r = await curvas.exportar(q, limite);
+    res.download(r.archivo, r.nombre, () => curvas.limpiar(r.carpeta));
+  } catch (e) { if (r) curvas.limpiar(r.carpeta); res.status(e.status || 500).json({ ok: false, error: e.message }); }
+});
+// Tinta hipsométrica (altura en colores, escala topográfica convencional) generada desde los mosaicos de elevación.
+app.get('/api/v3/teselas/hipsometria/:z/:x/:y', async (req, res) => {
+  const [z, x, y] = [req.params.z, req.params.x, req.params.y].map(Number);
+  if (![z, x, y].every(Number.isInteger) || z < 0 || z > 15 || x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) return res.status(400).end();
+  const destino = join(__dirname, 'data', 'teselas', 'hipsometria', String(z), String(x), `${y}`);
+  res.setHeader('Cache-Control', 'public, max-age=604800');
+  if (existsSync(destino)) return res.type('image/png').sendFile(destino);
+  try {
+    const origen = join(__dirname, 'data', 'teselas', 'terreno', String(z), String(x), `${y}`);
+    let dem = existsSync(origen) ? readFileSync(origen) : null;
+    if (!dem) {
+      const r = await fetch(FUENTES_TESELAS.terreno.url(z, x, y), { headers: { 'User-Agent': 'CatastroPYPro/3 (SNC v3; visor 3D catastral)' }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) return res.status(r.status === 404 ? 404 : 502).end();
+      dem = Buffer.from(await r.arrayBuffer());
+      mkdirSync(join(origen, '..'), { recursive: true }); writeFileSync(origen, dem);
+    }
+    const png = colorearTerrarium(dem);
+    mkdirSync(join(destino, '..'), { recursive: true }); writeFileSync(destino, png);
+    res.type('image/png').send(png);
+  } catch { res.status(504).end(); }
+});
+app.get('/api/v3/teselas/:fuente/:z/:x/:y', async (req, res) => {
+  const ip = req.ip || 'x', ahora = Date.now(), e = limiteTeselas.get(ip) || { n: 0, nuevas: {}, hasta: ahora + 60_000 };
+  if (ahora > e.hasta) { e.n = 0; e.nuevas = {}; e.hasta = ahora + 60_000; }
+  e.n++; limiteTeselas.set(ip, e);
+  if (e.n > 8000) return res.status(429).end();
+  const f = FUENTES_TESELAS[req.params.fuente];
+  const [z, x, y] = [req.params.z, req.params.x, String(req.params.y).replace(/\.(png|jpg)$/, '')].map(Number);
+  if (!f || ![z, x, y].every(Number.isInteger) || z < 0 || z > f.max || x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) return res.status(400).end();
+  const archivo = join(__dirname, 'data', 'teselas', req.params.fuente, String(z), String(x), `${y}`);
+  res.setHeader('Cache-Control', 'public, max-age=604800');
+  if (existsSync(archivo)) return res.type(f.tipo).sendFile(archivo);
+  if (existsSync(archivo + '.vacio')) return res.status(404).end();   // ya se sabe que el origen no tiene imagen ahí
+  e.nuevas[req.params.fuente] = (e.nuevas[req.params.fuente] || 0) + 1;
+  if (e.nuevas[req.params.fuente] > CUPO_NUEVAS[req.params.fuente]) return res.status(429).end();   // protege a los servidores de origen
+  try {
+    const pedir = u => fetch(u, { headers: { 'User-Agent': 'CatastroPYPro/3 (SNC v3; visor 3D catastral)' }, signal: AbortSignal.timeout(15000) });
+    let r = await pedir(f.url(z, x, y));
+    if (!r.ok && f.respaldo) r = await pedir(f.respaldo(z, x, y));
+    const buf = r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+    // Sin imagen: 404 o el cartel «Map data not yet available» de Esri (siempre 2521 bytes). Se responde 404 y el
+    // visor muestra la imagen del zoom anterior agrandada; se recuerda para no volver a pedirla.
+    if (!buf || (req.params.fuente === 'satelite' && buf.length === 2521)) {
+      if (r.status === 404 || buf) { mkdirSync(join(archivo, '..'), { recursive: true }); writeFileSync(archivo + '.vacio', ''); }
+      return res.status(buf || r.status === 404 ? 404 : 502).end();
+    }
+    mkdirSync(join(archivo, '..'), { recursive: true });
+    writeFileSync(archivo, buf);
+    res.type(f.tipo).send(buf);
+  } catch { res.status(504).end(); }
+});
+
+
 app.get('/api/spatial-identify', async (req, res) => {
   try {
     const { lat, lng, noGeom } = req.query;
@@ -1764,8 +2186,38 @@ app.get('/api/admin/finance', authMiddleware, adminMiddleware, async (req, res) 
 // agregado de TODAS las parcelas (sin filtrar por proyecto/usuario), solo para
 // admin. No confundir con GET /api/expedientes/:id/parcelas, que es por
 // expediente y con ownership normal.
+// Fase 11, M-13 (ver docs/PLAN_FASE11_BACKLOG.md, nota 2026-10-24): el panel
+// de indicadores no es "talle unico" — cada perfil ve las secciones que le
+// sirven para su trabajo, y algunos ven mas que otros. Esto es un recorte
+// REAL hecho en el servidor (nunca CSS ocultando datos que igual viajaron),
+// basado en el rol y en `users.department` (el mismo campo que ya usa
+// `DEPARTAMENTOS` en js/app-admin.js para las direcciones municipales —
+// no se inventa un sistema de roles paralelo).
+//
+// adminMiddleware deja pasar por igual a admin/superadmin/admin_municipal/
+// admin_notarial (no diferencia entre ellos) — la diferenciacion real
+// empieza aca, no en el middleware.
+function resolverPerfilVep(member) {
+  const role = member?.role || '';
+  const depts = String(member?.department || '').toLowerCase().split(',').map(d => d.trim()).filter(Boolean);
+  if (role === 'admin' || role === 'superadmin' || depts.includes('catastro')) {
+    return { perfil: 'catastro', secciones: ['resumen', 'datos', 'analisis', 'ambiental', 'notarial', 'administracion'] };
+  }
+  if (role === 'admin_notarial' || depts.includes('notarial')) {
+    return { perfil: 'notarial', secciones: ['resumen', 'datos', 'notarial', 'administracion'] };
+  }
+  if (depts.includes('ambiental')) {
+    return { perfil: 'ambiental', secciones: ['resumen', 'analisis', 'ambiental', 'administracion'] };
+  }
+  // admin_municipal sin dirección reconocida en `department`: el perfil con
+  // menos insumos — confirma "algunos tienen mas que otros" con datos reales,
+  // no solo en el discurso.
+  return { perfil: 'municipal', secciones: ['resumen', 'administracion'] };
+}
+
 app.get('/api/admin/metrics/vep', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    const { perfil, secciones } = resolverPerfilVep(req.member);
     const parcelas = await dbAPI.parcelas.listAll({ limit: req.query.limit });
     const detalle = await Promise.all(parcelas.map(async (parcela) => ({
       ...parcela,
@@ -1773,15 +2225,31 @@ app.get('/api/admin/metrics/vep', authMiddleware, adminMiddleware, async (req, r
       propietarios: await dbAPI.parcelaPropietario.listByParcela(parcela.id)
     })));
     const catalogo = calcularCatalogoCompleto({ parcelasDetalle: detalle });
-    // "Datos" del panel admin (vista tipo Power BI, ver docs/PLAN_FASE11_BACKLOG.md
-    // nota del 2026-10-24): fila por parcela, sin volcar el geojson completo.
+    // "Datos" del panel admin (vista tipo Power BI): fila por parcela, sin
+    // volcar el geojson completo.
     const filas = detalle.map(p => ({
       id: p.id, codigo: p.codigo, departamento: p.departamento, distrito: p.distrito,
       superficie_m2: p.sup_sig_m ?? p.sup_legal ?? null,
       matricula_estado: p.matricula?.estado || 'sin_registrar',
       propietarios: p.propietarios.length
     }));
-    res.json({ evaluadas: detalle.length, parcelas: filas, ...catalogo });
+
+    const respuesta = { perfil, secciones, evaluadas: detalle.length };
+    if (secciones.includes('resumen')) Object.assign(respuesta, catalogo);
+    if (secciones.includes('datos')) respuesta.parcelas = filas;
+    // Insumo propio de Notarial: cola priorizada de matriculas sin verificar
+    // (su trabajo real, no una metrica generica de catastro).
+    if (secciones.includes('notarial')) {
+      respuesta.matriculasPendientes = filas.filter(f => f.matricula_estado === 'SIN_VERIFICAR');
+    }
+    // Insumo propio de Ambiental: conteo real de restricciones activas por tipo.
+    if (secciones.includes('ambiental')) {
+      const restricciones = await dbAPI.restriccionesAmbientales.listActivas();
+      const porTipo = {};
+      for (const r of restricciones) porTipo[r.tipo] = (porTipo[r.tipo] || 0) + 1;
+      respuesta.restriccionesAmbientalesPorTipo = porTipo;
+    }
+    res.json(respuesta);
   } catch (err) {
     logger.error('vep metrics error', err);
     res.status(500).json({ error: 'Error calculando indicadores' });

@@ -382,7 +382,7 @@
 | Pto. Adela | ❌ | — |
 | Laurel | ❌ | — |
 | Nueva Esperanza | ✅ POTA 006/2017 | — |
-| Salto del Guaira | ❌ | — |
+| Salto del Guairá | ❌ | — |
 | Villa Ygatimí | ❌ | — |
 | Yasy Cañy | ❌ | — |
 | Yby Pyta | ❌ | — |

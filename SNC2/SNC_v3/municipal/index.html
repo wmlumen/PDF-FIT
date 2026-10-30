@@ -34,6 +34,10 @@
     }
   }
   </script>
+  <link rel="stylesheet" href="/css/ciudadano-movil.css">
+  <link rel="stylesheet" href="/css/visor-premium.css">
+  <link rel="stylesheet" href="/css/tablero-municipal.css">
+  <!-- css del paquete Visor catastral Premium -->
 </head>
 <body class="bg-slate-950 text-slate-200 h-screen overflow-hidden">
 
@@ -90,6 +94,7 @@
       <button class="header-tab header-icon-btn" id="tab-balance" role="tab" aria-selected="false" aria-controls="view-balance" onclick="window.Workspace?.switchTab('balance')" data-tooltip="Balance Loteamiento" aria-label="Balance Loteamiento"><i class="fas fa-scale-balanced"></i></button>
       <button class="header-tab header-icon-btn" id="tab-reports" role="tab" aria-selected="false" aria-controls="view-reports" onclick="window.Workspace?.switchTab('reports')" data-tooltip="Reportes" aria-label="Reportes"><i class="fas fa-file-contract"></i></button>
       <button class="header-tab header-icon-btn" id="tab-data" role="tab" aria-selected="false" aria-controls="view-data" onclick="window.Workspace?.switchTab('data')" data-tooltip="Planilla de Datos" aria-label="Planilla de Datos"><i class="fas fa-table"></i></button>
+      <button class="header-tab header-icon-btn" id="tab-patentes" role="tab" aria-selected="false" onclick="window.PatentesMunicipalUI?.open()" data-tooltip="Inspectores y Patentes Comerciales (Ley 3966)" aria-label="Inspectores y Patentes"><i class="fas fa-store text-emerald-400"></i></button>
     </nav>
 
     <div id="header-actions" class="flex items-center gap-1.5">
@@ -111,6 +116,9 @@
       <a href="/admin/" class="btn-tool header-icon-btn" data-tooltip="Super Administrador" aria-label="Super Administrador" title="Super Administrador"><i class="fas fa-shield-halved text-amber-400"></i></a>
       <button id="btn-expediente-data" onclick="window.ExpedienteModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Datos del Expediente y Profesional" aria-label="Datos del Expediente y Profesional" title="Datos del Expediente y Profesional">
         <i class="fas fa-file-signature text-amber-400"></i>
+      </button>
+      <button id="btn-patentes-fiscalizacion" onclick="window.PatentesMunicipalUI?.open()" class="btn-tool header-icon-btn" data-tooltip="Inspectores y Patentes Comerciales (Ley 3966)" aria-label="Inspectores y Patentes" title="Inspectores y Patentes">
+        <i class="fas fa-store text-emerald-400"></i>
       </button>
 
     </div>
@@ -992,5 +1000,8 @@
     }
   })();
   </script>
+  <script type="module" src="/js/tableroMunicipal.js"></script>
+  <script type="module" src="/js/patentesMunicipalUI.js"></script>
+  <script type="module" src="/js/visorPremium.js"></script>
 </body>
 </html>
