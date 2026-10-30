@@ -30,6 +30,7 @@ Antes de la primera acción en este repositorio, leer en este orden:
 5. [`docs/PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md`](docs/PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md) — revisión experta del panel de análisis territorial y plan para publicar sus datos (fases A a F). La fase A (calidad de datos) va antes que cualquier otra.
 6. [`docs/CATALOGO_GRAFICOS.md`](docs/CATALOGO_GRAFICOS.md) — catálogo de tipos de gráfico para SNC v3 (qué dato va en cada uno, qué muestra la vista ampliada y pendientes). Consultarlo antes de crear o cambiar un gráfico.
 - [`docs/DATOS_OSM_MUNICIPAL.md`](docs/DATOS_OSM_MUNICIPAL.md): datasets OSM (edificios, usos, zonas residenciales) y su vínculo con parcelas y cuentas DNIT.
+- [`docs/CONVENCION_DATOS_REPORTES.md`](docs/CONVENCION_DATOS_REPORTES.md): los 5 formatos de datos (CSV, GeoJSON+SVG, Mermaid, SVG+CSV/JSON, YAML de metadatos) que debe producir cualquier generador de informes/libros/artículos (Quarto), para no transcribir resultados a mano. Implementación de referencia: `reportesDatosServicio.js`.
 
 > Espejo para agentes: los mismos documentos están en [`graphify-out/auditoria/`](graphify-out/auditoria/README.md), junto a `auditoria.json` (38 hallazgos con id, severidad, fase y estado) y al plan de remediación.
 
@@ -187,6 +188,7 @@ npm test
 | **Backend API y Base de Datos** | `server-api.js` | `db.cjs`, `cacheDb.js` | `tests/api-security.test.mjs` |
 | **Portal Ciudadano (compartir datos municipales)** | `ciudadano/index.html` | `js/app-ciudadano.js`, `server-api.js` | Ver `docs/PLAN_PORTAL_CIUDADANO.md` |
 | **Frontend Entry Point** | `js/app.js` | `js/app/index.js`, `index.html` | `npm run build` |
+| **Paquetes de datos para informes/libros (Quarto)** | `reportesDatosServicio.js` | `docs/CONVENCION_DATOS_REPORTES.md` | `tests/reportes-datos.test.mjs` |
 
 ---
 

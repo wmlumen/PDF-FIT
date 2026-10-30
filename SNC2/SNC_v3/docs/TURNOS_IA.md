@@ -6,6 +6,13 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-10-30 · Claude · Convención de datos para informes/libros (Quarto) (terminado)
+- A pedido del usuario: que los generadores de informes produzcan sus salidas en formatos estándar abiertos (CSV, GeoJSON+SVG, Mermaid, SVG+CSV/JSON, YAML de metadatos) en vez de texto suelto, para poder armar un libro/manual/artículo con Quarto sin copiar y pegar a mano.
+- Nuevo `docs/CONVENCION_DATOS_REPORTES.md`: los 5 tipos de datos, sus formatos y carpetas (`_tablas/`, `_figuras/`, `_diagramas/`, `metadatos_corrida.yaml`), con ejemplo de inclusión en un capítulo `.qmd`. Referenciado desde `AGENTS.md` §0 y nueva fila en la matriz de dominios (§3).
+- Implementación de referencia `reportesDatosServicio.js` (prueba de concepto, no reemplaza todavía a los generadores existentes): `tablaCriteriosCsv`, `parcelaGeoJson`, `flujoExpedienteMermaid`, `figuraResumenCriteriosSvg` (SVG de barras, sin librerías de gráficos), `metadatosCorridaYaml` y `generarPaqueteDatos` que escribe los 5 archivos.
+- Pruebas `tests/reportes-datos.test.mjs` (7 en verde, agregado a `npm test`).
+- Pendiente (a propósito, no es trabajo a medias): no se tocaron todavía los generadores existentes (análisis territorial, informe del lote, dictamen) para que reutilicen este módulo; eso es un paso siguiente a decidir por el usuario/autor de cada uno.
+
 ## Turnos terminados
 
 ### 2026-10-30 · Claude · Revisión de cambios sin confirmar en ai-modulo1-ygeo (terminado)
