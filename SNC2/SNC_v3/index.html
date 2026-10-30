@@ -237,9 +237,11 @@
 
         <!-- DASHBOARD STATS -->
         <section id="project-status-section" class="operational-section" aria-labelledby="stats-title">
-          <h3 id="stats-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center">
-            <i class="fas fa-chart-pie mr-2"></i> Estado del Proyecto
+          <h3 id="stats-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+            <span><i class="fas fa-chart-pie mr-2"></i> Estado del Proyecto</span>
+            <button id="project-status-toggle-btn" type="button" class="text-[9px] text-slate-400 hover:text-blue-400 shrink-0" aria-label="Mostrar/ocultar estado del proyecto" aria-expanded="true" aria-controls="project-status-content" onclick="toggleProjectStatusSection()" title="Ocultar estado del proyecto"><i class="fas fa-chevron-up mr-1"></i></button>
           </h3>
+          <div id="project-status-content">
           <div class="grid grid-cols-3 gap-1.5">
               <div class="col-span-2 min-w-0 bg-slate-900/50 px-2 py-1.5 rounded-lg border border-slate-800">
                 <p class="text-[8px] text-slate-500 uppercase truncate">Superficie</p>
@@ -252,17 +254,18 @@
           </div>
           <div class="mt-1.5 grid grid-cols-3 gap-1.5 rounded-lg border border-blue-500/20 bg-blue-950/20 p-1.5">
             <div class="min-w-0">
-              <p class="text-[8px] uppercase text-slate-500 truncate">Departamento</p>
+              <p class="text-[8px] uppercase text-slate-500 truncate" title="Departamento">Dpto.</p>
               <p id="stat-dpto-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
             <div class="min-w-0">
-              <p class="text-[8px] uppercase text-slate-500 truncate">Distrito</p>
+              <p class="text-[8px] uppercase text-slate-500 truncate" title="Distrito">Distrito</p>
               <p id="stat-dist-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
             <div class="min-w-0">
-              <p class="text-[8px] uppercase text-slate-500 truncate">Barrio</p>
+              <p class="text-[8px] uppercase text-slate-500 truncate" title="Barrio">Barrio</p>
               <p id="stat-barrio" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
+          </div>
           </div>
         </section>
 
@@ -1548,6 +1551,25 @@ import OverviewMap from '/js/overviewMap.js';
 
   // Informe inicial
   setTimeout(renderCrsReport, 2500);
+
+  // ─── Alternar visibilidad de "Estado del Proyecto" ──────────────────────────
+  function toggleProjectStatusSection(forceOpen) {
+    const content = document.getElementById('project-status-content');
+    const btn = document.getElementById('project-status-toggle-btn');
+    if (!content || !btn) return;
+    const open = forceOpen !== undefined ? forceOpen : content.classList.contains('hidden');
+    content.classList.toggle('hidden', !open);
+    btn.innerHTML = `<i class="fas ${open ? 'fa-chevron-up' : 'fa-chevron-down'} mr-1"></i>`;
+    btn.title = open ? 'Ocultar estado del proyecto' : 'Mostrar estado del proyecto';
+    btn.setAttribute('aria-expanded', String(open));
+    try { localStorage.setItem('snc-project-status-open', open ? '1' : '0'); } catch {}
+  }
+  window.toggleProjectStatusSection = toggleProjectStatusSection;
+  (() => {
+    let abierto = true;
+    try { abierto = localStorage.getItem('snc-project-status-open') !== '0'; } catch {}
+    if (!abierto) toggleProjectStatusSection(false);
+  })();
 
   // ─── Alternar visibilidad de capas de referencia ────────────────────────────
   function toggleLayersSection() {
