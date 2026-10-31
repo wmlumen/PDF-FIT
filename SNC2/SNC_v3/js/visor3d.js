@@ -408,13 +408,17 @@ function contornoSuaveInundacion(w, s, e, n, N, cotaVal) {
   const iDe = lng => Math.round((lng - w) / dx) + 1, jDe = lat => Math.round((lat - s) / dy) + 1;
   const semillas = [];
   const hidroData = map.getSource('hidro')?._data;
+  // Semilla = cualquier celda de grilla pegada a un tramo real de hidrografía, sin exigir que esa
+  // celda puntual ya lea "anegada": una sola lectura mala justo en el pixel del cauce (relieve 3D
+  // sin terminar de cargar) no debe descartar la semilla entera, porque el BFS de abajo igual revisa
+  // la lectura real de cada vecina antes de dejarla avanzar — alcanza con que ALGUNA vecina lea bien.
   (hidroData?.features || []).forEach(f => {
     const coords = f.geometry?.coordinates;
     if (!Array.isArray(coords)) return;
     coords.forEach(pt => {
       if (!Array.isArray(pt) || typeof pt[0] !== 'number') return;
       const i = iDe(pt[0]), j = jDe(pt[1]);
-      if (i >= 1 && i < G && j >= 1 && j < G && val[j][i] <= cotaVal) semillas.push([i, j]);
+      if (i >= 1 && i < G && j >= 1 && j < G) semillas.push([i, j]);
     });
   });
   if (!semillas.length) {
