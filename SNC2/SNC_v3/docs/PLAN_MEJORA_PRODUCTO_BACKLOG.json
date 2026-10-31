@@ -123,7 +123,7 @@
       "bloqueado_por_fase0": true,
       "archivos": [
         "docs/DEPLOY_WINDOWS.md",
-        "run-server.ps1",
+        "run.bat",
         "config.env.js"
       ],
       "criterio_cierre": "Desde el celular en la misma red, `https://<ip>:<puerto>/ciudadano` abre sin error y PM-05 funciona",
@@ -605,7 +605,7 @@
       "carril": "E",
       "carril_nombre": "Producto y plataforma",
       "titulo": "Funcionar en PC y en la nube con la misma base de código",
-      "accion": "Funcionar en PC y en la nube con la misma base de código: modo PC (Windows, `run-server.ps1`, SQLite, PMTiles en disco, HTTPS local para GPS) y modo nube (contenedor Docker, PostgreSQL/PostGIS según M-7, PMTiles en almacenamiento de objetos, HTTPS); configuración por variables de entorno documentada",
+      "accion": "Funcionar en PC y en la nube con la misma base de código: modo PC (Windows, `run.bat`, SQLite, PMTiles en disco, HTTPS local para GPS) y modo nube (contenedor Docker, PostgreSQL/PostGIS según M-7, PMTiles en almacenamiento de objetos, HTTPS); configuración por variables de entorno documentada",
       "depende_de": [
         "Fase 0 (para desplegar)",
         "PM-07",

@@ -334,7 +334,7 @@ SNC_v3/
 ├── recover.html           # Recuperación de cuenta
 ├── members.html           # Panel de gestión de usuarios
 ├── package.json           # Scripts y dependencias
-├── start-server.sh        # Script de inicio
+├── run.bat                # Lanzador único (doble clic en Windows)
 ├── server-api.js          # Backend Express
 ├── db.cjs / db.js         # SQLite y API de datos
 ├── cacheDb.js             # Cache WFS/SQLite

@@ -91,6 +91,12 @@ npm start                   # API + estáticos en http://localhost:5556
 npm test                    # 11 suites de tests unitarios
 ```
 
+En Windows, doble clic en [`run.bat`](run.bat) hace lo mismo (instala dependencias si faltan, libera el
+puerto 5556 si quedó un proceso anterior, levanta `npm start` y abre el navegador cuando responde el
+health check). Es el único lanzador: reemplaza a los antiguos `run-server.bat`, `run-server.ps1`,
+`run-snc.cmd`, `run-snc-pout.bat`, `start-server.sh` y `start_server.sh`, que se eliminaron por
+redundantes (todos arrancaban el mismo `server-api.js`).
+
 Notas:
 
 - `npm run dev` (Vite) y `npm start` (API) usan **el mismo puerto 5556**, y el proxy `/api` de Vite apunta
