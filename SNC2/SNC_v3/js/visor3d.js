@@ -296,6 +296,7 @@ const CUENCAS = {
 };
 
 let animandoInund = null;
+let reintentoInund = null;
 
 function aplicarCuenca(key) {
   const c = CUENCAS[key];
@@ -464,15 +465,19 @@ function generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom) {
 }
 
 function generarPoligonoInundacion(cotaVal) {
-  const c = map.getCenter();
   const b = map.getBounds();
   const zoom = map.getZoom();
 
-  // Radio adaptativo según el nivel de zoom para cubrir el área visual de interés
-  const radioSpan = Math.min(0.20, Math.max(0.012, (b.getEast() - b.getWest()) / 2.2));
-  const w = c.lng - radioSpan, e = c.lng + radioSpan;
-  const s = c.lat - radioSpan, n = c.lat + radioSpan;
-  const N = zoom >= 14 ? 34 : 26;
+  // Cubre TODA la vista visible, sin tope de grados (antes era un radio fijo de ~22 km desde el
+  // centro: en una vista regional o departamental —p. ej. Ayolas/Yacyretá/Isla Apipé— eso dejaba un
+  // corte recto artificial bien adentro del río). Para que funcione igual de bien a nivel distrital,
+  // departamental y nacional sin que la consulta de cotas se vuelva lenta, la grilla se hace más
+  // gruesa cuanto más alejado el zoom (la vista país queda más aproximada, como el resto del relieve).
+  const anchoView = b.getEast() - b.getWest(), altoView = b.getNorth() - b.getSouth();
+  const margenX = anchoView * 0.08, margenY = altoView * 0.08;   // margen para que no se note el corte al panear
+  const w = b.getWest() - margenX, e = b.getEast() + margenX;
+  const s = b.getSouth() - margenY, n = b.getNorth() + margenY;
+  const N = zoom >= 14 ? 40 : zoom >= 11 ? 36 : zoom >= 8 ? 30 : zoom >= 5 ? 24 : 18;
 
   try {
     const fc = contornoSuaveInundacion(w, s, e, n, N, cotaVal);
@@ -504,6 +509,15 @@ function actualizarInundacion() {
 
   const cotaVal = Number($('v3-inund-cota').value);
   $('v3-inund-cota-o').textContent = `${cotaVal} m`;
+
+  // Si el relieve de la vista todavía no terminó de cargar, queryTerrainElevation puede devolver
+  // valores incompletos/erróneos (toda la vista "inundada" o cotas muy por debajo de la real).
+  // Se calcula igual con lo que haya ahora (para no congelar la interfaz) y se reintenta una vez.
+  if (map.areTilesLoaded && !map.areTilesLoaded()) {
+    estado('Cargando el relieve para terminar de calcular la inundación…');
+    clearTimeout(reintentoInund);
+    reintentoInund = setTimeout(() => { if ($('v3-inundacion')?.checked) actualizarInundacion(); }, 700);
+  }
 
   const fc = generarPoligonoInundacion(cotaVal);
   map.getSource('inundacion')?.setData(fc);
