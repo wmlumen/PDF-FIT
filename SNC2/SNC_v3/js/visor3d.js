@@ -1114,3 +1114,12 @@ document.addEventListener('keydown', e => {
   if (e.key === 'r' || e.key === 'R') map.flyTo({ ...INICIO, duration: 1500 });
   if (e.key === 'f' || e.key === 'F') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }
 });
+
+// Con la pestaña en segundo plano, los navegadores frenan requestAnimationFrame a ~1 cuadro cada
+// 1-2 s; de eso depende el armado del relieve 3D, así que queryTerrainElevation puede devolver
+// cotas muy por debajo de la real mientras tanto. Al volver a primer plano, se recalcula.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  actualizarCota();
+  if ($('v3-inundacion')?.checked) actualizarInundacion();
+});
