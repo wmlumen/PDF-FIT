@@ -556,9 +556,32 @@ const DASH_FLUJO = [
   [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
   [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]
 ];
+// El GeoJSON de hidrografía no garantiza que cada tramo esté digitalizado "aguas abajo":
+// antes de animar, se pone cada LineString en sentido de cota alta → cota baja (como corre el agua).
+let hidroOrientado = false;
+function orientarHidroPorCota() {
+  if (hidroOrientado) return;
+  const src = map.getSource('hidro');
+  const data = src?._data;
+  if (!data?.features?.length) return;
+  let corregidos = 0, sinDato = 0;
+  data.features.forEach(f => {
+    if (f.geometry?.type !== 'LineString') return;
+    const coords = f.geometry.coordinates;
+    if (coords.length < 2) return;
+    const hIni = map.queryTerrainElevation?.(coords[0]);
+    const hFin = map.queryTerrainElevation?.(coords[coords.length - 1]);
+    if (hIni == null || hFin == null) { sinDato++; return; }
+    if (hFin > hIni) { coords.reverse(); corregidos++; }   // corría cuesta arriba: se invierte
+  });
+  if (corregidos) map.getSource('hidro')?.setData(data);
+  if (!sinDato) hidroOrientado = true;   // si falta DEM en algún tramo, se reintenta la próxima vez
+  if (corregidos) estado(`Dirección corregida en ${corregidos} tramo(s) de cauce según la cota real (antes corrían cuesta arriba).`);
+}
 let animFlujo = null;
 function iniciarVectoresFlujo() {
   if (animFlujo || !map.getLayer('hidro-lineas')) return;
+  orientarHidroPorCota();
   let i = 0;
   animFlujo = setInterval(() => {
     i = (i + 1) % DASH_FLUJO.length;
