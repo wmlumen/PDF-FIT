@@ -445,6 +445,58 @@ app.get('/api/v3/catastro/vector-view', async (req, res) => {
   }
 });
 
+// Capa hidrográfica nacional: hidrografía oficial (data/1.Paraguay/02.Hidrografia, ver convertir.cmd ahí
+// mismo y scripts/hidrografia-oficial.mjs) + OSM (scripts/osm-hidrografia.mjs), que la complementa con
+// cuerpos de agua y cauces menores que la capa oficial no cubre. Ver docs/TURNOS_IA.md 2026-10-31.
+// GET /api/v3/hidrografia?minX=&minY=&maxX=&maxY=&capa=lineas|areas (sin "capa": ambas)
+// Filtra en memoria (cacheada tras la primera lectura) por el recuadro visible, para no servir los
+// ~52 MB completos de OSM a un source:geojson del visor. Tope de 12000 features por respuesta
+// (la oficial tiene prioridad: se trunca primero lo que agrega OSM).
+let hidroCache = null;
+function cajaDeGeometria(g) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const rec = v => { if (typeof v[0] === 'number') { if (v[0] < minX) minX = v[0]; if (v[0] > maxX) maxX = v[0]; if (v[1] < minY) minY = v[1]; if (v[1] > maxY) maxY = v[1]; } else v.forEach(rec); };
+  rec(g.coordinates);
+  return [minX, minY, maxX, maxY];
+}
+function cargarHidro() {
+  if (hidroCache) return hidroCache;
+  const prep = (base, archivo) => JSON.parse(readFileSync(join(__dirname, base, archivo), 'utf8')).features.map(f => ({ f, c: cajaDeGeometria(f.geometry) }));
+  const osmLineas = prep('data/osm/hidrografia', 'hidrografia_lineas.geojson');
+  const osmAreas = prep('data/osm/hidrografia', 'hidrografia_areas.geojson');
+  osmLineas.forEach(x => { x.f.properties.fuente = 'osm'; });
+  osmAreas.forEach(x => { x.f.properties.fuente = 'osm'; });
+  let oficialLineas = [], oficialAreas = [];
+  try {
+    oficialLineas = prep('data/1.Paraguay/02.Hidrografia/hidrografia_oficial', 'lineas.geojson');
+    oficialAreas = prep('data/1.Paraguay/02.Hidrografia/hidrografia_oficial', 'areas.geojson');
+  } catch { /* capa oficial opcional: si no está generada (convertir.cmd + hidrografia-oficial.mjs), sigue sirviendo solo OSM */ }
+  hidroCache = { lineas: [...oficialLineas, ...osmLineas], areas: [...oficialAreas, ...osmAreas] };
+  return hidroCache;
+}
+app.get('/api/v3/hidrografia', (req, res) => {
+  try {
+    let { minX, minY, maxX, maxY, capa } = req.query;
+    minX = Number(minX); minY = Number(minY); maxX = Number(maxX); maxY = Number(maxY);
+    if ([minX, minY, maxX, maxY].some(Number.isNaN)) {
+      return res.status(400).json({ error: 'Faltan o son inválidos los parámetros minX, minY, maxX, maxY' });
+    }
+    const { lineas, areas } = cargarHidro();
+    const dentro = ({ c }) => c[0] <= maxX && c[2] >= minX && c[1] <= maxY && c[3] >= minY;
+    const TOPE = 12000;
+    let elegidos = [];
+    if (capa !== 'areas') elegidos = elegidos.concat(lineas.filter(dentro));
+    if (capa !== 'lineas') elegidos = elegidos.concat(areas.filter(dentro));
+    const truncado = elegidos.length > TOPE;
+    if (truncado) elegidos = elegidos.slice(0, TOPE);
+    const features = elegidos.map(({ f }) => ({ type: 'Feature', geometry: f.geometry, properties: f.properties }));
+    return res.json({ type: 'FeatureCollection', features, count: features.length, truncado });
+  } catch (e) {
+    logger.error('hidrografia error', e);
+    return res.status(500).json({ error: 'Error consultando hidrografía OSM', detail: e.message });
+  }
+});
+
 // ==========================================
 // ENDPOINTS MAG PARAGUAY - Capas Agropecuarias y Trazabilidad (Ciclo 15 días)
 // ==========================================

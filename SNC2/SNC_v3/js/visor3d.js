@@ -56,7 +56,8 @@ const map = new ml.Map({
       { id: 'hidro-lineas', type: 'line', source: 'hidro', layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': '#0284c7', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 3.5, 17, 7], 'line-opacity': 0.85 } },
       { id: 'hidro-nombres', type: 'symbol', source: 'hidro', minzoom: 13,
-        layout: { 'symbol-placement': 'line', 'text-field': ['get', 'NOMBRE'], 'text-size': 11, 'text-font': ['Open Sans Regular'], 'text-max-angle': 30 },
+        // 'nombre' = capa nacional OSM (scripts/osm-hidrografia.mjs); 'NOMBRE' = formato SNC anterior (municipal/piribebuy).
+        layout: { 'symbol-placement': 'line', 'text-field': ['coalesce', ['get', 'nombre'], ['get', 'NOMBRE']], 'text-size': 11, 'text-font': ['Open Sans Regular'], 'text-max-angle': 30 },
         paint: { 'text-color': '#0369a1', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } },
       { id: 'inundacion-capa', type: 'fill', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'fill-color': '#0284c7', 'fill-opacity': 0.60, 'fill-antialias': false } },
       { id: 'inundacion-borde', type: 'line', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'line-color': '#38bdf8', 'line-width': 1.5, 'line-opacity': 0.85 } },
@@ -105,11 +106,8 @@ map.on('load', () => {
   actualizarCota();
   setTimeout(actualizarCota, 600);
   setTimeout(actualizarCota, 1500);
-  // Carga automática de la red hidrográfica y cauces (SNC)
-  fetch('/data/piribebuy/base/hidro.geojson').then(r => r.json()).then(data => {
-    map.getSource('hidro')?.setData(data);
-    cargadas.hidro = true;
-  }).catch(() => {});
+  // Red hidrográfica nacional (OSM, /api/v3/hidrografia) de la zona visible.
+  cargarHidro();
 });
 
 // ── Mapa base y relieve ─────────────────────────────────────────────
@@ -905,13 +903,7 @@ const cargadas = {};
 document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener('change', async () => {
   const k = ch.dataset.capa;
   CAPAS[k]?.forEach(id => map.setLayoutProperty(id, 'visibility', ch.checked ? 'visible' : 'none'));
-  if (ch.checked && k === 'hidro' && !cargadas.hidro) {
-    try {
-      const r = await fetch('/data/piribebuy/base/hidro.geojson');
-      map.getSource('hidro').setData(await r.json());
-      cargadas.hidro = true;
-    } catch {}
-  }
+  if (ch.checked && k === 'hidro') await cargarHidro();
   if (ch.checked && (k === 'cascos' || k === 'barrios') && !cargadas[k]) {
     estado(`Cargando ${k === 'cascos' ? 'cascos urbanos' : 'barrios (18 MB, la primera vez tarda)'}…`);
     try {
@@ -992,6 +984,23 @@ async function cargarCapasDistrito(dpto, dist) {
   });
 }
 
+// Hidrografía (ríos/arroyos/canales + lagunas/embalses/humedales, OSM) de la zona visible, a cualquier
+// escala: distrital, departamental o país (el servidor filtra por recuadro, ver /api/v3/hidrografia).
+let pedidoHidro = 0;
+async function cargarHidro() {
+  const b = map.getBounds();
+  const mx = (b.getEast() - b.getWest()) * 0.15, my = (b.getNorth() - b.getSouth()) * 0.15;
+  const q = `minX=${b.getWest() - mx}&minY=${b.getSouth() - my}&maxX=${b.getEast() + mx}&maxY=${b.getNorth() + my}`;
+  const yo = ++pedidoHidro;
+  try {
+    const data = await fetch(`/api/v3/hidrografia?${q}`).then(r => r.json());
+    if (yo !== pedidoHidro || !data?.features) return;
+    map.getSource('hidro')?.setData(data);
+    hidroOrientado = false;   // cambiaron los tramos cargados: reorientar de nuevo (ver orientarHidroPorCota)
+    cargadas.hidro = true;
+  } catch {}
+}
+
 // Edificios y parcelas de la zona visible (el servidor limita el recuadro a ~5 × 5 km).
 let pedido = 0;
 async function cargarVista() {
@@ -1025,6 +1034,7 @@ map.on('moveend', () => {
   t = setTimeout(() => {
     cargarVista();
     actualizarCota();
+    if (document.querySelector('[data-capa="hidro"]')?.checked) cargarHidro();
     if ($('v3-inundacion')?.checked && (!$('v3-inund-cuenca') || $('v3-inund-cuenca').value === 'local')) {
       actualizarInundacion();
     }
