@@ -10,7 +10,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const GRAPH_PATH = join(__dirname, '..', 'graphify-out', 'graph.json');
+// __dirname es .opencode/coordination/: hay que subir dos niveles para llegar a la raíz del repo.
+const GRAPH_PATH = join(__dirname, '..', '..', 'graphify-out', 'graph.json');
 
 export class GraphClient {
   constructor() {

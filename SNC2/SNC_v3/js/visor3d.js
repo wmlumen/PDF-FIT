@@ -13,7 +13,7 @@ const num = v => Number(v || 0).toLocaleString('es-PY');
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const INICIO = { center: [-57.045, -25.464], zoom: 14.5, pitch: 62, bearing: -20 };   // Piribebuy
 const DPTO = { A: 'Asunción', B: 'Concepción', C: 'San Pedro', D: 'Cordillera', E: 'Guairá', F: 'Caaguazú', G: 'Caazapá', H: 'Itapúa', I: 'Misiones', J: 'Paraguarí',
-  K: 'Alto Paraná', L: 'Central', M: 'Ñeembucú', N: 'Amambay', O: 'Canindeyú', P: 'Presidente Hayes', Q: 'Boquerón', R: 'Alto Paraguay' };
+  K: 'Alto Paraná', L: 'Central', M: 'Ñeembucú', N: 'Amambay', P: 'Presidente Hayes', Q: 'Boquerón', R: 'Alto Paraguay', S: 'Canindeyú' };
 const vacio = { type: 'FeatureCollection', features: [] };
 // Altura del edificio: «height» del mapa si existe; si no, pisos (del mapa, o estimados con la liquidación DNIT) × altura por piso.
 const pisos = ['case', ['==', ['get', 'niveles_informados'], true], ['get', 'niveles'], ['coalesce', ['get', 'niveles_dnit'], ['get', 'niveles'], 1]];
@@ -119,7 +119,46 @@ document.querySelectorAll('input[name="base"]').forEach(r => r.addEventListener(
   map.setLayoutProperty('base-satelite-respaldo', 'visibility', r.value === 'satelite' && r.checked ? 'visible' : 'none');
 }));
 $('v3-terreno').addEventListener('change', aplicarTerreno);
-$('v3-hipso').addEventListener('change', e => { map.setLayoutProperty('hipsometria', 'visibility', e.target.checked ? 'visible' : 'none'); $('v3-hipso-ley').hidden = !e.target.checked; });
+$('v3-hipso').addEventListener('change', e => {
+  map.setLayoutProperty('hipsometria', 'visibility', e.target.checked ? 'visible' : 'none');
+  $('v3-hipso-ley').hidden = !e.target.checked;
+  $('v3-hipso-ctrl').hidden = !e.target.checked;
+  if (e.target.checked) actualizarLeyendaHipso();
+});
+
+// ── Hipsometría: paleta, bandas/degradado y transparencia ───────────
+// Mismos 9 colores (0 a 850 m) que PALETAS en hipsometria.js — solo para dibujar la leyenda acá en el cliente.
+const PALETAS_HIPSO = {
+  clasico: ['#4f8c5a', '#6ea86a', '#9cc479', '#c8d98c', '#e9e4a0', '#e8cf86', '#d9ad6b', '#c48c55', '#a86d44'],
+  espectral: ['#3b4cc0', '#4480c8', '#56b0a1', '#8ac970', '#cddc5e', '#f7ce4b', '#f29e3a', '#de6c34', '#c0443a'],
+  gris: ['#ededE9', '#dcdcd6', '#c9c9c1', '#b6b6ac', '#a3a397', '#909083', '#7d7d6f', '#6a6a5c', '#575749']
+};
+const CORTES_PCT_HIPSO = [0, 8.8, 14.7, 20.6, 29.4, 41.2, 52.9, 64.7, 82.4, 100];
+function urlHipsometria() {
+  const paleta = $('v3-hipso-paleta').value, bandas = $('v3-hipso-bandas').checked;
+  return `${location.origin}/api/v3/teselas/hipsometria/{z}/{x}/{y}?paleta=${paleta}&bandas=${bandas ? 1 : 0}`;
+}
+function actualizarLeyendaHipso() {
+  const colores = PALETAS_HIPSO[$('v3-hipso-paleta').value];
+  const bandas = $('v3-hipso-bandas').checked;
+  const rampa = document.querySelector('#v3-hipso-ley .v3-rampa');
+  if (!rampa) return;
+  const stops = bandas
+    ? colores.map((c, i) => `${c} ${CORTES_PCT_HIPSO[i]}%, ${c} ${CORTES_PCT_HIPSO[i + 1]}%`).join(', ')
+    : colores.map((c, i) => `${c} ${CORTES_PCT_HIPSO[i]}%`).join(', ');
+  rampa.style.background = `linear-gradient(90deg, ${stops})`;
+}
+function aplicarEstiloHipso() {
+  map.getSource('hipsometria')?.setTiles([urlHipsometria()]);
+  actualizarLeyendaHipso();
+}
+$('v3-hipso-paleta').addEventListener('change', aplicarEstiloHipso);
+$('v3-hipso-bandas').addEventListener('change', aplicarEstiloHipso);
+$('v3-hipso-opac').addEventListener('input', e => {
+  const v = Number(e.target.value);
+  $('v3-hipso-opac-o').textContent = `${v}%`;
+  map.setPaintProperty('hipsometria', 'raster-opacity', v / 100);
+});
 $('v3-sombra').addEventListener('change', e => map.setLayoutProperty('sombra', 'visibility', e.target.checked ? 'visible' : 'none'));
 $('v3-exag').addEventListener('input', () => { $('v3-exag-o').textContent = `${String(exag()).replace('.', ',')}×`; aplicarTerreno(); });
 $('v3-piso').addEventListener('input', e => {
@@ -542,7 +581,7 @@ $('v3-exportar').addEventListener('click', async () => {
 });
 
 // ── Capas ───────────────────────────────────────────────────────────
-const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'], pout: ['pout-rural', 'pout-urbana', 'pout-suburbana'] };
+const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'] };
 const cargadas = {};
 document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener('change', async () => {
   const k = ch.dataset.capa;
@@ -562,22 +601,77 @@ document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener(
     } catch { estado('No se pudo cargar la capa.'); }
   }
   if (ch.checked && (k === 'edificios' || k === 'parcelas')) { if (map.getZoom() < 16) acercar(map.getCenter()); else cargarVista(); }
-  if (ch.checked && k === 'pout') {
-    estado('Cargando capas POUT de Filadelfia…');
-    try {
-      const [rural, urbana, suburbana] = await Promise.all([
-        fetch('/data/pout_filadelfia/zona_rural.geojson').then(r => r.json()),
-        fetch('/data/pout_filadelfia/zona_urbana.geojson').then(r => r.json()),
-        fetch('/data/pout_filadelfia/zona_suburbana.geojson').then(r => r.json())
-      ]);
-      map.getSource('pout-rural').setData(rural);
-      map.getSource('pout-urbana').setData(urbana);
-      map.getSource('pout-suburbana').setData(suburbana);
-      cargadas.pout = true;
-      estado('Capas POUT Filadelfia cargadas.');
-    } catch { estado('No se pudo cargar las capas POUT.'); }
-  }
 }));
+
+// ── Capas extra por distrito (reemplaza el antiguo checkbox fijo "POUT Filadelfia") ──
+// Al elegir un distrito con datos propios (POUT, Google My Maps, capas base municipales),
+// se arma la lista de checkboxes acá mismo; en distritos sin datos extra no aparece nada.
+const COLORES_CAPAS_DISTRITO = ['#f59e0b', '#a78bfa', '#34d399', '#f472b6', '#38bdf8', '#fbbf24', '#fb7185', '#2dd4bf'];
+let capasDistritoDinamicas = [];
+function limpiarCapasDistrito() {
+  capasDistritoDinamicas.forEach(c => {
+    ['-relleno', '-borde'].forEach(suf => { if (map.getLayer(c.layerId + suf)) map.removeLayer(c.layerId + suf); });
+    if (map.getSource(c.layerId)) map.removeSource(c.layerId);
+  });
+  capasDistritoDinamicas = [];
+  const cont = $('v3-capas-distrito');
+  cont.innerHTML = '';
+  cont.hidden = true;
+}
+async function cargarCapasDistrito(dpto, dist) {
+  limpiarCapasDistrito();
+  if (!dpto || !dist) return;
+  let fuentes = [];
+  try {
+    const r = await fetch(`/api/v3/visor3d/capas-distrito?dpto=${dpto}&dist=${dist}`);
+    ({ fuentes } = await r.json());
+  } catch { return; }
+  if (!fuentes?.length) return;
+
+  const cont = $('v3-capas-distrito');
+  cont.hidden = false;
+  fuentes.forEach(fuente => {
+    const titulo = document.createElement('p');
+    titulo.className = 'v3-fuente';
+    titulo.style.cssText = 'margin:6px 0 2px;color:#94a3b8;font-weight:600;';
+    titulo.textContent = fuente.etiqueta;
+    cont.appendChild(titulo);
+    fuente.capas.forEach(capa => {
+      const idx = capasDistritoDinamicas.length;
+      const layerId = `distrito-capa-${idx}`;
+      const color = COLORES_CAPAS_DISTRITO[idx % COLORES_CAPAS_DISTRITO.length];
+      capasDistritoDinamicas.push({ layerId, url: capa.url, geometria: capa.geometria, color });
+
+      const label = document.createElement('label');
+      label.className = 'v3-op';
+      label.innerHTML = `<input type="checkbox" id="v3-capadist-${idx}"> <span class="v3-mues" style="background:${color}"></span> ${esc(capa.nombre)}${capa.cantidad != null ? ` <small style="color:#64748b;">(${capa.cantidad})</small>` : ''}`;
+      cont.appendChild(label);
+
+      label.querySelector('input').addEventListener('change', async e => {
+        if (!e.target.checked) {
+          ['-relleno', '-borde'].forEach(suf => { if (map.getLayer(layerId + suf)) map.setLayoutProperty(layerId + suf, 'visibility', 'none'); });
+          return;
+        }
+        if (map.getSource(layerId)) {
+          ['-relleno', '-borde'].forEach(suf => { if (map.getLayer(layerId + suf)) map.setLayoutProperty(layerId + suf, 'visibility', 'visible'); });
+          return;
+        }
+        let data;
+        try { data = await fetch(capa.url).then(r => r.json()); } catch { estado(`No se pudo cargar "${capa.nombre}".`); e.target.checked = false; return; }
+        map.addSource(layerId, { type: 'geojson', data });
+        const geom = (data.features?.[0]?.geometry?.type) || capa.geometria || '';
+        if (/point/i.test(geom)) {
+          map.addLayer({ id: layerId + '-relleno', type: 'circle', source: layerId, paint: { 'circle-color': color, 'circle-radius': 5, 'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5 } });
+        } else if (/line/i.test(geom)) {
+          map.addLayer({ id: layerId + '-relleno', type: 'line', source: layerId, paint: { 'line-color': color, 'line-width': 2.5 } });
+        } else {
+          map.addLayer({ id: layerId + '-relleno', type: 'fill', source: layerId, paint: { 'fill-color': color, 'fill-opacity': 0.32 } });
+          map.addLayer({ id: layerId + '-borde', type: 'line', source: layerId, paint: { 'line-color': color, 'line-width': 1.5 } });
+        }
+      });
+    });
+  });
+}
 
 // Edificios y parcelas de la zona visible (el servidor limita el recuadro a ~5 × 5 km).
 let pedido = 0;
@@ -618,15 +712,26 @@ map.on('moveend', () => {
   }, 350);
 });
 
-// ── Selector de distrito ───────────────────────────────────────────
+// ── Selector de departamento → distrito (en 2 pasos, en vez de un combo con los 268) ──
+let distritosPorDpto = {};
 fetch('/api/v3/visor3d/distritos').then(r => r.json()).then(({ distritos }) => {
-  const grupos = {};
-  distritos.forEach(d => (grupos[d.dpto] ||= []).push(d));
-  $('v3-distrito').insertAdjacentHTML('beforeend', Object.keys(grupos).sort().map(k => `<optgroup label="${esc(DPTO[k] || k)}">${grupos[k].map(d =>
-    `<option value="${d.dpto}|${d.dist}">${esc(d.nombre.charAt(0) + d.nombre.slice(1).toLowerCase())}</option>`).join('')}</optgroup>`).join(''));
+  distritos.forEach(d => (distritosPorDpto[d.dpto] ||= []).push(d));
+  $('v3-dpto').insertAdjacentHTML('beforeend', Object.keys(distritosPorDpto).sort((a, b) => (DPTO[a] || a).localeCompare(DPTO[b] || b, 'es'))
+    .map(k => `<option value="${k}">${esc(DPTO[k] || k)}</option>`).join(''));
 }).catch(() => {});
+$('v3-dpto').addEventListener('change', e => {
+  const dpto = e.target.value, sel = $('v3-distrito');
+  const lista = distritosPorDpto[dpto];
+  sel.disabled = !lista;
+  sel.innerHTML = lista
+    ? `<option value="">— Elegir distrito —</option>${lista.slice().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+        .map(d => `<option value="${d.dpto}|${d.dist}">${esc(d.nombre.charAt(0) + d.nombre.slice(1).toLowerCase())}</option>`).join('')}`
+    : '<option value="">— Elija primero el departamento —</option>';
+  sel.dispatchEvent(new Event('change'));   // limpia el límite y las capas del distrito anterior
+});
 $('v3-distrito').addEventListener('change', async e => {
   const [dpto, dist] = e.target.value.split('|');
+  cargarCapasDistrito(dpto, dist);
   if (!dpto) { map.getSource('limite').setData(vacio); return; }
   estado('Buscando el límite del distrito…');
   try {
@@ -753,6 +858,15 @@ map.on('pitchend', () => {
 
 // ── Panel y teclado ─────────────────────────────────────────────────
 $('v3-plegar').addEventListener('click', e => { const c = $('v3-cuerpo'); c.hidden = !c.hidden; e.target.textContent = c.hidden ? '+' : '−'; e.target.setAttribute('aria-expanded', String(!c.hidden)); });
+
+$('v3-pestana')?.addEventListener('click', () => {
+  const panel = $('v3-panel'), tab = $('v3-pestana');
+  const oculto = panel.classList.toggle('v3-oculto');
+  tab.classList.toggle('v3-oculto', oculto);
+  tab.textContent = oculto ? '▸' : '◂';
+  tab.title = oculto ? 'Mostrar el panel' : 'Ocultar el panel';
+  tab.setAttribute('aria-expanded', String(!oculto));
+});
 document.addEventListener('keydown', e => {
   if (e.target.closest('input, select, textarea')) return;
   if (e.key === 'r' || e.key === 'R') map.flyTo({ ...INICIO, duration: 1500 });

@@ -20,8 +20,12 @@
       </div>
     </div>
     <div class="v3-cuerpo" id="v3-cuerpo">
-      <label>Distrito
-        <select id="v3-distrito" aria-label="Elegir distrito"><option value="">— Elegir distrito —</option></select></label>
+      <fieldset><legend>Ubicación</legend>
+        <label>Departamento
+          <select id="v3-dpto" aria-label="Elegir departamento"><option value="">— Elegir departamento —</option></select></label>
+        <label>Distrito
+          <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Elija primero el departamento —</option></select></label>
+      </fieldset>
 
       <fieldset><legend>Mapa base</legend>
         <label class="v3-op"><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
@@ -33,6 +37,14 @@
         <label class="v3-op"><input type="checkbox" id="v3-terreno" checked> Relieve 3D</label>
         <label class="v3-op"><input type="checkbox" id="v3-sombra" checked> Sombreado del relieve</label>
         <label class="v3-op"><input type="checkbox" id="v3-hipso"> Altura en colores (tinta hipsométrica)</label>
+        <div id="v3-hipso-ctrl" hidden style="display:grid;gap:4px;margin:2px 0 4px;padding:6px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+          <label style="font-size:11px;">Paleta
+            <select id="v3-hipso-paleta"><option value="clasico">Clásica (verde → blanco)</option><option value="espectral">Espectral (azul → rojo)</option><option value="gris">Gris topográfico</option></select>
+          </label>
+          <label class="v3-op" style="font-size:11px;"><input type="checkbox" id="v3-hipso-bandas"> Por bandas (sin degradado, para distinguir mejor las cotas)</label>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;"><span>Transparencia</span><output id="v3-hipso-opac-o">75%</output></div>
+          <input type="range" id="v3-hipso-opac" min="10" max="100" step="5" value="75">
+        </div>
         <label class="v3-op"><input type="checkbox" id="v3-curvas"> Curvas de nivel con cotas</label>
         <div class="v3-hipso-ley" id="v3-hipso-ley" hidden><span class="v3-rampa"></span><div class="v3-rampa-et"><span>50</span><span>250</span><span>450</span><span>700</span><span>850 m</span></div></div>
         <label>Exageración vertical <output id="v3-exag-o">1,5×</output>
@@ -88,7 +100,7 @@
         <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
         <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
         <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
-<label class="v3-op"><input type="checkbox" data-capa="pout"> <span class="v3-mues v3-pout"></span> POUT Filadelfia (zonas)</label>
+        <div id="v3-capas-distrito" hidden></div>
         <label>Color de los edificios
           <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
         <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
@@ -116,8 +128,9 @@
       <p class="v3-fuente">Relieve: Terrarium (AWS, datos SRTM). Base: © OpenStreetMap / Esri. Catastro: SNC · DNIT 2026.</p>
     </div>
   </aside>
+  <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261031c"></script>
+  <script type="module" src="/js/visor3d.js?v=20261031h"></script>
 </body>
 </html>

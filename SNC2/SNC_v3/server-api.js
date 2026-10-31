@@ -1,6 +1,6 @@
 import express from 'express';
 import compression from 'compression';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
@@ -244,7 +244,9 @@ async function adminMiddleware(req, res, next) {
     if ((!user || !user.id) && req.user.provider === 'firebase' && req.user.email) {
       user = await dbAPI.users.findByEmail(req.user.email);
     }
-    if (!user || user.status !== 'active' || (!['superadmin', 'admin', 'admin_municipal', 'admin_notarial'].includes(user.role))) {
+    // soporte_plataforma agregado a pedido explícito del usuario (2026-10-30): zona congelada
+    // por la auditoría hasta Fase 0 (AGENTS.md §5); solo se tocó esta línea, sin más cambios.
+    if (!user || user.status !== 'active' || (!['superadmin', 'admin', 'admin_municipal', 'admin_notarial', 'soporte_plataforma'].includes(user.role))) {
       return res.status(403).json({ error: 'Se requiere rol administrador' });
     }
     req.member = user;
@@ -697,7 +699,11 @@ app.post('/api/auth/recover', async (req, res) => {
   }
 });
 
-const USER_ROLES = new Set(['superadmin', 'admin', 'admin_municipal', 'admin_notarial', 'manager', 'professional', 'notary', 'technician', 'member', 'viewer']);
+// soporte_plataforma: staff de SNC que atiende a los clientes de la plataforma (no es dueño
+// de ningún cliente). Tiene acceso al panel admin (adminMiddleware) y a la administración de
+// clientes/dependencias/pagos (soloGeneral) a pedido explícito del usuario (2026-10-30), aunque
+// esas líneas están en la zona congelada por la auditoría hasta Fase 0 (AGENTS.md §5).
+const USER_ROLES = new Set(['superadmin', 'admin', 'admin_municipal', 'admin_notarial', 'manager', 'professional', 'notary', 'technician', 'member', 'viewer', 'soporte_plataforma']);
 const USER_STATUSES = new Set(['active', 'suspended', 'inactive']);
 const PLAN_TYPES = new Set(['free', 'paid', 'enterprise']);
 const PLAN_ID_PATTERN = /^[a-z][a-z0-9_-]{1,31}$/;
@@ -1717,7 +1723,7 @@ app.get('/api/v3/municipio/archivo', (req, res) => {
 });
 // ─── Administración de la plataforma (plataformaServicio.js) ─────────────────────────────────────
 // Rutas nuevas: usan authMiddleware/adminMiddleware sin modificarlos (zonas congeladas por la auditoría).
-const soloGeneral = (req, res, next) => (['superadmin', 'admin'].includes(req.member?.role) ? next() : res.status(403).json({ ok: false, error: 'Solo la administración general de la plataforma' }));
+const soloGeneral = (req, res, next) => (['superadmin', 'admin', 'soporte_plataforma'].includes(req.member?.role) ? next() : res.status(403).json({ ok: false, error: 'Solo la administración general de la plataforma' }));
 const responderPlat = (res, p) => p.then(d => res.json(d)).catch(e => res.status(e.status || 500).json({ ok: false, error: e.message }));
 const quien = req => req.member?.email || req.user?.email || req.user?.userId || 'usuario';
 app.get('/api/v3/plataforma/catalogo', authMiddleware, adminMiddleware, soloGeneral, (req, res) => res.json({ modulos: plataforma.MODULOS, tipos: plataforma.TIPOS_CLIENTE, roles: plataforma.ROLES_CLIENTE }));
@@ -1726,6 +1732,8 @@ app.post('/api/v3/plataforma/clientes', authMiddleware, adminMiddleware, soloGen
 app.post('/api/v3/plataforma/clientes/:id/modulos', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.ajustarModulo(req.params.id, req.body?.modulo, req.body?.habilitado)));
 app.post('/api/v3/plataforma/clientes/:id/usuarios', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarUsuario(req.params.id, req.body || {}, quien(req), true)));
 app.delete('/api/v3/plataforma/clientes/:id/usuarios/:email', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.quitarUsuario(req.params.id, req.params.email, true)));
+app.post('/api/v3/plataforma/clientes/:id/dependencias', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarDependencia(req.params.id, req.body || {})));
+app.delete('/api/v3/plataforma/clientes/:id/dependencias/:dependenciaId', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.quitarDependencia(req.params.id, req.params.dependenciaId)));
 app.get('/api/v3/plataforma/planes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.listarPlanes()));
 app.post('/api/v3/plataforma/planes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.guardarPlan(req.body || {})));
 app.get('/api/v3/plataforma/pagos/pendientes', authMiddleware, adminMiddleware, soloGeneral, (req, res) => responderPlat(res, plataforma.pagosPendientes()));
@@ -1742,6 +1750,8 @@ const adminDeCliente = async (req, res, next) => {
 app.get('/api/v3/mi-cliente', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.cliente(req.clienteId)));
 app.post('/api/v3/mi-cliente/usuarios', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.guardarUsuario(req.clienteId, req.body || {}, req.user?.email, false)));
 app.delete('/api/v3/mi-cliente/usuarios/:email', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.quitarUsuario(req.clienteId, req.params.email, false)));
+app.post('/api/v3/mi-cliente/dependencias', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.guardarDependencia(req.clienteId, req.body || {})));
+app.delete('/api/v3/mi-cliente/dependencias/:dependenciaId', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.quitarDependencia(req.clienteId, req.params.dependenciaId)));
 app.post('/api/v3/mi-cliente/pagos', authMiddleware, adminDeCliente, (req, res) => responderPlat(res, plataforma.informarPago(req.clienteId, req.body || {}, req.user?.email)));
 
 // ─── Gestión municipal: locales y patentes, inspecciones, liquidaciones, planificación (POUT) ─────
@@ -1943,6 +1953,7 @@ app.get(['/analisis-territorial', '/analisis-territorial/', '/analisis-territori
 });
 // Visor 3D Catastral
 app.get(['/visor-3d', '/visor-3d.html', '/Visor3D.html'], (req, res) => res.sendFile(join(__dirname, 'visor-3d.html')));
+app.get(['/visor-topografico', '/visor-topografico.html', '/topographic_viewer', '/topographic_viewer.html'], (req, res) => res.sendFile(join(__dirname, 'visor-topografico.html')));
 // Mosaicos del visor 3D a través del propio servidor (la CSP solo permite conexiones al mismo origen), con copia local
 // en data/teselas/. Fuentes públicas sin clave: OpenStreetMap, imagen Esri World Imagery y elevación Terrarium (AWS).
 const FUENTES_TESELAS = {
@@ -1960,6 +1971,56 @@ app.get('/api/v3/visor3d/distritos', (req, res) => {
       .map(f => ({ dpto: f.properties.cod_dpto, dist: Number(f.properties.cod_dist), nombre: f.properties.nom_dist })).sort((a, b) => a.dpto.localeCompare(b.dpto) || a.nombre.localeCompare(b.nombre, 'es'));
     res.json({ distritos: distritosVisor3d });
   } catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Capas municipales extra disponibles por distrito (reemplaza el checkbox fijo "POUT Filadelfia"):
+// cada distrito con datos propios (POUT, Google My Maps, capas base) aparece acá; los demás, nada.
+// Mantener a mano: no hay forma automática de saber qué carpeta de data/ corresponde a qué distrito SNC.
+const MUNICIPIOS_EXTRA = {
+  'D|12': [{ carpeta: '2.Municipal/piribebuy', ruta: 'municipal/piribebuy', etiqueta: 'Piribebuy' }],
+  'G|8': [{ carpeta: 'pout_municipal/tavai', ruta: 'pout_municipal/tavai', etiqueta: 'Tavaí (CECTEC)' }],
+  'Q|1': [{ carpeta: 'pout_municipal/mcal_estigarribia', ruta: 'pout_municipal/mcal_estigarribia', etiqueta: 'Mcal. Estigarribia' }, { carpeta: 'pout_municipal/limites_boqueron', ruta: 'pout_municipal/limites_boqueron', etiqueta: 'Límites del departamento Boquerón' }],
+  'Q|3': [{ carpeta: 'pout_municipal/loma_plata', ruta: 'pout_municipal/loma_plata', etiqueta: 'Loma Plata' }, { carpeta: 'pout_municipal/limites_boqueron', ruta: 'pout_municipal/limites_boqueron', etiqueta: 'Límites del departamento Boquerón' }],
+  'Q|5': [{ carpeta: 'pout_filadelfia', ruta: 'pout_filadelfia', etiqueta: 'Filadelfia (POUT)' }, { carpeta: 'pout_municipal/limites_boqueron', ruta: 'pout_municipal/limites_boqueron', etiqueta: 'Límites del departamento Boquerón' }],
+  'Q|7': [{ carpeta: 'pout_municipal/boqueron', ruta: 'pout_municipal/boqueron', etiqueta: 'Municipio Boquerón' }, { carpeta: 'pout_municipal/limites_boqueron', ruta: 'pout_municipal/limites_boqueron', etiqueta: 'Límites del departamento Boquerón' }]
+};
+function humanizar(nombreArchivo) {
+  return nombreArchivo.replace(/\.geojson$/i, '').replace(/^mymaps_/, '').replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function listarGeojsonRecursivo(dirFisico, dirRuta, prefijo = '') {
+  let out = [];
+  let entradas;
+  try { entradas = readdirSync(dirFisico); } catch { return out; }
+  for (const nombre of entradas) {
+    if (nombre === 'fuentes') continue;   // KML/PDF originales, no son capas para el mapa
+    const rutaFisica = join(dirFisico, nombre);
+    let info;
+    try { info = statSync(rutaFisica); } catch { continue; }
+    if (info.isDirectory()) {
+      out = out.concat(listarGeojsonRecursivo(rutaFisica, `${dirRuta}/${nombre}`, prefijo ? `${prefijo} · ${humanizar(nombre)}` : humanizar(nombre)));
+    } else if (/\.geojson$/i.test(nombre)) {
+      const nombreCapa = prefijo ? `${prefijo}: ${humanizar(nombre)}` : humanizar(nombre);
+      out.push({ nombre: nombreCapa, url: `/data/${dirRuta}/${nombre}`, geometria: null, cantidad: null });
+    }
+  }
+  return out;
+}
+function listarCapasFuente(fuente) {
+  const dirFisico = join(__dirname, 'data', fuente.carpeta);
+  const manifest = join(dirFisico, 'capas.json');
+  if (existsSync(manifest)) {
+    try {
+      const m = JSON.parse(readFileSync(manifest, 'utf8'));
+      return (m.capas || []).map(c => ({ nombre: c.capa, url: `/data/${fuente.ruta}/${c.archivo}`, geometria: c.geometria || null, cantidad: c.cantidad ?? null }));
+    } catch { /* si el manifest está roto, seguimos al escaneo de carpeta */ }
+  }
+  return listarGeojsonRecursivo(dirFisico, fuente.ruta);
+}
+app.get('/api/v3/visor3d/capas-distrito', (req, res) => {
+  const clave = `${req.query.dpto}|${req.query.dist}`;
+  const fuentes = MUNICIPIOS_EXTRA[clave] || [];
+  const resultado = fuentes.map(f => ({ etiqueta: f.etiqueta, capas: listarCapasFuente(f) })).filter(f => f.capas.length);
+  res.json({ distrito: clave, fuentes: resultado });
 });
 const limiteTeselas = new Map();   // ip → { n, nuevas: {fuente: n}, hasta }: 8000 mosaicos/min; descargas nuevas al exterior según la fuente
 const CUPO_NUEVAS = { osm: 600, satelite: 2400, terreno: 2400 };   // OpenStreetMap pide uso moderado
@@ -2005,11 +2066,16 @@ app.get('/api/v3/curvas/exportar', async (req, res) => {
     res.download(r.archivo, r.nombre, () => curvas.limpiar(r.carpeta));
   } catch (e) { if (r) curvas.limpiar(r.carpeta); res.status(e.status || 500).json({ ok: false, error: e.message }); }
 });
-// Tinta hipsométrica (altura en colores, escala topográfica convencional) generada desde los mosaicos de elevación.
+// Tinta hipsométrica (altura en colores) generada desde los mosaicos de elevación.
+// ?paleta=clasico|espectral|gris (default clasico) y ?bandas=1 (escalón, sin interpolar; default degradado).
+const PALETAS_HIPSO = new Set(['clasico', 'espectral', 'gris']);
 app.get('/api/v3/teselas/hipsometria/:z/:x/:y', async (req, res) => {
   const [z, x, y] = [req.params.z, req.params.x, req.params.y].map(Number);
   if (![z, x, y].every(Number.isInteger) || z < 0 || z > 15 || x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z) return res.status(400).end();
-  const destino = join(__dirname, 'data', 'teselas', 'hipsometria', String(z), String(x), `${y}`);
+  const paleta = PALETAS_HIPSO.has(req.query.paleta) ? req.query.paleta : 'clasico';
+  const bandas = req.query.bandas === '1';
+  const estilo = `${paleta}-${bandas ? 'bandas' : 'degradado'}`;
+  const destino = join(__dirname, 'data', 'teselas', 'hipsometria', estilo, String(z), String(x), `${y}`);
   res.setHeader('Cache-Control', 'public, max-age=604800');
   if (existsSync(destino)) return res.type('image/png').sendFile(destino);
   try {
@@ -2021,7 +2087,7 @@ app.get('/api/v3/teselas/hipsometria/:z/:x/:y', async (req, res) => {
       dem = Buffer.from(await r.arrayBuffer());
       mkdirSync(join(origen, '..'), { recursive: true }); writeFileSync(origen, dem);
     }
-    const png = colorearTerrarium(dem);
+    const png = colorearTerrarium(dem, { paleta, bandas });
     mkdirSync(join(destino, '..'), { recursive: true }); writeFileSync(destino, png);
     res.type('image/png').send(png);
   } catch { res.status(504).end(); }

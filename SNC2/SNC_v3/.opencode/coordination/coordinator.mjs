@@ -197,6 +197,23 @@ export class GraphCoordinator {
     throw new Error(`TIMEOUT waiting for lock: ${resource}`);
   }
 
+  /** Libera el/los lock(s) activos de este agente sobre un recurso puntual (sin necesitar el lockId). */
+  async releaseLockByResource(resource) {
+    await this._ready();
+    const { writeFileSync } = await import('node:fs');
+    const locks = await readJsonl(LOCKS_FILE);
+    let changed = false;
+    locks.forEach(l => {
+      if (l && l.agent === this.agentId && l.resource === resource && l.status === 'active') {
+        l.status = 'released';
+        l.released = Date.now();
+        changed = true;
+      }
+    });
+    if (changed) writeFileSync(LOCKS_FILE, locks.map(l => JSON.stringify(l)).join('\n') + '\n');
+    return changed;
+  }
+
   // Auto-release al salir
   async releaseAllMyLocks() {
     await this._ready();
@@ -288,7 +305,7 @@ export class GraphCoordinator {
   async proposeSkillImprovement(skillName, improvement) {
     await this._ready();
     const { writeFileSync: _wf, appendFileSync: _af } = await import('node:fs');
-    const { join: _join } = await import('node:path');
+    const { join } = await import('node:path');
     const skills = await readJson(SKILLS_FILE, { improvements: [], patterns: [] });
     
     const improvementId = genId('imp');

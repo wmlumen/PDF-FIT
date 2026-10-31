@@ -9,7 +9,7 @@ Este repositorio es operado por múltiples agentes de Inteligencia Artificial (H
 
 Las IAs **se turnan**; ninguna corrige ni rehace el trabajo de otra por su cuenta.
 
-1. **Tomar el turno.** Antes de editar, escribir en el bloque "Turno actual" de `docs/TURNOS_IA.md`: IA, fecha/hora, tarea y archivos. Si el bloque ya tiene otra IA con archivos en común, **no se tocan**: se espera o se le pregunta al usuario. (El `cli.mjs` citado en §2 no existe en el repo; mientras no exista, este archivo es el lock.)
+1. **Tomar el turno.** Antes de editar, escribir en el bloque "Turno actual" de `docs/TURNOS_IA.md`: IA, fecha/hora, tarea y archivos. Si el bloque ya tiene otra IA con archivos en común, **no se tocan**: se espera o se le pregunta al usuario. (El `cli.mjs` citado en §2 ya existe — `node .opencode/coordination/cli.mjs lock/check/status` — y es un lock real con TTL; aun así, seguí completando `docs/TURNOS_IA.md` al terminar el turno, porque ahí queda el relato legible de qué se hizo y por qué, cosa que el lock por sí solo no da.)
 2. **Al terminar el turno** dejar "Turno actual" en `libre` y agregar una entrada en `docs/TURNOS_IA.md`: fecha, IA, tarea, archivos tocados, cómo verificarlo y qué queda pendiente.
 3. **No corregir lo ajeno.** Si una IA encuentra un error en el trabajo de otra, **no lo arregla ni lo revierte**: lo anota en `docs/TURNOS_IA.md` (sección "Observaciones para el autor") con archivo:línea y evidencia. Lo corrige el autor en su próximo turno, o otra IA solo si el usuario lo pide explícitamente.
 4. **No reescribir por estilo.** Prohibido reformatear, renombrar o "mejorar" código de otra IA fuera de la tarea asignada (incluye CSS y diseño).
@@ -133,6 +133,9 @@ Antes de tocar cualquier archivo, cada agente debe ejecutar este flujo estandari
 ```
 [1. RUTEO] ──> [2. PRE-CHECK] ──> [3. LOCK] ──> [4. CÓDIGO + TEST] ──> [5. REPORTE]
 ```
+
+En todos los comandos de abajo agregá `--agent=TuNombre` (Claude, Antigravity, Hermes, OpenCode, Codex...).
+Sin eso el lock queda a nombre de "agente-sin-nombre" y pierde sentido para las demás IAs.
 
 ### Paso 1: Identificar la ruta (Dónde tocar)
 Si no sabes exactamente qué archivo(s) corresponden al requerimiento del usuario, consulta el grafo:

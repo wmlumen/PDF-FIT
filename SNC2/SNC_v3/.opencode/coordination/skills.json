@@ -65,6 +65,17 @@
       "triggeredBy": "user_request",
       "status": "active",
       "createdAt": "2026-10-23T01:30:00.000Z"
+    },
+    {
+      "id": "imp_1793447472441_tm3vwja5",
+      "skill": "coordinacion_cli",
+      "agent": "Claude",
+      "description": "Se construyo .opencode/coordination/cli.mjs (route/check/lock/pass/fail/status) sobre GraphCoordinator y GraphClient ya existentes; se corrigieron 2 bugs que lo bloqueaban (ruta de graphify-out en graphClient.mjs, alias _join sin usar en coordinator.mjs::proposeSkillImprovement); se agrego releaseLockByResource.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-10-31T11:51:12.442Z"
     }
   ],
   "patterns": []
