@@ -189,22 +189,34 @@ function estimarCotaParaguay(lng, lat) {
 // devolviendo basura porque la pestaña estuvo en segundo plano (ver entrada de hoy en TURNOS_IA.md)
 // y el relieve 3D no terminó de armarse. Se descarta en vez de usarse tal cual.
 const COTA_MIN_PY = 35;
+// Además del piso absoluto, se compara contra la estimación regional (estimarCotaParaguay): el
+// mismo bug de relieve en segundo plano puede devolver un número "posible en algún lado de
+// Paraguay" pero igual de falso para el punto puntual que se está consultando (p. ej. 150 m donde
+// lo real son 85 m). Más margen hacia arriba que hacia abajo: una loma real puede superar bastante
+// la estimación regional (que ya es un valor bajo de referencia), bajar mucho más no es tan plausible.
+function cotaConfiable(lng, lat, h) {
+  if (h == null || h <= COTA_MIN_PY) return null;
+  const esperado = estimarCotaParaguay(lng, lat);
+  if (h < esperado - 100 || h > esperado + 250) return null;
+  return h;
+}
 
 function obtenerCotaCentro() {
   const c = map.getCenter();
   let h = null;
   try {
-    h = map.queryTerrainElevation?.([c.lng, c.lat]);
-    if (h == null || h <= COTA_MIN_PY) {
+    const h0 = map.queryTerrainElevation?.([c.lng, c.lat]);
+    h = cotaConfiable(c.lng, c.lat, h0);
+    if (h == null) {
       const d = 0.003;
       const puntos = [[c.lng + d, c.lat], [c.lng - d, c.lat], [c.lng, c.lat + d], [c.lng, c.lat - d]];
       for (const p of puntos) {
-        const alt = map.queryTerrainElevation?.(p);
-        if (alt != null && alt > COTA_MIN_PY) { h = alt; break; }
+        const alt = cotaConfiable(p[0], p[1], map.queryTerrainElevation?.(p));
+        if (alt != null) { h = alt; break; }
       }
     }
   } catch {}
-  if (h == null || h <= COTA_MIN_PY) {
+  if (h == null) {
     h = estimarCotaParaguay(c.lng, c.lat);
   }
   return Math.round(h);
@@ -381,10 +393,11 @@ function contornoSuaveInundacion(w, s, e, n, N, cotaVal) {
     const bordeJ = (j === 0 || j === G);
     for (let i = 0; i <= G; i++) {
       if (bordeJ || i === 0 || i === G) { fila.push(SECO); continue; }
-      const h = map.queryTerrainElevation?.([xDe(i), yDe(j)]);
-      // Por debajo de COTA_MIN_PY es geográficamente imposible en Paraguay: se descarta como dato
-      // no confiable (relieve 3D sin terminar de cargar) en vez de tratarlo como "muy bajo = anegado".
-      fila.push(h == null || h < COTA_MIN_PY ? SECO : h);
+      const lng = xDe(i), lat = yDe(j);
+      const h = cotaConfiable(lng, lat, map.queryTerrainElevation?.([lng, lat]));
+      // Dato no confiable (relieve 3D sin terminar de cargar, o muy lejos de lo esperable en esta
+      // zona del país): se trata como "seco" en vez de arriesgar un falso "muy bajo = anegado".
+      fila.push(h == null ? SECO : h);
     }
     val.push(fila);
   }
@@ -465,8 +478,9 @@ function generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom) {
     for (let i = 0; i <= NX; i++) {
       let isFlooded = false;
       if (i < NX) {
-        const h = map.queryTerrainElevation?.([w + (i + 0.5) * dx, ym]);
-        if (h != null && h >= COTA_MIN_PY && h <= cotaVal && h >= cotaVal - 25) isFlooded = true;
+        const lngM = w + (i + 0.5) * dx;
+        const h = cotaConfiable(lngM, ym, map.queryTerrainElevation?.([lngM, ym]));
+        if (h != null && h <= cotaVal && h >= cotaVal - 25) isFlooded = true;
       }
       if (isFlooded) { if (stripStart === null) stripStart = i; }
       else if (stripStart !== null) {
@@ -565,8 +579,8 @@ function actualizarInundacion() {
     edifSrc._data.features.forEach(f => {
       const coord = f.geometry?.coordinates?.[0]?.[0] || f.geometry?.coordinates?.[0];
       if (coord && typeof coord[0] === 'number') {
-        const h = map.queryTerrainElevation?.(coord);
-        const isInund = h != null && h >= COTA_MIN_PY && h <= cotaVal;
+        const h = cotaConfiable(coord[0], coord[1], map.queryTerrainElevation?.(coord));
+        const isInund = h != null && h <= cotaVal;
         f.properties._inund = isInund;
         if (isInund) totalComp++;
       }
