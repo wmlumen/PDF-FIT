@@ -184,21 +184,27 @@ function estimarCotaParaguay(lng, lat) {
   return 90;
 }
 
+// Paraguay no tiene costa: el punto más bajo del país (confluencia Paraguay-Paraná) está ~45-48 m
+// s.n.m. Una lectura por debajo de esto no puede ser real — casi siempre es queryTerrainElevation
+// devolviendo basura porque la pestaña estuvo en segundo plano (ver entrada de hoy en TURNOS_IA.md)
+// y el relieve 3D no terminó de armarse. Se descarta en vez de usarse tal cual.
+const COTA_MIN_PY = 35;
+
 function obtenerCotaCentro() {
   const c = map.getCenter();
   let h = null;
   try {
     h = map.queryTerrainElevation?.([c.lng, c.lat]);
-    if (h == null || h <= 0) {
+    if (h == null || h <= COTA_MIN_PY) {
       const d = 0.003;
       const puntos = [[c.lng + d, c.lat], [c.lng - d, c.lat], [c.lng, c.lat + d], [c.lng, c.lat - d]];
       for (const p of puntos) {
         const alt = map.queryTerrainElevation?.(p);
-        if (alt != null && alt > 0) { h = alt; break; }
+        if (alt != null && alt > COTA_MIN_PY) { h = alt; break; }
       }
     }
   } catch {}
-  if (h == null || h <= 0) {
+  if (h == null || h <= COTA_MIN_PY) {
     h = estimarCotaParaguay(c.lng, c.lat);
   }
   return Math.round(h);
@@ -292,6 +298,13 @@ const CUENCAS = {
     zoom: 14.5, pitch: 45, bearing: 0,
     min: 130, max: 150, normal: 135, alerta: 138, record: 142,
     etqNormal: 'Normal (135m)', etqAlerta: 'Alerta (138m)', etqRecord: 'Récord (142m)'
+  },
+  bahianegra: {
+    nombre: 'Río Paraguay — Bahía Negra / Pantanal (≈85m)',
+    centro: [-58.1733, -20.2333],
+    zoom: 13.5, pitch: 50, bearing: 0,
+    min: 80, max: 98, normal: 85, alerta: 88, record: 92,
+    etqNormal: 'Normal (85m)', etqAlerta: 'Alerta (88m)', etqRecord: 'Récord (92m)'
   }
 };
 
@@ -369,7 +382,9 @@ function contornoSuaveInundacion(w, s, e, n, N, cotaVal) {
     for (let i = 0; i <= G; i++) {
       if (bordeJ || i === 0 || i === G) { fila.push(SECO); continue; }
       const h = map.queryTerrainElevation?.([xDe(i), yDe(j)]);
-      fila.push(h == null ? SECO : h);
+      // Por debajo de COTA_MIN_PY es geográficamente imposible en Paraguay: se descarta como dato
+      // no confiable (relieve 3D sin terminar de cargar) en vez de tratarlo como "muy bajo = anegado".
+      fila.push(h == null || h < COTA_MIN_PY ? SECO : h);
     }
     val.push(fila);
   }
@@ -451,7 +466,7 @@ function generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom) {
       let isFlooded = false;
       if (i < NX) {
         const h = map.queryTerrainElevation?.([w + (i + 0.5) * dx, ym]);
-        if (h != null && h <= cotaVal && h >= cotaVal - 25) isFlooded = true;
+        if (h != null && h >= COTA_MIN_PY && h <= cotaVal && h >= cotaVal - 25) isFlooded = true;
       }
       if (isFlooded) { if (stripStart === null) stripStart = i; }
       else if (stripStart !== null) {
@@ -551,7 +566,7 @@ function actualizarInundacion() {
       const coord = f.geometry?.coordinates?.[0]?.[0] || f.geometry?.coordinates?.[0];
       if (coord && typeof coord[0] === 'number') {
         const h = map.queryTerrainElevation?.(coord);
-        const isInund = h != null && h <= cotaVal;
+        const isInund = h != null && h >= COTA_MIN_PY && h <= cotaVal;
         f.properties._inund = isInund;
         if (isInund) totalComp++;
       }
