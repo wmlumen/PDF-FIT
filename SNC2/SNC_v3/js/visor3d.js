@@ -322,6 +322,147 @@ function aplicarCuenca(key) {
 
 $('v3-inund-cuenca')?.addEventListener('change', e => aplicarCuenca(e.target.value));
 
+// Área aproximada de un anillo [lng,lat] en m² (plano local, suficiente para una cifra de referencia "~X ha").
+function areaAnilloM2(anillo, latRef) {
+  const mLat = 111320, mLng = 111320 * Math.cos(latRef * Math.PI / 180);
+  let area = 0;
+  for (let i = 0; i < anillo.length - 1; i++) {
+    const [x1, y1] = anillo[i], [x2, y2] = anillo[i + 1];
+    area += (x1 * mLng) * (y2 * mLat) - (x2 * mLng) * (y1 * mLat);
+  }
+  return Math.abs(area) / 2;
+}
+
+// ── Contorno de inundación suave (marching squares sobre la cota real), no celdas rectangulares ──
+// Nota: a diferencia de la versión anterior (banda de 25 m bajo la cota), esto cubre toda la vista por
+// debajo de la cota — más parecido a cómo se comporta una creciente real dentro del recuadro visible.
+function suavizarAnillo(anillo, iteraciones = 2) {
+  // Chaikin (corte de esquinas): cada iteración reemplaza cada vértice por dos, redondeando el trazo.
+  let pts = anillo;
+  for (let it = 0; it < iteraciones; it++) {
+    const n = pts.length - 1;   // el anillo llega cerrado (último punto == primero)
+    if (n < 3) return pts;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[i], p1 = pts[(i + 1) % n];
+      out.push([p0[0] * 0.75 + p1[0] * 0.25, p0[1] * 0.75 + p1[1] * 0.25]);
+      out.push([p0[0] * 0.25 + p1[0] * 0.75, p0[1] * 0.25 + p1[1] * 0.75]);
+    }
+    out.push(out[0]);
+    pts = out;
+  }
+  return pts;
+}
+
+function contornoSuaveInundacion(w, s, e, n, N, cotaVal) {
+  // Grilla de esquinas con 1 celda de margen "seco" forzado en cada borde, para que cualquier
+  // contorno cierre siempre adentro de la grilla y nunca quede abierto contra el borde del recuadro.
+  const dx = (e - w) / N, dy = (n - s) / N;
+  const G = N + 2;
+  const SECO = cotaVal + 1000;
+  const xDe = i => w + (i - 1) * dx, yDe = j => s + (j - 1) * dy;
+  const val = [];
+  for (let j = 0; j <= G; j++) {
+    const fila = [];
+    const bordeJ = (j === 0 || j === G);
+    for (let i = 0; i <= G; i++) {
+      if (bordeJ || i === 0 || i === G) { fila.push(SECO); continue; }
+      const h = map.queryTerrainElevation?.([xDe(i), yDe(j)]);
+      fila.push(h == null ? SECO : h);
+    }
+    val.push(fila);
+  }
+  const lerp = (v0, v1, p0, p1) => {
+    const t = (cotaVal - v0) / (v1 - v0);
+    return [p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t];
+  };
+
+  const segmentos = [];
+  for (let j = 0; j < G; j++) {
+    for (let i = 0; i < G; i++) {
+      const a = val[j][i], bb = val[j][i + 1], cc = val[j + 1][i + 1], d = val[j + 1][i];
+      const caso = (a <= cotaVal ? 8 : 0) | (bb <= cotaVal ? 4 : 0) | (cc <= cotaVal ? 2 : 0) | (d <= cotaVal ? 1 : 0);
+      if (caso === 0 || caso === 15) continue;
+      const pTL = [xDe(i), yDe(j)], pTR = [xDe(i + 1), yDe(j)], pBR = [xDe(i + 1), yDe(j + 1)], pBL = [xDe(i), yDe(j + 1)];
+      const top = () => lerp(a, bb, pTL, pTR), right = () => lerp(bb, cc, pTR, pBR);
+      const bottom = () => lerp(d, cc, pBL, pBR), left = () => lerp(a, d, pTL, pBL);
+      const seg = (p1, p2) => segmentos.push([p1, p2]);
+      // Tabla estándar de marching squares (16 casos; 5 y 10 son los "silla de montar" ambiguos).
+      switch (caso) {
+        case 1: seg(left(), bottom()); break;
+        case 2: seg(bottom(), right()); break;
+        case 3: seg(left(), right()); break;
+        case 4: seg(top(), right()); break;
+        case 6: seg(top(), bottom()); break;
+        case 7: seg(top(), left()); break;
+        case 8: seg(left(), top()); break;
+        case 9: seg(top(), bottom()); break;
+        case 11: seg(top(), right()); break;
+        case 12: seg(left(), right()); break;
+        case 13: seg(right(), bottom()); break;
+        case 14: seg(bottom(), left()); break;
+        case 5: { const prom = (a + bb + cc + d) / 4; if (prom <= cotaVal) { seg(left(), top()); seg(right(), bottom()); } else { seg(left(), bottom()); seg(top(), right()); } break; }
+        case 10: { const prom = (a + bb + cc + d) / 4; if (prom <= cotaVal) { seg(top(), right()); seg(left(), bottom()); } else { seg(top(), left()); seg(bottom(), right()); } break; }
+      }
+    }
+  }
+  if (!segmentos.length) return { type: 'FeatureCollection', features: [] };
+
+  // Unir segmentos en anillos cerrados emparejando extremos (el margen seco garantiza que cierren).
+  const key = p => `${p[0].toFixed(7)},${p[1].toFixed(7)}`;
+  const usados = new Array(segmentos.length).fill(false);
+  const anillos = [];
+  for (let ini = 0; ini < segmentos.length; ini++) {
+    if (usados[ini]) continue;
+    usados[ini] = true;
+    const anillo = [segmentos[ini][0], segmentos[ini][1]];
+    for (let salvaguarda = 0; salvaguarda < segmentos.length + 5; salvaguarda++) {
+      const ultimo = anillo[anillo.length - 1];
+      if (anillo.length > 2 && key(ultimo) === key(anillo[0])) break;   // anillo cerrado
+      let encontrado = false;
+      for (let k = 0; k < segmentos.length; k++) {
+        if (usados[k]) continue;
+        if (key(segmentos[k][0]) === key(ultimo)) { anillo.push(segmentos[k][1]); usados[k] = true; encontrado = true; break; }
+        if (key(segmentos[k][1]) === key(ultimo)) { anillo.push(segmentos[k][0]); usados[k] = true; encontrado = true; break; }
+      }
+      if (!encontrado) break;
+    }
+    if (anillo.length > 3 && key(anillo[0]) === key(anillo[anillo.length - 1])) anillos.push(anillo);
+  }
+
+  const features = anillos.map(anillo => ({
+    type: 'Feature', properties: { cota: cotaVal },
+    geometry: { type: 'Polygon', coordinates: [suavizarAnillo(anillo)] }
+  }));
+  return { type: 'FeatureCollection', features };
+}
+
+/** Versión anterior (celdas rectangulares fusionadas por fila): respaldo si el contorno suave falla. */
+function generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom) {
+  const NX = zoom >= 14 ? 36 : 28, NY = NX;
+  const dx = (e - w) / NX, dy = (n - s) / NY;
+  const padX = dx * 0.02, padY = dy * 0.02;
+  const features = [];
+  for (let j = 0; j < NY; j++) {
+    const y0 = s + j * dy - padY, y1 = s + (j + 1) * dy + padY, ym = (y0 + y1) / 2;
+    let stripStart = null;
+    for (let i = 0; i <= NX; i++) {
+      let isFlooded = false;
+      if (i < NX) {
+        const h = map.queryTerrainElevation?.([w + (i + 0.5) * dx, ym]);
+        if (h != null && h <= cotaVal && h >= cotaVal - 25) isFlooded = true;
+      }
+      if (isFlooded) { if (stripStart === null) stripStart = i; }
+      else if (stripStart !== null) {
+        const x0 = w + stripStart * dx - padX, x1 = w + i * dx + padX;
+        features.push({ type: 'Feature', properties: { cota: cotaVal }, geometry: { type: 'Polygon', coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]] } });
+        stripStart = null;
+      }
+    }
+  }
+  return { type: 'FeatureCollection', features };
+}
+
 function generarPoligonoInundacion(cotaVal) {
   const c = map.getCenter();
   const b = map.getBounds();
@@ -331,54 +472,13 @@ function generarPoligonoInundacion(cotaVal) {
   const radioSpan = Math.min(0.20, Math.max(0.012, (b.getEast() - b.getWest()) / 2.2));
   const w = c.lng - radioSpan, e = c.lng + radioSpan;
   const s = c.lat - radioSpan, n = c.lat + radioSpan;
+  const N = zoom >= 14 ? 34 : 26;
 
-  const NX = zoom >= 14 ? 36 : 28;
-  const NY = zoom >= 14 ? 36 : 28;
-  const dx = (e - w) / NX, dy = (n - s) / NY;
-  const padX = dx * 0.02, padY = dy * 0.02;
-
-  const features = [];
-
-  // Muestreo con fusión horizontal continua de celdas anegadas (evita artefactos de cuadrícula)
-  for (let j = 0; j < NY; j++) {
-    const y0 = s + j * dy - padY;
-    const y1 = s + (j + 1) * dy + padY;
-    const ym = (y0 + y1) / 2;
-
-    let stripStart = null;
-
-    for (let i = 0; i <= NX; i++) {
-      let isFlooded = false;
-      if (i < NX) {
-        const xm = w + (i + 0.5) * dx;
-        const h = map.queryTerrainElevation?.([xm, ym]);
-        // Terreno real bajo la lámina de agua y en proximidad al cauce/valle
-        if (h != null && h <= cotaVal && h >= cotaVal - 25) {
-          isFlooded = true;
-        }
-      }
-
-      if (isFlooded) {
-        if (stripStart === null) stripStart = i;
-      } else {
-        if (stripStart !== null) {
-          const x0 = w + stripStart * dx - padX;
-          const x1 = w + i * dx + padX;
-          features.push({
-            type: 'Feature',
-            properties: { cota: cotaVal },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]]
-            }
-          });
-          stripStart = null;
-        }
-      }
-    }
-  }
-
-  return { type: 'FeatureCollection', features };
+  try {
+    const fc = contornoSuaveInundacion(w, s, e, n, N, cotaVal);
+    if (fc.features.length) return fc;
+  } catch { /* cae al método anterior si el contorno suave falla */ }
+  return generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom);
 }
 
 function actualizarInundacion() {
@@ -430,7 +530,9 @@ function actualizarInundacion() {
     ]);
   }
 
-  const ha = (fc.features.length * 1.5).toFixed(1);
+  const latRef = map.getCenter().lat;
+  const areaTotalM2 = fc.features.reduce((acc, f) => acc + areaAnilloM2(f.geometry.coordinates[0], latRef), 0);
+  const ha = (areaTotalM2 / 10000).toFixed(1);
   const baseCota = obtenerCotaCentro();
   const delta = (cotaVal - baseCota).toFixed(1);
   const signoDelta = delta >= 0 ? `+${delta}` : delta;
