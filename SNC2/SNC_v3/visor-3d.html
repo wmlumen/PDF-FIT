@@ -90,6 +90,35 @@
           </div>
           <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
           <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
+
+          <div style="margin-top:8px;padding:7px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label style="font-size:11px;color:#94a3b8;font-weight:600;">🌧️ Lluvia acumulada (sube la cota):</label>
+              <output id="v3-lluvia-o" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">0 mm</output>
+            </div>
+            <input type="range" id="v3-lluvia" min="0" max="450" step="5" value="0" style="width:100%;">
+            <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="25" style="padding:3px 6px;font-size:10px;background:#334155;">Estiaje (25mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="120" style="padding:3px 6px;font-size:10px;background:#0284c7;">Tormenta (120mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="200" style="padding:3px 6px;font-size:10px;background:#f59e0b;">Sudestada (200mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="380" style="padding:3px 6px;font-size:10px;background:#e11d48;">El Niño (380mm)</button>
+            </div>
+            <label style="font-size:11px;color:#94a3b8;display:block;margin-top:6px;">Suelo / escorrentía
+              <select id="v3-suelo" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
+                <option value="0.42" selected>Oriental, porosa (C = 0,42)</option>
+                <option value="0.82">Chaco húmedo, arcilloso (C = 0,82)</option>
+                <option value="0.68">Urbano / suelo saturado (C = 0,68)</option>
+              </select>
+            </label>
+            <p id="v3-dinac" style="font-size:11px;font-weight:bold;margin:6px 0 0;"></p>
+            <p class="v3-fuente" style="margin-top:4px;">Estimación: la lluvia efectiva (mm × coeficiente) mueve la cota entre el nivel normal y el récord histórico de la cuenca elegida (o ±16 m del punto actual si no hay cuenca). No reemplaza un modelo hidrológico.</p>
+          </div>
+
+          <div id="v3-inund-analitica" hidden style="margin-top:8px;padding:7px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:#94a3b8;">Volumen estimado:</span><output id="v3-vol-o" style="color:#38bdf8;font-family:monospace;font-weight:bold;">— hm³</output></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px;"><span style="color:#94a3b8;">Caudal estimado:</span><output id="v3-caudal-o" style="color:#34d399;font-family:monospace;font-weight:bold;">— m³/s</output></div>
+            <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-flujo" checked> Vectores de flujo animados sobre los cauces</label>
+          </div>
         </div>
       </fieldset>
 
@@ -131,6 +160,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261031h"></script>
+  <script type="module" src="/js/visor3d.js?v=20261031i"></script>
 </body>
 </html>

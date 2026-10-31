@@ -397,6 +397,8 @@ function actualizarInundacion() {
     }
     map.setPaintProperty('edificios', 'fill-extrusion-color', $('v3-color')?.value === 'real' ? COLOR_REAL : COLOR_CATASTRO);
     try { mini.getSource('inundacion-mini')?.setData(vacio); } catch {}
+    $('v3-inund-analitica').hidden = true;
+    detenerVectoresFlujo();
     return;
   }
 
@@ -436,6 +438,20 @@ function actualizarInundacion() {
   $('v3-inund-info').innerHTML = totalComp > 0
     ? `⚠️ <strong>Cota ${cotaVal} m s.n.m. (${signoDelta}m)</strong>: ~${ha} ha anegadas.<br><span style="color:#f87171;font-weight:bold;">${totalComp} de ${totalEdif} construcciones en riesgo crítico.</span>`
     : `✓ <strong>Cota ${cotaVal} m s.n.m. (${signoDelta}m)</strong>: ~${ha} ha cubiertas en valle.<br>Construcciones seguras en cota alta.`;
+
+  // Volumen y caudal: estimación a partir del área real anegada (no de un modelo hidrológico).
+  // Profundidad media = qué tan por encima de la cota base está la lámina, acotada a un rango razonable.
+  const areaM2 = Number(ha) * 10000;
+  const profundidadMedia = Math.max(0.3, Math.min(8, Number(delta) * 0.5 + 0.5));
+  const volumenM3 = areaM2 * profundidadMedia;
+  const volumenHm3 = volumenM3 / 1e6;
+  const TIEMPO_CONCENTRACION_S = 6 * 3600;   // 6 h: orden de magnitud para una crecida rápida, no un cálculo de cuenca real
+  const caudalM3s = volumenM3 / TIEMPO_CONCENTRACION_S;
+  $('v3-inund-analitica').hidden = false;
+  $('v3-vol-o').textContent = `${volumenHm3 < 10 ? volumenHm3.toFixed(2) : Math.round(volumenHm3)} hm³`;
+  $('v3-caudal-o').textContent = `${num(Math.round(caudalM3s))} m³/s`;
+
+  if ($('v3-flujo')?.checked) iniciarVectoresFlujo(); else detenerVectoresFlujo();
 }
 
 $('v3-inundacion')?.addEventListener('change', () => {
@@ -501,6 +517,62 @@ $('v3-inund-animar')?.addEventListener('click', () => {
       actualizarInundacion();
     }, 450);
   }
+});
+
+// ── Lluvia, suelo y alerta DINAC: sugiere una cota a partir de un evento de lluvia ──
+function actualizarDinac(mm) {
+  const b = $('v3-dinac');
+  if (!b) return;
+  if (mm < 60) { b.textContent = 'NORMAL / ESTIAJE'; b.style.color = '#34d399'; }
+  else if (mm < 160) { b.textContent = 'ALERTA AMARILLA'; b.style.color = '#fbbf24'; }
+  else if (mm < 280) { b.textContent = 'ALERTA NARANJA'; b.style.color = '#fb923c'; }
+  else { b.textContent = 'EMERGENCIA ROJA'; b.style.color = '#f87171'; }
+}
+// 369 mm = 450 mm × 0,82 (coeficiente de escorrentía más alto, Chaco húmedo): tope de normalización.
+function cotaDesdeLluvia(mm, coef) {
+  const fraccion = Math.min(1, (mm * coef) / 369);
+  const c = CUENCAS[$('v3-inund-cuenca')?.value];
+  if (c) return c.normal + fraccion * (c.record - c.normal);
+  return obtenerCotaCentro() + fraccion * 16;
+}
+function aplicarLluvia() {
+  const mm = Number($('v3-lluvia').value);
+  $('v3-lluvia-o').textContent = `${mm} mm`;
+  actualizarDinac(mm);
+  if (!$('v3-inundacion').checked) $('v3-inundacion').checked = true;
+  const sld = $('v3-inund-cota');
+  const cota = cotaDesdeLluvia(mm, Number($('v3-suelo').value));
+  sld.value = Math.max(Number(sld.min), Math.min(Number(sld.max), cota));
+  actualizarInundacion();
+}
+$('v3-lluvia')?.addEventListener('input', aplicarLluvia);
+$('v3-suelo')?.addEventListener('change', aplicarLluvia);
+document.querySelectorAll('.v3-lluvia-btn').forEach(b => b.addEventListener('click', () => { $('v3-lluvia').value = b.dataset.mm; aplicarLluvia(); }));
+actualizarDinac(0);
+
+// ── Vectores de flujo: anima el trazo real de hidrografía (SNC) para sugerir dirección de escurrimiento ──
+// Secuencia estándar de "marching ants" (mismos pasos que el ejemplo oficial de Mapbox GL "Animate a line").
+const DASH_FLUJO = [
+  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
+  [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]
+];
+let animFlujo = null;
+function iniciarVectoresFlujo() {
+  if (animFlujo || !map.getLayer('hidro-lineas')) return;
+  let i = 0;
+  animFlujo = setInterval(() => {
+    i = (i + 1) % DASH_FLUJO.length;
+    try { map.setPaintProperty('hidro-lineas', 'line-dasharray', DASH_FLUJO[i]); } catch {}
+  }, 60);
+}
+function detenerVectoresFlujo() {
+  if (!animFlujo) return;
+  clearInterval(animFlujo);
+  animFlujo = null;
+  try { map.setPaintProperty('hidro-lineas', 'line-dasharray', null); } catch {}
+}
+$('v3-flujo')?.addEventListener('change', e => {
+  if (e.target.checked && $('v3-inundacion')?.checked) iniciarVectoresFlujo(); else detenerVectoresFlujo();
 });
 
 // ── Aspecto: color de los edificios y sol según la hora ─────────────
