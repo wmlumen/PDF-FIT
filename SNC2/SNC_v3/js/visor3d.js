@@ -115,6 +115,15 @@ document.querySelectorAll('input[name="base"]').forEach(r => r.addEventListener(
   map.setLayoutProperty('base-osm', 'visibility', r.value === 'osm' && r.checked ? 'visible' : 'none');
   map.setLayoutProperty('base-satelite', 'visibility', r.value === 'satelite' && r.checked ? 'visible' : 'none');
   map.setLayoutProperty('base-satelite-respaldo', 'visibility', r.value === 'satelite' && r.checked ? 'visible' : 'none');
+  if (!r.checked) return;
+  // Lienzo en blanco: sin mapa base ni sombreado, para ver las capas (hidrografía, parcelas, edificios…) sin ruido visual.
+  if (r.value === 'blanco') {
+    map.setPaintProperty('fondo', 'background-color', '#ffffff');
+    map.setLayoutProperty('sombra', 'visibility', 'none');
+    if ($('v3-sombra')) $('v3-sombra').checked = false;
+  } else {
+    map.setPaintProperty('fondo', 'background-color', '#dfe6e9');
+  }
 }));
 $('v3-terreno').addEventListener('change', aplicarTerreno);
 $('v3-hipso').addEventListener('change', e => {
