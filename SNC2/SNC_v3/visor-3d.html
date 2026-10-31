@@ -80,10 +80,10 @@
             <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-rec" data-delta="8" style="padding:3px 6px;font-size:10.5px;background:#e11d48;">Récord (+8m)</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-            <label style="font-size:11px;color:#94a3b8;">Cota lámina de agua:</label>
+            <label style="font-size:11px;color:#94a3b8;">Cota lámina de agua: <output id="v3-inund-nivel" style="font-weight:bold;">BASE</output></label>
             <output id="v3-inund-cota-o" style="font-size:12px;color:#38bdf8;font-weight:bold;font-family:monospace;">— m</output>
           </div>
-          <input type="range" id="v3-inund-cota" min="0" max="850" step="0.5" value="100" style="width:100%;margin:4px 0;">
+          <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
           <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
             <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:5px 8px;font-size:11.5px;">▶ Simular crecida</button>
             <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:5px 8px;font-size:11.5px;background:#334155;" title="Recalcular sobre la vista actual">↻ Muestrear aquí</button>
@@ -110,6 +110,20 @@
                 <option value="0.68">Urbano / suelo saturado (C = 0,68)</option>
               </select>
             </label>
+            <div style="display:flex;gap:4px;margin-top:6px;align-items:flex-end;">
+              <label style="font-size:11px;color:#94a3b8;flex:1;">Duración de la lluvia (h)
+                <input type="number" id="v3-lluvia-horas" min="0" max="120" step="1" value="0" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;background:#0b1220;border:1px solid #334155;border-radius:6px;color:#e2e8f0;">
+              </label>
+              <label style="font-size:11px;color:#94a3b8;flex:1.3;">Intensidad
+                <select id="v3-lluvia-intensidad" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
+                  <option value="2">Llovizna (2 mm/h)</option>
+                  <option value="7" selected>Moderada (7 mm/h)</option>
+                  <option value="15">Fuerte (15 mm/h)</option>
+                  <option value="30">Torrencial (30 mm/h)</option>
+                </select>
+              </label>
+            </div>
+            <p class="v3-fuente" id="v3-lluvia-horas-calc" style="margin-top:3px;">0 h × 0 mm/h = 0 mm acumulados.</p>
             <p id="v3-dinac" style="font-size:11px;font-weight:bold;margin:6px 0 0;"></p>
             <p class="v3-fuente" style="margin-top:4px;">Estimación: la lluvia efectiva (mm × coeficiente) mueve la cota entre el nivel normal y el récord histórico de la cuenca elegida (o ±16 m del punto actual si no hay cuenca). No reemplaza un modelo hidrológico.</p>
           </div>
@@ -160,6 +174,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261031n"></script>
+  <script type="module" src="/js/visor3d.js?v=20261031p"></script>
 </body>
 </html>

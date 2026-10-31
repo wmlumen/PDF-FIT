@@ -486,6 +486,24 @@ function generarPoligonoInundacion(cotaVal) {
   return generarPoligonoInundacionCeldas(cotaVal, w, s, e, n, zoom);
 }
 
+// Indica en qué nivel (Base/Alerta/Crítica/Récord) cae la cota actual, según los umbrales de los
+// botones de preset (que ya traen su data-cota real, sea de una cuenca con datos o del punto actual).
+function actualizarNivelInund(cotaVal) {
+  const el = $('v3-inund-nivel');
+  if (!el) return;
+  const cBase = Number($('v3-btn-norm')?.dataset.cota);
+  const cAlerta = Number($('v3-btn-aler')?.dataset.cota);
+  const cCritica = Number($('v3-btn-crit')?.dataset.cota);
+  const cRecord = Number($('v3-btn-rec')?.dataset.cota);
+  let etiqueta = 'BASE', color = '#34d399';
+  if (!isNaN(cRecord) && cotaVal >= cRecord) { etiqueta = 'RÉCORD'; color = '#f87171'; }
+  else if (!isNaN(cCritica) && cotaVal >= cCritica) { etiqueta = 'CRÍTICA'; color = '#fb923c'; }
+  else if (!isNaN(cAlerta) && cotaVal >= cAlerta) { etiqueta = 'ALERTA'; color = '#fbbf24'; }
+  else if (!isNaN(cBase) && cotaVal < cBase - 0.15) { etiqueta = 'BAJO BASE'; color = '#38bdf8'; }
+  el.textContent = etiqueta;
+  el.style.color = color;
+}
+
 function actualizarInundacion() {
   const activo = $('v3-inundacion')?.checked;
   $('v3-inund-ctrl').hidden = !activo;
@@ -509,6 +527,7 @@ function actualizarInundacion() {
 
   const cotaVal = Number($('v3-inund-cota').value);
   $('v3-inund-cota-o').textContent = `${cotaVal} m`;
+  actualizarNivelInund(cotaVal);
 
   // Si el relieve de la vista todavía no terminó de cargar, queryTerrainElevation puede devolver
   // valores incompletos/erróneos (toda la vista "inundada" o cotas muy por debajo de la real).
@@ -664,6 +683,18 @@ function aplicarLluvia() {
 $('v3-lluvia')?.addEventListener('input', aplicarLluvia);
 $('v3-suelo')?.addEventListener('change', aplicarLluvia);
 document.querySelectorAll('.v3-lluvia-btn').forEach(b => b.addEventListener('click', () => { $('v3-lluvia').value = b.dataset.mm; aplicarLluvia(); }));
+
+// Duración de la lluvia (h) × intensidad (mm/h): otra forma de cargar los mm acumulados, además
+// del slider directo y los presets — útil para pensar "llovió 10 horas fuerte" en vez de "mm".
+function aplicarLluviaPorHoras() {
+  const horas = Math.max(0, Number($('v3-lluvia-horas').value) || 0);
+  const tasa = Number($('v3-lluvia-intensidad').value);
+  const mm = Math.min(450, Math.round(horas * tasa));
+  $('v3-lluvia-horas-calc').textContent = `${horas} h × ${tasa} mm/h = ${mm} mm acumulados${horas * tasa > 450 ? ' (tope 450 mm)' : ''}.`;
+  if (horas > 0) { $('v3-lluvia').value = mm; aplicarLluvia(); }
+}
+$('v3-lluvia-horas')?.addEventListener('input', aplicarLluviaPorHoras);
+$('v3-lluvia-intensidad')?.addEventListener('change', aplicarLluviaPorHoras);
 actualizarDinac(0);
 
 // ── Vectores de flujo: anima el trazo real de hidrografía (SNC) para sugerir dirección de escurrimiento ──
