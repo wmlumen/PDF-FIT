@@ -401,6 +401,48 @@ function contornoSuaveInundacion(w, s, e, n, N, cotaVal) {
     }
     val.push(fila);
   }
+
+  // Conectividad hidráulica: que la mancha nazca del cauce real y avance solo por celdas vecinas
+  // también anegadas, en vez de "todo lo que esté bajo la cota" sin importar si está conectado al
+  // río (eso inundaba charcos aislados en lomadas sin ningún arroyo cerca).
+  const iDe = lng => Math.round((lng - w) / dx) + 1, jDe = lat => Math.round((lat - s) / dy) + 1;
+  const semillas = [];
+  const hidroData = map.getSource('hidro')?._data;
+  (hidroData?.features || []).forEach(f => {
+    const coords = f.geometry?.coordinates;
+    if (!Array.isArray(coords)) return;
+    coords.forEach(pt => {
+      if (!Array.isArray(pt) || typeof pt[0] !== 'number') return;
+      const i = iDe(pt[0]), j = jDe(pt[1]);
+      if (i >= 1 && i < G && j >= 1 && j < G && val[j][i] <= cotaVal) semillas.push([i, j]);
+    });
+  });
+  if (!semillas.length) {
+    // Sin hidrografía cargada (o ningún tramo bajo la cota todavía): el agua nace del punto más bajo.
+    let mejor = null, minH = Infinity;
+    for (let j = 1; j < G; j++) for (let i = 1; i < G; i++) {
+      if (val[j][i] < minH) { minH = val[j][i]; mejor = [i, j]; }
+    }
+    if (mejor && minH <= cotaVal) semillas.push(mejor);
+  }
+  if (semillas.length) {
+    const visitado = Array.from({ length: G + 1 }, () => new Array(G + 1).fill(false));
+    const cola = [];
+    semillas.forEach(([i, j]) => { if (!visitado[j][i]) { visitado[j][i] = true; cola.push([i, j]); } });
+    let cabeza = 0;
+    while (cabeza < cola.length) {
+      const [i, j] = cola[cabeza++];
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = i + di, nj = j + dj;
+        if (ni < 0 || ni > G || nj < 0 || nj > G || visitado[nj][ni]) continue;
+        if (val[nj][ni] <= cotaVal) { visitado[nj][ni] = true; cola.push([ni, nj]); }
+      }
+    }
+    for (let j = 0; j <= G; j++) for (let i = 0; i <= G; i++) {
+      if (val[j][i] <= cotaVal && !visitado[j][i]) val[j][i] = SECO;
+    }
+  }
+
   const lerp = (v0, v1, p0, p1) => {
     const t = (cotaVal - v0) / (v1 - v0);
     return [p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t];
@@ -531,6 +573,8 @@ function actualizarNivelInund(cotaVal) {
   else if (!isNaN(cBase) && cotaVal < cBase - 0.15) { etiqueta = 'BAJO BASE'; color = '#38bdf8'; }
   el.textContent = etiqueta;
   el.style.color = color;
+  const punto = $('v3-instr-punto');
+  if (punto) punto.style.color = color;
 }
 
 function actualizarInundacion() {

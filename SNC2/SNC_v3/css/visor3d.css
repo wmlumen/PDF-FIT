@@ -61,3 +61,48 @@ output { color: #7dd3fc; font-weight: 700; }
 .v3-rampa-et { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 2px; }
 .v3-boton { padding: 8px 10px; border: 0; border-radius: 8px; background: #0284c7; color: #fff; font-weight: 700; cursor: pointer; }
 .v3-boton:hover { background: #0369a1; } .v3-boton:disabled { opacity: .6; cursor: wait; }
+
+/* ── Instrumento de simulación hidrológica: telemetría de sala de control ── */
+.v3-instrumento { position: relative; background: #050810; border-color: #163042; overflow: hidden; }
+.v3-instrumento::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(0deg, rgba(94, 234, 212, .025) 0px, rgba(94, 234, 212, .025) 1px, transparent 1px, transparent 3px);
+}
+.v3-instrumento > * { position: relative; z-index: 1; }
+.v3-instr-esquina { position: absolute; width: 9px; height: 9px; border: 2px solid #2dd4bf; opacity: .5; z-index: 2; pointer-events: none; }
+.v3-instr-esquina.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.v3-instr-esquina.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+.v3-instr-esquina.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+.v3-instr-esquina.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.v3-instrumento legend, .v3-instr-rotulo {
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #5a8c93;
+}
+.v3-instr-dato, .v3-instrumento output {
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-variant-numeric: tabular-nums; letter-spacing: .01em;
+}
+.v3-instr-punto {
+  width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none;
+  background: currentColor; box-shadow: 0 0 6px currentColor; animation: v3-pulso 1.8s ease-in-out infinite;
+}
+@keyframes v3-pulso { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .v3-instr-punto { animation: none; } }
+
+.v3-instr-nivel {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 9px 10px; margin-bottom: 2px; border-radius: 4px;
+  background: linear-gradient(180deg, rgba(94, 234, 212, .07), rgba(94, 234, 212, .02));
+  border: 1px solid #163042;
+}
+.v3-instr-nivel-izq { display: flex; align-items: center; gap: 7px; }
+.v3-instr-nivel #v3-inund-nivel { font-size: 13px; font-weight: 700; letter-spacing: .05em; }
+.v3-instr-nivel #v3-inund-cota-o { font-size: 17px; font-weight: 700; color: #5eead4 !important; text-shadow: 0 0 10px rgba(94, 234, 212, .5); }
+
+.v3-instr-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.v3-instr-tile { border: 1px solid #163042; border-radius: 4px; padding: 6px 8px; background: rgba(94, 234, 212, .03); display: grid; gap: 3px; }
+.v3-instr-tile output { font-size: 14px; font-weight: 700; color: #5eead4; }
+#v3-caudal-o.v3-instr-dato { color: #34d399 !important; }
+
+.v3-instrumento input[type=range] { height: 4px; border-radius: 2px; accent-color: #5eead4; }
