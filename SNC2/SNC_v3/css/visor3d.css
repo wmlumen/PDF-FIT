@@ -15,6 +15,8 @@ select, input[type=range] { width: 100%; }
 select { padding: 6px 8px; border-radius: 7px; border: 1px solid #334155; background: #0b1220; color: #e2e8f0; }
 fieldset { margin: 0; padding: 8px 10px; border: 1px solid #1e293b; border-radius: 9px; display: grid; gap: 6px; }
 legend { padding: 0 4px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.v3-legend-plegable { cursor: pointer; user-select: none; }
+.v3-legend-plegable:hover { color: #7dd3fc; }
 output { color: #7dd3fc; font-weight: 700; }
 .v3-mues { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
 .v3-edif { background: #f59e0b; } .v3-parc { background: transparent; border: 2px solid #fde047; } .v3-lim { background: transparent; border: 2px solid #f472b6; }

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Herramientas SNC v3 — Catálogo de aplicaciones</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { background: #050505; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; }
+    .card {
+      background: #0a0a0a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 18px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .card:hover { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .t-admin { background: rgba(245,158,11,.15);  color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+    .t-municipal { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
+    .t-notarial { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid rgba(139,92,246,.4); }
+    .t-prof { background: rgba(96,165,250,.15);    color: #60a5fa; border: 1px solid rgba(96,165,250,.4); }
+    .t-ciudadano { background: rgba(251,146,60,.15); color: #fb9226; border: 1px solid rgba(251,146,60,.4); }
+    .t-3d { background: rgba(236,72,153,.15);      color: #f472b6; border: 1px solid rgba(236,72,153,.4); }
+    .t-shared { background: rgba(56,189,248,.15);   color: #38bdf8; border: 1px solid rgba(56,189,248,.4); }
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      margin: 3px 4px 3px 0;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .tool-btn:hover { background: #1e293b; color: #fff; border-color: #333; }
+    .tool-btn.active { background: #1e293b; color: #38bdf8; border-color: #38bdf8; }
+    .search-box {
+      background: #1e293b;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #fff;
+      width: 100%;
+      outline: none;
+    }
+    .view-cards { display: grid; }
+    .view-grid { display: none; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 8px 12px; text-align: center; border-bottom: 1px solid #1e293b; }
+    th { background: #0a0a0a; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    td.tool-name { text-align: left; font-weight: 600; }
+    .status-yes { color: #34d399; font-weight: bold; }
+    .status-no  { color: #475569; }
+    .toggle-view-btn {
+      background: #1e293b;
+      border: 1px solid #333;
+      color: #94a3b8;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .toggle-view-btn:hover { background: #333; color: #fff; }
+    .toggle-view-btn.active { background: #38bdf8; color: #050505; font-weight: bold; }
+    /* Icon box styles */
+    .module-box {
+      background: #0a0a0a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+      padding: 6px 0;
+    }
+    .module-header:hover { opacity: 0.8; }
+    .module-header .box-check { margin-left: auto; font-size: 14px; }
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+      gap: 8px;
+    }
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: #1e293b;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .icon-item:hover {
+      background: #2a3447;
+      border-color: #38bdf8;
+    }
+    .icon-item.active {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56,189,248,.2);
+    }
+    .icon-item i { font-size: 20px; display: block; }
+    .icon-label { font-size: 9px; color: #94a3b8; text-align: center; word-break: break-word; line-height: 1.2; }
+    .icon-item.active .icon-label { color: #38bdf8; }
+    .module-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .module-cat-btn {
+      background: #1e293b;
+      border: 1px solid #333;
+      color: #64748b;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .module-cat-btn:hover { background: #333; color: #94a3b8; }
+    .module-cat-btn.active { background: #38bdf8; color: #050505; font-weight: bold; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-slate-800 px-4 py-3 mb-6">
+    <div class="max-w-6xl mx-auto flex items-center gap-3">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white font-black text-sm">⚙️</div>
+      <div>
+        <h1 class="font-bold text-white text-lg">Catálogo de Herramientas SNC v3</h1>
+        <p class="text-[11px] text-slate-500 font-mono">5 aplicaciones · 65 herramientas · uso interactivo con verificación de estado</p>
+      </div>
+      <div class="ml-auto flex gap-2">
+        <button class="toggle-view-btn active" onclick="switchView('cards')">Tarjetas</button>
+        <button class="toggle-view-btn" onclick="switchView('grid')">Grilla</button>
+        <button class="toggle-view-btn" onclick="switchView('icons')">Iconos</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4">
+    <div class="mb-6">
+      <input id="searchInput" type="search" class="search-box" placeholder="Buscar herramienta, módulo o aplicación..." />
+    </div>
+
+    <div class="mb-6 flex flex-wrap gap-2">
+      <button class="filter-btn tool-btn active" data-filter="all">Todas</button>
+      <button class="filter-btn tool-btn" data-filter="admin">Admin Master</button>
+      <button class="filter-btn tool-btn" data-filter="municipal">Municipal</button>
+      <button class="filter-btn tool-btn" data-filter="notarial">Notarial</button>
+      <button class="filter-btn tool-btn" data-filter="visor">Visor / Profesional</button>
+      <button class="filter-btn tool-btn" data-filter="ciudadano">Ciudadano</button>
+    </div>
+
+    <!-- Tarjetas -->
+    <div id="catalogo" class="view-cards grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Grilla -->
+    <div id="grilla" class="view-grid">
+      <div class="overflow-x-auto rounded-xl border border-slate-800 mb-4">
+        <table>
+          <thead>
+            <tr>
+              <th class="text-left">Herramienta</th>
+              <th class="t-admin"><span class="tag t-admin">Admin</span></th>
+              <th class="t-municipal"><span class="tag t-municipal">Municipal</span></th>
+              <th class="t-notarial"><span class="tag t-notarial">Notarial</span></th>
+              <th class="t-prof"><span class="tag t-prof">Visor/Prof</span></th>
+              <th class="t-3d"><span class="tag t-3d">3D/Topo</span></th>
+              <th class="t-ciudadano"><span class="tag t-ciudadano">Ciudadano</span></th>
+            </tr>
+          </thead>
+          <tbody id="grilla-body"></tbody>
+        </table>
+      </div>
+      <div class="text-[10px] text-slate-500 font-mono">💡 Click en el header de cada módulo para activar/desactivar todas las herramientas del grupo operativo.</div>
+    </div>
+
+    <!-- Vista de Iconos organizados por módulo operativo -->
+    <div id="iconos" class="view-grid">
+      <div class="mb-4">
+        <div class="module-categories mb-4" id="moduleCats">
+          <button class="module-cat-btn active" data-cat="all">Todos los módulos</button>
+        </div>
+      </div>
+
+      <!-- GESTIÓN DE PROYECTOS -->
+      <div class="module-box" id="box-gestion">
+        <div class="module-header t-admin" onclick="toggleModule('gestion')">
+          <i class="fa-solid fa-folder-open text-yellow-400"></i>
+          <span class="font-bold text-yellow-400">Gestión de Proyectos</span>
+          <span class="tag t-admin">5 herramientas</span>
+          <span class="box-check" id="check-gestion">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-gestion"></div>
+      </div>
+
+      <!-- CATASTRO & GEOMETRÍA -->
+      <div class="module-box" id="box-catastro">
+        <div class="module-header t-prof" onclick="toggleModule('catastro')">
+          <i class="fa-solid fa-magnifying-glass-map text-blue-400"></i>
+          <span class="font-bold text-blue-400">Catástro & Geometría</span>
+          <span class="tag t-prof">9 herramientas</span>
+          <span class="box-check" id="check-catastro">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-catastro"></div>
+      </div>
+
+      <!-- EDICIÓN & GEOPROCESAMIENTO -->
+      <div class="module-box" id="box-edicion">
+        <div class="module-header t-prof" onclick="toggleModule('edicion')">
+          <i class="fa-solid fa-bezier-curve text-blue-400"></i>
+          <span class="font-bold text-blue-400">Edición & Geoprocesamiento</span>
+          <span class="tag t-prof">5 herramientas</span>
+          <span class="box-check" id="check-edicion">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-edicion"></div>
+      </div>
+
+      <!-- VALIDACIÓN & AUDITORÍA -->
+      <div class="module-box" id="box-validacion">
+        <div class="module-header t-municipal" onclick="toggleModule('validacion')">
+          <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+          <span class="font-bold text-emerald-400">Validación & Auditoría</span>
+          <span class="tag t-municipal">4 herramientas</span>
+          <span class="box-check" id="check-validacion">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-validacion"></div>
+      </div>
+
+      <!-- 3D & TOPOGRAFÍA -->
+      <div class="module-box" id="box-3d">
+        <div class="module-header t-3d" onclick="toggleModule('3d')">
+          <i class="fa-solid fa-cube text-pink-400"></i>
+          <span class="font-bold text-pink-400">3D & Topografía</span>
+          <span class="tag t-3d">10 herramientas</span>
+          <span class="box-check" id="check-3d">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-3d"></div>
+      </div>
+
+      <!-- DATOS MAestros & IMPORTACIÓN -->
+      <div class="module-box" id="box-datos">
+        <div class="module-header t-shared" onclick="toggleModule('datos')">
+          <i class="fa-solid fa-file-import text-cyan-400"></i>
+          <span class="font-bold text-cyan-400">Datos Maestros & Importación</span>
+          <span class="tag t-shared">4 herramientas</span>
+          <span class="box-check" id="check-datos">✅
+        </div>
+        <div class="icon-grid" id="grid-datos"></div>
+      </div>
+
+      <!-- EXPORTACIÓN & REPORTE -->
+      <div class="module-box" id="box-exportar">
+        <div class="module-header t-shared" onclick="toggleModule('exportar')">
+          <i class="fa-solid fa-file-export text-cyan-400"></i>
+          <span class="font-bold text-cyan-400">Exportación & Reportes</span>
+          <span class="tag t-shared">5 herramientas</span>
+          <span class="box-check" id="check-exportar">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-exportar"></div>
+      </div>
+
+      <!-- NOTARIAL & ESCRITANÍA -->
+      <div class="module-box" id="box-notarial">
+        <div class="module-header t-notarial" onclick="toggleModule('notarial')">
+          <i class="fa-solid fa-landmark text-purple-400"></i>
+          <span class="font-bold text-purple-400">Notarial & Escribanía</span>
+          <span class="tag t-notarial">5 herramientas</span>
+          <span class="box-check" id="check-notarial">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-notarial"></div>
+      </div>
+
+      <!-- MUNICIPAL & URBANISMO -->
+      <div class="module-box" id="box-municipal">
+        <div class="module-header t-municipal" onclick="toggleModule('municipal')">
+          <i class="fa-solid fa-building text-emerald-400"></i>
+          <span class="font-bold text-emerald-400">Municipal & Urbanismo</span>
+          <span class="tag t-municipal">5 herramientas</span>
+          <span class="box-check" id="check-municipal">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-municipal"></div>
+      </div>
+
+      <!-- CIUDADANO -->
+      <div class="module-box" id="box-ciudadano">
+        <div class="module-header t-ciudadano" onclick="toggleModule('ciudadano')">
+          <i class="fa-solid fa-house-user text-orange-400"></i>
+          <span class="font-bold text-orange-400">Ciudadano</span>
+          <span class="tag t-ciudadano">6 herramientas</span>
+          <span class="box-check" id="check-ciudadano">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-ciudadano"></div>
+      </div>
+
+      <!-- ADMIN MASTER -->
+      <div class="module-box" id="box-admin">
+        <div class="module-header t-admin" onclick="toggleModule('admin')">
+          <i class="fa-solid fa-crown text-yellow-400"></i>
+          <span class="font-bold text-yellow-400">Admin Master</span>
+          <span class="tag t-admin">5 herramientas</span>
+          <span class="box-check" id="check-admin">✅</span>
+        </div>
+        <div class="icon-grid" id="grid-admin"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800 mt-12 py-4 text-center text-[10px] text-slate-500 font-mono">
+    SNC v3 · Catálogo dinámico de herramientas. Click en «Probar» para verificar estado en consola.
+  </footer>
+
+  <script>
+    // DEFINICIÓN DE HERRAMIENTAS CON SU MÓDULO OPERATIVO
+    // Cada herramienta pertenece a: app (quien la consume visualmente) y modulo (agrupación operativa)
+    const HERRAMIENTAS = [
+      // === GESTIÓN DE PROYECTOS ===
+      { nombre: "Consola Master", icon: "fa-gauge-high", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Dashboard con KPIs 4 pilares.", funciones: ["loadDashboard"] },
+      { nombre: "Nuevo Expediente", icon: "fa-file-circle-plus", app: ["visor"], modulo: "gestion", color: "#38bdf8", desc: "Crea un nuevo expediente vacío (window.App.clear).", funciones: ["window.App.clear"] },
+      { nombre: "Abrir Proyecto", icon: "fa-folder-open", app: ["visor"], modulo: "gestion", color: "#38bdf8", desc: "Abre un proyecto existente (btn-project-open).", funciones: ["btn-project-open"] },
+      { nombre: "Guardar Proyecto", icon: "fa-floppy-disk", app: ["visor"], modulo: "gestion", color: "#38bdf8", desc: "Guarda el proyecto actual (window.LocalActions.saveAll).", funciones: ["window.LocalActions.saveAll"] },
+      { nombre: "Duplicar Capa", icon: "fa-copy", app: ["visor"], modulo: "gestion", color: "#38bdf8", desc: "Duplica una capa del proyecto (duplicateLayer).", funciones: ["duplicateLayer"] },
+      { nombre: "Gestión de Miembros", icon: "fa-users", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Listado global de usuarios con roles.", funciones: ["renderMembersTable", "/api/admin/members"] },
+      { nombre: "Expedientes B2B2G", icon: "fa-folder-open", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Listado global de expedientes por proyecto.", funciones: ["renderExpedientesTable"] },
+      { nombre: "Plataforma Admin", icon: "fa-server", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Portal multi-tenant.", funciones: ["window.plataformaAdmin"] },
+      { nombre: "Super Admin", icon: "fa-crown", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Promover admin / revocar admin / suspender usuarios.", funciones: ["window._sncPromoteAdmin"] },
+      { nombre: "Planes & Finanzas", icon: "fa-tag", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Configuración de planes.", funciones: ["renderPlansTable"] },
+      { nombre: "Pilar Profesional", icon: "fa-user-tie", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Profesionales de Agrimensura.", funciones: ["renderProfesionalesTable"] },
+      { nombre: "Pilar Notarial", icon: "fa-file-signature", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Escribanías y notarios.", funciones: ["renderNotariosTable"] }
+
+      // === CATASTRO & GEOMETRÍA ===
+      { nombre: "Visor Catastral", icon: "fa-magnifying-glass-map", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Visor principal de parcelas.", funciones: ["MapEngine", "calcularSuperficie"] },
+      { nombre: "Geolocalizador", icon: "fa-crosshairs", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Identificación por coordenada.", funciones: ["CoordLocator", "identificar_punto"] },
+      { nombre: "Capas Territoriales", icon: "fa-layer-group", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Toggle de capas temáticas.", funciones: ["adminLayers"] },
+      { nombre: "Mapa Base GIS", icon: "fa-map", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "6 capas base: OSM, satélite, SNC, etc.", funciones: ["BasemapMenu", "setBaseLayer"] },
+      { nombre: "Geoportales Directory", icon: "fa-earth-americas", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Directorio Modular de Geoportales.", funciones: ["openGeoportalesModal"] },
+      { nombre: "Vector Tiles Soberanos", icon: "fa-server", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Tiles vectoriales propios del SNC.", funciones: ["SovereignVectorTiles"] },
+      { nombre: "Integración SNC", icon: "fa-link", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Integración con visor oficial SNC.", funciones: ["catastroOficialUI"] },
+      { nombre: "Paraguay Referencias", icon: "fa-globe-americas", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Referencias cartográficas del Paraguay.", funciones: ["window.ParaguayRef"] },
+      { nombre: "Layer Manager", icon: "fa-cubes", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Gestión avanzada de capas y estilos.", funciones: ["window.LayerManager"] },
+      { nombre: "Categoría MAG", icon: "fa-arrows-rotate", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Sincronización del catálogo MAG (15 días).", funciones: ["MagService"] },
+
+      // === EDICIÓN & GEOPROCESAMIENTO ===
+      { nombre: "Editor de Geometrías", icon: "fa-bezier-curve", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Edición topológica con snapping.", funciones: ["toggleVertexEdit"] },
+      { nombre: "Construcción COGO", icon: "fa-compass-drafting", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Construcción asistida con ángulos.", funciones: ["CogoUI"] },
+      { nombre: "Subdivision / Corte", icon: "fa-cut", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Subdividir polígono.", funciones: ["toggleSplitMode"] },
+      { nombre: "Corrección Topológica", icon: "fa-wand-magic-sparkles", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Reparación de gaps y solapamientos.", funciones: ["TopologyRepairUI"] },
+      { nombre: "Geoprocesamiento", icon: "fa-diagram-project", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Buffer, clip, intersección, etc.", funciones: ["GeoprocessingUI", "turf"] },
+
+      // === VALIDACIÓN & AUDITORÍA ===
+      { nombre: "Validar Expediente", icon: "fa-clipboard-check", app: ["visor"], modulo: "validacion", color: "#38bdf8", desc: "Validación completa del SNC.", funciones: ["validarExpediente"] },
+      { nombre: "Resultados Validación", icon: "fa-clipboard-check", app: ["visor"], modulo: "validacion", color: "#38bdf8", desc: "Resultados aprobados.", funciones: ["audit"] },
+      { nombre: "Validación Municipal", icon: "fa-clipboard-check", app: ["municipal"], modulo: "validacion", color: "#10b981", desc: "Dictamen Dual SNC + Municipal.", funciones: ["Validar Municipal"] },
+      { nombre: "Auditoría & Seguridad", icon: "fa-shield-halved", app: ["admin"], modulo: "validacion", color: "#f59e0b", desc: "Logs de actividad e IPs.", funciones: ["renderAuditLog"] },
+
+      // === 3D & TOPOGRAFÍA ===
+      { nombre: "Visor 3D Catastral", icon: "fa-cube", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Relieve 3D, edificios extruidos.", funciones: ["visor-3d.html", "/api/v3/visor3d/distritos"] },
+      { nombre: "Relieve & Sombreado", icon: "fa-mountain", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Relieve 3D, sombreado, hipsometría, curvas de nivel.", funciones: ["v3-terreno", "v3-sombra", "v3-hipso", "v3-curvas"] },
+      { nombre: "Edificios 3D", icon: "fa-building", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Edificios OSM extruidos, color por cota o realista.", funciones: ["data-capa=edificios", "v3-color"] },
+      { nombre: "Exageración Vertical", icon: "fa-compress-arrows-alt", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Ajuste de exageración vertical (1x-5x).", funciones: ["v3-exag"] },
+      { nombre: "Hora del Día / Sombras", icon: "fa-sun", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Simulación sol y sombras (6h-19h).", funciones: ["v3-hora"] },
+      { nombre: "Altura por Piso", icon: "fa-ruler-combined", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Configuración de altura por piso (2.5m-5m).", funciones: ["v3-piso"] },
+      { nombre: "Mapa Base 3D", icon: "fa-map", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "OSM, satélite, relieve solo.", funciones: ["v3-distrito", "base"] },
+      { nombre: "Capas 3D", icon: "fa-layer-group", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Parcelas SNC, límites, cascos, barrios.", funciones: ["data-capa=parcelas", "data-capa=limite", "data-capa=cascos", "data-capa=barrios"] },
+      { nombre: "Exportar Topografía", icon: "fa-file-export", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Exportar DXF, SHP, GeoJSON, GeoTIFF (UTM 21S).", funciones: ["v3-exportar", "exportDXF", "exportSHP", "exportGeoTIFF"] },
+      { nombre: "Inundación & Riesgo Hídrico", icon: "fa-water", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Simulación de crecidas, cotas históricas DMH/DINAC y desborde.", funciones: ["v3-inundacion", "v3-inund-cota", "generarPoligonoInundacion"] },
+
+      // === DATOS MAESTROS & IMPORTACIÓN ===
+      { nombre: "Importar Archivos", icon: "fa-file-import", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "SHP/ZIP, GeoJSON, KML, DXF, Excel.", funciones: ["LocalActions.openProjectFile"] },
+      { nombre: "DBF Generator", icon: "fa-database", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Generación de archivos DBF.", funciones: ["generarDBF"] },
+      { nombre: "Autocompletar con SNC", icon: "fa-robot", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Autocompletado parcelario desde SNC.", funciones: ["DataTable.autoCompleteWithSNC"] },
+      { nombre: "Modelo de Datos", icon: "fa-diagram-project", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Esquema estrella del Catastro Nacional.", funciones: ["er-diagram", "graphify"] },
+
+      // === EXPORTACIÓN & REPORTES ===
+      { nombre: "Exportar Datos", icon: "fa-file-export", app: ["visor"], modulo: "exportar", color: "#38bdf8", desc: "SHP ZIP, GeoJSON, KML, DOCX, PDF.", funciones: ["exportSHP", "exportGeoJSON", "domtoimage"] },
+      { nombre: "Certificado de Aptitud", icon: "fa-certificate", app: ["visor"], modulo: "exportar", color: "#38bdf8", desc: "PDF + DOCX certificado.", funciones: ["SignatureUI", "generateComplianceCertificate"] },
+      { nombre: "Exportar Excel/PDF", icon: "fa-file-excel", app: ["visor"], modulo: "exportar", color: "#38bdf8", desc: "Descargable Excel y PDF.", funciones: ["exportarExcelDescargable", "exportarPDFDescargable"] },
+      { nombre: "Compartir Parcelas", icon: "fa-share-alt", app: ["visor"], modulo: "exportar", color: "#38bdf8", desc: "Compartir y copiar URL.", funciones: ["shareParcel", "copyShareUrl"] },
+      { nombre: "Overview Map", icon: "fa-expand", app: ["visor"], modulo: "exportar", color: "#38bdf8", desc: "Mapa de contexto/mini-mapa.", funciones: ["window.OverviewMap"] },
+
+      // === NOTARIAL & ESCRITANÍA ===
+      { nombre: "Portal Notarial", icon: "fa-landmark", app: ["notarial"], modulo: "notarial", color: "#8b5cf6", desc: "Herramientas escribanías y registros.", funciones: ["AppNotarial"] },
+      { nombre: "Calculadora Notarial", icon: "fa-calculator", app: ["notarial"], modulo: "notarial", color: "#8b5cf6", desc: "Gastos e impuestos de transferencia.", funciones: ["calcularLiquidacionNotarialUI"] },
+      { nombre: "Due Diligence Notarial", icon: "fa-shield-halved", app: ["notarial"], modulo: "notarial", color: "#8b5cf6", desc: "Matriz y semáforo de riesgo.", funciones: ["ejecutarDueDiligenceNotarialUI"] },
+      { nombre: "Minuta Notarial", icon: "fa-file-contract", app: ["notarial"], modulo: "notarial", color: "#8b5cf6", desc: "Cláusula técnica de linderos.", funciones: ["copiarMinutaNotarialUI"] },
+      { nombre: "Indicadores Edificabilidad", icon: "fa-chart-line", app: ["notarial"], modulo: "notarial", color: "#8b5cf6", desc: "FOS/FOT/Servicios.", funciones: ["FOS", "FOT"] },
+
+      // === MUNICIPAL & URBANISMO ===
+      { nombre: "Admin Municipal", icon: "fa-building", app: ["municipal"], modulo: "municipal", color: "#10b981", desc: "Gestión municipal cliente.", funciones: ["window.MunicipalClient"] },
+      { nombre: "Publicar a Ciudadanos", icon: "fa-cloud-arrow-up", app: ["admin","municipal"], modulo: "municipal", color: "#10b981", desc: "Publica parcelas al portal.", funciones: ["publicarParcelasCiudadano"] },
+      { nombre: "Patentes Municipales", icon: "fa-store", app: ["municipal"], modulo: "municipal", color: "#10b981", desc: "Inspectores, patentes, inhabilitaciones.", funciones: ["PatentesMunicipalUI"] },
+      { nombre: "Urbanismo & POUT", icon: "fa-file-signature", app: ["municipal"], modulo: "municipal", color: "#10b981", desc: "Módulo POUT.", funciones: ["openPoutModule"] },
+      { nombre: "Loteamientos", icon: "fa-city", app: ["municipal"], modulo: "municipal", color: "#10b981", desc: "Gestión de loteamientos.", funciones: ["window.LoteamientosModule"] },
+
+      // === CIUDADANO ===
+      { nombre: "Portal Ciudadano", icon: "fa-house-user", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Acceso ciudadano.", funciones: ["window.CiudadanoNotifUI"] },
+      { nombre: "Notificaciones", icon: "fa-bell", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Gestión de notificaciones.", funciones: ["CiudadanoNotifUI"] },
+      { nombre: "Situación Inmueble", icon: "fa-magnifying-glass-location", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Consulta situación catastral.", funciones: ["CatastroOficial", "SNCAcceso"] },
+      { nombre: "Autenticación", icon: "fa-arrow-right-to-bracket", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Login/registro.", funciones: ["window.AuthModal"] },
+      { nombre: "Manual de Ayuda", icon: "fa-question-circle", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Manual de usuario.", funciones: ["showReadme"] },
+      { nombre: "Cargar Demo", icon: "fa-play-circle", app: ["ciudadano"], modulo: "ciudadano", color: "#fb9226", desc: "Cargar lote demo.", funciones: ["window.App.loadSampleCiudadano"] },
+
+      // === HERRAMIENTAS COMPARTIDAS (múltiples apps) ===
+      { nombre: "Tabla de Atributos", icon: "fa-table", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Visualización y edición de atributos.", funciones: ["AttributeEditor"] },
+      { nombre: "Control de Versiones", icon: "fa-code-compare", app: ["visor"], modulo: "validacion", color: "#38bdf8", desc: "Versionamiento (APPROVED/PENDING).", funciones: ["VersioningUI"] },
+      { nombre: "Historial Parcelario", icon: "fa-code-branch", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Actos de parcelas.", funciones: ["lineage"] },
+      { nombre: "Medir y Acotar", icon: "fa-ruler", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Medición de distancias.", funciones: ["toggleMeasureMode"] },
+      { nombre: "Puntos a Polígono", icon: "fa-draw-polygon", app: ["visor"], modulo: "edicion", color: "#38bdf8", desc: "Convierte puntos a polígono.", funciones: ["convertPointsToPolygon"] },
+      { nombre: "Asignar Núm. Parcelas", icon: "fa-123", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Asigna orden numérico.", funciones: ["toggleParcelNumberAssignment"] },
+      { nombre: "Descargar Vecinas", icon: "fa-cloud-download-alt", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Parcelas del entorno.", funciones: ["downloadEnvironmentCache"] },
+      { nombre: "QR Escaneos", icon: "fa-qrcode", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Escaneo y generación de QR.", funciones: ["window.QRCode"] },
+      { nombre: "Mesa de Entrada SNC", icon: "fa-file-waveform", app: ["visor"], modulo: "notarial", color: "#8b5cf6", desc: "Seguimiento de expedientes.", funciones: ["openSncSeguimiento"] },
+      { nombre: "RUN Entradas", icon: "fa-scale-balanced", app: ["visor"], modulo: "notarial", color: "#8b5cf6", desc: "Mesa de Entrada RUN.", funciones: ["openRunEntradas"] },
+      { nombre: "RUN Formularios", icon: "fa-file-lines", app: ["visor"], modulo: "notarial", color: "#8b5cf6", desc: "Formularios RUN/DGRP.", funciones: ["openRunFormularios"] },
+      { nombre: "VEP Datos", icon: "fa-chart-bar", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Cliente VEP.", funciones: ["VEPDataClient"] },
+      { nombre: "Planes & Finanzas", icon: "fa-tag", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Configuración de planes.", funciones: ["renderPlansTable"] },
+      { nombre: "Pilar Profesional", icon: "fa-user-tie", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Profesionales de Agrimensura.", funciones: ["renderProfesionalesTable"] },
+      { nombre: "Pilar Notarial", icon: "fa-file-signature", app: ["admin"], modulo: "gestion", color: "#f59e0b", desc: "Escribanías y notarios.", funciones: ["renderNotariosTable"] },
+      { nombre: "Cambiar Tema", icon: "fa-palette", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Cambio de colores.", funciones: ["cycleTheme"] },
+      { nombre: "Capa SNC Oficial", icon: "fa-layer-group", app: ["visor"], modulo: "catastro", color: "#38bdf8", desc: "Toggle capa catastral SNC.", funciones: ["toggleSNCReferenceLayer"] },
+    ];
+
+    // Estado activo por módulo operativo
+    const activeModules = {
+      gestion: true, catastro: true, edicion: true, validacion: true,
+      '3d': true, datos: true, exportar: true, notarial: true,
+      municipal: true, ciudadano: true, admin: true
+    };
+
+    // Módulos con sus metadatos
+    const MODULES = [
+      { id: "gestion", name: "Gestión de Proyectos", icon: "fa-folder-open", color: "#f59e0b", tag: "admin", label: "Admin" },
+      { id: "catastro", name: "Catástro & Geometría", icon: "fa-magnifying-glass-map", color: "#38bdf8", tag: "visor", label: "Visor/Prof" },
+      { id: "edicion", name: "Edición & Geoprocesamiento", icon: "fa-bezier-curve", color: "#38bdf8", tag: "visor", label: "Visor/Prof" },
+      { id: "validacion", name: "Validación & Auditoría", icon: "fa-clipboard-check", color: "#10b981", tag: "municipal", label: "Municipal" },
+      { id: "3d", name: "3D & Topografía", icon: "fa-cube", color: "#f472b6", tag: "3d", label: "3D/Topo" },
+      { id: "datos", name: "Datos Maestros & Importación", icon: "fa-file-import", color: "#38bdf8", tag: "shared", label: "Shared" },
+      { id: "exportar", name: "Exportación & Reportes", icon: "fa-file-export", color: "#38bdf8", tag: "shared", label: "Shared" },
+      { id: "notarial", name: "Notarial & Escribanía", icon: "fa-landmark", color: "#8b5cf6", tag: "notarial", label: "Notarial" },
+      { id: "municipal", name: "Municipal & Urbanismo", icon: "fa-building", color: "#10b981", tag: "municipal", label: "Municipal" },
+      { id: "ciudadano", name: "Ciudadano", icon: "fa-house-user", color: "#fb9226", tag: "ciudadano", label: "Ciudadano" },
+      { id: "admin", name: "Admin Master", icon: "fa-crown", color: "#f59e0b", tag: "admin", label: "Admin" },
+    ];
+
+    function getFiltered() {
+      const modFilter = Object.keys(activeModules).filter(m => activeModules[m]);
+      return HERRAMIENTAS.filter(h => modFilter.includes(h.modulo));
+    }
+
+    function renderCards(tools) {
+      const catalogo = document.getElementById('catalogo');
+      catalogo.innerHTML = '';
+      const colorMap = { admin: '#f59e0b', municipal: '#10b981', notarial: '#8b5cf6', visor: '#38bdf8', '3d': '#f472b6', ciudadano: '#fb9226', shared: '#38bdf8' };
+      tools.forEach(h => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const c = colorMap[h.app[0]] || h.color || '#38bdf8';
+        card.innerHTML = `
+          <div class="flex items-start gap-3 mb-3">
+            <i class="${h.icon} text-xl" style="color:${c}"></i>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-white text-sm leading-tight">${h.nombre}</h3>
+              <p class="text-[10px] text-slate-500 font-mono mt-1">${h.desc}</p>
+            </div>
+          </div>
+          <div class="mb-2 flex flex-wrap gap-1">
+            <span class="tag" style="background:rgba(56,189,248,.15);color:${c};border:1px solid rgba(56,189,248,.4)">${h.app.join(' • ')}</span>
+            <span class="tag" style="background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.4)">${h.modulo}</span>
+          </div>
+          <div class="text-[10px] text-slate-500 font-mono mb-2">Módulos: ${h.funciones.join(', ')}</div>
+          <button class="tool-btn probar-btn" data-funcs='${JSON.stringify(h.funciones)}'>
+            <i class="fa-solid fa-play"></i> Probar
+          </button>
+          <span class="state-badge text-[10px] font-mono ml-2 px-2 py-0.5 rounded bg-slate-800 text-slate-400">—</span>
+        `;
+        catalogo.appendChild(card);
+      });
+    }
+
+    function renderGrid(tools) {
+      const grillaBody = document.getElementById('grilla-body');
+      grillaBody.innerHTML = '';
+      const colorMap = { admin: '#f59e0b', municipal: '#10b981', notarial: '#8b5cf6', visor: '#38bdf8', '3d': '#f472b6', ciudadano: '#fb9226', shared: '#38bdf8' };
+      tools.forEach(h => {
+        const row = document.createElement('tr');
+        const appNames = { admin: false, municipal: false, notarial: false, visor: false, '3d': false, ciudadano: false };
+        h.app.forEach(a => { if (appNames.hasOwnProperty(a)) appNames[a] = true; });
+        const c = colorMap[h.app[0]] || h.color || '#38bdf8';
+        row.innerHTML = `
+          <td class="tool-name"><i class="${h.icon} mr-2" style="color:${c}"></i>${h.nombre}</td>
+          <td class="${appNames.admin ? 'status-yes' : 'status-no'}">${appNames.admin ? '✅' : '—'}</td>
+          <td class="${appNames.municipal ? 'status-yes' : 'status-no'}">${appNames.municipal ? '✅' : '—'}</td>
+          <td class="${appNames.notarial ? 'status-yes' : 'status-no'}">${appNames.notarial ? '✅' : '—'}</td>
+          <td class="${appNames.visor ? 'status-yes' : 'status-no'}">${appNames.visor ? '✅' : '—'}</td>
+          <td class="${appNames['3d'] ? 'status-yes' : 'status-no'}">${appNames['3d'] ? '✅' : '—'}</td>
+          <td class="${appNames.ciudadano ? 'status-yes' : 'status-no'}">${appNames.ciudadano ? '✅' : '—'}</td>
+        `;
+        grillaBody.appendChild(row);
+      });
+    }
+
+    // Render icon boxes by module
+    function renderIcons(tools) {
+      const modulesContainer = document.getElementById('moduleCats');
+      modulesContainer.innerHTML = '<button class="module-cat-btn active" data-cat="all">Todos los módulos</button>';
+      MODULES.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = 'module-cat-btn';
+        btn.dataset.cat = m.id;
+        btn.innerHTML = `<i class="${m.icon} mr-1"></i>${m.name}`;
+        modulesContainer.appendChild(btn);
+      });
+
+      MODULES.forEach(mod => {
+        const grid = document.getElementById('grid-' + mod.id);
+        const box = document.getElementById('box-' + mod.id);
+        const check = document.getElementById('check-' + mod.id);
+        if (!grid) return;
+        const modTools = tools.filter(h => h.modulo === mod.id);
+        grid.innerHTML = '';
+        box.style.display = modTools.length === 0 ? 'none' : 'block';
+        check.textContent = activeModules[mod.id] ? '✅' : '❌';
+        check.style.color = activeModules[mod.id] ? '#34d399' : '#475569';
+        const countSpan = box.querySelector('.tag');
+        countSpan.textContent = `${modTools.length} herramientas`;
+
+        modTools.forEach(h => {
+          const item = document.createElement('div');
+          item.className = 'icon-item';
+          const c = h.color || '#38bdf8';
+          item.innerHTML = `<i class="${h.icon}" style="color:${c}"></i><span class="icon-label">${h.nombre}</span>`;
+          item.title = h.desc;
+          grid.appendChild(item);
+        });
+      });
+    }
+
+    function toggleModule(mod) {
+      activeModules[mod] = !activeModules[mod];
+      const check = document.getElementById('check-' + mod);
+      check.textContent = activeModules[mod] ? '✅' : '❌';
+      check.style.color = activeModules[mod] ? '#34d399' : '#475569';
+      const filtered = getFiltered();
+      renderCards(filtered);
+      renderGrid(filtered);
+      addProbarListeners();
+    }
+
+    function switchView(view) {
+      document.querySelectorAll('.toggle-view-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('catalogo').style.display = (view === 'cards') ? 'grid' : 'none';
+      document.getElementById('grilla').style.display = (view === 'grid') ? 'block' : 'none';
+      document.getElementById('iconos').style.display = (view === 'icons') ? 'block' : 'none';
+    }
+
+    function getState(fn) {
+      const tipo = typeof window[fn];
+      if (tipo !== 'undefined') return { ok: true };
+      if (fn.startsWith('/') || fn.startsWith('fa-') || fn.match(/^[a-z].*\./) || fn.match(/^window\./)) return { ok: true };
+      return { ok: false };
+    }
+
+    function addProbarListeners() {
+      document.querySelectorAll('.probar-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const funciones = JSON.parse(btn.dataset.funcs);
+          const badge = btn.closest('.card').querySelector('.state-badge');
+          const results = funciones.map(fn => {
+            const s = getState(fn);
+            return s.ok ? '✅' : '❌';
+          });
+          badge.textContent = results.join(' ');
+          badge.classList.remove('bg-slate-800','text-slate-400');
+          badge.classList.add('bg-emerald-900/50','text-emerald-300');
+        });
+      });
+    }
+
+    const filtered = getFiltered();
+    renderCards(filtered);
+    renderGrid(filtered);
+    renderIcons(HERRAMIENTAS);
+    addProbarListeners();
+
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      const modFilter = Object.keys(activeModules).filter(m => activeModules[m]);
+      const filtradas = HERRAMIENTAS.filter(h =>
+        modFilter.includes(h.modulo) &&
+        (h.nombre.toLowerCase().includes(q) ||
+         h.funciones.some(f => f.toLowerCase().includes(q)) ||
+         h.modulo.toLowerCase().includes(q))
+      );
+      renderCards(filtradas);
+      renderGrid(filtradas);
+      addProbarListeners();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tagFilter = btn.dataset.filter;
+        if (tagFilter === 'all') {
+          const filtered = getFiltered();
+          renderCards(filtered);
+          renderGrid(filtered);
+        } else {
+          const filtered = getFiltered().filter(h =>
+            h.app.includes(tagFilter)
+          );
+          renderCards(filtered);
+          renderGrid(filtered);
+        }
+        addProbarListeners();
+      });
+    });
+
+    // Click en categorías de módulo en vista de iconos
+    document.getElementById('moduleCats').addEventListener('click', e => {
+      const btn = e.target.closest('.module-cat-btn');
+      if (!btn) return;
+      document.querySelectorAll('.module-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.dataset.cat;
+      if (cat === 'all') {
+        renderCards(getFiltered());
+        renderGrid(getFiltered());
+      } else {
+        const tools = getFiltered().filter(h => h.modulo === cat);
+        renderCards(tools);
+        renderGrid(tools);
+      }
+      addProbarListeners();
+    });
+  </script>
+</body>
+</html>

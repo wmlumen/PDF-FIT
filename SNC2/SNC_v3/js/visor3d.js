@@ -40,6 +40,8 @@ const map = new ml.Map({
       dem: { type: 'raster-dem', tiles: tesela('terreno'), tileSize: 256, maxzoom: 15, encoding: 'terrarium', attribution: 'Relieve: Terrarium (AWS)' },
       'dem-sombra': { type: 'raster-dem', tiles: tesela('terreno'), tileSize: 256, maxzoom: 15, encoding: 'terrarium' },
       curvas: { type: 'geojson', data: vacio },
+      inundacion: { type: 'geojson', data: vacio },
+      hidro: { type: 'geojson', data: vacio },
       edificios: { type: 'geojson', data: vacio }, parcelas: { type: 'geojson', data: vacio }, limite: { type: 'geojson', data: vacio },
       cascos: { type: 'geojson', data: vacio }, barrios: { type: 'geojson', data: vacio }
     },
@@ -51,6 +53,13 @@ const map = new ml.Map({
       { id: 'base-satelite-respaldo', type: 'raster', source: 'osm', minzoom: 19.5, layout: { visibility: 'none' } },
       { id: 'hipsometria', type: 'raster', source: 'hipsometria', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.75 } },
       { id: 'sombra', type: 'hillshade', source: 'dem-sombra', paint: { 'hillshade-exaggeration': 0.45, 'hillshade-shadow-color': '#3f3f46' } },
+      { id: 'hidro-lineas', type: 'line', source: 'hidro', layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#0284c7', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 3.5, 17, 7], 'line-opacity': 0.85 } },
+      { id: 'hidro-nombres', type: 'symbol', source: 'hidro', minzoom: 13,
+        layout: { 'symbol-placement': 'line', 'text-field': ['get', 'NOMBRE'], 'text-size': 11, 'text-font': ['Open Sans Regular'], 'text-max-angle': 30 },
+        paint: { 'text-color': '#0369a1', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } },
+      { id: 'inundacion-capa', type: 'fill', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'fill-color': '#0284c7', 'fill-opacity': 0.60, 'fill-antialias': false } },
+      { id: 'inundacion-borde', type: 'line', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'line-color': '#38bdf8', 'line-width': 1.5, 'line-opacity': 0.85 } },
       { id: 'barrios', type: 'fill', source: 'barrios', layout: { visibility: 'none' }, paint: { 'fill-color': ['match', ['get', 'zona'], 'urbana', '#fcd34d', '#5eead4'], 'fill-opacity': 0.28 } },
       { id: 'barrios-borde', type: 'line', source: 'barrios', layout: { visibility: 'none' }, paint: { 'line-color': ['match', ['get', 'zona'], 'urbana', '#b45309', '#0d9488'], 'line-width': 1 } },
       { id: 'cascos', type: 'fill', source: 'cascos', layout: { visibility: 'none' }, paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.22 } },
@@ -94,6 +103,13 @@ map.on('load', () => {
   if (!location.hash) setTimeout(() => gps.trigger(), 400);   // sin una vista guardada en la dirección, se ubica al usuario
   cargarVista();
   actualizarCota();
+  setTimeout(actualizarCota, 600);
+  setTimeout(actualizarCota, 1500);
+  // Carga automática de la red hidrográfica y cauces (SNC)
+  fetch('/data/piribebuy/base/hidro.geojson').then(r => r.json()).then(data => {
+    map.getSource('hidro')?.setData(data);
+    cargadas.hidro = true;
+  }).catch(() => {});
 });
 
 // ── Mapa base y relieve ─────────────────────────────────────────────
@@ -111,10 +127,342 @@ $('v3-piso').addEventListener('input', e => {
   $('v3-piso-o').textContent = `${String(h).replace('.', ',')} m`;
   map.setPaintProperty('edificios', 'fill-extrusion-height', altura(h));
 });
-function actualizarCota() {
-  const c = map.getCenter(), h = map.queryTerrainElevation?.(c);
-  $('v3-cota').textContent = h != null && $('v3-terreno').checked ? `Cota del centro: ${num(Math.round(h / exag()))} m s. n. m.` : 'Cota del centro: active el relieve';
+function estimarCotaParaguay(lng, lat) {
+  // Modelo hipsométrico de referencia para Paraguay (metros sobre el nivel del mar)
+  if (lng < -57.5) {
+    if (lat > -24.0) return 65; // Concepción / Alto Paraguay
+    if (lat < -26.0) return 46; // Pilar / Humaitá
+    return 56; // Asunción / Eje fluvial Río Paraguay
+  }
+  if (lng >= -57.5 && lng <= -56.8 && lat >= -25.6 && lat <= -25.1) {
+    if (lng > -57.18) return 216; // Cordillera / Piribebuy / Altos
+    return 65; // Valle Ypacaraí / Luque / San Lorenzo
+  }
+  if (lng >= -56.0) {
+    return lat < -26.5 ? 90 : 175; // Cuenca Río Paraná / Encarnación / CDE
+  }
+  if (lng < -58.5) return 135; // Chaco Central / Filadelfia
+  return 90;
 }
+
+function obtenerCotaCentro() {
+  const c = map.getCenter();
+  let h = null;
+  try {
+    h = map.queryTerrainElevation?.([c.lng, c.lat]);
+    if (h == null || h <= 0) {
+      const d = 0.003;
+      const puntos = [[c.lng + d, c.lat], [c.lng - d, c.lat], [c.lng, c.lat + d], [c.lng, c.lat - d]];
+      for (const p of puntos) {
+        const alt = map.queryTerrainElevation?.(p);
+        if (alt != null && alt > 0) { h = alt; break; }
+      }
+    }
+  } catch {}
+  if (h == null || h <= 0) {
+    h = estimarCotaParaguay(c.lng, c.lat);
+  }
+  return Math.round(h);
+}
+
+function recalibrarPresetsLocales(elev) {
+  const sld = $('v3-inund-cota');
+  if (!sld) return;
+  const min = Math.max(0, elev - 4);
+  const max = elev + 16;
+  sld.min = min;
+  sld.max = max;
+
+  let actual = Number(sld.value);
+  if (isNaN(actual) || actual < min || actual > max) {
+    actual = elev + 2;
+    sld.value = actual;
+  }
+  $('v3-inund-cota-o').textContent = `${actual} m`;
+
+  const bNorm = $('v3-btn-norm');
+  const bAler = $('v3-btn-aler');
+  const bCrit = $('v3-btn-crit');
+  const bRec = $('v3-btn-rec');
+
+  if (bNorm) { bNorm.dataset.cota = elev; bNorm.textContent = `Base (${elev}m)`; }
+  if (bAler) { bAler.dataset.cota = elev + 2; bAler.textContent = `Alerta (+2m)`; }
+  if (bCrit) { bCrit.dataset.cota = elev + 5; bCrit.textContent = `Crítica (+5m)`; }
+  if (bRec) { bRec.dataset.cota = elev + 8; bRec.textContent = `Récord (+8m)`; }
+}
+
+function actualizarCota() {
+  const elev = obtenerCotaCentro();
+  $('v3-cota').textContent = $('v3-terreno')?.checked ? `Cota del centro: ${num(elev)} m s. n. m.` : 'Cota del centro: active el relieve';
+
+  const cuencaSelect = $('v3-inund-cuenca')?.value;
+  if (!cuencaSelect || cuencaSelect === 'local') {
+    const txtBase = $('v3-inund-cota-base-txt');
+    if (txtBase) txtBase.textContent = `Base: ${elev} m`;
+    recalibrarPresetsLocales(elev);
+  }
+}
+
+// ── Simulación hidrológica e inundación (DMH / DINAC) ───────────────
+const CUENCAS = {
+  asuncion: {
+    nombre: 'Río Paraguay — Pto. Asunción (Datum 55.4m)',
+    centro: [-57.6433, -25.2755],
+    zoom: 15.2, pitch: 55, bearing: -15,
+    min: 52, max: 70, normal: 57.5, alerta: 60.0, record: 64.4,
+    etqNormal: 'Normal (57.5m)', etqAlerta: 'Alerta (60m)', etqRecord: 'Récord 1983 (64.4m)'
+  },
+  concepcion: {
+    nombre: 'Río Paraguay — Pto. Concepción (Datum 62m)',
+    centro: [-57.4410, -23.4005],
+    zoom: 15.0, pitch: 50, bearing: -10,
+    min: 60, max: 78, normal: 64.5, alerta: 68.0, record: 70.7,
+    etqNormal: 'Normal (64.5m)', etqAlerta: 'Alerta (68m)', etqRecord: 'Récord 1983 (70.7m)'
+  },
+  pilar: {
+    nombre: 'Río Paraguay — Pto. Pilar (Datum 44m)',
+    centro: [-58.2980, -26.8650],
+    zoom: 15.0, pitch: 50, bearing: -10,
+    min: 42, max: 60, normal: 46.5, alerta: 52.5, record: 54.0,
+    etqNormal: 'Normal (46.5m)', etqAlerta: 'Alerta (52.5m)', etqRecord: 'Récord 1983 (54m)'
+  },
+  ayolas: {
+    nombre: 'Río Paraná — Ayolas / Yacyretá (83m)',
+    centro: [-56.8450, -27.3970],
+    zoom: 14.8, pitch: 50, bearing: 0,
+    min: 80, max: 96, normal: 83.0, alerta: 86.0, record: 89.5,
+    etqNormal: 'Normal (83m)', etqAlerta: 'Alerta (86m)', etqRecord: 'Récord (89.5m)'
+  },
+  cde: {
+    nombre: 'Río Paraná — Ciudad del Este (175m)',
+    centro: [-54.6050, -25.5150],
+    zoom: 14.8, pitch: 52, bearing: -25,
+    min: 165, max: 195, normal: 175.0, alerta: 182.0, record: 188.0,
+    etqNormal: 'Normal (175m)', etqAlerta: 'Alerta (182m)', etqRecord: 'Récord (188m)'
+  },
+  piribebuy: {
+    nombre: 'Arroyo Piribebuy (Cordillera)',
+    centro: [-57.04677, -25.46653],
+    zoom: 16.5, pitch: 62, bearing: -20,
+    min: 210, max: 236, normal: 216, alerta: 221, record: 228.5,
+    etqNormal: 'Normal (216m)', etqAlerta: 'Alerta (221m)', etqRecord: 'Récord 2019 (228m)'
+  },
+  chaco: {
+    nombre: 'Chaco Central — Filadelfia (135m)',
+    centro: [-60.0330, -22.3520],
+    zoom: 14.5, pitch: 45, bearing: 0,
+    min: 130, max: 150, normal: 135, alerta: 138, record: 142,
+    etqNormal: 'Normal (135m)', etqAlerta: 'Alerta (138m)', etqRecord: 'Récord (142m)'
+  }
+};
+
+let animandoInund = null;
+
+function aplicarCuenca(key) {
+  const c = CUENCAS[key];
+  if (!c) {
+    const elev = obtenerCotaCentro();
+    recalibrarPresetsLocales(elev);
+    const txtBase = $('v3-inund-cota-base-txt');
+    if (txtBase) txtBase.textContent = `Base: ${elev} m`;
+    actualizarInundacion();
+    return;
+  }
+  map.flyTo({ center: c.centro, zoom: c.zoom, pitch: c.pitch, bearing: c.bearing, duration: 1800 });
+  const sld = $('v3-inund-cota');
+  if (sld) { sld.min = c.min; sld.max = c.max; sld.value = c.alerta; }
+  $('v3-btn-norm') && ($('v3-btn-norm').dataset.cota = c.normal, $('v3-btn-norm').textContent = c.etqNormal);
+  $('v3-btn-aler') && ($('v3-btn-aler').dataset.cota = c.alerta, $('v3-btn-aler').textContent = c.etqAlerta);
+  $('v3-btn-crit') && ($('v3-btn-crit').dataset.cota = ((c.normal + c.alerta) / 2).toFixed(1), $('v3-btn-crit').textContent = `Media (${((c.normal + c.alerta) / 2).toFixed(1)}m)`);
+  $('v3-btn-rec') && ($('v3-btn-rec').dataset.cota = c.record, $('v3-btn-rec').textContent = c.etqRecord);
+  const txtBase = $('v3-inund-cota-base-txt');
+  if (txtBase) txtBase.textContent = `Base: ${c.normal} m`;
+  if ($('v3-inundacion')) $('v3-inundacion').checked = true;
+  setTimeout(actualizarInundacion, 1900);
+}
+
+$('v3-inund-cuenca')?.addEventListener('change', e => aplicarCuenca(e.target.value));
+
+function generarPoligonoInundacion(cotaVal) {
+  const c = map.getCenter();
+  const b = map.getBounds();
+  const zoom = map.getZoom();
+
+  // Radio adaptativo según el nivel de zoom para cubrir el área visual de interés
+  const radioSpan = Math.min(0.20, Math.max(0.012, (b.getEast() - b.getWest()) / 2.2));
+  const w = c.lng - radioSpan, e = c.lng + radioSpan;
+  const s = c.lat - radioSpan, n = c.lat + radioSpan;
+
+  const NX = zoom >= 14 ? 36 : 28;
+  const NY = zoom >= 14 ? 36 : 28;
+  const dx = (e - w) / NX, dy = (n - s) / NY;
+  const padX = dx * 0.02, padY = dy * 0.02;
+
+  const features = [];
+
+  // Muestreo con fusión horizontal continua de celdas anegadas (evita artefactos de cuadrícula)
+  for (let j = 0; j < NY; j++) {
+    const y0 = s + j * dy - padY;
+    const y1 = s + (j + 1) * dy + padY;
+    const ym = (y0 + y1) / 2;
+
+    let stripStart = null;
+
+    for (let i = 0; i <= NX; i++) {
+      let isFlooded = false;
+      if (i < NX) {
+        const xm = w + (i + 0.5) * dx;
+        const h = map.queryTerrainElevation?.([xm, ym]);
+        // Terreno real bajo la lámina de agua y en proximidad al cauce/valle
+        if (h != null && h <= cotaVal && h >= cotaVal - 25) {
+          isFlooded = true;
+        }
+      }
+
+      if (isFlooded) {
+        if (stripStart === null) stripStart = i;
+      } else {
+        if (stripStart !== null) {
+          const x0 = w + stripStart * dx - padX;
+          const x1 = w + i * dx + padX;
+          features.push({
+            type: 'Feature',
+            properties: { cota: cotaVal },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]]
+            }
+          });
+          stripStart = null;
+        }
+      }
+    }
+  }
+
+  return { type: 'FeatureCollection', features };
+}
+
+function actualizarInundacion() {
+  const activo = $('v3-inundacion')?.checked;
+  $('v3-inund-ctrl').hidden = !activo;
+  map.setLayoutProperty('inundacion-capa', 'visibility', activo ? 'visible' : 'none');
+  if (map.getLayer('inundacion-borde')) {
+    map.setLayoutProperty('inundacion-borde', 'visibility', activo ? 'visible' : 'none');
+  }
+
+  if (!activo) {
+    if (animandoInund) {
+      clearInterval(animandoInund);
+      animandoInund = null;
+      $('v3-inund-animar').textContent = '▶ Simular crecida';
+    }
+    map.setPaintProperty('edificios', 'fill-extrusion-color', $('v3-color')?.value === 'real' ? COLOR_REAL : COLOR_CATASTRO);
+    try { mini.getSource('inundacion-mini')?.setData(vacio); } catch {}
+    return;
+  }
+
+  const cotaVal = Number($('v3-inund-cota').value);
+  $('v3-inund-cota-o').textContent = `${cotaVal} m`;
+
+  const fc = generarPoligonoInundacion(cotaVal);
+  map.getSource('inundacion')?.setData(fc);
+  try { mini.getSource('inundacion-mini')?.setData(fc); } catch {}
+
+  // Afectación de edificaciones en 3D
+  let totalComp = 0, totalEdif = 0;
+  const edifSrc = map.getSource('edificios');
+  if (edifSrc?._data?.features?.length) {
+    totalEdif = edifSrc._data.features.length;
+    edifSrc._data.features.forEach(f => {
+      const coord = f.geometry?.coordinates?.[0]?.[0] || f.geometry?.coordinates?.[0];
+      if (coord && typeof coord[0] === 'number') {
+        const h = map.queryTerrainElevation?.(coord);
+        const isInund = h != null && h <= cotaVal;
+        f.properties._inund = isInund;
+        if (isInund) totalComp++;
+      }
+    });
+    map.setPaintProperty('edificios', 'fill-extrusion-color', [
+      'case',
+      ['==', ['get', '_inund'], true], '#ef4444',
+      $('v3-color')?.value === 'real' ? COLOR_REAL : COLOR_CATASTRO
+    ]);
+  }
+
+  const ha = (fc.features.length * 1.5).toFixed(1);
+  const baseCota = obtenerCotaCentro();
+  const delta = (cotaVal - baseCota).toFixed(1);
+  const signoDelta = delta >= 0 ? `+${delta}` : delta;
+
+  $('v3-inund-info').innerHTML = totalComp > 0
+    ? `⚠️ <strong>Cota ${cotaVal} m s.n.m. (${signoDelta}m)</strong>: ~${ha} ha anegadas.<br><span style="color:#f87171;font-weight:bold;">${totalComp} de ${totalEdif} construcciones en riesgo crítico.</span>`
+    : `✓ <strong>Cota ${cotaVal} m s.n.m. (${signoDelta}m)</strong>: ~${ha} ha cubiertas en valle.<br>Construcciones seguras en cota alta.`;
+}
+
+$('v3-inundacion')?.addEventListener('change', () => {
+  if ($('v3-inundacion').checked) {
+    const base = obtenerCotaCentro();
+    recalibrarPresetsLocales(base);
+    const sld = $('v3-inund-cota');
+    if (sld) {
+      const val = Number(sld.value);
+      if (isNaN(val) || val < Number(sld.min) || val > Number(sld.max)) {
+        sld.value = base + 2;
+      }
+    }
+  }
+  actualizarInundacion();
+});
+$('v3-inund-cota')?.addEventListener('input', actualizarInundacion);
+
+document.querySelectorAll('.v3-inund-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    let target = null;
+    if (b.dataset.cota != null) {
+      target = Number(b.dataset.cota);
+    } else if (b.dataset.delta != null) {
+      target = obtenerCotaCentro() + Number(b.dataset.delta);
+    }
+    if (target != null) {
+      $('v3-inund-cota').value = target;
+      actualizarInundacion();
+    }
+  });
+});
+
+$('v3-inund-recalc')?.addEventListener('click', () => {
+  const elev = obtenerCotaCentro();
+  recalibrarPresetsLocales(elev);
+  const txtBase = $('v3-inund-cota-base-txt');
+  if (txtBase) txtBase.textContent = `Base: ${elev} m`;
+  actualizarInundacion();
+});
+
+$('v3-inund-animar')?.addEventListener('click', () => {
+  if (animandoInund) {
+    clearInterval(animandoInund); animandoInund = null;
+    $('v3-inund-animar').textContent = '▶ Simular crecida';
+  } else {
+    $('v3-inund-animar').textContent = '⏸ Pausar';
+    let subiendo = true;
+    const base = obtenerCotaCentro();
+    const minC = base;
+    const maxC = base + 8;
+    $('v3-inund-cota').value = minC;
+    animandoInund = setInterval(() => {
+      let c = Number($('v3-inund-cota').value);
+      if (subiendo) {
+        c += 0.5;
+        if (c >= maxC) subiendo = false;
+      } else {
+        c -= 0.5;
+        if (c <= minC) subiendo = true;
+      }
+      $('v3-inund-cota').value = c;
+      actualizarInundacion();
+    }, 450);
+  }
+});
 
 // ── Aspecto: color de los edificios y sol según la hora ─────────────
 $('v3-color').addEventListener('change', e => {
@@ -164,6 +512,14 @@ map.on('moveend', () => { clearTimeout(cargarCurvas.t); cargarCurvas.t = setTime
 }, 500); });
 
 // ── Exportar topografía ────────────────────────────────────────────
+function toggleExportar() {
+  const c = $('v3-exp-cuerpo'); c.hidden = !c.hidden;
+  $('v3-exp-ico').textContent = c.hidden ? '▸' : '▾';
+  $('v3-exp-legend').setAttribute('aria-expanded', String(!c.hidden));
+}
+$('v3-exp-legend').addEventListener('click', toggleExportar);
+$('v3-exp-legend').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExportar(); } });
+
 $('v3-exportar').addEventListener('click', async () => {
   const zona = $('v3-exp-zona').value, formato = $('v3-exp-formato').value, iv = $('v3-exp-iv').value;
   let q = `formato=${formato}&intervalo=${iv}`;
@@ -186,11 +542,18 @@ $('v3-exportar').addEventListener('click', async () => {
 });
 
 // ── Capas ───────────────────────────────────────────────────────────
-const CAPAS = { edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'], pout: ['pout-rural', 'pout-urbana', 'pout-suburbana'] };
+const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'], pout: ['pout-rural', 'pout-urbana', 'pout-suburbana'] };
 const cargadas = {};
 document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener('change', async () => {
   const k = ch.dataset.capa;
-  CAPAS[k].forEach(id => map.setLayoutProperty(id, 'visibility', ch.checked ? 'visible' : 'none'));
+  CAPAS[k]?.forEach(id => map.setLayoutProperty(id, 'visibility', ch.checked ? 'visible' : 'none'));
+  if (ch.checked && k === 'hidro' && !cargadas.hidro) {
+    try {
+      const r = await fetch('/data/piribebuy/base/hidro.geojson');
+      map.getSource('hidro').setData(await r.json());
+      cargadas.hidro = true;
+    } catch {}
+  }
   if (ch.checked && (k === 'cascos' || k === 'barrios') && !cargadas[k]) {
     estado(`Cargando ${k === 'cascos' ? 'cascos urbanos' : 'barrios (18 MB, la primera vez tarda)'}…`);
     try {
@@ -244,7 +607,16 @@ map.on('zoomend', () => {
   const sat = document.querySelector('input[name="base"][value="satelite"]')?.checked;
   if (sat && map.getZoom() >= 19.5) estado('Muy cerca: el satélite no tiene más detalle, se muestra el mapa de OpenStreetMap. Aleje para volver al satélite.');
 });
-map.on('moveend', () => { clearTimeout(t); t = setTimeout(() => { cargarVista(); actualizarCota(); }, 350); });
+map.on('moveend', () => {
+  clearTimeout(t);
+  t = setTimeout(() => {
+    cargarVista();
+    actualizarCota();
+    if ($('v3-inundacion')?.checked && (!$('v3-inund-cuenca') || $('v3-inund-cuenca').value === 'local')) {
+      actualizarInundacion();
+    }
+  }, 350);
+});
 
 // ── Selector de distrito ───────────────────────────────────────────
 fetch('/api/v3/visor3d/distritos').then(r => r.json()).then(({ distritos }) => {
@@ -293,6 +665,15 @@ const mini = new ml.Map({
   container: 'v3-minimapa', interactive: true, attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false,
   center: map.getCenter(), zoom: Math.max(1, map.getZoom() - 4),
   style: { version: 8, sources: { osm: { type: 'raster', tiles: tesela('osm'), tileSize: 256, maxzoom: 19 } }, layers: [{ id: 'osm', type: 'raster', source: 'osm' }] }
+});
+mini.on('load', () => {
+  mini.addSource('inundacion-mini', { type: 'geojson', data: vacio });
+  mini.addLayer({
+    id: 'inundacion-mini-capa',
+    type: 'fill',
+    source: 'inundacion-mini',
+    paint: { 'fill-color': '#0284c7', 'fill-opacity': 0.7 }
+  });
 });
 const ojo = document.createElement('div'); ojo.className = 'v3-ojo';
 ojo.innerHTML = '<div class="v3-cono"></div><div class="v3-punto"></div>';
@@ -343,6 +724,32 @@ const soltar = ev => { if (!girando) return; ojo.releasePointerCapture?.(ev.poin
 ojo.addEventListener('pointerup', soltar);
 ojo.addEventListener('pointercancel', soltar);
 ojo.title = 'Arrastre el cono para girar la cámara (360°)';
+
+// ── Alternar Vista 2D (Planta) / 3D (Relieve) ────────────────────────
+function alternarModo2D(forzar2D) {
+  const irA2D = forzar2D !== undefined ? forzar2D : (map.getPitch() > 10);
+  if (irA2D) {
+    map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 3D'; $('v3-toggle-2d').style.background = '#0284c7'; }
+    if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = true;
+  } else {
+    map.easeTo({ pitch: 62, bearing: -20, duration: 1000 });
+    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 2D'; $('v3-toggle-2d').style.background = '#334155'; }
+    if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = false;
+  }
+}
+$('v3-toggle-2d')?.addEventListener('click', () => alternarModo2D());
+$('v3-inund-planta-2d')?.addEventListener('change', e => alternarModo2D(e.target.checked));
+map.on('pitchend', () => {
+  const p = map.getPitch();
+  if (p <= 5) {
+    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 3D'; $('v3-toggle-2d').style.background = '#0284c7'; }
+    if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = true;
+  } else if (p >= 35) {
+    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 2D'; $('v3-toggle-2d').style.background = '#334155'; }
+    if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = false;
+  }
+});
 
 // ── Panel y teclado ─────────────────────────────────────────────────
 $('v3-plegar').addEventListener('click', e => { const c = $('v3-cuerpo'); c.hidden = !c.hidden; e.target.textContent = c.hidden ? '+' : '−'; e.target.setAttribute('aria-expanded', String(!c.hidden)); });
