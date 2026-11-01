@@ -52,6 +52,8 @@ import * as notificacionesCiudadano from './ciudadanoNotificacionesServicio.js';
 import { colorearTerrarium } from './hipsometria.js';
 import * as curvas from './curvasServicio.js';
 import * as poutAma from './poutAmaServicio.js';
+import * as clima from './climaServicio.js';
+import * as escorrentia from './escorrentiaServicio.js';
 const { hasRedTicketConfig, createCharge, getCharge, getCheckoutByToken } = redticketPkg;
 
 const PORT = ENV.PORT;
@@ -72,6 +74,7 @@ app.use('/css', express.static(join(__dirname, 'css'), STATIC_OPTIONS));
 app.use('/js', express.static(join(__dirname, 'js'), STATIC_OPTIONS));
 app.use('/img', express.static(join(__dirname, 'img'), STATIC_OPTIONS));
 app.use('/Pout', express.static(join(__dirname, 'Pout'), STATIC_OPTIONS));
+app.use('/Cambio_climatico', express.static(join(__dirname, 'Cambio_climatico'), STATIC_OPTIONS));
 // Capas POUT municipales descargadas de visores públicos (scripts/arcgis-capas.py), sin datos personales.
 // Índice de las carpetas de capas municipales: la raíz de cada carpeta muestra su capas.json.
 app.get(['/data/pout_filadelfia/', '/data/pout_municipal/:muni/'], (req, res) => {
@@ -90,6 +93,7 @@ app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'app
 
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
+  ['/panel.html', 'Cambio_climatico/panel.html'],
   ['/login-directo.html', 'login-directo.html'],
   ['/login-safe.html', 'login-safe.html'],
   ['/register.html', 'register.html'],
@@ -124,6 +128,11 @@ app.get(['/notarial', '/notarial/', '/notarial/index.html', '/Notarial', '/Notar
 // Portal Administrador / Super Administrador
 app.get(['/admin', '/admin/', '/admin/index.html', '/superadmin', '/superadmin/', '/superadmin/index.html'], (req, res) => {
   res.sendFile(join(__dirname, 'admin', 'index.html'));
+});
+
+// Módulo de Cambio Climático y Decision Intelligence (SNC-CC / MHC-PY)
+app.get(['/panel', '/panel.html', '/Cambio_climatico', '/Cambio_climatico/', '/Cambio_climatico/panel.html', '/panel-clima.html'], (req, res) => {
+  res.sendFile(join(__dirname, 'Cambio_climatico', 'panel.html'));
 });
 
 // Único dataset local requerido por la validación geográfica del frontend.
@@ -495,6 +504,156 @@ app.get('/api/v3/hidrografia', (req, res) => {
     logger.error('hidrografia error', e);
     return res.status(500).json({ error: 'Error consultando hidrografía OSM', detail: e.message });
   }
+});
+
+// ==========================================
+// ENDPOINT CAMBIO CLIMÁTICO Y DECISION INTELLIGENCE (SNC-CC, Tarea CC-01)
+// GET /api/v3/clima/tiempo?lat=-25.46&lng=-57.04
+// ==========================================
+app.get('/api/v3/clima/tiempo', async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'Parámetros requeridos: lat y lng' });
+    }
+    const data = await clima.obtenerTiempoActual(lat, lng);
+    return res.json(data);
+  } catch (e) {
+    logger.error('clima tiempo error', e);
+    return res.status(400).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT NASA FIRMS FOCOS DE CALOR (SNC-CC, Tarea CC-02)
+// GET /api/v3/clima/incendios?minX=&minY=&maxX=&maxY=
+// ==========================================
+app.get('/api/v3/clima/incendios', async (req, res) => {
+  try {
+    const { minX, minY, maxX, maxY } = req.query;
+    const data = await clima.obtenerFocosIncendios({ minX, minY, maxX, maxY });
+    return res.json(data);
+  } catch (e) {
+    logger.error('clima incendios error', e);
+    return res.status(400).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT LLUVIA HISTÓRICA / ERA5 (SNC-CC, Tarea CC-04)
+// GET /api/v3/clima/lluvia-historica?lat=&lng=&desde=&hasta=
+// ==========================================
+app.get('/api/v3/clima/lluvia-historica', async (req, res) => {
+  try {
+    const { lat, lng, desde, hasta } = req.query;
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'Parámetros requeridos: lat y lng' });
+    }
+    const data = await clima.obtenerLluviaHistorica({ lat, lng, desde, hasta });
+    return res.json(data);
+  } catch (e) {
+    logger.error('clima lluvia historica error', e);
+    return res.status(400).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT COEFICIENTE DE ESCORRENTÍA AUTOMÁTICO (Sim. hidrológica, visor-3d.html)
+// GET /api/v3/clima/escorrentia?lat=&lng=
+// ==========================================
+app.get('/api/v3/clima/escorrentia', (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (lat === undefined || lng === undefined) {
+      return res.status(400).json({ error: 'Parámetros requeridos: lat y lng' });
+    }
+    const data = escorrentia.estimarCoeficiente({ lat, lng });
+    return res.json({ status: 'ok', ...data });
+  } catch (e) {
+    logger.error('clima escorrentia error', e);
+    return res.status(400).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT COBERTURA FORESTAL E INFONA (MHC-PY, Paso A)
+// GET /api/v3/clima/bosques
+// ==========================================
+let cacheBosques = null;
+app.get('/api/v3/clima/bosques', async (req, res) => {
+  try {
+    if (!cacheBosques) {
+      const ruta = join(__dirname, 'data', 'analisis', 'cobertura_forestal_historica.json');
+      if (existsSync(ruta)) {
+        cacheBosques = JSON.parse(readFileSync(ruta, 'utf8'));
+      } else {
+        return res.status(404).json({ error: 'Datos forestales no disponibles' });
+      }
+    }
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.json(cacheBosques);
+  } catch (e) {
+    logger.error('clima bosques error', e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT INFRAESTRUCTURA DE SALUD (MHC-PY, Paso C)
+// GET /api/v3/infraestructura/salud
+// ==========================================
+let cacheSalud = null;
+app.get('/api/v3/infraestructura/salud', async (req, res) => {
+  try {
+    if (!cacheSalud) {
+      const ruta = join(__dirname, 'data', 'infraestructura_salud.geojson');
+      if (existsSync(ruta)) {
+        cacheSalud = JSON.parse(readFileSync(ruta, 'utf8'));
+      } else {
+        return res.status(404).json({ error: 'Datos de salud no disponibles' });
+      }
+    }
+    const { minX, minY, maxX, maxY } = req.query;
+    if (minX && minY && maxX && maxY) {
+      const x1 = parseFloat(minX), y1 = parseFloat(minY), x2 = parseFloat(maxX), y2 = parseFloat(maxY);
+      const filtradas = cacheSalud.features.filter(f => {
+        const [cLng, cLat] = f.geometry.coordinates;
+        return cLng >= x1 && cLng <= x2 && cLat >= y1 && cLat <= y2;
+      });
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.json({ type: 'FeatureCollection', metadata: cacheSalud.metadata, features: filtradas });
+    }
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.json(cacheSalud);
+  } catch (e) {
+    logger.error('infraestructura salud error', e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// PUENTE AL MICROSERVICIO CIENTÍFICO PYTHON (MHC-PY, Paso D / Carril C)
+// GET /api/v3/clima/ciencia/status
+// ==========================================
+app.get('/api/v3/clima/ciencia/status', async (req, res) => {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 800);
+    const resp = await fetch('http://127.0.0.1:5557/api/v1/salud', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (resp.ok) {
+      const data = await resp.json();
+      return res.json({ microservicio_python: 'online', puerto: 5557, ...data });
+    }
+  } catch (err) {
+    // Microservicio offline o no iniciado
+  }
+  return res.json({
+    microservicio_python: 'offline',
+    puerto_asignado: 5557,
+    comando_inicio: 'python Cambio_climatico/servicio_py/iniciar.py',
+    modo: 'resiliencia_activa (Node.js nativo)'
+  });
 });
 
 // ==========================================

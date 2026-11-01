@@ -117,6 +117,7 @@ map.on('load', () => {
   setTimeout(actualizarCota, 1500);
   // Red hidrográfica nacional (OSM, /api/v3/hidrografia) de la zona visible.
   cargarHidro();
+  cargarCoeficienteAuto();
 });
 
 // ── Mapa base y relieve ─────────────────────────────────────────────
@@ -673,7 +674,11 @@ function actualizarInundacion() {
   const profundidadMedia = Math.max(0.3, Math.min(8, Number(delta) * 0.5 + 0.5));
   const volumenM3 = areaM2 * profundidadMedia;
   const volumenHm3 = volumenM3 / 1e6;
-  const TIEMPO_CONCENTRACION_S = 6 * 3600;   // 6 h: orden de magnitud para una crecida rápida, no un cálculo de cuenca real
+  // Si el usuario cargó cuántas horas duró la lluvia (mismo campo que ya usa el acumulado en mm),
+  // el caudal se reparte en ese tiempo real; si no, 6 h de referencia (orden de magnitud para una
+  // crecida rápida, no un cálculo de cuenca real). Antes era siempre fijo en 6 h, sin importar lo cargado.
+  const horasLluviaCargadas = Number($('v3-lluvia-horas')?.value) || 0;
+  const TIEMPO_CONCENTRACION_S = (horasLluviaCargadas > 0 ? horasLluviaCargadas : 6) * 3600;
   const caudalM3s = volumenM3 / TIEMPO_CONCENTRACION_S;
   $('v3-inund-analitica').hidden = false;
   $('v3-vol-o').textContent = `${volumenHm3 < 10 ? volumenHm3.toFixed(2) : Math.round(volumenHm3)} hm³`;
@@ -763,18 +768,37 @@ function cotaDesdeLluvia(mm, coef) {
   if (c) return c.normal + fraccion * (c.record - c.normal);
   return obtenerCotaCentro() + fraccion * 16;
 }
+// Coeficiente "Automático": en vez de que el usuario elija a mano uno de los 3 valores fijos, se le pide
+// al servidor el real del punto (zona residencial real de OSM si cae en una; si no, Chaco/Región Oriental
+// — ver escorrentiaServicio.js). Se cachea en coefAuto y se refresca por punto, no en cada tecla.
+let coefAuto = 0.42;
+let pedidoCoefAuto = 0;
+async function cargarCoeficienteAuto() {
+  const c = map.getCenter();
+  const yo = ++pedidoCoefAuto;
+  try {
+    const data = await fetch(`/api/v3/clima/escorrentia?lat=${c.lat.toFixed(5)}&lng=${c.lng.toFixed(5)}`).then(r => r.json());
+    if (yo !== pedidoCoefAuto || data?.status !== 'ok') return;
+    coefAuto = data.coeficiente;
+    const opt = $('v3-suelo-auto');
+    if (opt) opt.textContent = `Automático (${data.etiqueta}, C = ${data.coeficiente.toFixed(2)})`;
+    if ($('v3-suelo')?.value === 'auto') aplicarLluvia();
+  } catch {}
+}
 function aplicarLluvia() {
   const mm = Number($('v3-lluvia').value);
   $('v3-lluvia-o').textContent = `${mm} mm`;
   actualizarDinac(mm);
   if (!$('v3-inundacion').checked) $('v3-inundacion').checked = true;
   const sld = $('v3-inund-cota');
-  const cota = cotaDesdeLluvia(mm, Number($('v3-suelo').value));
+  const suelo = $('v3-suelo')?.value;
+  const coef = suelo === 'auto' ? coefAuto : Number(suelo);
+  const cota = cotaDesdeLluvia(mm, coef);
   sld.value = Math.max(Number(sld.min), Math.min(Number(sld.max), cota));
   actualizarInundacion();
 }
 $('v3-lluvia')?.addEventListener('input', aplicarLluvia);
-$('v3-suelo')?.addEventListener('change', aplicarLluvia);
+$('v3-suelo')?.addEventListener('change', () => { if ($('v3-suelo').value === 'auto') cargarCoeficienteAuto(); aplicarLluvia(); });
 document.querySelectorAll('.v3-lluvia-btn').forEach(b => b.addEventListener('click', () => { $('v3-lluvia').value = b.dataset.mm; aplicarLluvia(); }));
 $('v3-btn-lluvia-real')?.addEventListener('click', async () => {
   const c = map.getCenter();
@@ -1099,6 +1123,7 @@ map.on('moveend', () => {
     actualizarCota();
     if (document.querySelector('[data-capa="hidro"]')?.checked) cargarHidro();
     if (document.querySelector('[data-capa="incendios"]')?.checked) cargarIncendios();
+    if ($('v3-suelo')?.value === 'auto') cargarCoeficienteAuto();
     if ($('v3-inundacion')?.checked && (!$('v3-inund-cuenca') || $('v3-inund-cuenca').value === 'local')) {
       actualizarInundacion();
     }

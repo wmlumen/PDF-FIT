@@ -4,10 +4,91 @@ Reglas: ver "Regla de turnos entre IAs" en `AGENTS.md`. Cada IA agrega una entra
 Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 
 ## Turno actual
-IA: Antigravity
-Fecha: 2026-11-01 02:20
-Tarea: Generación de Certificado y Dictamen Oficial Catastral-Climático en PDF (jsPDF + AutoTable) para Parcelas y Distritos en panel.html
-Archivos: panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, probar_panel.mjs, docs/TURNOS_IA.md
+libre
+
+### 2026-11-01 · Claude · Coeficiente de escorrentía automático por punto (pedido del usuario) · escorrentiaServicio.js (nuevo), server-api.js, js/visor3d.js, visor-3d.html
+- **Pedido**: tras una propuesta pegada por el usuario con 6 mejoras al simulador hidrológico (de las cuales 2 ya estaban hechas: impacto en construcciones y lluvia real ERA5), eligió priorizar el coeficiente de escorrentía automático — hoy el selector "Suelo / escorrentía" tenía 3 valores fijos que el usuario elegía a mano para todo el país.
+- **Qué se hizo**: `escorrentiaServicio.js` (nuevo módulo, mismo patrón que `climaServicio.js`): dado lat/lng, reproyecta a UTM 21S y busca 1) si cae en una zona residencial real de OSM (`data/osm/residencial/<dpto>_<dist>.geojson`, de hoy mismo) → urbano C=0,68; 2) si no, la región por longitud (Chaco arcilloso C=0,82 / Región Oriental porosa C=0,42, misma partición que `estimarCotaParaguay()`). Ruta nueva `GET /api/v3/clima/escorrentia?lat=&lng=`. En el visor: el selector ahora tiene "Automático (según el punto)" como opción por defecto, que muestra el valor resuelto en su propio texto (ej. "Automático (Urbano / suelo saturado, C = 0.68)") y se recalcula en cada `moveend` si sigue en automático.
+- **Verificado**: prueba aislada en Node (`estimarCoeficiente`) antes de tocar el servidor — Piribebuy y Asunción centro → urbano 0,68; Filadelfia (Chaco) → 0,82; lat/lng inválido → error limpio. Con el servidor reiniciado (autorizado por el usuario): `curl` a la ruta nueva, y en el navegador la opción "Automático" se resuelve sola al cargar y cambia el cálculo real de la cota (150mm de lluvia en Piribebuy con C=0,68 automático → 220,4 m; con el viejo default fijo 0,42 hubiera dado 218,7 m — coincide exacto con la fórmula `cotaDesdeLluvia`). `npm test` (api-security) 22/22.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Paso D: Despliegue del Microservicio Científico Python (FastAPI + GeoPandas + Shapely) para Simulación Climática y Tensores (Carril C / CC-07) · Cambio_climatico/servicio_py/app.py, Cambio_climatico/servicio_py/requirements.txt, Cambio_climatico/servicio_py/iniciar.py, server-api.js, docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md, docs/TURNOS_IA.md
+- **Objetivo**: Concretar el Paso D (Carril C del Plan de Cambio Climático): desplegar el microservicio científico en Python (FastAPI, puerto 5557) desacoplado de Node.js (5556) para procesamiento de tensores geoespaciales, extremos bioclimáticos y simulación parcelaria.
+- **Qué se implementó**:
+  1. **Arquitectura y Microservicio Python (`Cambio_climatico/servicio_py/`)**:
+     - `app.py`: Aplicación FastAPI asíncrona con middleware CORS habilitado para comunicarse con `server-api.js` y el frontend web.
+     - `iniciar.py`: Script de arranque automático bajo Uvicorn en `http://127.0.0.1:5557`.
+     - `requirements.txt`: Especificación formal de dependencias científicas (FastAPI, Uvicorn, GeoPandas, Shapely, NumPy, Pandas, Pydantic).
+  2. **Endpoints Científicos Desarrollados**:
+     - `GET /`: Healthcheck con metadatos del motor, librerías activas y datasets en memoria.
+     - `GET /api/v1/salud`: Estado de los 491 distritos indexados, 18 departamentos forestales y 741 equipamientos de salud.
+     - `GET /api/v1/distrito/{nombre}`: Diagnóstico bioclimático multidimensional con proyecciones IPCC AR6 (2026 base, 2030 +1.1°C, 2050 +2.3°C, 2100 +4.2°C).
+     - `POST /api/v1/simulacion/parcela`: Simulación hidráulica y económica del lote (cota, distancia al cauce, aptitud IPOOT Ley 3966 Art. 235, IRP y pérdida anual esperada en Guaraníes).
+     - `POST /api/v1/indices/extremos`: Cálculo de indicadores de extremos climáticos ETCCDI/OMM (SU35 días de calor extremo, R95p lluvias torrenciales).
+  3. **Puente Resiliente en `server-api.js`**:
+     - Montado `/api/v3/clima/ciencia/status`: Detecta automáticamente si el microservicio Python está activo en puerto 5557 o cae a modo de resiliencia nativa en Node.js sin interrumpir el servicio.
+- **Verificación**:
+  - Suite de pruebas con `TestClient` en Python 3.14: 5/5 endpoints validados con HTTP 200 y respuestas deterministas.
+  - Tarea `CC-07` registrada y cerrada como `[x]` en `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`.
+  - Codificación UTF-8 estricta sin BOM verificada en todos los archivos.
+- **Pendiente**:
+  - Ingestión de rasters NetCDF/GeoTIFF de Copernicus CDS cuando se requiera procesar cubos climáticos crudos.
+
+### 2026-11-01 · Antigravity · Implementación Integral Pasos A, B y C: Cobertura Forestal INFONA, FODA Climático en Análisis Territorial (T02/W2) e Infraestructura Crítica de Salud (IRM) · scripts/analisis-territorial.mjs, scripts/analisis-territorial.plantilla.html, panel.html, Cambio_climatico/panel.html, js/panel-clima.js, server-api.js, data/analisis/cobertura_forestal_historica.json, data/infraestructura_salud.geojson, docs/TURNOS_IA.md, docs/grafo_seguimiento.md
+- **Objetivo**: Concretar los tres pasos del Mapa Hiperactivo de Cambio Climático y toma de decisiones territoriales (Paso A: Capas Ambientales, Paso B: Inteligencia Territorial Municipal / Desbloqueo T02, Paso C: Infraestructura Crítica de Salud y Resiliencia).
+- **Qué se implementó**:
+  1. **Paso A — Cobertura Forestal y Deforestación Histórica (INFONA)**:
+     - Procesamiento y extracción geodésica de las series departamentales 2000, 2005, 2011, 2013 y 2015 desde shapefiles oficiales de INFONA en `data/analisis/cobertura_forestal_historica.json`.
+     - Detección precisa de variaciones de biomasa (ej. Alto Paraguay: -1.44M ha perdidas, -21.2%; Alto Paraná: -102k ha, -29.4%).
+     - Chip interactivo `🌳 Bosques & Deforestación (INFONA)` en `panel.html` y correlación visual en visor distrital.
+     - Endpoint montado: `/api/v3/clima/bosques` y publicado en `Cambio_climatico/data/`.
+  2. **Paso B — Desbloqueo T02/W2: Matriz FODA con Riesgo Climático en Análisis Territorial**:
+     - Vinculación del Índice de Riesgo de Inundación de los 246 distritos en `scripts/analisis-territorial.mjs` y `scripts/analisis-territorial.plantilla.html`.
+     - Inyección automática en el cuadrante de **Amenazas (gA)** de la vulnerabilidad fluvial crítica (IRI > 65), cota media y porcentaje de parcelas expuestas para distritos como Pilar, Alberdi, Nanawa, Asunción y Villa Franca.
+     - Inyección en **Debilidades (gD)** de la exigencia de cota mínima de fundación (+0.60 m) y franja non aedificandi de 40m a 100m (Ley 3966 Art. 235).
+     - Inyección en **Oportunidades (gO)** de mecanismos de plusvalía y certificación IPOOT para obras de drenaje pluvial.
+     - Pipeline ejecutado y regenerado con éxito: `AnalisisTerritorial.html` (1898 KB, 266 distritos) con campo `clima` integrado.
+  3. **Paso C — Infraestructura Crítica de Salud y Resiliencia (MSPyBS / Ley 3966)**:
+     - Conversión y proyección UTM 21S a WGS84 de 741 establecimientos de salud: 18 Hospitales Regionales, 24 Hospitales Distritales y USF a nivel país en `data/infraestructura_salud.geojson`.
+     - Capa interactiva de salud en `panel.html` con simbología según criticidad (Hospital Regional rojo, Distrital ámbar, USF cian) y popup con estado de resiliencia municipal.
+     - Chip interactivo `🏥 Hospitales & USF (Salud)` y endpoint `/api/v3/infraestructura/salud`.
+- **Verificación**:
+  - `node scripts/analisis-territorial.mjs`: 266 distritos procesados y compilados exitosamente.
+  - `node probar_panel.mjs`: 7/7 suites pasadas (100% OK).
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - `node clima.test.mjs`: 5/5 tests unitarios pasados.
+  - Codificación UTF-8 sin BOM verificada en todos los archivos.
+- **Pendiente**:
+  - Continuar con el Módulo Notarial-Ambiental o Capa de Escuelas MEC (9.803 establecimientos).
+
+### 2026-11-01 · Antigravity · Generación Oficial de Certificados y Dictámenes en PDF (jsPDF + AutoTable) para Catastro y Clima · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, docs/TURNOS_IA.md
+- **Objetivo**: Implementar la generación de documentos oficiales descargables en PDF con validez institucional (Ley 551/2023 y Ley Orgánica Municipal Nº 3966/2010 Art. 235) directamente desde el navegador con `jsPDF` y `jspdf-autotable`.
+- **Qué se implementó**:
+  1. **Certificado Oficial de Aptitud Territorial e Hidrológica (IPOOT)** (para parcelas catastrales):
+     - Encabezado oficial institucional (República del Paraguay, SNC 551/2023, MHC-PY).
+     - Cintillo con código de certificación único (`SNC-HASH-HEX`), fecha/hora y escenario IPCC AR6.
+     - Tabla 1 (AutoTable): Parámetros catastrales (CCC, Padrón, Finca, Distrito, Superficie m², Valuación Fiscal DNIT, Proyección UTM 21S SIRGAS 2000, Coordenadas lat/lng).
+     - Banner de Aptitud Territorial: RESTRINGIDO (Rojo), CONDICIONADO (Ámbar) o FAVORABLE (Verde).
+     - Tabla 2 (AutoTable): Evaluación topográfica e hidrológica (Cota m.s.n.m., Distancia geodésica al cauce más cercano, Cumplimiento de franja hídrica legal de 40m según Ley 3966 Art. 235, Índice IRP).
+     - Cuadro de Dictamen Técnico-Legal Vinculante: Directiva explícita para la Dirección de Obras Particulares y Catastro.
+     - Tabla 3 (AutoTable): Indicadores meteorológicos en vivo y proyecciones IPCC AR6 (Horizonte 2050, +2.3°C, +18% lluvias extremas).
+     - Bloque de firmas institucionales (Catastro Municipal y Obras Particulares/Ambiente) y pie de seguridad criptográfica.
+  2. **Dictamen Técnico de Vulnerabilidad y Riesgo Distrital** (a nivel municipio/nacional):
+     - Emisión del dictamen distrital si no hay parcela activa seleccionada (cubre los 246 distritos del país).
+     - Ranking nacional de vulnerabilidad fluvial (Top 1 Pilar, #2 Alberdi, etc.), Índice IRI, Cota media y cuenca hidrográfica.
+     - Directrices obligatorias de adaptación para el Plan de Ordenamiento Urbano y Territorial (POUT Municipal).
+  3. **Disparadores UI en `panel.html` y `Cambio_climatico/panel.html`**:
+     - Botón en cabecera: `📄 Dictamen PDF Oficial` (`#btn-exportar-pdf`).
+     - Botón en popup de parcela en el mapa: `📄 Dictamen PDF` + `📥 JSON`.
+     - Botón en barra lateral de detalle de parcela: `📄 Emitir Dictamen Parcela (PDF)` (`#btn-export-parcela-sidebar`).
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% limpia.
+  - `node probar_panel.mjs`: 7/7 suites pasadas (200 OK en todos los assets y APIs).
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados (portales intactos).
+  - `node clima.test.mjs`: 5/5 tests unitarios pasados.
+  - Codificación UTF-8 estricta sin BOM verificada en todos los archivos tocados.
+- **Pendiente**:
+  - T02: Conectar los indicadores de riesgo climático calibrados con la matriz FODA de `scripts/analisis-territorial.mjs`.
 
 ### 2026-11-01 · Claude · Restaura el botón "Vista 2D" en visor-3d.html (pedido del usuario, no estaba en los Archivos del turno actual de Antigravity) · visor-3d.html
 - **Motivo**: el usuario reportó "no funciona bien" sin especificar qué; al revisar encontré que la entrada de Antigravity "Integración Ecosistémica y Enlaces Cruzados" (más abajo) había reemplazado el botón `#v3-toggle-2d` ("Vista 2D", alterna pitch 0°/62° sin salir del visor) por los links `🌍 Clima` y `← 2D`. La función `alternarModo2D()` en `js/visor3d.js` quedó huérfana (sin botón que la dispare desde la cabecera; sobrevivía a medias vía el checkbox "Vista 2D en planta" del panel de inundación). El usuario, al preguntarle, eligió agregar un 3er botón en vez de dejarlo así o solo avisar.

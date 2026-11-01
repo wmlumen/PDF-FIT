@@ -144,7 +144,8 @@
             </div>
             <label style="font-size:11px;color:#94a3b8;display:block;margin-top:6px;">Suelo / escorrentía
               <select id="v3-suelo" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
-                <option value="0.42" selected>Oriental, porosa (C = 0,42)</option>
+                <option value="auto" id="v3-suelo-auto" selected>Automático (según el punto)</option>
+                <option value="0.42">Oriental, porosa (C = 0,42)</option>
                 <option value="0.82">Chaco húmedo, arcilloso (C = 0,82)</option>
                 <option value="0.68">Urbano / suelo saturado (C = 0,68)</option>
               </select>
@@ -204,6 +205,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261101c"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101d"></script>
 </body>
 </html>

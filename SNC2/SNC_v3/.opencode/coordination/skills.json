@@ -164,6 +164,28 @@
       "triggeredBy": "task_passed",
       "status": "pending_review",
       "createdAt": "2026-11-01T05:25:14.036Z"
+    },
+    {
+      "id": "imp_1793512112734_0axmau55",
+      "skill": "caudal_duracion_real",
+      "agent": "Claude",
+      "description": "Caudal ahora se reparte en la duracion real de la lluvia (v3-lluvia-horas) en vez de 6h fijas; si no se cargo duracion, cae al mismo 6h de referencia de antes. Verificado con la matematica exacta: 220000m3/(2h*3600s)=31 m3/s, 220000/(6h*3600s)=10 m3/s",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-01T05:48:32.734Z"
+    },
+    {
+      "id": "imp_1793538357841_t90fc1ws",
+      "skill": "escorrentia_auto",
+      "agent": "Claude",
+      "description": "Coeficiente de escorrentia automatico por punto (escorrentiaServicio.js + /api/v3/clima/escorrentia): zona residencial real OSM si existe, si no Chaco/Region Oriental. Opcion Automatico ahora default en el selector de suelo. Verificado: Piribebuy/Asuncion urbano C=0.68, Filadelfia Chaco C=0.82, matematica de cota exacta (220.4m con C=0.68 vs 218.7m que daria el viejo default 0.42). npm test 22/22",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-01T13:05:57.841Z"
     }
   ],
   "patterns": []
