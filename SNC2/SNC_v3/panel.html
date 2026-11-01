@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MHC-PY · Inteligencia Climática & Modelado Territorial</title>
+  <!-- Leaflet CSS local (CSP Compliant) -->
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <!-- Estilos del Panel Clima -->
+  <link rel="stylesheet" href="/css/panel-clima.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span class="badge-snc" title="Plataforma de Modelado Geoespacial e Inteligencia Climática">MHC-PY</span>
+      <div>
+        <h1>🌍 MHC-PY · Inteligencia Climática & Modelado Territorial</h1>
+        <div class="subtitle" style="font-size: 11.5px; line-height: 1.35; color: #94a3b8; margin-top: 2px;">
+          <span>Elaborado por: <strong>Lic. Ambiental Christhian Keim</strong> · Especialista en SIG, POUT y BigData</span>
+          <span style="display: block; color: #38bdf8;">mail: <a href="mailto:wmlumen@gmail.com" style="color: #38bdf8; text-decoration: none;">wmlumen@gmail.com</a></span>
+        </div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <select id="sel-region" title="Seleccionar región de referencia">
+        <option value="nacional">Paraguay Total (Totales por Departamento)</option>
+        <option value="pilar">Pilar (Ñeembucú - #1 Riesgo Inundación)</option>
+        <option value="piribebuy" selected>Piribebuy (Cordillera)</option>
+        <option value="asuncion">Asunción (Capital - Ribera & Bañados)</option>
+        <option value="bahianegra">Bahía Negra (Pantanal - Cuenca Norte)</option>
+        <option value="encarnacion">Encarnación (Río Paraná)</option>
+        <option value="cde">Ciudad del Este (Alto Paraná)</option>
+        <option value="chaco">Mcal. Estigarribia (Chaco Seco)</option>
+      </select>
+      <select id="sel-escenario" title="Escenario IPCC AR6">
+        <option value="2026">Presente (2026)</option>
+        <option value="2030">2030 (SSP2-4.5 · +1.1°C)</option>
+        <option value="2050">2050 (SSP3-7.0 · +2.3°C)</option>
+        <option value="2100">2100 (SSP5-8.5 · +4.2°C)</option>
+      </select>
+      <a href="/visor-3d.html" class="btn-primary" style="background:#0284c7; border-color:#38bdf8; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Ver Gemelo Digital e Inundación 3D">🏙️ Visor 3D</a>
+      <button class="btn-primary" id="btn-exportar-pdf" style="background:#059669; border-color:#10b981;">📄 Dictamen Técnico PDF</button>
+      <button class="btn-primary" id="btn-exportar">📥 Datos JSON</button>
+    </div>
+  </header>
+
+  <!-- KPI Strip en Vivo -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Temperatura Superficial</div>
+      <div class="kpi-val"><span id="kpi-temp">--</span> <small>°C</small></div>
+      <div class="status-pill pill-amber" id="kpi-temp-sens">Sensación: -- °C</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Precipitación & Lluvia</div>
+      <div class="kpi-val"><span id="kpi-lluvia">--</span> <small>mm</small></div>
+      <div class="status-pill pill-green" id="kpi-hum">Humedad: --%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">ICT (Climático Territorial)</div>
+      <div class="kpi-val"><span id="kpi-ict">--</span> <small>/ 100</small></div>
+      <div class="status-pill pill-green" id="kpi-ict-nivel">NORMAL</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">IRT (Riesgo Territorial)</div>
+      <div class="kpi-val"><span id="kpi-irt">--</span> <small>/ 100</small></div>
+      <div class="status-pill pill-amber" id="kpi-irt-nivel">MODERADO</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Aptitud Parcelaria (IPOOT)</div>
+      <div class="kpi-val" style="font-size: 1.1rem; color: #34d399;" id="kpi-ipoot">FAVORABLE</div>
+      <div class="status-pill pill-green" id="kpi-irm">Resiliencia: 72%</div>
+    </div>
+  </div>
+
+  <!-- Workspace: Mapa + Sidebar -->
+  <div class="workspace">
+    <!-- Contenedor del Mapa Leaflet -->
+    <div id="map"></div>
+
+    <!-- Barra Lateral de Control y Gráficos -->
+    <div class="sidebar">
+      
+      <!-- Gráfico de Tendencia Meteorológica -->
+      <div class="box">
+        <div class="section-title">📈 Tendencia 7 Días (ERA5 / Open-Meteo)</div>
+        <div class="chart-container">
+          <canvas id="chart-clima"></canvas>
+        </div>
+      </div>
+
+      <!-- Buscador y Ranking de Distritos (CC-05 / CC-06) -->
+      <div class="box">
+        <div class="section-title">🏛️ Riesgo de Inundación (246 Distritos)</div>
+        <div class="search-distrito-wrap">
+          <input type="text" id="input-buscar-distrito" class="input-search-distrito" placeholder="🔍 Buscar distrito (ej. Pilar, Nanawa, Piribebuy...)" autocomplete="off">
+          <div id="search-dropdown" class="search-dropdown"></div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Top Distritos Críticos de Inundación:</div>
+        <div class="ranking-list" id="lista-ranking-distritos">
+          <!-- Dinámico vía JS -->
+        </div>
+      </div>
+
+      <!-- Diagnóstico Parcelario & Aptitud Territorial -->
+      <div class="box" id="box-diagnostico-parcelario">
+        <div class="section-title">🏡 Diagnóstico Parcelario & Aptitud Territorial (IPOOT)</div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+          Evaluación técnica y micro-climática de parcelas según proximidad hídrica, cota altimétrica y riesgo pluvial.
+        </p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;">
+          <button class="btn-secondary" id="btn-enfocar-pilar" style="margin:0;">📍 Pilar (#1 Riesgo)</button>
+          <button class="btn-secondary" id="btn-enfocar-piribebuy" style="margin:0;">📍 Piribebuy</button>
+        </div>
+        <button class="btn-secondary" id="btn-enfocar-asuncion" style="margin-top:0; margin-bottom:6px;">📍 Asunción (Bañados Costeros)</button>
+        <button class="btn-primary" id="btn-evaluar-vista" style="width:100%; font-size:11px; padding:5px 8px; margin-bottom:6px;">🔄 Evaluar Parcelas en Vista Actual</button>
+        <div class="parcela-detail-box" id="info-parcela-seleccionada">
+          <div class="parcela-header">
+            <span id="lbl-parcela-ccc">Haga clic en una parcela</span>
+            <span class="badge-ipoot badge-ipoot-favorable" id="lbl-parcela-badge">FAVORABLE</span>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Ubicación:</span>
+            <strong id="lbl-parcela-muni">--</strong>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Cota Local:</span>
+            <strong id="lbl-parcela-cota">-- m.s.n.m.</strong>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Distancia a Cauce:</span>
+            <strong id="lbl-parcela-dist">-- m</strong>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Riesgo Parcela (IRP):</span>
+            <strong id="lbl-parcela-irp">-- / 100</strong>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Cota Segura (ICST):</span>
+            <strong id="lbl-parcela-icst" style="color:#38bdf8;">--</strong>
+          </div>
+          <div class="parcela-metric-row">
+            <span>Dictamen Técnico:</span>
+            <span id="lbl-parcela-dictamen" style="text-align:right; max-width:140px; color:#94a3b8;">Seleccione lote en el mapa</span>
+          </div>
+          <button class="btn-primary" id="btn-export-parcela-sidebar" style="width:100%; margin-top:8px; font-size:11px; padding:6px 8px; background:#059669; border-color:#10b981; display:none;">
+            📄 Emitir Dictamen Parcela (PDF)
+          </button>
+          <a id="btn-ver-parcela-3d" href="/visor-3d.html" target="_blank" class="btn-primary" style="width:100%; margin-top:5px; font-size:11px; padding:6px 8px; background:#0284c7; border-color:#38bdf8; display:none; text-align:center; text-decoration:none;">
+            🏙️ Inspeccionar en Gemelo 3D
+          </a>
+        </div>
+      </div>
+
+      <!-- Simulador de Escenarios Futuros IPCC -->
+      <div class="box">
+        <div class="section-title">🔮 Simulador Climático IPCC AR6</div>
+        <p style="font-size: 12px; color: var(--text-muted);">
+          Simula el impacto de anomalías térmicas y eventos extremos sobre el territorio y uso de suelo.
+        </p>
+        <div class="sim-slider-wrap">
+          <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <span>Anomalía Térmica Proyectada:</span>
+            <strong id="lbl-anomalia" style="color:var(--accent);">+0.0 °C</strong>
+          </div>
+          <input type="range" id="rng-anomalia" min="0" max="5" step="0.5" value="0">
+          <div class="sim-labels">
+            <span>2026 (Base)</span>
+            <span>2030 (+1.1°)</span>
+            <span>2050 (+2.3°)</span>
+            <span>2100 (+4.2°)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision Intelligence (SNC-DI) -->
+      <div class="box">
+        <div class="section-title">📊 Índices Decision Intelligence (SNC-DI)</div>
+        <div class="formula-row">
+          <span><strong>ICT</strong> (Índice Climático):</span>
+          <span id="txt-ict-desc">Temp + Sequía + Lluvia</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>IRT</strong> (Riesgo Territorial):</span>
+          <span id="txt-irt-desc">Amenaza × Exposición × Vuln.</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>IRCT</strong> (Resiliencia Climática):</span>
+          <span id="txt-irct-desc" style="color:#34d399;font-weight:bold;">-- / 100</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>ICST</strong> (Cota Segura Territorial):</span>
+          <span id="txt-icst-desc" style="color:#38bdf8;font-weight:bold;">Apto (+1.50m)</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>IST</strong> (Sostenibilidad):</span>
+          <span id="txt-ist-desc">Bosque + Agua + Carbono</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>IRM</strong> (Resiliencia Municipal):</span>
+          <span id="txt-irm-desc">Infraestructura + Ley 3966</span>
+        </div>
+        <div class="formula-row">
+          <span><strong>IPOOT</strong> (Aptitud Catastral):</span>
+          <span id="txt-ipoot-desc">POUT vs Riesgo Climático</span>
+        </div>
+      </div>
+
+      <!-- Capas Activas y Filtros -->
+      <div class="box">
+        <div class="section-title">🛰️ Capas Territoriales & Satelitales</div>
+        <div class="chips-grid">
+          <span class="chip active" id="chip-parcelas">🏡 Parcelas Catastrales (IPOOT)</span>
+          <span class="chip active" id="chip-hidro-local">💧 Red Hídrica Fluvial</span>
+          <span class="chip active" id="chip-distritos">🌊 Mapa Distrital Inundación (IRI)</span>
+          <span class="chip active" id="chip-firms">🔥 Focos de Calor (FIRMS)</span>
+          <span class="chip" id="chip-incendios-hist" title="Ver registro histórico de grandes incendios forestales 2020-2026 (Chovoreca, Pantanal, etc.)">📅 Histórico Incendios (2020-2026)</span>
+          <span class="chip active" id="chip-estaciones">📍 Estaciones de Referencia</span>
+          <span class="chip active" id="chip-bosques">🌳 Bosques & Deforestación (INFONA)</span>
+          <span class="chip active" id="chip-salud">🏥 Hospitales & USF (Salud)</span>
+          <span class="chip active" id="chip-educacion">🏫 Escuelas & Colegios (MEC)</span>
+          <span class="chip active" id="chip-industria">🏭 Industrias & Logística (POUT)</span>
+        </div>
+      </div>
+
+      <!-- Fuentes Oficiales de Paraguay -->
+      <div class="box">
+        <div class="section-title">🏛️ Fuentes Conectadas (Paraguay)</div>
+        <ul style="font-size: 11px; color: var(--text-muted); list-style: square; padding-left: 18px; display:flex; flex-direction:column; gap:4px;">
+          <li><strong>DINAC:</strong> Meteorología e Hidrología Nacional</li>
+          <li><strong>MADES:</strong> Áreas Protegidas y Calidad Ambiental</li>
+          <li><strong>INFONA:</strong> Cobertura Forestal y Biomasa</li>
+          <li><strong>INE:</strong> Censo Nacional de Población y Viviendas</li>
+          <li><strong>SNC:</strong> Registro Catastral y Parcelario Nacional</li>
+          <li><strong>MEC:</strong> Establecimientos Escolares y Centros Educativos</li>
+          <li><strong>POUT / MADES:</strong> Zonificación Industrial y Territorial (Ley 3966)</li>
+          <li><strong>Copernicus / NASA:</strong> Sentinel-1/2, ERA5, MODIS</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>MHC-PY · Inteligencia Climática & Modelado Territorial (2026)</div>
+    <div>Elaborado por: <strong>Lic. Ambiental Christhian Keim</strong> · Especialista en SIG, POUT y BigData · mail: <a href="mailto:wmlumen@gmail.com" style="color: #38bdf8; text-decoration: none;">wmlumen@gmail.com</a></div>
+  </footer>
+
+  <!-- Librerías JS compatibles con CSP estricta -->
+  <script src="/vendor/leaflet.js"></script>
+  <script src="/vendor/jspdf.umd.min.js"></script>
+  <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Controlador JS externo -->
+  <script src="/js/panel-clima.js?v=20261101c"></script>
+</body>
+</html>

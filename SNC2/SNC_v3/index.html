@@ -129,6 +129,15 @@
       <button id="btn-geoportales-center" onclick="window.openGeoportalesModal()" class="btn-tool header-icon-btn" data-tooltip="Directorio Modular de Geoportales" aria-label="Directorio Modular de Geoportales" title="Directorio Modular de Geoportales">
         <i class="fas fa-earth-americas text-emerald-400"></i>
       </button>
+      <a href="/panel.html" target="_blank" class="btn-tool header-icon-btn" data-tooltip="MHC-PY Cambio Climático & Aptitud IPOOT" aria-label="MHC-PY Cambio Climático" title="MHC-PY Cambio Climático & Decision Intelligence">
+        <i class="fas fa-cloud-sun-rain text-cyan-400"></i>
+      </a>
+      <a href="/analisis-territorial/" target="_blank" class="btn-tool header-icon-btn" data-tooltip="Análisis Territorial & DNIT (266 Distritos)" aria-label="Análisis Territorial" title="Análisis Territorial Catastral & DNIT">
+        <i class="fas fa-chart-pie text-emerald-400"></i>
+      </a>
+      <a href="/visor-3d.html" target="_blank" class="btn-tool header-icon-btn" data-tooltip="Visor 3D Catastral & Relieve" aria-label="Visor 3D Catastral" title="Visor 3D Catastral & Relieve">
+        <i class="fas fa-cube text-pink-400"></i>
+      </a>
       <button id="btn-escribania-tools" onclick="window.openEscribaniaModal()" class="btn-tool header-icon-btn" data-tooltip="Herramientas Notariales y Escribanía" aria-label="Herramientas Notariales y Escribanía" title="Herramientas Notariales y Escribanía">
         <i class="fas fa-stamp text-amber-300"></i>
       </button>
@@ -150,6 +159,7 @@
       <button id="btn-ciudadano-notificaciones" onclick="window.CiudadanoNotifUI?.open()" class="btn-tool header-icon-btn" data-tooltip="Mi Inmueble, Situación y Notificaciones" aria-label="Mi Inmueble y Notificaciones" title="Mi Inmueble y Notificaciones">
         <i class="fas fa-bell text-amber-400"></i>
       </button>
+      <button id="header-user-badge" onclick="window.App?.openProfile?.()" class="hidden shrink-0 max-w-[9rem] truncate rounded-lg border border-slate-700 bg-slate-800/60 px-2 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700" title="Ver perfil / cerrar sesión">Usuario</button>
       <button id="btn-header-auth" onclick="window.AuthModal?.open()" class="btn-tool header-icon-btn" data-tooltip="Iniciar Sesión" aria-label="Iniciar Sesión" title="Iniciar Sesión">
         <i class="fas fa-arrow-right-to-bracket text-indigo-400"></i>
       </button>
@@ -189,6 +199,9 @@
     '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Medir" aria-label="Medir" onclick="window.MapEngine?.toggleMeasureMode()"><i class="fas fa-ruler"></i></button>' +
     '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Editar vértices" aria-label="Editar vértices" onclick="window.MapEngine?.toggleVertexEdit()"><i class="fas fa-bezier-curve"></i></button>' +
     '<button type="button" class="btn-tool header-icon-btn" data-tooltip="Capas" aria-label="Capas" onclick="document.getElementById(\'qgis-layer-control\')?.scrollIntoView({ behavior: \'smooth\', block: \'start\' })"><i class="fas fa-layer-group"></i></button>');
+  // Usuario/sesión: siempre visibles (no se barren al grupo "Herramientas"), es la
+  // única forma de llegar a "Mi perfil / Cerrar sesión".
+  ['header-user-badge', 'btn-header-auth'].forEach(id => { const el = byId(id); if (el) quick.appendChild(el); });
 
   const projectGroup = groupWrap('Proyecto', 'fa-folder-open',
     ['btn-project-rename', 'btn-project-delete', 'btn-project-validate', 'btn-project-audit']);
@@ -229,7 +242,7 @@
 })();
 </script>
 
-  <div class="fixed top-16 left-0 right-0 bottom-0 flex">
+  <div class="app-shell fixed top-16 left-0 right-0 bottom-0 flex">
 
     <!-- SIDEBAR -->
     <aside class="w-80 glass-panel border-r border-slate-800 flex flex-col shrink-0" role="complementary" aria-label="Panel lateral">
@@ -442,7 +455,9 @@
           </div>
         </aside>
 
-        <div id="map-bottom-left-stack" class="map-bottom-left-stack"></div>
+        <div id="map-bottom-left-stack" class="map-bottom-left-stack">
+          <button id="stack-toggle-btn" type="button" class="stack-toggle-btn" aria-expanded="true" aria-controls="map-bottom-left-stack" title="Ocultar leyenda y ubicación" aria-label="Ocultar leyenda y ubicación" onclick="toggleMapStack()"><i class="fas fa-chevron-down" aria-hidden="true"></i> Leyenda y ubicación</button>
+        </div>
         <!-- Zona UTM sobre el mapa: centro inferior, sin fondo -->
         <p class="pointer-events-none absolute bottom-2 left-1/2 z-[1000] -translate-x-1/2 whitespace-nowrap text-[11px] font-bold text-white" style="text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8)">Zona UTM: <span id="stat-zone-map">21S / WGS84</span></p>
         <!-- SELECTOR DE MAPA BASE (hamburguesa flotante derecha-arriba) -->
@@ -1256,7 +1271,7 @@
     <div class="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
       <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4"><h2 id="profileTitle" class="text-lg font-bold text-white">Mi perfil y plan</h2><button onclick="window.App?.closeProfile()" class="rounded p-2 text-slate-400 hover:bg-slate-800"><i class="fas fa-times"></i></button></div>
       <div class="space-y-4 p-5"><div class="grid grid-cols-2 gap-3"><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Plan actual</span><strong id="profile-plan" class="mt-1 block text-white">—</strong></div><div class="rounded-lg bg-slate-800 p-3"><span class="text-[10px] uppercase text-slate-400">Estado</span><strong id="profile-status" class="mt-1 block text-emerald-400">—</strong></div></div><label class="block text-xs text-slate-400">Nombre<input id="profile-name" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 p-2 text-white"></label><div><h3 class="mb-2 text-xs font-bold uppercase text-slate-400">Pagos recientes</h3><div id="profile-payments" class="max-h-40 space-y-2 overflow-y-auto text-xs text-slate-300">Sin pagos registrados.</div></div></div>
-      <div class="flex flex-wrap justify-end gap-2 border-t border-slate-800 px-5 py-4"><button onclick="window.App?.openPlans()" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white">Renovar o ampliar plan</button><button onclick="window.App?.saveProfile()" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white">Guardar perfil</button></div>
+      <div class="flex flex-wrap justify-between gap-2 border-t border-slate-800 px-5 py-4"><button onclick="window.AuthModal?.logout(); window.App?.closeProfile();" class="rounded-lg bg-red-900/60 px-4 py-2 text-xs font-bold text-red-200 hover:bg-red-900"><i class="fas fa-right-from-bracket mr-1"></i> Cerrar sesión</button><div class="flex flex-wrap justify-end gap-2"><button onclick="window.App?.openPlans()" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white">Renovar o ampliar plan</button><button onclick="window.App?.saveProfile()" class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white">Guardar perfil</button></div></div>
     </div>
   </div>
 
@@ -1627,6 +1642,25 @@ import OverviewMap from '/js/overviewMap.js';
     let abierto = true;
     try { abierto = localStorage.getItem('snc-project-status-open') !== '0'; } catch {}
     if (!abierto) toggleProjectStatusSection(false);
+  })();
+
+  // ─── Alternar visibilidad de "Leyenda y ubicación" sobre el mapa ────────────
+  function toggleMapStack(forceOpen) {
+    const stack = document.getElementById('map-bottom-left-stack');
+    const btn = document.getElementById('stack-toggle-btn');
+    if (!stack || !btn) return;
+    const open = forceOpen !== undefined ? forceOpen : stack.classList.contains('collapsed');
+    stack.classList.toggle('collapsed', !open);
+    btn.innerHTML = `<i class="fas ${open ? 'fa-chevron-down' : 'fa-chevron-up'}" aria-hidden="true"></i> Leyenda y ubicación`;
+    btn.title = open ? 'Ocultar leyenda y ubicación' : 'Mostrar leyenda y ubicación';
+    btn.setAttribute('aria-expanded', String(open));
+    try { localStorage.setItem('snc-map-stack-open', open ? '1' : '0'); } catch {}
+  }
+  window.toggleMapStack = toggleMapStack;
+  (() => {
+    let abierto = true;
+    try { abierto = localStorage.getItem('snc-map-stack-open') !== '0'; } catch {}
+    if (!abierto) toggleMapStack(false);
   })();
 
   // ─── Alternar visibilidad de capas de referencia ────────────────────────────

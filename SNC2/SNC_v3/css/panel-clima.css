@@ -1,0 +1,704 @@
+:root {
+  --bg-dark: #0b1120;
+  --panel-bg: rgba(15, 23, 42, 0.92);
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.25);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Header */
+header {
+  background: rgba(15, 23, 42, 0.98);
+  border-bottom: 1px solid var(--card-border);
+  padding: 12px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.badge-snc {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+select, button {
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid #475569;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+select:hover, button:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+button.btn-primary {
+  background: #0284c7;
+  border-color: #38bdf8;
+  font-weight: 600;
+}
+
+/* KPI Bar */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 12px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+}
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.15s ease;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.kpi-val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.kpi-val small { font-size: 12px; font-weight: normal; color: var(--text-muted); }
+.status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+.pill-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.pill-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.pill-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+/* Main Container */
+.workspace {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 165px);
+  min-height: 580px;
+  position: relative;
+}
+
+/* Map Container */
+#map {
+  flex: 1;
+  height: 100%;
+  min-height: 500px;
+  width: 100%;
+  background: #0f172a;
+  z-index: 10;
+}
+.v3-map-tooltip {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid #38bdf8 !important;
+  color: #f1f5f9 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+}
+.v3-map-tooltip::before {
+  border-top-color: #38bdf8 !important;
+}
+
+/* Right Sidebar */
+.sidebar {
+  width: 440px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--card-border);
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 20;
+}
+@media (max-width: 900px) {
+  .workspace { flex-direction: column; height: auto; }
+  .sidebar { width: 100%; }
+  #map { height: 420px; }
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.box {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* Scenario Simulator */
+.sim-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sim-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+input[type=range] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Badges list */
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+}
+.chip:hover {
+  border-color: var(--accent);
+  background: #1e293b;
+}
+.chip.active {
+  background: #0369a1;
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+/* Formula cards */
+.formula-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+.formula-row:last-child { border-bottom: none; }
+
+/* Chart canvas container */
+.chart-container {
+  position: relative;
+  height: 160px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Footer */
+footer {
+  background: #090d16;
+  border-top: 1px solid var(--card-border);
+  padding: 8px 20px;
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Leyenda Cartográfica Flotante en Leaflet */
+.v3-clima-legend {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #f1f5f9;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  line-height: 1.5;
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+.v3-clima-legend-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: #38bdf8;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.v3-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.v3-legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+/* Buscador y Ranking de Distritos */
+.search-distrito-wrap {
+  position: relative;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.input-search-distrito {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-search-distrito:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 2000;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  display: none;
+}
+.search-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.search-item:hover {
+  background: #1e293b;
+  color: #38bdf8;
+}
+
+/* Lista de Ranking */
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+.ranking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 41, 59, 0.7);
+  padding: 6px 10px;
+  border-radius: 5px;
+  border-left: 3px solid #ef4444;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ranking-item:hover {
+  background: #1e293b;
+  border-left-color: #38bdf8;
+}
+.badge-iri {
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+.badge-iri-extremo { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+.badge-iri-alto { background: rgba(249, 115, 22, 0.2); color: #fb923c; border: 1px solid #f97316; }
+.badge-iri-medio { background: rgba(250, 204, 21, 0.2); color: #fde047; border: 1px solid #facc15; }
+.badge-iri-bajo { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+
+/* Foco de calor pulsante */
+@keyframes pulse-fire {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+.pulse-fire-icon {
+  animation: pulse-fire 1.8s infinite ease-in-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Estilos para Diagnóstico Parcelario (Opción A - Piribebuy) */
+.parcela-detail-box {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+.parcela-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: #38bdf8;
+  font-size: 12px;
+}
+.parcela-metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.parcela-metric-row:last-child {
+  border-bottom: none;
+}
+.badge-ipoot {
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-ipoot-favorable { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+.badge-ipoot-condicionado { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+.badge-ipoot-restringido { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+.btn-secondary {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 6px;
+  text-align: center;
+}
+.btn-secondary:hover {
+  background: #334155;
+  border-color: #38bdf8;
+  color: #fff;
+}
+
+/* Marcadores de Infraestructura Crítica con Íconos Visibles (Salud, Educación, Industria) */
+.infra-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.infra-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 2px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.infra-pin:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 3px 10px rgba(0, 0, 0, 0.7);
+  z-index: 1000 !important;
+}
+
+.infra-pin svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+  stroke: none;
+  display: block;
+}
+
+/* Salud: Hospital (Rojo intenso), USF / Centro de Salud (Esmeralda) */
+.infra-pin-hospital {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border-color: #fecaca;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+.infra-pin-salud {
+  background: linear-gradient(135deg, #10b981, #047857);
+  border-color: #a7f3d0;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Educación: Escuela Urbana (Azul real), Rural (Celeste cielo) */
+.infra-pin-escuela-urb {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #bfdbfe;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+.infra-pin-escuela-urb svg {
+  width: 12px;
+  height: 12px;
+}
+
+.infra-pin-escuela-rur {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #bae6fd;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+.infra-pin-escuela-rur svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* Industria y Logística POUT: General (Ámbar / Amarillo cálido), Pesada/Silos (Naranja intenso) */
+.infra-pin-industria {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-color: #fde68a;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+.infra-pin-industria-heavy {
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+  border-color: #fed7aa;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Agrupamiento de Marcadores (Marker Clustering) con Ícono y Contador */
+.cluster-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cluster-pin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 8px 3px 7px;
+  border-radius: 16px;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 11px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55), 0 0 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+  user-select: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.cluster-pin:hover {
+  transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.95), 0 4px 12px rgba(0, 0, 0, 0.7);
+  z-index: 1000 !important;
+}
+
+.cluster-pin svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+  display: block;
+}
+
+.cluster-count {
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  min-width: 14px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Clúster departamental y multinivel */
+.cluster-pin-depto,
+.cluster-pin-lvl-2 {
+  padding: 4px 10px 4px 8px;
+  font-size: 11.5px;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
+.cluster-depto-name,
+.cluster-label {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* 5 Niveles Jerárquicos: Región -> Depto -> Distrito -> Urbano/Rural -> Barrio */
+.cluster-pin-lvl-1 {
+  padding: 5px 12px 5px 9px;
+  font-size: 12px;
+  border-width: 2.5px;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.45), 0 4px 12px rgba(0, 0, 0, 0.65);
+}
+
+.cluster-pin-lvl-3 {
+  padding: 3.5px 9px 3.5px 7px;
+  font-size: 11px;
+}
+
+.cluster-pin-lvl-4 {
+  padding: 3px 8px 3px 7px;
+  font-size: 10.5px;
+}
+
+.cluster-pin-lvl-5 {
+  padding: 3px 8px 3px 6px;
+  font-size: 10.5px;
+  border-style: dashed;
+}
+
+/* Tag distintivo del nivel jerárquico */
+.cluster-badge-tag {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  line-height: 1.1;
+  color: #f1f5f9;
+}
+
+/* Distinción para Área Rural y Área Urbana */
+.cluster-pin-zona-rural .cluster-badge-tag {
+  background: rgba(22, 101, 52, 0.85);
+  border-color: #86efac;
+  color: #dcfce7;
+}
+
+.cluster-pin-zona-urbana .cluster-badge-tag {
+  background: rgba(30, 58, 138, 0.85);
+  border-color: #93c5fd;
+  color: #dbeafe;
+}
+
+/* Clústeres por categoría */
+.cluster-pin-escuela {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  border-color: #bfdbfe;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+.cluster-pin-salud {
+  background: linear-gradient(135deg, #047857, #10b981);
+  border-color: #a7f3d0;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+.cluster-pin-industria {
+  background: linear-gradient(135deg, #c2410c, #f59e0b);
+  border-color: #fde68a;
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.6), 0 0 3px rgba(0, 0, 0, 0.4);
+}

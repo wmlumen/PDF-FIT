@@ -638,11 +638,21 @@ const App = {
   },
 
   openProfile() {
-    document.getElementById('modal-profile')?.classList.remove('hidden');
+    const modal = document.getElementById('profileModal');
+    if (!modal) return;
+    const user = State.getBackendUser?.();
+    const nameInput = document.getElementById('profile-name');
+    if (nameInput) nameInput.value = user?.nombre || user?.email || '';
+    const planEl = document.getElementById('profile-plan');
+    if (planEl) planEl.textContent = user?.plan || user?.uso || '—';
+    const statusEl = document.getElementById('profile-status');
+    if (statusEl) statusEl.textContent = State.getBackendToken?.() ? 'Sesión activa' : 'Sin sesión';
+    modal.style.display = 'flex';
   },
 
   closeProfile() {
-    document.getElementById('modal-profile')?.classList.add('hidden');
+    const modal = document.getElementById('profileModal');
+    if (modal) modal.style.display = 'none';
   },
 
   saveProfile() {

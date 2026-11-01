@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMEN | Inteligencia Territorial del Paraguay</title>
+    <meta name="description" content="Sistema Nacional de Gestión de Catastro y Análisis Climático del Paraguay. Transparencia y tecnología para el territorio.">
+    
+    <!-- Fuentes e Iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-primary: #4f46e5;
+            --brand-secondary: #06b6d4;
+            --brand-dark: #020617;
+            --brand-accent: #facc15;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--brand-dark);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .mesh-gradient {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.1) 0px, transparent 50%);
+        }
+
+        .glass-header {
+            background: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hero-title {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-glow {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.5);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-glow:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 70, 229, 0.4);
+            box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .btn-lumen {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-lumen::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-lumen:hover::before {
+            left: 100%;
+        }
+
+        .stat-number {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .floating-map {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 2px;
+            background: var(--brand-primary);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 3.5rem; }
+        }
+
+        /* =========================================================================
+           PANELES EN VIVO TIPO GIF (SHOWCASE INTERACTIVO LUMEN SUITE)
+           ========================================================================= */
+        @keyframes radarSweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes laserScan {
+            0% { top: 6%; opacity: 0.9; }
+            50% { top: 92%; opacity: 1; }
+            100% { top: 6%; opacity: 0.9; }
+        }
+        @keyframes tideWave {
+            0%, 100% { transform: translateY(0px) scaleY(1); opacity: 0.45; }
+            50% { transform: translateY(-8px) scaleY(1.12); opacity: 0.85; }
+        }
+        @keyframes barGrow1 { 0%, 100% { height: 35%; } 50% { height: 85%; } }
+        @keyframes barGrow2 { 0%, 100% { height: 55%; } 50% { height: 98%; } }
+        @keyframes barGrow3 { 0%, 100% { height: 40%; } 50% { height: 75%; } }
+        @keyframes barGrow4 { 0%, 100% { height: 25%; } 50% { height: 65%; } }
+        @keyframes barGrow5 { 0%, 100% { height: 50%; } 50% { height: 90%; } }
+        @keyframes beaconPulse {
+            0% { transform: scale(0.9); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.35; }
+            100% { transform: scale(0.9); opacity: 1; }
+        }
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -32; }
+        }
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .anim-radar { animation: radarSweep 3.2s linear infinite; transform-origin: 50% 50%; }
+        .anim-laser-line { animation: laserScan 2.6s ease-in-out infinite; }
+        .anim-tide-water { animation: tideWave 3.5s ease-in-out infinite; }
+        .anim-bar-1 { animation: barGrow1 2.2s ease-in-out infinite; }
+        .anim-bar-2 { animation: barGrow2 2.7s ease-in-out infinite; }
+        .anim-bar-3 { animation: barGrow3 2.1s ease-in-out infinite; }
+        .anim-bar-4 { animation: barGrow4 2.5s ease-in-out infinite; }
+        .anim-bar-5 { animation: barGrow5 2.9s ease-in-out infinite; }
+        .anim-beacon { animation: beaconPulse 1.8s ease-in-out infinite; }
+        .anim-dash { stroke-dasharray: 6 4; animation: dashFlow 2s linear infinite; }
+        .anim-float-subtle { animation: cardFloat 4s ease-in-out infinite; }
+
+        .screen-slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .screen-slide.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .showcase-pill {
+            transition: all 0.25s ease;
+        }
+        .showcase-pill.active {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.4), rgba(6, 182, 212, 0.4));
+            border-color: rgba(129, 140, 248, 0.9);
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.45);
+        }
+
+        .mini-gif-canvas {
+            position: relative;
+            background: #030712;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .timer-progress {
+            transition: width 0.1s linear;
+        }
+
+        /* Estilos de organización y control de visibilidad por icono de ojo */
+        .showcase-pill.screen-hidden {
+            opacity: 0.45;
+            background: rgba(15, 23, 42, 0.4);
+            border-color: rgba(255, 255, 255, 0.05);
+            text-decoration: line-through;
+        }
+        .showcase-pill.screen-hidden .eye-toggle i {
+            color: #64748b !important;
+        }
+
+        .cat-filter-btn.active {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.5), rgba(6, 182, 212, 0.5));
+            border-color: rgba(129, 140, 248, 0.8);
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(79, 70, 229, 0.4);
+        }
+
+        .card-collapsed {
+            padding: 1.25rem 1.75rem !important;
+            border-style: dashed !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            background: rgba(15, 23, 42, 0.4) !important;
+            opacity: 0.65;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-collapsed:hover {
+            opacity: 1;
+            border-color: rgba(99, 102, 241, 0.6) !important;
+        }
+        .card-collapsed .card-full-content {
+            display: none !important;
+        }
+        .card-collapsed .card-collapsed-content {
+            display: flex !important;
+        }
+        .card-collapsed-content {
+            display: none;
+        }
+
+        .minigifs-hidden .mini-gif-canvas {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="mesh-gradient min-h-screen selection:bg-indigo-500/30 selection:text-white">
+
+    <!-- NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-[100] glass-header">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fas fa-lightbulb text-white text-xl"></i>
+                </div>
+                <span class="brand-font text-2xl font-black tracking-tighter text-white">LUMEN</span>
+            </div>
+            
+            <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-400">
+                <a href="#" class="nav-link hover:text-white transition-colors">Inicio</a>
+                <a href="#modulos" class="nav-link hover:text-white transition-colors">Módulos</a>
+                <a href="#datos" class="nav-link hover:text-white transition-colors">Datos</a>
+                <a href="#nosotros" class="nav-link hover:text-white transition-colors">Sobre el Proyecto</a>
+                <a href="/index.html" class="px-6 py-2.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/30 btn-lumen">
+                    Acceso Profesional
+                </a>
+            </nav>
+
+            <button class="lg:hidden text-white p-2">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="relative pt-40 pb-24 overflow-hidden">
+        <div class="container mx-auto px-6 flex flex-col lg:flex-row items-center gap-16">
+            <div class="lg:w-1/2 text-center lg:text-left z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">
+                    <span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    SNC Res. 551/2023 · v5.0 PRO
+                </div>
+                <h1 class="hero-title text-6xl md:text-[5.5rem] font-black mb-8 leading-[1.1] tracking-tight">
+                    Iluminando el <br> <span class="text-indigo-500">Territorio.</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                    LUMEN es la plataforma de inteligencia territorial líder en Paraguay. 
+                    Combinamos datos catastrales oficiales con análisis ambiental avanzado para una gestión transparente y resiliente.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5">
+                    <a href="/index.html" class="w-full sm:w-auto px-10 py-5 bg-white text-indigo-950 font-bold rounded-2xl hover:bg-slate-100 transition-all flex items-center justify-center gap-3 shadow-2xl hover:scale-105 active:scale-95">
+                        <i class="fas fa-rocket"></i> Iniciar Sesión
+                    </a>
+                    <a href="/visor-3d.html" class="w-full sm:w-auto px-10 py-5 bg-slate-800/40 text-white font-bold rounded-2xl border border-white/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-3 hover:border-indigo-500/50 hover:scale-105 active:scale-95">
+                        <i class="fas fa-cube text-pink-400"></i> Visor 3D Real-Time
+                    </a>
+                </div>
+            </div>
+
+            <!-- SHOWCASE DE PANELES EN VIVO TIPO GIF -->
+            <div class="lg:w-1/2 relative w-full">
+                <div class="relative z-10 group">
+                    <div class="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-cyan-500 to-pink-500 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-35 transition duration-1000"></div>
+                    
+                    <!-- Marco de Navegador / Monitor Dark -->
+                    <div class="relative rounded-[2rem] overflow-hidden border border-white/15 shadow-2xl bg-slate-950/90 backdrop-blur-xl">
+                        
+                        <!-- Barra Superior de Navegador Mac -->
+                        <div class="px-5 py-3.5 bg-slate-900/90 border-b border-white/10 flex items-center justify-between gap-3 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-rose-500 inline-block shadow-sm"></span>
+                                <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span>
+                                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
+                            </div>
+                            
+                            <!-- Barra de Dirección URL Activa -->
+                            <div class="flex-1 max-w-sm mx-auto bg-slate-950/80 border border-white/10 rounded-full px-4 py-1 text-slate-300 font-mono text-[11px] flex items-center justify-between shadow-inner">
+                                <span class="flex items-center gap-2 text-indigo-400 truncate">
+                                    <i class="fas fa-lock text-[10px]"></i>
+                                    <span id="showcase-url-text">https://lumen.py/panel.html</span>
+                                </span>
+                                <span class="flex items-center gap-1.5 text-emerald-400 font-bold text-[9px] uppercase tracking-wider pl-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 anim-beacon"></span>
+                                    <span>EN VIVO</span>
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2 text-slate-400 text-xs">
+                                <button id="btn-toggle-showcase-visibility" class="hover:text-emerald-400 p-1" title="Ocultar / Mostrar Contenido del Monitor"><i class="fas fa-eye text-emerald-400 text-[11px]" id="icon-showcase-view-eye"></i></button>
+                                <button id="btn-showcase-playpause" class="hover:text-white p-1" title="Pausar / Reanudar Rotación"><i class="fas fa-pause text-[11px]"></i></button>
+                                <a id="showcase-btn-open" href="/panel.html" target="_blank" class="hover:text-cyan-400 p-1" title="Abrir Pantalla Completa"><i class="fas fa-external-link-alt text-[11px]"></i></a>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Tiempo / Timer Progreso tipo GIF -->
+                        <div class="w-full h-1 bg-slate-900 overflow-hidden">
+                            <div id="showcase-timer-bar" class="h-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400 timer-progress w-0"></div>
+                        </div>
+
+                        <!-- CONTENEDOR DE PANTALLAS ANIMADAS (SLIDES TIPO GIF) -->
+                        <div class="relative min-h-[380px] sm:min-h-[420px] p-4 sm:p-6 bg-gradient-to-b from-slate-950/70 to-slate-900/90 overflow-hidden flex flex-col justify-between">
+                            
+                            <!-- PANTALLA 1: PANEL CLIMA & MHC-PY (/panel.html) -->
+                            <div class="screen-slide active" data-screen-index="0" data-url="https://lumen.py/panel.html" data-href="/panel.html">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                                            <i class="fas fa-cloud-sun-rain"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Módulo Clima & Resiliencia</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">MHC-PY · Piribebuy (Cordillera)</h4>
+                                        </div>
+                                    </div>
+                                    <!-- Widget Meteorológico en Vivo -->
+                                    <div class="bg-slate-900/90 border border-cyan-500/30 rounded-xl px-3 py-1.5 flex items-center gap-3">
+                                        <div class="text-right">
+                                            <p class="text-xs font-black text-cyan-300">28.1 °C</p>
+                                            <p class="text-[9px] text-slate-400">Sens: 30.6° | Hum: 62%</p>
+                                        </div>
+                                        <i class="fas fa-sun text-amber-400 text-lg anim-float-subtle"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Lienzo del Mapa con Radar y Clústeres Jerárquicos -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-slate-950 border border-white/10 overflow-hidden shadow-inner">
+                                    <!-- Cuadrícula cartográfica oscura -->
+                                    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                                    
+                                    <!-- Contorno vectorial de Paraguay estilizado -->
+                                    <svg class="absolute inset-0 w-full h-full opacity-60" viewBox="0 0 400 240" fill="none">
+                                        <path d="M120 40 L220 30 L270 90 L240 160 L180 210 L130 180 L90 120 Z" stroke="#334155" stroke-width="1.5" fill="#0f172a" fill-opacity="0.4"/>
+                                        <path d="M150 70 L210 65 L240 110 L200 170 L150 140 Z" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3" class="anim-dash" fill="rgba(6, 182, 212, 0.08)"/>
+                                    </svg>
+
+                                    <!-- Haz de Radar que barre la pantalla en bucle -->
+                                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none anim-radar overflow-hidden">
+                                        <div class="w-full h-full bg-gradient-to-tr from-cyan-500/30 via-transparent to-transparent"></div>
+                                    </div>
+
+                                    <!-- Clústeres Jerárquicos Adaptativos en Pantalla -->
+                                    <div class="absolute top-10 left-16 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-700 to-blue-600 border border-blue-300 text-white text-[10px] font-bold shadow-lg shadow-blue-500/30">
+                                        <i class="fas fa-graduation-cap text-[9px]"></i>
+                                        <span class="text-[8px] bg-slate-950/70 px-1 rounded text-blue-200">REGIÓN</span>
+                                        <span>Oriental · 8,902</span>
+                                    </div>
+
+                                    <div class="absolute top-28 left-40 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-600 border border-emerald-300 text-white text-[10px] font-bold shadow-lg shadow-emerald-500/30">
+                                        <i class="fas fa-hospital text-[9px]"></i>
+                                        <span class="text-[8px] bg-slate-950/70 px-1 rounded text-emerald-200">DIST</span>
+                                        <span>Piribebuy · 14</span>
+                                    </div>
+
+                                    <div class="absolute bottom-12 right-20 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-700 to-amber-600 border border-amber-300 text-white text-[10px] font-bold shadow-lg shadow-amber-500/30">
+                                        <i class="fas fa-industry text-[9px]"></i>
+                                        <span class="text-[8px] bg-slate-950/70 px-1 rounded text-amber-200">POUT</span>
+                                        <span>Silos · 24</span>
+                                    </div>
+
+                                    <!-- Focos de Calor Activos FIRMS -->
+                                    <div class="absolute top-16 right-16 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-500/90 text-white text-[9px] font-bold shadow animate-pulse">
+                                        <i class="fas fa-fire text-amber-300"></i>
+                                        <span>NASA FIRMS: 3 Focos (18.5 MW)</span>
+                                    </div>
+
+                                    <!-- Mini Gráfico de Lluvia Acumulada -->
+                                    <div class="absolute bottom-2 left-2 z-20 bg-slate-900/90 border border-white/10 rounded-lg px-2.5 py-1 flex items-center gap-2">
+                                        <i class="fas fa-water text-cyan-400 text-xs"></i>
+                                        <span class="text-[9px] text-slate-300 font-mono">Lluvia Asunción: <b class="text-cyan-300">43.8 mm</b></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANTALLA 2: CATASTRO PRO & CAD 551 (/index.html) -->
+                            <div class="screen-slide" data-screen-index="1" data-url="https://lumen.py/index.html" data-href="/index.html">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                                            <i class="fas fa-drafting-compass"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Catastro Pro · Resolución 551/2023</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">Mesa Técnica CAD · Cta. Cte. 19-0142-08</h4>
+                                        </div>
+                                    </div>
+                                    <!-- Toolbar CAD simulada -->
+                                    <div class="bg-slate-900 border border-white/10 rounded-xl px-2.5 py-1 flex items-center gap-2 text-[10px] text-slate-300">
+                                        <span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold"><i class="fas fa-mouse-pointer"></i> Select</span>
+                                        <span><i class="fas fa-vector-square"></i> CAD</span>
+                                        <span class="text-emerald-400 font-bold"><i class="fas fa-magnet"></i> Osnap ON</span>
+                                    </div>
+                                </div>
+
+                                <!-- Lienzo Blueprint CAD con Escáner Láser -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-[#030712] border border-indigo-500/30 overflow-hidden shadow-inner">
+                                    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e1b4b_1px,transparent_1px),linear-gradient(to_bottom,#1e1b4b_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></div>
+                                    
+                                    <!-- Línea de Escaneo Láser Vertical -->
+                                    <div class="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] z-20 anim-laser-line"></div>
+
+                                    <!-- Polígono Catastral con Vértices Geodésicos -->
+                                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 240">
+                                        <!-- Parcela Vecina tenue -->
+                                        <polygon points="60,80 150,50 180,140 90,160" fill="rgba(79, 70, 229, 0.05)" stroke="#334155" stroke-width="1" stroke-dasharray="3 3"/>
+                                        <!-- Parcela Analizada Oficial -->
+                                        <polygon points="170,60 310,40 340,170 200,190" fill="rgba(99, 102, 241, 0.15)" stroke="#6366f1" stroke-width="2.5"/>
+                                        
+                                        <!-- Vértices P1, P2, P3, P4 -->
+                                        <circle cx="170" cy="60" r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+                                        <circle cx="310" cy="40" r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+                                        <circle cx="340" cy="170" r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+                                        <circle cx="200" cy="190" r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+
+                                        <text x="150" y="55" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">P1</text>
+                                        <text x="315" y="38" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">P2</text>
+                                        <text x="345" y="175" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">P3</text>
+                                        <text x="180" y="200" fill="#38bdf8" font-size="10" font-family="monospace" font-weight="bold">P4</text>
+
+                                        <!-- Medición de Linderos -->
+                                        <text x="230" y="45" fill="#a5b4fc" font-size="9" font-family="monospace">d = 45.30 m</text>
+                                        <text x="330" y="110" fill="#a5b4fc" font-size="9" font-family="monospace">d = 38.80 m</text>
+                                        <text x="260" y="190" fill="#a5b4fc" font-size="9" font-family="monospace">d = 44.90 m</text>
+                                        <text x="170" y="130" fill="#a5b4fc" font-size="9" font-family="monospace">d = 39.10 m</text>
+                                    </svg>
+
+                                    <!-- Ficha de Validación SNC Flotante -->
+                                    <div class="absolute bottom-3 right-3 z-30 bg-slate-900/95 border border-emerald-500/40 rounded-xl p-2.5 text-[10px] shadow-xl backdrop-blur-md">
+                                        <div class="flex items-center gap-1.5 text-emerald-400 font-bold mb-1">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>SNC 551/2023 VALIDADO</span>
+                                        </div>
+                                        <div class="text-slate-300 font-mono space-y-0.5">
+                                            <p>Sup: <b class="text-white">1,420.50 m²</b></p>
+                                            <p>Perímetro: <b class="text-white">168.10 m</b></p>
+                                            <p>Error Cierre: <b class="text-emerald-300">0.008 m OK</b></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANTALLA 3: GEMELO DIGITAL 3D REAL-TIME (/visor-3d.html) -->
+                            <div class="screen-slide" data-screen-index="2" data-url="https://lumen.py/visor-3d.html" data-href="/visor-3d.html">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400">
+                                            <i class="fas fa-cube"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-pink-400 font-bold uppercase tracking-widest">Gemelo Digital 3D · 4D Real-Time</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">Relieve SRTM & Extrusión de Edificios OSM</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bg-pink-950/60 border border-pink-500/40 rounded-xl px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-pink-300 font-bold">
+                                        <i class="fas fa-layer-group"></i>
+                                        <span>Z-Index Activo</span>
+                                    </div>
+                                </div>
+
+                                <!-- Perspectiva Isométrica 3D Simulada -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-gradient-to-b from-[#0b0f19] to-[#020617] border border-pink-500/30 overflow-hidden shadow-inner flex items-center justify-center">
+                                    <!-- Plano de Marea / Inundación Dinámica Azul Neón -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-cyan-600/40 via-cyan-500/20 to-transparent anim-tide-water z-10 border-t border-cyan-400/50">
+                                        <div class="absolute top-2 left-4 text-[9px] font-mono text-cyan-300 font-bold bg-slate-950/80 px-2 py-0.5 rounded border border-cyan-500/40">
+                                            🌊 Cota Inundación: +64.00 m s.n.m.
+                                        </div>
+                                    </div>
+
+                                    <!-- Render Isométrico SVG de Edificios en 3D -->
+                                    <svg class="w-full h-full z-20" viewBox="0 0 400 240">
+                                        <!-- Edificio 1 (Casco Urbano) -->
+                                        <g transform="translate(120, 90)">
+                                            <!-- Cara frontal -->
+                                            <polygon points="0,40 35,55 35,15 0,0" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.2"/>
+                                            <!-- Cara lateral -->
+                                            <polygon points="35,55 80,35 80,-5 35,15" fill="#312e81" stroke="#818cf8" stroke-width="1.2"/>
+                                            <!-- Techo -->
+                                            <polygon points="0,0 35,15 80,-5 45,-20" fill="#4338ca" stroke="#c7d2fe" stroke-width="1.5"/>
+                                        </g>
+
+                                        <!-- Edificio 2 (Hospital / Refugio Seguro) -->
+                                        <g transform="translate(220, 60)">
+                                            <!-- Cara frontal -->
+                                            <polygon points="0,55 45,75 45,15 0,-5" fill="#064e3b" stroke="#34d399" stroke-width="1.5"/>
+                                            <!-- Cara lateral -->
+                                            <polygon points="45,75 100,50 100,-10 45,15" fill="#047857" stroke="#34d399" stroke-width="1.5"/>
+                                            <!-- Techo -->
+                                            <polygon points="0,-5 45,15 100,-10 55,-30" fill="#10b981" stroke="#a7f3d0" stroke-width="1.8"/>
+                                            <!-- Pin Holográfico -->
+                                            <circle cx="50" cy="-35" r="4" fill="#34d399" stroke="#ffffff" stroke-width="1.5" class="anim-beacon"/>
+                                            <text x="60" y="-32" fill="#34d399" font-size="9" font-weight="bold" font-family="sans-serif">Cota Segura (+4.5m)</text>
+                                        </g>
+
+                                        <!-- Edificio 3 (Vivienda baja expuesta) -->
+                                        <g transform="translate(170, 130)">
+                                            <polygon points="0,30 25,40 25,10 0,0" fill="#4c0519" stroke="#fb7185" stroke-width="1.2"/>
+                                            <polygon points="25,40 60,25 60,-5 25,10" fill="#881337" stroke="#fb7185" stroke-width="1.2"/>
+                                            <polygon points="0,0 25,10 60,-5 35,-15" fill="#e11d48" stroke="#fecdd3" stroke-width="1.5"/>
+                                            <text x="65" y="10" fill="#f43f5e" font-size="8" font-family="sans-serif" font-weight="bold">⚠ Anegado</text>
+                                        </g>
+                                    </svg>
+
+                                    <!-- Panel lateral de Capas 3D simulado -->
+                                    <div class="absolute top-2 right-2 z-30 bg-slate-900/90 border border-white/10 rounded-lg p-2 text-[9px] text-slate-300 space-y-1">
+                                        <p class="text-pink-400 font-bold uppercase tracking-wider">Orden de Capas</p>
+                                        <div class="flex items-center gap-1.5 text-white font-mono bg-slate-800 px-1.5 py-0.5 rounded">1. Edificios 3D</div>
+                                        <div class="flex items-center gap-1.5 text-cyan-300 font-mono bg-slate-800 px-1.5 py-0.5 rounded">2. Tirante Hídrico</div>
+                                        <div class="flex items-center gap-1.5 text-indigo-300 font-mono bg-slate-800 px-1.5 py-0.5 rounded">3. Parcelas SNC</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANTALLA 4: ANÁLISIS TERRITORIAL & BIGDATA (/analisis-territorial/) -->
+                            <div class="screen-slide" data-screen-index="3" data-url="https://lumen.py/analisis-territorial/" data-href="/analisis-territorial/">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Análisis Territorial & BigData</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">266 Distritos · Vinculación DNIT & CNPV 2022</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bg-emerald-950/60 border border-emerald-500/40 rounded-xl px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-emerald-300 font-bold">
+                                        <i class="fas fa-arrow-trend-up"></i>
+                                        <span>+18.4% Recaudación</span>
+                                    </div>
+                                </div>
+
+                                <!-- Gráficos Estadísticos Dinámicos en Vivo -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-[#030712] border border-emerald-500/30 p-4 overflow-hidden flex flex-col justify-between">
+                                    <!-- 3 Métricas Clave -->
+                                    <div class="grid grid-cols-3 gap-3 mb-2">
+                                        <div class="bg-slate-900/80 border border-white/10 rounded-xl p-2 text-center">
+                                            <p class="text-[9px] text-slate-400 uppercase font-bold">Cuentas DNIT</p>
+                                            <p class="text-sm font-black text-emerald-400">1,248,310</p>
+                                        </div>
+                                        <div class="bg-slate-900/80 border border-white/10 rounded-xl p-2 text-center">
+                                            <p class="text-[9px] text-slate-400 uppercase font-bold">Población CNPV</p>
+                                            <p class="text-sm font-black text-cyan-400">6,109,644</p>
+                                        </div>
+                                        <div class="bg-slate-900/80 border border-white/10 rounded-xl p-2 text-center">
+                                            <p class="text-[9px] text-slate-400 uppercase font-bold">Aptitud POUT</p>
+                                            <p class="text-sm font-black text-indigo-400">92.4% OK</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Gráfico de Barras Animado en bucle tipo GIF -->
+                                    <div class="flex-1 bg-slate-900/60 border border-white/5 rounded-xl p-3 flex flex-col justify-between">
+                                        <div class="flex justify-between items-center text-[9px] text-slate-400 font-mono mb-2">
+                                            <span>Comparativa Distrital de Impuesto Inmobiliario</span>
+                                            <span class="text-emerald-400">● Tiempo Real</span>
+                                        </div>
+                                        
+                                        <div class="flex items-end justify-between h-20 px-2 gap-3">
+                                            <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                                                <div class="w-full bg-gradient-to-t from-indigo-700 to-indigo-500 rounded-t anim-bar-1"></div>
+                                                <span class="text-[8px] text-slate-400 font-bold">Asunción</span>
+                                            </div>
+                                            <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                                                <div class="w-full bg-gradient-to-t from-cyan-700 to-cyan-400 rounded-t anim-bar-2"></div>
+                                                <span class="text-[8px] text-slate-400 font-bold">CDE</span>
+                                            </div>
+                                            <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                                                <div class="w-full bg-gradient-to-t from-emerald-700 to-emerald-400 rounded-t anim-bar-3"></div>
+                                                <span class="text-[8px] text-slate-400 font-bold">Luque</span>
+                                            </div>
+                                            <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                                                <div class="w-full bg-gradient-to-t from-amber-700 to-amber-400 rounded-t anim-bar-4"></div>
+                                                <span class="text-[8px] text-slate-400 font-bold">Piribebuy</span>
+                                            </div>
+                                            <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                                                <div class="w-full bg-gradient-to-t from-rose-700 to-rose-400 rounded-t anim-bar-5"></div>
+                                                <span class="text-[8px] text-slate-400 font-bold">Encarnación</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANTALLA 5: PORTAL ESCRIBANÍAS & NOTARIAL (/notarial/) -->
+                            <div class="screen-slide" data-screen-index="4" data-url="https://lumen.py/notarial/" data-href="/notarial/">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                                            <i class="fas fa-stamp"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-amber-400 font-bold uppercase tracking-widest">Portal Escribanías & Jurídico</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">Due Diligence Inmobiliario · Matrícula 18,402</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-amber-300 font-bold">
+                                        <i class="fas fa-shield-halved"></i>
+                                        <span>Seguridad Jurídica DGRP</span>
+                                    </div>
+                                </div>
+
+                                <!-- Ficha Notarial Digital con Checklist y Sello -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-[#030712] border border-amber-500/30 p-4 overflow-hidden flex flex-col justify-between">
+                                    <div class="bg-slate-900/90 border border-amber-500/20 rounded-xl p-3 flex justify-between items-center">
+                                        <div>
+                                            <p class="text-[9px] text-amber-400 font-mono uppercase font-bold">Ficha de Verificación Notarial</p>
+                                            <p class="text-xs font-bold text-white">Inmueble Finca Nº 4,112 · Padrón Nº 9,120</p>
+                                        </div>
+                                        <div class="w-9 h-9 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm anim-float-subtle">
+                                            <i class="fas fa-certificate"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Validación Legal -->
+                                    <div class="space-y-2 font-mono text-[10px]">
+                                        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-white/5">
+                                            <span class="text-slate-300 flex items-center gap-2"><i class="fas fa-check text-emerald-400"></i> Inhibiciones y Embargos DGRP</span>
+                                            <span class="text-emerald-400 font-bold">0 GRAVÁMENES</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-white/5">
+                                            <span class="text-slate-300 flex items-center gap-2"><i class="fas fa-check text-emerald-400"></i> Coincidencia Perimetral Título vs Catastro</span>
+                                            <span class="text-emerald-400 font-bold">99.8% EXACTA</span>
+                                        </div>
+                                        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 border border-white/5">
+                                            <span class="text-slate-300 flex items-center gap-2"><i class="fas fa-check text-emerald-400"></i> Liquidación de Tasas Ley 698/78</span>
+                                            <span class="text-cyan-400 font-bold">PAGADO (Bancard)</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sello Notarial Digital -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-slate-400">
+                                        <span>Firma Digital Cualificada (Ley 6822/21)</span>
+                                        <span class="text-amber-400 font-bold flex items-center gap-1"><i class="fas fa-award"></i> CERTIFICADO VÁLIDO</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PANTALLA 6: PORTAL CIUDADANO (/ciudadano/) -->
+                            <div class="screen-slide" data-screen-index="5" data-url="https://lumen.py/ciudadano/" data-href="/ciudadano/">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Portal Ciudadano · Transparencia</p>
+                                            <h4 class="text-sm font-bold text-white leading-tight">Consulta Inmobiliaria y Notificaciones Vecinales</h4>
+                                        </div>
+                                    </div>
+                                    <div class="bg-blue-950/60 border border-blue-500/40 rounded-xl px-2.5 py-1 flex items-center gap-1.5 text-[10px] text-blue-300 font-bold">
+                                        <i class="fas fa-mobile-screen"></i>
+                                        <span>PWA Vecinal</span>
+                                    </div>
+                                </div>
+
+                                <!-- Tarjeta de Consulta Ciudadana con Buscador -->
+                                <div class="relative h-56 sm:h-64 rounded-2xl bg-[#030712] border border-blue-500/30 p-4 overflow-hidden flex flex-col justify-between">
+                                    <!-- Buscador Simulado -->
+                                    <div class="bg-slate-900 border border-blue-500/40 rounded-xl p-2.5 flex items-center justify-between shadow-inner">
+                                        <div class="flex items-center gap-2 text-slate-400 text-xs">
+                                            <i class="fas fa-search text-blue-400"></i>
+                                            <span class="text-white font-mono text-xs">Cta. Cte. 19-0142-08</span>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[9px] font-bold">Buscar</span>
+                                    </div>
+
+                                    <!-- Resultado del Inmueble -->
+                                    <div class="bg-slate-900/80 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                                        <div>
+                                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold border border-emerald-500/30">AL DÍA</span>
+                                            <h5 class="text-xs font-bold text-white mt-1">Lote Urbano Bº Centro · Piribebuy</h5>
+                                            <p class="text-[10px] text-slate-400">Superficie: 360 m² · Cota Segura</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-[9px] text-slate-400">Impuesto 2026</p>
+                                            <p class="text-xs font-mono font-bold text-emerald-400">Gs. 185.000</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Acciones Ciudadanas Directas -->
+                                    <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                                        <button class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center gap-1.5 border border-white/10 transition-colors">
+                                            <i class="fas fa-file-pdf text-rose-400"></i> Ficha Catastral
+                                        </button>
+                                        <button class="py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/30 transition-colors">
+                                            <i class="fas fa-map-marked-alt"></i> Ver en Mapa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- SELECTOR DE PANTALLAS (TABS TIPO GIF CON CONTROL DE OJO) -->
+                        <div class="px-3 py-3 bg-slate-950/95 border-t border-white/10" id="showcase-selector-bar">
+                            <div class="flex items-center justify-between text-[10px] text-slate-400 mb-2 px-1">
+                                <span class="uppercase tracking-wider font-bold text-slate-300 flex items-center gap-1.5">
+                                    <i class="fas fa-layer-group text-indigo-400"></i> Pantallas en Rotación:
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] text-slate-400">Clic en el <b class="text-emerald-400"><i class="fas fa-eye"></i> ojo</b> para excluir</span>
+                                    <button id="btn-restore-all-screens" class="text-cyan-400 hover:underline text-[9px] font-bold hidden flex items-center gap-1">
+                                        <i class="fas fa-eye"></i> Restaurar Todas
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-[10px] font-bold">
+                                <button class="showcase-pill active py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="0">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-cloud-sun text-cyan-400"></i>
+                                        <span>Clima</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                                <button class="showcase-pill py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="1">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-drafting-compass text-indigo-400"></i>
+                                        <span>Catastro</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                                <button class="showcase-pill py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="2">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-cube text-pink-400"></i>
+                                        <span>Visor 3D</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                                <button class="showcase-pill py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="3">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-chart-line text-emerald-400"></i>
+                                        <span>BigData</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                                <button class="showcase-pill py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="4">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-stamp text-amber-400"></i>
+                                        <span>Notarial</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                                <button class="showcase-pill py-1.5 px-2 rounded-xl border border-white/10 text-slate-400 hover:text-white flex items-center justify-between gap-1" data-target-screen="5">
+                                    <span class="flex items-center gap-1 truncate">
+                                        <i class="fas fa-user-check text-blue-400"></i>
+                                        <span>Ciudadano</span>
+                                    </span>
+                                    <span class="eye-toggle p-0.5 rounded hover:bg-slate-800" title="Ocultar / Mostrar de la rotación"><i class="fas fa-eye text-emerald-400 text-[9px]"></i></span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Glows de fondo -->
+                <div class="absolute top-0 right-0 w-80 h-80 bg-indigo-600/20 blur-[120px] -z-10 rounded-full"></div>
+                <div class="absolute bottom-0 left-0 w-80 h-80 bg-cyan-600/20 blur-[120px] -z-10 rounded-full"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS STRIP -->
+    <section class="py-16 border-y border-white/5 bg-slate-950/40 backdrop-blur-sm">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
+                <div class="text-center group">
+                    <span class="stat-number text-5xl md:text-6xl font-black block mb-2 transition-transform group-hover:scale-110">266</span>
+                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Distritos Cobertura</span>
+                </div>
+                <div class="text-center group">
+                    <span class="stat-number text-5xl md:text-6xl font-black block mb-2 transition-transform group-hover:scale-110">+1.2M</span>
+                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Cuentas Catastrales</span>
+                </div>
+                <div class="text-center group">
+                    <span class="stat-number text-5xl md:text-6xl font-black block mb-2 transition-transform group-hover:scale-110">9,295</span>
+                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Escuelas y Albergues</span>
+                </div>
+                <div class="text-center group">
+                    <span class="stat-number text-5xl md:text-6xl font-black block mb-2 transition-transform group-hover:scale-110">741</span>
+                    <span class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Centros de Salud</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MÓDULOS DEL ECOSISTEMA -->
+    <section id="modulos" class="py-32">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div class="max-w-2xl">
+                    <h2 class="text-4xl md:text-6xl font-black mb-6 leading-tight">Ecosistema Digital <br> <span class="text-indigo-500">LUMEN</span></h2>
+                    <p class="text-slate-400 text-lg font-light leading-relaxed">
+                        Nuestra suite modular integra todas las dimensiones del territorio paraguayo 
+                        en una interfaz unificada, organizada por categorías temáticas y con control de visibilidad interactivo.
+                    </p>
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-slate-500">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="w-12 h-12 rounded-full border border-indigo-500/50 flex items-center justify-center text-indigo-400">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DE FILTROS POR CATEGORÍA Y CONTROLES DE VISIBILIDAD (ICONO OJO) -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-10 pb-6 border-b border-white/10">
+                <!-- Filtros por categoría -->
+                <div class="flex flex-wrap items-center gap-2" id="modulos-cat-filters">
+                    <span class="text-xs uppercase font-bold text-slate-400 tracking-wider mr-2 flex items-center gap-1.5">
+                        <i class="fas fa-filter text-indigo-400"></i> Filtrar:
+                    </span>
+                    <button class="cat-filter-btn active px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center gap-2" data-filter="all">
+                        <i class="fas fa-th-large"></i> Todos <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono" id="count-cat-all">6</span>
+                    </button>
+                    <button class="cat-filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center gap-2" data-filter="tecnico">
+                        <i class="fas fa-drafting-compass text-indigo-400"></i> Técnico & Catastro <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">2</span>
+                    </button>
+                    <button class="cat-filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center gap-2" data-filter="clima">
+                        <i class="fas fa-cloud-sun-rain text-cyan-400"></i> Clima & Resiliencia <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">1</span>
+                    </button>
+                    <button class="cat-filter-btn px-4 py-2 rounded-xl border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center gap-2" data-filter="gestion">
+                        <i class="fas fa-landmark text-emerald-400"></i> Gestión Municipal & Legal <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">3</span>
+                    </button>
+                </div>
+
+                <!-- Acciones Rápidas con Icono Ojo -->
+                <div class="flex items-center gap-3">
+                    <button id="btn-toggle-all-cards" class="px-3.5 py-2 rounded-xl border border-white/10 bg-slate-900/80 text-xs font-semibold text-slate-300 hover:text-white hover:border-indigo-500/50 flex items-center gap-2 transition-all shadow-sm">
+                        <i class="fas fa-eye text-emerald-400" id="icon-toggle-all-cards"></i>
+                        <span id="text-toggle-all-cards">Colapsar Todas</span>
+                    </button>
+                    <button id="btn-toggle-minigifs" class="px-3.5 py-2 rounded-xl border border-white/10 bg-slate-900/80 text-xs font-semibold text-slate-300 hover:text-white hover:border-cyan-500/50 flex items-center gap-2 transition-all shadow-sm" title="Ocultar o Mostrar las mini-animaciones GIF de las tarjetas">
+                        <i class="fas fa-film text-cyan-400" id="icon-toggle-minigifs"></i>
+                        <span id="text-toggle-minigifs">GIFs: ON</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="grid-modulos">
+                <!-- Modulo 1: Catastro Pro (Técnico & Catastro) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="tecnico" id="card-modulo-1">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-drafting-compass"></i> Técnico & Catastro
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-1" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Catastro CAD -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-indigo-300 font-mono">
+                                <span><i class="fas fa-circle text-emerald-400 text-[6px]"></i> CAD SNC 551</span>
+                                <span class="bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-500/30">UTM 21S</span>
+                            </div>
+                            <div class="relative w-full h-16 flex items-center justify-center">
+                                <div class="absolute left-0 right-0 h-0.5 bg-cyan-400 anim-laser-line z-10 shadow-[0_0_8px_#22d3ee]"></div>
+                                <svg class="w-28 h-14" viewBox="0 0 100 50">
+                                    <polygon points="15,10 80,5 90,40 20,45" fill="rgba(99, 102, 241, 0.2)" stroke="#818cf8" stroke-width="2"/>
+                                    <circle cx="15" cy="10" r="2.5" fill="#38bdf8"/>
+                                    <circle cx="80" cy="5" r="2.5" fill="#38bdf8"/>
+                                    <circle cx="90" cy="40" r="2.5" fill="#38bdf8"/>
+                                    <circle cx="20" cy="45" r="2.5" fill="#38bdf8"/>
+                                </svg>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span class="text-emerald-400 font-bold">✓ Tolerancia OK</span>
+                                <span>1,420 m²</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Catastro Pro</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Herramienta profesional para la validación perimetral, corrección topográfica y emisión de certificados IPOOT según la normativa vigente SNC 551/2023.
+                        </p>
+                        <a href="/index.html" class="inline-flex items-center gap-3 text-indigo-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Entrar al Módulo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 01: Catastro Pro (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-indigo-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-1">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modulo 2: Clima & Riesgos (Clima & Resiliencia) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="clima" id="card-modulo-2">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-cloud-sun-rain"></i> Clima & Resiliencia
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-2" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Radar Clima -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-cyan-300 font-mono">
+                                <span><i class="fas fa-circle text-emerald-400 text-[6px]"></i> MHC-PY RADAR</span>
+                                <span class="text-amber-300 font-bold">28.1 °C</span>
+                            </div>
+                            <div class="relative w-full h-16 flex items-center justify-center overflow-hidden">
+                                <div class="w-20 h-20 rounded-full border border-cyan-500/20 relative flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full border border-cyan-500/30"></div>
+                                    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/40 to-transparent anim-radar"></div>
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400 z-10 shadow-[0_0_8px_#38bdf8]"></span>
+                                </div>
+                                <!-- Cluster badges flotantes -->
+                                <span class="absolute top-1 left-2 text-[8px] bg-blue-600 text-white px-1 rounded-full font-bold">🎓 8.9K</span>
+                                <span class="absolute bottom-1 right-2 text-[8px] bg-emerald-600 text-white px-1 rounded-full font-bold">🏥 741</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span class="text-rose-400 font-bold">🔥 FIRMS: 3 focos</span>
+                                <span>ICT: 29 Bajo</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Clima & Riesgos</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Sistema MHC-PY de monitoreo en tiempo real. Análisis de inundaciones, focos de calor satelitales y resiliencia climática basada en escenarios IPCC 2050.
+                        </p>
+                        <a href="/panel.html" class="inline-flex items-center gap-3 text-cyan-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Ver Panel Clima <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 02: Clima & Riesgos (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-cyan-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-2">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modulo 3: Visor 3D Real (Técnico & Catastro) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="tecnico" id="card-modulo-3">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-pink-400 bg-pink-500/10 border border-pink-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-cube"></i> Técnico & Catastro
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-3" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Relieve 3D -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-pink-300 font-mono">
+                                <span><i class="fas fa-circle text-pink-400 text-[6px]"></i> GEMELO 3D</span>
+                                <span class="text-cyan-400 font-bold">SRTM 30m</span>
+                            </div>
+                            <div class="relative w-full h-16 flex items-center justify-center">
+                                <div class="absolute bottom-0 left-0 right-0 h-6 bg-cyan-500/30 anim-tide-water z-10 border-t border-cyan-400/50"></div>
+                                <svg class="w-28 h-14 z-20" viewBox="0 0 100 50">
+                                    <g transform="translate(20, 15)">
+                                        <polygon points="0,20 18,28 18,8 0,0" fill="#1e1b4b" stroke="#818cf8"/>
+                                        <polygon points="18,28 40,18 40,-2 18,8" fill="#312e81" stroke="#818cf8"/>
+                                        <polygon points="0,0 18,8 40,-2 22,-10" fill="#4338ca" stroke="#c7d2fe"/>
+                                    </g>
+                                    <g transform="translate(60, 8)">
+                                        <polygon points="0,25 22,35 22,10 0,0" fill="#064e3b" stroke="#34d399"/>
+                                        <polygon points="22,35 48,23 48,-2 22,10" fill="#047857" stroke="#34d399"/>
+                                        <polygon points="0,0 22,10 48,-2 26,-12" fill="#10b981" stroke="#a7f3d0"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span class="text-cyan-300">🌊 Cota 64m</span>
+                                <span class="text-pink-400 font-bold">Z-Stack OK</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Visor 3D Real</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Gemelo digital 4D con relieve SRTM, extrusión de edificios y trazado de rutas de evacuación. Simulación dinámica de tirantes hídricos sobre el terreno con reordenamiento Z-Index.
+                        </p>
+                        <a href="/visor-3d.html" class="inline-flex items-center gap-3 text-pink-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Abrir Visor 3D <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 03: Visor 3D Real (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-pink-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-3">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modulo 4: Analisis Territorial (Gestión Municipal & Legal) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="gestion" id="card-modulo-4">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-chart-pie"></i> Gestión Municipal & Legal
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-4" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Barras BigData -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-emerald-300 font-mono">
+                                <span><i class="fas fa-circle text-emerald-400 text-[6px]"></i> BIGDATA CNPV</span>
+                                <span class="text-emerald-400 font-bold">+18.4%</span>
+                            </div>
+                            <div class="relative w-full h-16 flex items-end justify-between px-4 pb-1 gap-2">
+                                <div class="w-3 bg-indigo-500 rounded-t anim-bar-1"></div>
+                                <div class="w-3 bg-cyan-400 rounded-t anim-bar-2"></div>
+                                <div class="w-3 bg-emerald-400 rounded-t anim-bar-3"></div>
+                                <div class="w-3 bg-amber-400 rounded-t anim-bar-4"></div>
+                                <div class="w-3 bg-rose-400 rounded-t anim-bar-5"></div>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span>266 Distritos</span>
+                                <span class="text-cyan-300 font-bold">DNIT Sync</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Análisis Territorial</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Dashboard estadístico de los 266 distritos. Vinculación DNIT, demografía CNPV 2022 y proyecciones impositivas municipales de alta precisión.
+                        </p>
+                        <a href="/analisis-territorial/" class="inline-flex items-center gap-3 text-emerald-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Ver Estadísticas <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 04: Análisis Territorial (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-emerald-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-4">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modulo 5: Notarial (Gestión Municipal & Legal) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="gestion" id="card-modulo-5">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-stamp"></i> Gestión Municipal & Legal
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-5" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Sello Notarial -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-amber-300 font-mono">
+                                <span><i class="fas fa-circle text-amber-400 text-[6px]"></i> DGRP AUDIT</span>
+                                <span class="text-amber-400 font-bold">Matrícula OK</span>
+                            </div>
+                            <div class="relative w-full h-16 flex items-center justify-center gap-3 px-2">
+                                <div class="w-10 h-10 rounded-full border border-amber-500/40 bg-amber-500/10 flex items-center justify-center text-amber-400 anim-float-subtle">
+                                    <i class="fas fa-stamp text-base"></i>
+                                </div>
+                                <div class="text-[9px] font-mono space-y-1">
+                                    <p class="text-emerald-400 flex items-center gap-1"><i class="fas fa-check"></i> Inhibiciones: 0</p>
+                                    <p class="text-cyan-400 flex items-center gap-1"><i class="fas fa-check"></i> Linderos: 99.8%</p>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span class="text-amber-400">Ley 698/78</span>
+                                <span class="text-emerald-400 font-bold">Listo p/ Firma</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Portal Escribanías</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Garantice la seguridad jurídica inmobiliaria. Verificación de gravámenes, trazado de polígonos desde escritura y validación de padrones en segundos.
+                        </p>
+                        <a href="/notarial/" class="inline-flex items-center gap-3 text-amber-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Portal Notarial <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 05: Portal Escribanías (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-amber-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-5">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modulo 6: Ciudadano (Gestión Municipal & Legal) -->
+                <div class="card-glow p-10 rounded-[2.5rem] group flex flex-col justify-between transition-all" data-category="gestion" id="card-modulo-6">
+                    <!-- Cabecera de Categoría y Botón Ojo Individual -->
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fas fa-user-check"></i> Gestión Municipal & Legal
+                        </span>
+                        <button class="btn-card-eye text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors" data-target-card="card-modulo-6" title="Ocultar / Colapsar este módulo">
+                            <i class="fas fa-eye text-emerald-400 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Contenido Completo del Card -->
+                    <div class="card-full-content flex-grow flex flex-col justify-between">
+                        <!-- Mini-Panel Animado Tipo GIF: Ciudadano PWA -->
+                        <div class="mini-gif-canvas h-32 mb-6 p-2 relative flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center text-[9px] text-blue-300 font-mono">
+                                <span><i class="fas fa-circle text-blue-400 text-[6px]"></i> CIUDADANO PWA</span>
+                                <span class="text-emerald-400 font-bold">Al Día</span>
+                            </div>
+                            <div class="relative w-full h-16 flex flex-col justify-center px-2 space-y-1.5">
+                                <div class="bg-slate-900 border border-blue-500/40 rounded px-2 py-0.5 text-[9px] text-slate-300 flex justify-between">
+                                    <span>Cta 19-0142-08</span>
+                                    <i class="fas fa-check text-emerald-400"></i>
+                                </div>
+                                <div class="flex items-center justify-between text-[8px] text-slate-400 bg-slate-900/60 p-1 rounded">
+                                    <span>Impuesto Inmobiliario</span>
+                                    <span class="text-emerald-300 font-mono font-bold">Gs. 185.000</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-[8.5px] font-mono text-slate-400 border-t border-white/5 pt-1">
+                                <span>Piribebuy</span>
+                                <span class="text-blue-400 font-bold">Descarga PDF</span>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">Portal Ciudadano</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-10 flex-grow">
+                            Acceso directo para el titular del inmueble. Consulte su estado parcelario, reciba notificaciones municipales y verifique su aptitud territorial.
+                        </p>
+                        <a href="/ciudadano/" class="inline-flex items-center gap-3 text-blue-400 text-xs font-bold uppercase tracking-widest hover:gap-5 transition-all">
+                            Mi Inmueble <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Contenido Colapsado (cuando está oculto por el ojo) -->
+                    <div class="card-collapsed-content items-center justify-between w-full py-1">
+                        <span class="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <i class="fas fa-eye-slash text-slate-500"></i> Módulo 06: Portal Ciudadano (Colapsado)
+                        </span>
+                        <button class="btn-card-eye-restore text-xs text-blue-400 hover:text-white font-bold flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-white/10" data-target-card="card-modulo-6">
+                            <i class="fas fa-eye text-emerald-400"></i> Mostrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="pt-32 pb-16 border-t border-white/5 relative overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-16 mb-24">
+                <div class="max-w-md">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/20">
+                            <i class="fas fa-lightbulb text-white text-2xl"></i>
+                        </div>
+                        <span class="brand-font text-3xl font-black tracking-tighter text-white">LUMEN</span>
+                    </div>
+                    <p class="text-slate-500 text-base leading-relaxed font-light">
+                        Plataforma líder en modernización territorial. 
+                        Impulsando la transparencia, la seguridad jurídica y la resiliencia climática en todo el territorio del Paraguay.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-20 gap-y-12">
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-sm uppercase tracking-widest">Plataforma</h4>
+                        <ul class="text-slate-500 text-sm space-y-4">
+                            <li><a href="/index.html" class="hover:text-indigo-400 transition-colors">Catastro Pro</a></li>
+                            <li><a href="/visor-3d.html" class="hover:text-indigo-400 transition-colors">Gemelo 3D</a></li>
+                            <li><a href="/panel.html" class="hover:text-indigo-400 transition-colors">Cambio Climático</a></li>
+                            <li><a href="/analisis-territorial/" class="hover:text-indigo-400 transition-colors">Estadísticas</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-sm uppercase tracking-widest">Soporte</h4>
+                        <ul class="text-slate-500 text-sm space-y-4">
+                            <li><a href="mailto:wmlumen@gmail.com" class="hover:text-indigo-400 transition-colors">Contacto Técnico</a></li>
+                            <li><a href="#" class="hover:text-indigo-400 transition-colors">Manual de Usuario</a></li>
+                            <li><a href="#" class="hover:text-indigo-400 transition-colors">Términos y Privacidad</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <p class="text-slate-600 text-[10px] uppercase tracking-[0.3em] font-black">
+                        © 2026 LUMEN PARAGUAY · SNC 551/2023 · v5.0
+                    </p>
+                    <p class="text-slate-700 text-[9px] uppercase tracking-widest">
+                        Infraestructura de Datos Espaciales del Paraguay
+                    </p>
+                </div>
+                <div class="flex items-center gap-8 text-slate-500">
+                    <a href="#" class="text-xl hover:text-white transition-all transform hover:-translate-y-1"><i class="fab fa-github"></i></a>
+                    <a href="#" class="text-xl hover:text-white transition-all transform hover:-translate-y-1"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="mailto:wmlumen@gmail.com" class="text-xl hover:text-white transition-all transform hover:-translate-y-1"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fondo decorativo footer -->
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-indigo-500/5 blur-[100px] rounded-full -z-10"></div>
+    </footer>
+
+    <!-- Botón flotante de ayuda/contacto -->
+    <a href="mailto:wmlumen@gmail.com" class="fixed bottom-8 right-8 w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-[0_15px_40px_-10px_rgba(79,70,229,0.5)] hover:bg-indigo-500 hover:scale-110 active:scale-95 transition-all z-[200] group" title="Contactar soporte técnico">
+        <i class="fas fa-comment-dots text-2xl group-hover:rotate-12 transition-transform"></i>
+    </a>
+
+    <script>
+        // Animaciones simples al hacer scroll (opcional)
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card-glow').forEach(el => observer.observe(el));
+
+        // =========================================================================
+        // CONTROLADOR DEL SHOWCASE DE PANELES EN VIVO TIPO GIF (CON CONTROLES DE OJO)
+        // =========================================================================
+        (function() {
+            const slides = document.querySelectorAll('.screen-slide');
+            const pills = document.querySelectorAll('.showcase-pill');
+            const urlText = document.getElementById('showcase-url-text');
+            const btnOpen = document.getElementById('showcase-btn-open');
+            const timerBar = document.getElementById('showcase-timer-bar');
+            const btnPlayPause = document.getElementById('btn-showcase-playpause');
+            const btnRestoreAllScreens = document.getElementById('btn-restore-all-screens');
+            const btnToggleShowcaseVisibility = document.getElementById('btn-toggle-showcase-visibility');
+            const iconShowcaseViewEye = document.getElementById('icon-showcase-view-eye');
+            const showcaseSlideContainer = slides.length ? slides[0].parentElement : null;
+
+            if (!slides.length) return;
+
+            let currentIndex = 0;
+            let isPaused = false;
+            let isShowcaseContentHidden = false;
+            const slideDurationMs = 4500;
+            let slideStartTime = Date.now();
+            const hiddenScreens = new Set(); // Índices de pantallas excluidas por el icono ojo
+
+            function showSlide(index) {
+                if (index < 0 || index >= slides.length) index = 0;
+                currentIndex = index;
+
+                slides.forEach((s, idx) => {
+                    s.classList.toggle('active', idx === currentIndex);
+                });
+
+                pills.forEach((p, idx) => {
+                    p.classList.toggle('active', idx === currentIndex);
+                });
+
+                const activeSlide = slides[currentIndex];
+                const activeUrl = activeSlide.getAttribute('data-url');
+                const activeHref = activeSlide.getAttribute('data-href');
+
+                if (urlText) urlText.textContent = activeUrl;
+                if (btnOpen) btnOpen.setAttribute('href', activeHref);
+
+                slideStartTime = Date.now();
+                if (timerBar) timerBar.style.width = '0%';
+            }
+
+            function advanceToNextVisible() {
+                if (hiddenScreens.size >= slides.length) return; // Todas ocultas
+                for (let offset = 1; offset <= slides.length; offset++) {
+                    const nextIdx = (currentIndex + offset) % slides.length;
+                    if (!hiddenScreens.has(nextIdx)) {
+                        showSlide(nextIdx);
+                        return;
+                    }
+                }
+            }
+
+            function tickTimer() {
+                if (!isPaused && !isShowcaseContentHidden && hiddenScreens.size < slides.length) {
+                    const elapsed = Date.now() - slideStartTime;
+                    const pct = Math.min(100, (elapsed / slideDurationMs) * 100);
+                    if (timerBar) timerBar.style.width = pct + '%';
+
+                    if (elapsed >= slideDurationMs) {
+                        advanceToNextVisible();
+                    }
+                }
+                requestAnimationFrame(tickTimer);
+            }
+
+            // Clic en píldoras del showcase
+            pills.forEach((pill, idx) => {
+                pill.addEventListener('click', () => {
+                    if (hiddenScreens.has(idx)) {
+                        // Restaurar si el usuario hace clic directo en una píldora oculta
+                        hiddenScreens.delete(idx);
+                        pill.classList.remove('screen-hidden');
+                        const eye = pill.querySelector('.eye-toggle i');
+                        if (eye) eye.className = 'fas fa-eye text-emerald-400 text-[9px]';
+                        if (btnRestoreAllScreens) {
+                            btnRestoreAllScreens.classList.toggle('hidden', hiddenScreens.size === 0);
+                        }
+                    }
+                    showSlide(idx);
+                });
+            });
+
+            // Toggles individuales de ojo en las píldoras del showcase
+            document.querySelectorAll('#showcase-selector-bar .eye-toggle').forEach((eyeBtn, idx) => {
+                eyeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const pill = pills[idx];
+                    const icon = eyeBtn.querySelector('i');
+
+                    if (hiddenScreens.has(idx)) {
+                        hiddenScreens.delete(idx);
+                        pill.classList.remove('screen-hidden');
+                        if (icon) icon.className = 'fas fa-eye text-emerald-400 text-[9px]';
+                    } else {
+                        if (hiddenScreens.size >= slides.length - 1) {
+                            alert('Debe quedar al menos una pantalla activa en la rotación.');
+                            return;
+                        }
+                        hiddenScreens.add(idx);
+                        pill.classList.add('screen-hidden');
+                        if (icon) icon.className = 'fas fa-eye-slash text-slate-500 text-[9px]';
+                        if (currentIndex === idx) {
+                            advanceToNextVisible();
+                        }
+                    }
+
+                    if (btnRestoreAllScreens) {
+                        btnRestoreAllScreens.classList.toggle('hidden', hiddenScreens.size === 0);
+                    }
+                });
+            });
+
+            // Botón Restaurar Todas las Pantallas
+            if (btnRestoreAllScreens) {
+                btnRestoreAllScreens.addEventListener('click', () => {
+                    hiddenScreens.clear();
+                    pills.forEach(p => {
+                        p.classList.remove('screen-hidden');
+                        const eye = p.querySelector('.eye-toggle i');
+                        if (eye) eye.className = 'fas fa-eye text-emerald-400 text-[9px]';
+                    });
+                    btnRestoreAllScreens.classList.add('hidden');
+                });
+            }
+
+            // Botón Ojo Superior: Ocultar / Mostrar contenedor de pantalla completa
+            if (btnToggleShowcaseVisibility && showcaseSlideContainer) {
+                btnToggleShowcaseVisibility.addEventListener('click', () => {
+                    isShowcaseContentHidden = !isShowcaseContentHidden;
+                    if (isShowcaseContentHidden) {
+                        showcaseSlideContainer.classList.add('opacity-10', 'pointer-events-none', 'grayscale');
+                        if (iconShowcaseViewEye) iconShowcaseViewEye.className = 'fas fa-eye-slash text-rose-400 text-[11px]';
+                        btnToggleShowcaseVisibility.setAttribute('title', 'Mostrar Pantallas del Monitor');
+                    } else {
+                        showcaseSlideContainer.classList.remove('opacity-10', 'pointer-events-none', 'grayscale');
+                        if (iconShowcaseViewEye) iconShowcaseViewEye.className = 'fas fa-eye text-emerald-400 text-[11px]';
+                        btnToggleShowcaseVisibility.setAttribute('title', 'Ocultar Pantallas del Monitor');
+                    }
+                });
+            }
+
+            // Play / Pause
+            if (btnPlayPause) {
+                btnPlayPause.addEventListener('click', () => {
+                    isPaused = !isPaused;
+                    btnPlayPause.innerHTML = isPaused ? '<i class="fas fa-play text-[11px]"></i>' : '<i class="fas fa-pause text-[11px]"></i>';
+                    btnPlayPause.setAttribute('title', isPaused ? 'Reanudar Rotación' : 'Pausar Rotación');
+                });
+            }
+
+            showSlide(0);
+            requestAnimationFrame(tickTimer);
+        })();
+
+        // =========================================================================
+        // CONTROLADOR DE CATEGORÍAS Y VISIBILIDAD (ICONO OJO) EN MÓDULOS
+        // =========================================================================
+        (function() {
+            const catBtns = document.querySelectorAll('.cat-filter-btn');
+            const cards = document.querySelectorAll('#grid-modulos .card-glow');
+            const btnToggleAll = document.getElementById('btn-toggle-all-cards');
+            const iconToggleAll = document.getElementById('icon-toggle-all-cards');
+            const textToggleAll = document.getElementById('text-toggle-all-cards');
+            const btnToggleGifs = document.getElementById('btn-toggle-minigifs');
+            const textToggleGifs = document.getElementById('text-toggle-minigifs');
+            const modulosSection = document.getElementById('modulos');
+
+            // 1. Filtrado por categorías temáticas
+            catBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    catBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const filter = btn.getAttribute('data-filter');
+
+                    cards.forEach(card => {
+                        const cardCat = card.getAttribute('data-category');
+                        if (filter === 'all' || cardCat === filter) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    updateGlobalCollapseState();
+                });
+            });
+
+            // 2. Colapsar / Ocultar individual mediante icono de ojo
+            document.querySelectorAll('.btn-card-eye').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const cardId = btn.getAttribute('data-target-card');
+                    const card = document.getElementById(cardId);
+                    if (card) {
+                        card.classList.add('card-collapsed');
+                        updateGlobalCollapseState();
+                    }
+                });
+            });
+
+            // 3. Restaurar / Mostrar individual
+            document.querySelectorAll('.btn-card-eye-restore').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const cardId = btn.getAttribute('data-target-card');
+                    const card = document.getElementById(cardId);
+                    if (card) {
+                        card.classList.remove('card-collapsed');
+                        updateGlobalCollapseState();
+                    }
+                });
+            });
+
+            // 4. Actualizar estado del botón global según cuántas tarjetas estén colapsadas
+            function updateGlobalCollapseState() {
+                const visibleCards = Array.from(cards).filter(c => c.style.display !== 'none');
+                const collapsedCount = visibleCards.filter(c => c.classList.contains('card-collapsed')).length;
+                const allCollapsed = visibleCards.length > 0 && collapsedCount === visibleCards.length;
+
+                if (allCollapsed) {
+                    if (textToggleAll) textToggleAll.textContent = 'Mostrar Todas';
+                    if (iconToggleAll) iconToggleAll.className = 'fas fa-eye-slash text-slate-400';
+                } else {
+                    if (textToggleAll) textToggleAll.textContent = 'Colapsar Todas';
+                    if (iconToggleAll) iconToggleAll.className = 'fas fa-eye text-emerald-400';
+                }
+            }
+
+            // 5. Botón global Colapsar / Mostrar Todas
+            if (btnToggleAll) {
+                btnToggleAll.addEventListener('click', () => {
+                    const visibleCards = Array.from(cards).filter(c => c.style.display !== 'none');
+                    const collapsedCount = visibleCards.filter(c => c.classList.contains('card-collapsed')).length;
+                    const shouldExpand = collapsedCount > 0;
+
+                    visibleCards.forEach(card => {
+                        if (shouldExpand) {
+                            card.classList.remove('card-collapsed');
+                        } else {
+                            card.classList.add('card-collapsed');
+                        }
+                    });
+                    updateGlobalCollapseState();
+                });
+            }
+
+            // 6. Botón Ocultar / Mostrar Mini-GIFs animados de las tarjetas
+            let minigifsActive = true;
+            if (btnToggleGifs && modulosSection) {
+                btnToggleGifs.addEventListener('click', () => {
+                    minigifsActive = !minigifsActive;
+                    modulosSection.classList.toggle('minigifs-hidden', !minigifsActive);
+                    if (textToggleGifs) textToggleGifs.textContent = minigifsActive ? 'GIFs: ON' : 'GIFs: OFF';
+                    const icon = btnToggleGifs.querySelector('i');
+                    if (icon) {
+                        icon.className = minigifsActive ? 'fas fa-film text-cyan-400' : 'fas fa-eye-slash text-slate-500';
+                    }
+                });
+            }
+        })();
+    </script>
+
+</body>
+</html>

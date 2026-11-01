@@ -151,6 +151,20 @@ const codigos = await all(`SELECT cod_dpto, cod_distrito, MAX(distrito) AS nombr
   GROUP BY cod_dpto, cod_distrito`);
 const nombresDpto = new Map((await all('SELECT DISTINCT cod_dpto, departamento FROM cuentas_urbanas WHERE departamento IS NOT NULL')).map(r => [r.cod_dpto, r.departamento]));
 const depFuentes = new Map((await all('SELECT DISTINCT departamento, distrito, tipo FROM fuentes')).map(f => [`${f.departamento}|${f.distrito}|${f.tipo}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase(), f]));
+
+// Carga de Índice de Riesgo Climático e Inundación (MHC-PY, Paso B)
+const fClima = join(RAIZ, 'Cambio_climatico', 'indice_riesgo_inundacion_distritos.json');
+const mapaClima = new Map();
+if (existsSync(fClima)) {
+  const parsed = JSON.parse(readFileSync(fClima, 'utf8'));
+  const lista = Array.isArray(parsed) ? parsed : (parsed.distritos || []);
+  for (const item of lista) {
+    const kDepDist = `${normalizar(item.depto)}|${normalizar(item.distrito)}`;
+    mapaClima.set(kDepDist, item);
+    mapaClima.set(normalizar(item.distrito), item);
+  }
+}
+
 const datos = [];
 for (const c of codigos) {
   const f = c.grupo ? depFuentes.get(c.grupo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()) : null;
@@ -158,7 +172,8 @@ for (const c of codigos) {
   const departamento = nombresDpto.get(c.cod_dpto) || f?.departamento || c.cod_dpto;
   const urbano = await analizarUrbano(c.cod_dpto, c.cod_distrito);
   const rural = await analizarRural(c.cod_dpto, c.cod_distrito);
-  datos.push({ id: `${c.cod_dpto}|${c.cod_distrito}`, dpto: c.cod_dpto, codDistrito: c.cod_distrito, departamento: String(departamento).toUpperCase(), distrito: String(nombre).toUpperCase(), urbano, rural });
+  const clima = mapaClima.get(`${normalizar(departamento)}|${normalizar(nombre)}`) || mapaClima.get(normalizar(nombre)) || null;
+  datos.push({ id: `${c.cod_dpto}|${c.cod_distrito}`, dpto: c.cod_dpto, codDistrito: c.cod_distrito, departamento: String(departamento).toUpperCase(), distrito: String(nombre).toUpperCase(), urbano, rural, clima });
   process.stdout.write(`\r${datos.length} distritos analizados`);
 }
 // Asunción: la DNIT la publica en 6 planillas (subdivisiones). Se agrega un total y cada parte apunta a él.
@@ -167,8 +182,9 @@ const partesA = datos.filter(d => d.dpto === 'A');
 if (partesA.length > 1) {
   const id = 'A|0';
   for (const p of partesA) p.parteDe = id;
+  const climaAsu = mapaClima.get('ASUNCION') || null;
   totales.push({ id, dpto: 'A', codDistrito: 0, departamento: partesA[0].departamento, distrito: 'ASUNCION', total: true,
-    subdivisiones: partesA.map(p => p.id), urbano: await analizarUrbano('A', null), rural: null });
+    subdivisiones: partesA.map(p => p.id), urbano: await analizarUrbano('A', null), rural: null, clima: climaAsu });
 }
 // Superficie oficial del distrito y de su área urbana (SNC, capas ly_dist y ly_urba; scripts/snc-superficies.py)
 // frente a la superficie que figura en la liquidación: lo que falta es territorio sin catastrar o sin liquidar.

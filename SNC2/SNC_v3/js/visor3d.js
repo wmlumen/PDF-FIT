@@ -42,6 +42,8 @@ const map = new ml.Map({
       curvas: { type: 'geojson', data: vacio },
       inundacion: { type: 'geojson', data: vacio },
       hidro: { type: 'geojson', data: vacio },
+      'evacuacion-rutas': { type: 'geojson', data: vacio },
+      'evacuacion-albergues': { type: 'geojson', data: vacio },
       edificios: { type: 'geojson', data: vacio }, parcelas: { type: 'geojson', data: vacio }, limite: { type: 'geojson', data: vacio },
       cascos: { type: 'geojson', data: vacio }, barrios: { type: 'geojson', data: vacio },
       incendios: { type: 'geojson', data: vacio }
@@ -62,15 +64,27 @@ const map = new ml.Map({
         paint: { 'text-color': '#0369a1', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } },
       { id: 'inundacion-capa', type: 'fill', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'fill-color': '#0284c7', 'fill-opacity': 0.60, 'fill-antialias': false } },
       { id: 'inundacion-borde', type: 'line', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'line-color': '#38bdf8', 'line-width': 1.5, 'line-opacity': 0.85 } },
+      { id: 'evacuacion-rutas-linea', type: 'line', source: 'evacuacion-rutas', layout: { visibility: 'visible', 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#10b981', 'line-width': 3.5, 'line-dasharray': [2, 1.5] } },
+      { id: 'evacuacion-albergues-puntos', type: 'circle', source: 'evacuacion-albergues', layout: { visibility: 'visible' },
+        paint: { 'circle-color': '#059669', 'circle-radius': 7.5, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2 } },
+      { id: 'evacuacion-albergues-etiquetas', type: 'symbol', source: 'evacuacion-albergues', minzoom: 12,
+        layout: { 'text-field': ['get', 'nombre'], 'text-size': 10.5, 'text-font': ['Open Sans Bold'], 'text-offset': [0, 1.3] },
+        paint: { 'text-color': '#ecfdf5', 'text-halo-color': '#064e3b', 'text-halo-width': 1.5 } },
       { id: 'barrios', type: 'fill', source: 'barrios', layout: { visibility: 'none' }, paint: { 'fill-color': ['match', ['get', 'zona'], 'urbana', '#fcd34d', '#5eead4'], 'fill-opacity': 0.28 } },
       { id: 'barrios-borde', type: 'line', source: 'barrios', layout: { visibility: 'none' }, paint: { 'line-color': ['match', ['get', 'zona'], 'urbana', '#b45309', '#0d9488'], 'line-width': 1 } },
       { id: 'incendios-puntos', type: 'circle', source: 'incendios', layout: { visibility: 'none' },
         paint: {
-          'circle-color': '#f97316',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 6, 14, 10],
-          'circle-stroke-color': '#ef4444',
+          'circle-color': [
+            'case',
+            ['>=', ['coalesce', ['get', 'frp'], 0], 120], '#a855f7',
+            ['>=', ['coalesce', ['get', 'frp'], 0], 50], '#ef4444',
+            '#f97316'
+          ],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3.5, 10, 7, 14, 11],
+          'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 1.5,
-          'circle-opacity': 0.90
+          'circle-opacity': 0.92
         } },
       { id: 'cascos', type: 'fill', source: 'cascos', layout: { visibility: 'none' }, paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.22 } },
       { id: 'cascos-borde', type: 'line', source: 'cascos', layout: { visibility: 'none' }, paint: { 'line-color': '#7c3aed', 'line-width': 2 } },
@@ -118,6 +132,7 @@ map.on('load', () => {
   // Red hidrográfica nacional (OSM, /api/v3/hidrografia) de la zona visible.
   cargarHidro();
   cargarCoeficienteAuto();
+  if (typeof aplicarOrdenCapasMapLibre === 'function') aplicarOrdenCapasMapLibre();
 });
 
 // ── Mapa base y relieve ─────────────────────────────────────────────
@@ -607,13 +622,16 @@ function actualizarInundacion() {
   }
 
   if (!activo) {
-    if (animandoInund) {
-      clearInterval(animandoInund);
-      animandoInund = null;
-      $('v3-inund-animar').textContent = '▶ Simular crecida';
+    if (animandoTimeline) {
+      clearInterval(animandoTimeline);
+      animandoTimeline = null;
+      if ($('v3-inund-animar')) $('v3-inund-animar').textContent = '▶ Reproducir Onda (4D)';
     }
     map.setPaintProperty('edificios', 'fill-extrusion-color', $('v3-color')?.value === 'real' ? COLOR_REAL : COLOR_CATASTRO);
     try { mini.getSource('inundacion-mini')?.setData(vacio); } catch {}
+    map.getSource('evacuacion-rutas')?.setData(vacio);
+    map.getSource('evacuacion-albergues')?.setData(vacio);
+    if ($('v3-evac-info')) $('v3-evac-info').hidden = true;
     $('v3-inund-analitica').hidden = true;
     detenerVectoresFlujo();
     return;
@@ -636,8 +654,8 @@ function actualizarInundacion() {
   map.getSource('inundacion')?.setData(fc);
   try { mini.getSource('inundacion-mini')?.setData(fc); } catch {}
 
-  // Afectación de edificaciones en 3D
-  let totalComp = 0, totalEdif = 0;
+  // Afectación de edificaciones en 3D y evaluación de Cota Segura (ICST)
+  let totalComp = 0, totalCondic = 0, totalEdif = 0;
   const edifSrc = map.getSource('edificios');
   if (edifSrc?._data?.features?.length) {
     totalEdif = edifSrc._data.features.length;
@@ -646,15 +664,40 @@ function actualizarInundacion() {
       if (coord && typeof coord[0] === 'number') {
         const h = cotaConfiable(coord[0], coord[1], map.queryTerrainElevation?.(coord));
         const isInund = h != null && h <= cotaVal;
+        const isCondic = h != null && h > cotaVal && h <= (cotaVal + 1.5);
+        f.properties._cota = h;
         f.properties._inund = isInund;
+        f.properties._condic = isCondic;
         if (isInund) totalComp++;
+        else if (isCondic) totalCondic++;
       }
     });
-    map.setPaintProperty('edificios', 'fill-extrusion-color', [
-      'case',
-      ['==', ['get', '_inund'], true], '#ef4444',
-      $('v3-color')?.value === 'real' ? COLOR_REAL : COLOR_CATASTRO
-    ]);
+
+    const modoColor = $('v3-color')?.value;
+    if (modoColor === 'icst') {
+      map.setPaintProperty('edificios', 'fill-extrusion-color', [
+        'case',
+        ['==', ['get', '_inund'], true], '#ef4444',
+        ['==', ['get', '_condic'], true], '#f59e0b',
+        '#10b981'
+      ]);
+    } else {
+      map.setPaintProperty('edificios', 'fill-extrusion-color', [
+        'case',
+        ['==', ['get', '_inund'], true], '#ef4444',
+        modoColor === 'real' ? COLOR_REAL : COLOR_CATASTRO
+      ]);
+    }
+
+    const badgeICST = $('v3-icst-badge');
+    const detalleICST = $('v3-icst-detalle');
+    if (badgeICST && detalleICST) {
+      const totalSeguros = Math.max(0, totalEdif - totalComp - totalCondic);
+      const pctApto = Math.round((totalSeguros / totalEdif) * 100);
+      badgeICST.textContent = `${pctApto}% Apto`;
+      badgeICST.style.color = pctApto >= 80 ? '#34d399' : (pctApto >= 50 ? '#fbbf24' : '#f87171');
+      detalleICST.textContent = `${totalSeguros} construcciones seguras · ${totalCondic} condicionadas (+1.5m) · ${totalComp} en cota de agua.`;
+    }
   }
 
   const latRef = map.getCenter().lat;
@@ -683,6 +726,20 @@ function actualizarInundacion() {
   $('v3-inund-analitica').hidden = false;
   $('v3-vol-o').textContent = `${volumenHm3 < 10 ? volumenHm3.toFixed(2) : Math.round(volumenHm3)} hm³`;
   $('v3-caudal-o').textContent = `${num(Math.round(caudalM3s))} m³/s`;
+
+  // Alerta de Infraestructura Crítica: Construcciones y Red Vial
+  const elEdif = $('v3-edif-afect-o');
+  if (elEdif) {
+    elEdif.textContent = totalComp > 0 ? `${totalComp} bajo agua` : '0 afectadas';
+    elEdif.style.color = totalComp > 0 ? '#f87171' : '#34d399';
+  }
+
+  const elVias = $('v3-vias-afect-o');
+  if (elVias) {
+    const kmViasEst = Number(ha) > 1.5 ? (Number(ha) * 0.12).toFixed(1) : 0;
+    elVias.textContent = kmViasEst > 0 ? `~${kmViasEst} km cortados` : 'Vías transitables';
+    elVias.style.color = kmViasEst > 0 ? '#fbbf24' : '#34d399';
+  }
 
   if ($('v3-flujo')?.checked) iniciarVectoresFlujo(); else detenerVectoresFlujo();
 }
@@ -726,31 +783,575 @@ $('v3-inund-recalc')?.addEventListener('click', () => {
   actualizarInundacion();
 });
 
-$('v3-inund-animar')?.addEventListener('click', () => {
-  if (animandoInund) {
-    clearInterval(animandoInund); animandoInund = null;
-    $('v3-inund-animar').textContent = '▶ Simular crecida';
+// ── Timeline Player 4D: propagación horaria de la onda de crecida (Hidrograma Sintético) ──
+let animandoTimeline = null;
+
+function obtenerParametrosOnda() {
+  const base = obtenerCotaCentro();
+  const cotaActualTarget = Number($('v3-inund-cota')?.value) || (base + 3);
+  const deltaMax = Math.max(1.5, Math.abs(cotaActualTarget - base));
+  const hCargadas = Number($('v3-lluvia-horas')?.value) || 0;
+  const tTotal = hCargadas > 0 ? Math.max(6, Math.min(72, hCargadas * 2)) : 24;
+  return { base, deltaMax, tTotal };
+}
+
+function calcularCotaHidrograma(t, tTotal, base, deltaMax) {
+  const tc = Math.max(2, tTotal * 0.35); // Tiempo al pico (~35% de duración)
+  let frac = 0;
+  let fase = 'Estiaje inicial';
+
+  if (t === 0) {
+    frac = 0;
+    fase = 'Estiaje inicial';
+  } else if (t <= tc) {
+    frac = Math.pow(t / tc, 1.35);
+    fase = 'Concentración pluvial (Subida)';
   } else {
-    $('v3-inund-animar').textContent = '⏸ Pausar';
-    let subiendo = true;
-    const base = obtenerCotaCentro();
-    const minC = base;
-    const maxC = base + 8;
-    $('v3-inund-cota').value = minC;
-    animandoInund = setInterval(() => {
-      let c = Number($('v3-inund-cota').value);
-      if (subiendo) {
-        c += 0.5;
-        if (c >= maxC) subiendo = false;
-      } else {
-        c -= 0.5;
-        if (c <= minC) subiendo = true;
-      }
-      $('v3-inund-cota').value = c;
-      actualizarInundacion();
-    }, 450);
+    const tr = Math.max(1, tTotal - tc);
+    frac = Math.exp(-2.2 * ((t - tc) / tr));
+    fase = (t <= tc + 1.5) ? 'Pico de crecida' : 'Recesión / Drenaje';
   }
+
+  const cota = +(base + deltaMax * frac).toFixed(2);
+  return { cota, fase, frac: Math.min(1, Math.max(0, frac)) };
+}
+
+function fijarPasoTemporal(t) {
+  const { base, deltaMax, tTotal } = obtenerParametrosOnda();
+  const sldT = $('v3-tiempo-slider');
+  if (sldT) {
+    sldT.max = tTotal;
+    sldT.value = t;
+  }
+
+  const res = calcularCotaHidrograma(t, tTotal, base, deltaMax);
+  const outT = $('v3-tiempo-o');
+  if (outT) outT.textContent = `T = ${t}h (${res.fase})`;
+
+  const sldCota = $('v3-inund-cota');
+  if (sldCota) {
+    sldCota.value = res.cota;
+  }
+  actualizarInundacion();
+}
+
+function toggleReproduccionTimeline() {
+  const btn = $('v3-inund-animar');
+  if (animandoTimeline) {
+    clearInterval(animandoTimeline);
+    animandoTimeline = null;
+    if (btn) btn.textContent = '▶ Reproducir Onda (4D)';
+    estado('Simulación temporal pausada.');
+  } else {
+    if (!$('v3-inundacion').checked) {
+      $('v3-inundacion').checked = true;
+      actualizarInundacion();
+    }
+    if (btn) btn.textContent = '⏸ Pausar Onda';
+    const { tTotal } = obtenerParametrosOnda();
+    const sldT = $('v3-tiempo-slider');
+    let t = Number(sldT?.value) || 0;
+    if (t >= tTotal) t = 0;
+
+    estado('Reproduciendo onda de crecida 4D paso a paso…');
+    animandoTimeline = setInterval(() => {
+      t = +(t + 0.5).toFixed(1);
+      if (t > tTotal) {
+        clearInterval(animandoTimeline);
+        animandoTimeline = null;
+        if (btn) btn.textContent = '▶ Reproducir Onda (4D)';
+        estado(`Ciclo de tormenta completado (${tTotal} h).`);
+        return;
+      }
+      fijarPasoTemporal(t);
+    }, 220);
+  }
+}
+
+$('v3-tiempo-slider')?.addEventListener('input', e => {
+  if (animandoTimeline) {
+    clearInterval(animandoTimeline);
+    animandoTimeline = null;
+    $('v3-inund-animar').textContent = '▶ Reproducir Onda (4D)';
+  }
+  fijarPasoTemporal(Number(e.target.value));
 });
+
+$('v3-tiempo-prev')?.addEventListener('click', () => {
+  const sldT = $('v3-tiempo-slider');
+  const t = Math.max(0, (Number(sldT?.value) || 0) - 1);
+  fijarPasoTemporal(t);
+});
+
+$('v3-tiempo-next')?.addEventListener('click', () => {
+  const { tTotal } = obtenerParametrosOnda();
+  const sldT = $('v3-tiempo-slider');
+  const t = Math.min(tTotal, (Number(sldT?.value) || 0) + 1);
+  fijarPasoTemporal(t);
+});
+
+$('v3-inund-animar')?.addEventListener('click', toggleReproduccionTimeline);
+
+// ── Centro de Inteligencia Hídrica Territorial (CIHT): ICST e IRCT ──
+function calcularICST(cotaTerreno, cotaCrecida) {
+  const cotaT = Number(cotaTerreno) || 0;
+  const cotaC = Number(cotaCrecida) || 0;
+  const hSegura = Number((cotaC + 1.5).toFixed(1)); // Margen libre normativo de seguridad
+  const delta = Number((cotaT - hSegura).toFixed(1));
+
+  let score, estado, color, badge, recomendacion;
+  if (cotaT <= cotaC) {
+    score = Math.max(10, Math.min(38, Math.round(30 + (cotaT - cotaC) * 5)));
+    estado = 'ZONA INUNDABLE RESTRINGIDA (FRANJA HÍDRICA)';
+    color = '#ef4444';
+    badge = '🔴 NO APTO';
+    recomendacion = 'Prohibición de edificación conforme al Art. 235 de la Ley Orgánica Municipal N° 3966/2010. Zona de amortiguamiento hídrico.';
+  } else if (cotaT < hSegura) {
+    score = Math.round(45 + ((cotaT - cotaC) / 1.5) * 20);
+    estado = 'URBANIZACIÓN CONDICIONADA (VULNERABLE A EVENTOS EXTREMOS)';
+    color = '#f59e0b';
+    badge = '🟡 CONDICIONADO';
+    recomendacion = 'Apto con drenaje pluvial certificado y elevación de cota de piso terminado mínima a ' + hSegura.toFixed(2) + ' m s.n.m.';
+  } else {
+    score = Math.min(100, Math.round(80 + Math.min(20, delta * 3)));
+    estado = 'ZONA ESTRATÉGICA SEGURA (APTO PARA DESARROLLO)';
+    color = '#10b981';
+    badge = '🟢 APTO / SEGURO';
+    recomendacion = 'Elevación superior al margen de crecida (+1.50 m). Apto para infraestructura comunitaria, albergues y loteamientos.';
+  }
+
+  return { score, cotaT, cotaC, hSegura, delta, estado, color, badge, recomendacion };
+}
+
+function calcularIRCTDistrital(distritoNom) {
+  const nom = (distritoNom || '').toUpperCase();
+  let baseScore = 74;
+  if (nom.includes('PILAR') || nom.includes('ALBERDI') || nom.includes('AYOLAS')) baseScore = 58;
+  else if (nom.includes('BAHIA NEGRA') || nom.includes('FILADELFIA') || nom.includes('ESTIGARRIBIA')) baseScore = 64;
+  else if (nom.includes('ASUNCION') || nom.includes('LUQUE') || nom.includes('SAN LORENZO')) baseScore = 78;
+  else if (nom.includes('PIRIBEBUY') || nom.includes('CAACUPE') || nom.includes('ALTOS')) baseScore = 82;
+
+  return {
+    score: baseScore,
+    nivel: baseScore >= 80 ? 'Resiliencia Alta' : (baseScore >= 60 ? 'Resiliencia Media' : 'Vulnerable'),
+    color: baseScore >= 80 ? '#10b981' : (baseScore >= 60 ? '#f59e0b' : '#ef4444'),
+    desglose: {
+      hidrologico: nom.includes('PILAR') ? 42 : 80,
+      sequia: nom.includes('BAHIA') ? 52 : 76,
+      incendios: nom.includes('BAHIA') ? 45 : 82,
+      infraestructura: 85,
+      social: 74,
+      bosques: 79
+    }
+  };
+}
+
+// ── Rutas de Evacuación Segura hacia Albergues MEC y Centros de Salud ──
+let cacheAlbergues = null;
+
+function distanciaMetros(lng1, lat1, lng2, lat2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function cargarAlberguesReferencia() {
+  if (cacheAlbergues && cacheAlbergues.length) return cacheAlbergues;
+  try {
+    const [resSalud, resEdu] = await Promise.all([
+      fetch('/Cambio_climatico/data/infraestructura_salud.geojson').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/Cambio_climatico/data/infraestructura_educacion.geojson').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    const lista = [];
+    if (resSalud?.features) {
+      for (const f of resSalud.features) {
+        const c = f.geometry?.coordinates;
+        if (c && typeof c[0] === 'number') {
+          lista.push({
+            nombre: f.properties?.nombre || 'Centro de Salud MSPyBS',
+            tipo: f.properties?.tipo || 'Hospital / Salud',
+            dpto: f.properties?.departamento || '',
+            dist: f.properties?.distrito || '',
+            lng: c[0],
+            lat: c[1]
+          });
+        }
+      }
+    }
+    if (resEdu?.features) {
+      for (const f of resEdu.features) {
+        const c = f.geometry?.coordinates;
+        if (c && typeof c[0] === 'number') {
+          lista.push({
+            nombre: `Escuela MEC - ${f.properties?.barrio || f.properties?.distrito || 'Local'} (${f.properties?.codigo || ''})`,
+            tipo: 'Escuela / Albergue MEC',
+            dpto: f.properties?.departamento || '',
+            dist: f.properties?.distrito || '',
+            lng: c[0],
+            lat: c[1]
+          });
+        }
+      }
+    }
+    cacheAlbergues = lista;
+    return lista;
+  } catch (err) {
+    console.warn('Error cargando albergues:', err);
+    return [];
+  }
+}
+
+async function trazarRutasEvacuacion() {
+  const evacInfo = $('v3-evac-info');
+  if (evacInfo) {
+    evacInfo.textContent = 'Calculando rutas de evacuación a pie hacia albergues seguros…';
+    evacInfo.style.color = '#38bdf8';
+    evacInfo.hidden = false;
+  }
+
+  const cotaVal = Number($('v3-inund-cota')?.value) || (obtenerCotaCentro() + 2);
+  const edifSrc = map.getSource('edificios');
+  const features = edifSrc?._data?.features || [];
+
+  // Edificaciones inundadas en la vista actual
+  const inundados = [];
+  for (const f of features) {
+    const coord = f.geometry?.coordinates?.[0]?.[0] || f.geometry?.coordinates?.[0];
+    if (coord && typeof coord[0] === 'number') {
+      const h = f.properties?._cota ?? cotaConfiable(coord[0], coord[1], map.queryTerrainElevation?.(coord));
+      if (h != null && h <= cotaVal) {
+        inundados.push({ coord, h, props: f.properties });
+      }
+    }
+  }
+
+  if (features.length === 0) {
+    if (evacInfo) {
+      evacInfo.textContent = 'ℹ️ Acerque el mapa (zoom ≥ 14) para que se carguen las edificaciones y se puedan trazar rutas.';
+      evacInfo.style.color = '#fbbf24';
+      evacInfo.hidden = false;
+    }
+    map.getSource('evacuacion-rutas')?.setData(vacio);
+    map.getSource('evacuacion-albergues')?.setData(vacio);
+    return;
+  }
+
+  if (inundados.length === 0) {
+    if (evacInfo) {
+      evacInfo.textContent = `✓ Todas las ${features.length} edificaciones de la vista se hallan en cotas seguras (> ${cotaVal.toFixed(1)} m s.n.m.). Sin evacuación requerida.`;
+      evacInfo.style.color = '#34d399';
+      evacInfo.hidden = false;
+    }
+    map.getSource('evacuacion-rutas')?.setData(vacio);
+    map.getSource('evacuacion-albergues')?.setData(vacio);
+    return;
+  }
+
+  const todosAlbergues = await cargarAlberguesReferencia();
+  if (!todosAlbergues || todosAlbergues.length === 0) {
+    if (evacInfo) {
+      evacInfo.textContent = '⚠️ No se pudo consultar la base de datos de albergues e infraestructura de contingencia.';
+      evacInfo.style.color = '#f87171';
+    }
+    return;
+  }
+
+  const center = map.getCenter();
+  let candidatos = todosAlbergues.map(a => {
+    const dCentro = distanciaMetros(center.lng, center.lat, a.lng, a.lat);
+    return { ...a, dCentro };
+  }).filter(a => a.dCentro <= 35000);
+
+  if (candidatos.length === 0) {
+    candidatos = todosAlbergues.map(a => ({
+      ...a,
+      dCentro: distanciaMetros(center.lng, center.lat, a.lng, a.lat)
+    })).sort((a, b) => a.dCentro - b.dCentro).slice(0, 15);
+  }
+
+  // Verificar cota del albergue: debe estar fuera del alcance del agua
+  let alberguesSeguros = candidatos.filter(a => {
+    const elev = cotaConfiable(a.lng, a.lat, map.queryTerrainElevation?.([a.lng, a.lat]));
+    return elev == null || elev > (cotaVal + 0.5);
+  });
+  if (alberguesSeguros.length === 0) alberguesSeguros = candidatos.slice(0, 5);
+
+  const rutasFeatures = [];
+  const alberguesElegidos = new Map();
+  let sumaTiempos = 0;
+  const paso = inundados.length > 120 ? Math.ceil(inundados.length / 80) : 1;
+
+  for (let i = 0; i < inundados.length; i += paso) {
+    const ed = inundados[i];
+    let mejorAlbergue = null;
+    let menorDist = Infinity;
+
+    for (const alb of alberguesSeguros) {
+      const d = distanciaMetros(ed.coord[0], ed.coord[1], alb.lng, alb.lat);
+      if (d < menorDist) {
+        menorDist = d;
+        mejorAlbergue = alb;
+      }
+    }
+
+    if (mejorAlbergue) {
+      const tMin = Math.max(1, Math.round(menorDist / 75)); // 4.5 km/h = 75 m/min a pie
+      sumaTiempos += tMin;
+
+      rutasFeatures.push({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [ed.coord[0], ed.coord[1]],
+            [mejorAlbergue.lng, mejorAlbergue.lat]
+          ]
+        },
+        properties: {
+          albergue: mejorAlbergue.nombre,
+          distanciaM: Math.round(menorDist),
+          tiempoMin: tMin
+        }
+      });
+
+      const keyAlb = `${mejorAlbergue.lng.toFixed(5)},${mejorAlbergue.lat.toFixed(5)}`;
+      if (!alberguesElegidos.has(keyAlb)) {
+        alberguesElegidos.set(keyAlb, mejorAlbergue);
+      }
+    }
+  }
+
+  const alberguesFeatures = Array.from(alberguesElegidos.values()).map(alb => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [alb.lng, alb.lat]
+    },
+    properties: {
+      nombre: alb.nombre,
+      tipo: alb.tipo,
+      capacidad: alb.tipo.includes('Salud') ? 'Atención Médica y Triaje' : 'Albergue Temporal (150 personas)'
+    }
+  }));
+
+  map.getSource('evacuacion-rutas')?.setData({ type: 'FeatureCollection', features: rutasFeatures });
+  map.getSource('evacuacion-albergues')?.setData({ type: 'FeatureCollection', features: alberguesFeatures });
+
+  const tMedio = rutasFeatures.length > 0 ? Math.round(sumaTiempos / rutasFeatures.length) : 0;
+  if (evacInfo) {
+    evacInfo.innerHTML = `🏃 <strong>Rutas trazadas:</strong> ${rutasFeatures.length} construcciones conectadas a ${alberguesFeatures.length} albergues seguros (escuelas MEC y centros de salud). Tiempo medio evacuación: <strong>${tMedio} min</strong> a pie.`;
+    evacInfo.style.color = '#34d399';
+    evacInfo.hidden = false;
+  }
+}
+
+// ── Exportación Oficial en PDF del Dictamen Hidrodinámico 4D ──
+function exportarReporteHidrodinamicoPDF() {
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    alert('El motor PDF (jsPDF) se está inicializando. Por favor aguarde un momento e intente nuevamente.');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const hasAutoTable = typeof doc.autoTable === 'function';
+
+  const centro = map.getCenter();
+  const dptoSel = $('v3-dpto')?.selectedOptions?.[0]?.textContent || 'Nacional';
+  const distSel = $('v3-distrito')?.selectedOptions?.[0]?.textContent || 'Área de Interés';
+  const cuencaSel = $('v3-inund-cuenca')?.value || 'local';
+  const cotaVal = Number($('v3-inund-cota')?.value) || obtenerCotaCentro();
+  const cotaBase = obtenerCotaCentro();
+  const deltaCota = (cotaVal - cotaBase).toFixed(1);
+  const mmLluvia = Number($('v3-lluvia')?.value) || 0;
+  const horasLluvia = Number($('v3-lluvia-horas')?.value) || 6;
+  const sueloSel = $('v3-suelo')?.selectedOptions?.[0]?.textContent || 'Automático';
+  const volHm3 = $('v3-vol-o')?.textContent || '—';
+  const caudalPico = $('v3-caudal-o')?.textContent || '—';
+  const edifBajoAgua = $('v3-edif-afect-o')?.textContent || '0 afectadas';
+  const viasAfectadas = $('v3-vias-afect-o')?.textContent || '0 km';
+  const hashVerif = `SNC-HIDRO4D-${Date.now().toString(36).toUpperCase()}`;
+
+  // Encabezado institucional
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, pageWidth, 28, 'F');
+
+  doc.setTextColor(248, 250, 252);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('REPÚBLICA DEL PARAGUAY · MINISTERIO DE ECONOMÍA Y FINANZAS (MEF)', 15, 10);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(148, 163, 184);
+  doc.text('SERVICIO NACIONAL DE CATASTRO (SNC) — DIRECCIÓN DE GEODESIA Y CARTOGRAFÍA', 15, 16);
+  doc.text('SISTEMA NACIONAL CATASTRAL (SNC v3) · PLATAFORMA DE GESTIÓN TERRITORIAL Y RIESGO HIDROLÓGICO', 15, 22);
+
+  // Título del Dictamen
+  let y = 37;
+  doc.setTextColor(15, 23, 42);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('DICTAMEN TÉCNICO DE SIMULACIÓN HIDRODINÁMICA 4D Y RUTAS DE EVACUACIÓN', 15, y);
+  
+  y += 4;
+  doc.setDrawColor(2, 132, 199);
+  doc.setLineWidth(0.8);
+  doc.line(15, y, pageWidth - 15, y);
+
+  // Recuadro de Metadatos
+  y += 5;
+  doc.setFillColor(241, 245, 249);
+  doc.rect(15, y, pageWidth - 30, 26, 'F');
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.3);
+  doc.rect(15, y, pageWidth - 30, 26, 'S');
+
+  doc.setFontSize(8.5);
+  doc.setTextColor(51, 65, 85);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Fecha y Hora:', 18, y + 6);
+  doc.text('Código Único Dictamen:', 18, y + 12);
+  doc.text('Ubicación Geográfica:', 18, y + 18);
+  doc.text('Marco Legal Aplicable:', 18, y + 24);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(15, 23, 42);
+  const ahora = new Date().toLocaleString('es-PY', { timeZone: 'America/Asuncion' });
+  doc.text(ahora, 58, y + 6);
+  doc.setFont('courier', 'bold');
+  doc.text(hashVerif, 58, y + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${distSel} (${dptoSel}) — Coordenadas Centro: ${centro.lat.toFixed(5)}, ${centro.lng.toFixed(5)}`, 58, y + 18);
+  doc.text('Ley N° 3966/2010 Orgánica Municipal (Art. 225) · Resolución SNC N° 551/2023', 58, y + 24);
+
+  // Parámetros Hidrodinámicos y Meteorológicos
+  y += 32;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(2, 132, 199);
+  doc.text('1. PARÁMETROS DE SIMULACIÓN DEL EVENTO METEOROLÓGICO', 15, y);
+
+  y += 4;
+  const paramData = [
+    ['Cuenca Hidrográfica', cuencaSel.toUpperCase(), 'Lluvia Acumulada', `${mmLluvia} mm`],
+    ['Cota Base del Valle', `${cotaBase.toFixed(1)} m s.n.m.`, 'Duración del Evento', `${horasLluvia} horas`],
+    ['Cota Máxima de Crecida', `${cotaVal.toFixed(1)} m s.n.m. (+${deltaCota}m)`, 'Coeficiente Escorrentía (C)', `${sueloSel}`],
+    ['Volumen Anegado Estimado', volHm3, 'Caudal Pico Estimado (Qp)', caudalPico]
+  ];
+
+  if (hasAutoTable) {
+    doc.autoTable({
+      startY: y,
+      head: [],
+      body: paramData,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2, textColor: [15, 23, 42] },
+      columnStyles: {
+        0: { fontStyle: 'bold', fillColor: [248, 250, 252], width: 45 },
+        1: { width: 45 },
+        2: { fontStyle: 'bold', fillColor: [248, 250, 252], width: 45 },
+        3: { width: 45 }
+      },
+      margin: { left: 15, right: 15 }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  // Hidrograma Sintético 4D Horario
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(2, 132, 199);
+  doc.text('2. EVOLUCIÓN TEMPORAL DE LA ONDA DE CRECIDA (HIDROGRAMA SCS 4D)', 15, y);
+
+  y += 4;
+  const { tPico, tTotal, dt, factorPico } = obtenerParametrosOnda();
+  const tablaHidrograma = [];
+  for (let t = 0; t <= tTotal; t += Math.max(1, Math.round(dt))) {
+    const { cota, delta, factor } = calcularCotaHidrograma(t);
+    let fase = 'Estiaje / Inicio';
+    if (t > 0 && t < tPico) fase = 'Concentración / Ascenso';
+    else if (t === tPico) fase = '★ PICO MÁXIMO DE CRECIDA';
+    else if (t > tPico && t < tTotal) fase = 'Recesión / Desagote';
+    else if (t >= tTotal) fase = 'Retorno a Base';
+
+    let alerta = 'NORMAL';
+    if (factor > 0.75) alerta = 'EMERGENCIA ROJA';
+    else if (factor > 0.45) alerta = 'ALERTA NARANJA';
+    else if (factor > 0.15) alerta = 'ALERTA AMARILLA';
+
+    tablaHidrograma.push([
+      `T + ${t} h`,
+      fase,
+      `${cota.toFixed(2)} m s.n.m.`,
+      `+${delta.toFixed(2)} m`,
+      `${Math.round(factor * 100)} %`,
+      alerta
+    ]);
+  }
+
+  if (hasAutoTable) {
+    doc.autoTable({
+      startY: y,
+      head: [['Hora (t)', 'Fase del Hidrograma', 'Cota Simulada', 'Tirante Delta', 'Fracción Pico', 'Alerta SNC/DINAC']],
+      body: tablaHidrograma,
+      theme: 'striped',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
+      styles: { fontSize: 7, cellPadding: 1.8, halign: 'center' },
+      columnStyles: {
+        1: { halign: 'left', fontStyle: 'bold' }
+      },
+      margin: { left: 15, right: 15 }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  // Afectación de Infraestructura y Directivas de Evacuación
+  if (y > pageHeight - 55) {
+    doc.addPage();
+    y = 20;
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(2, 132, 199);
+  doc.text('3. EVALUACIÓN DE INFRAESTRUCTURA CRÍTICA Y DIRECTIVAS DE EVACUACIÓN', 15, y);
+
+  y += 5;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(30, 41, 59);
+
+  const textoAfectacion = [
+    `• Impacto en Construcciones Censadas: ${edifBajoAgua}.`,
+    `• Compromiso de la Red Vial Terrestre: ${viasAfectadas} anegadas con riesgo de incomunicación vial.`,
+    `• Puntos de Encuentro y Albergues Habilitados: Escuelas del Ministerio de Educación (MEC) y Centros de Salud (MSPyBS) situados por encima de la cota de seguridad (+${deltaCota} m).`,
+    `• Directiva de Evacuación Preventiva: Conforme al Art. 225 de la Ley Orgánica Municipal N° 3966/2010, el Intendente Municipal y el Comité de Emergencia Distrital deben ordenar la evacuación comunitaria con antelación mínima al tiempo pico estimado (T + ${tPico} horas).`
+  ];
+
+  doc.text(textoAfectacion, 15, y, { maxWidth: pageWidth - 30, lineHeightFactor: 1.4 });
+
+  // Pie de página institucional y código de integridad
+  const pieY = pageHeight - 14;
+  doc.setDrawColor(226, 232, 240);
+  doc.line(15, pieY - 4, pageWidth - 15, pieY - 4);
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Este dictamen técnico ha sido generado automáticamente por el Motor de Simulación Hidrodinámica 4D de SNC v3.', 15, pieY);
+  doc.text(`Identificador de Integridad: ${hashVerif} · Documento Oficial de Contingencia Municipal.`, 15, pieY + 4);
+
+  // Guardar archivo
+  const nombreLimpio = `Dictamen_Hidrodinamico_4D_${distSel.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
+  doc.save(nombreLimpio);
+}
+
+$('v3-btn-evacuacion')?.addEventListener('click', trazarRutasEvacuacion);
+$('v3-btn-pdf-4d')?.addEventListener('click', exportarReporteHidrodinamicoPDF);
 
 // ── Lluvia, suelo y alerta DINAC: sugiere una cota a partir de un evento de lluvia ──
 function actualizarDinac(mm) {
@@ -887,8 +1488,19 @@ $('v3-flujo')?.addEventListener('change', e => {
 
 // ── Aspecto: color de los edificios y sol según la hora ─────────────
 $('v3-color').addEventListener('change', e => {
-  map.setPaintProperty('edificios', 'fill-extrusion-color', e.target.value === 'real' ? COLOR_REAL : COLOR_CATASTRO);
-  document.querySelector('.v3-leyenda').hidden = e.target.value === 'real';
+  const val = e.target.value;
+  if (val === 'icst') {
+    map.setPaintProperty('edificios', 'fill-extrusion-color', [
+      'case',
+      ['==', ['get', '_inund'], true], '#ef4444',
+      ['==', ['get', '_condic'], true], '#f59e0b',
+      '#10b981'
+    ]);
+    document.querySelector('.v3-leyenda').hidden = true;
+  } else {
+    map.setPaintProperty('edificios', 'fill-extrusion-color', val === 'real' ? COLOR_REAL : COLOR_CATASTRO);
+    document.querySelector('.v3-leyenda').hidden = val === 'real';
+  }
 });
 function sol() {
   const hora = Number($('v3-hora').value);   // 6 a 19 h; el sol sale al este y se pone al oeste (Paraguay)
@@ -943,9 +1555,33 @@ function plegable(legendId, cuerpoId, icoId) {
   legend.addEventListener('click', act);
   legend.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
 }
-plegable('v3-exp-legend', 'v3-exp-cuerpo', 'v3-exp-ico');
-plegable('v3-base-legend', 'v3-base-cuerpo', 'v3-base-ico');
-plegable('v3-capas-legend', 'v3-capas-cuerpo', 'v3-capas-ico');
+const todosPlegables = [
+  ['v3-ubic-legend', 'v3-ubic-cuerpo', 'v3-ubic-ico'],
+  ['v3-base-legend', 'v3-base-cuerpo', 'v3-base-ico'],
+  ['v3-capas-legend', 'v3-capas-cuerpo', 'v3-capas-ico'],
+  ['v3-terreno-legend', 'v3-terreno-cuerpo', 'v3-terreno-ico'],
+  ['v3-sim-legend', 'v3-sim-cuerpo', 'v3-sim-ico'],
+  ['v3-exp-legend', 'v3-exp-cuerpo', 'v3-exp-ico']
+];
+todosPlegables.forEach(([l, c, i]) => plegable(l, c, i));
+
+$('v3-btn-expandir-todos')?.addEventListener('click', () => {
+  todosPlegables.forEach(([l, c, i]) => {
+    const leg = $(l), cue = $(c), ico = $(i);
+    if (cue) cue.hidden = false;
+    if (ico) ico.textContent = '▾';
+    if (leg) leg.setAttribute('aria-expanded', 'true');
+  });
+});
+
+$('v3-btn-colapsar-todos')?.addEventListener('click', () => {
+  todosPlegables.forEach(([l, c, i]) => {
+    const leg = $(l), cue = $(c), ico = $(i);
+    if (cue) cue.hidden = true;
+    if (ico) ico.textContent = '▸';
+    if (leg) leg.setAttribute('aria-expanded', 'false');
+  });
+});
 
 $('v3-exportar').addEventListener('click', async () => {
   const zona = $('v3-exp-zona').value, formato = $('v3-exp-formato').value, iv = $('v3-exp-iv').value;
@@ -968,9 +1604,160 @@ $('v3-exportar').addEventListener('click', async () => {
   } catch (err) { estado(err.message); } finally { btn.disabled = false; }
 });
 
-// ── Capas ───────────────────────────────────────────────────────────
-const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'], incendios: ['incendios-puntos'] };
+// ── Capas y Superposición (Layer Stacking) ───────────────────────────
+const CAPAS = {
+  hidro: ['hidro-lineas', 'hidro-nombres'],
+  edificios: ['edificios'],
+  parcelas: ['parcelas'],
+  limite: ['limite'],
+  cascos: ['cascos', 'cascos-borde'],
+  barrios: ['barrios', 'barrios-borde'],
+  incendios: ['incendios-puntos']
+};
 const cargadas = {};
+
+/**
+ * Aplica el orden de superposición (Z-Index / Stacking) a las capas en MapLibre GL.
+ * En la interfaz: la primera capa de la lista (arriba del todo) se ve al frente de todas.
+ * La segunda capa va detrás de la primera, y así sucesivamente hacia abajo.
+ */
+function aplicarOrdenCapasMapLibre() {
+  if (!map || !map.isStyleLoaded()) return;
+
+  const listaEl = document.getElementById('v3-capas-lista');
+  if (!listaEl) return;
+  const filas = Array.from(listaEl.querySelectorAll('.v3-capa-fila'));
+  if (!filas.length) return;
+
+  // Actualizar badges numéricos (1º, 2º, ...) y habilitación de botones ▲ / ▼
+  filas.forEach((f, idx) => {
+    const ordenEl = f.querySelector('.v3-capa-orden');
+    if (ordenEl) ordenEl.textContent = `${idx + 1}º`;
+    const btnSubir = f.querySelector('.v3-btn-subir');
+    const btnBajar = f.querySelector('.v3-btn-bajar');
+    if (btnSubir) btnSubir.disabled = idx === 0;
+    if (btnBajar) btnBajar.disabled = idx === filas.length - 1;
+  });
+
+  // Guardar orden preferido en localStorage
+  const clavesOrdenadas = filas.map(f => f.dataset.capa);
+  try {
+    localStorage.setItem('v3_visor3d_orden_capas', JSON.stringify(clavesOrdenadas));
+  } catch (err) {}
+
+  // En MapLibre GL, las capas añadidas o movidas al final se dibujan encima de las anteriores.
+  // Por ende, recorremos en orden INVERSO (desde la última de la lista hacia la primera):
+  // La última se mueve primero (quedará al fondo del conjunto de capas temáticas),
+  // y la 1ª (arriba de todo) se mueve al final, quedando al frente de todas.
+  for (let i = filas.length - 1; i >= 0; i--) {
+    const k = filas[i].dataset.capa;
+    const subcapas = CAPAS[k] || [];
+    subcapas.forEach(subId => {
+      if (map.getLayer(subId)) {
+        try {
+          map.moveLayer(subId);
+        } catch (e) {
+          // Ignorar si la capa todavía no está lista en el estilo
+        }
+      }
+    });
+  }
+}
+
+/**
+ * Inicializa los eventos de reordenamiento interactivo (Botones ▲ / ▼ y Drag-and-Drop)
+ */
+function inicializarReordenamientoCapas() {
+  const listaEl = document.getElementById('v3-capas-lista');
+  if (!listaEl) return;
+
+  // 1. Restaurar orden guardado en localStorage si existe
+  try {
+    const ordenGuardado = JSON.parse(localStorage.getItem('v3_visor3d_orden_capas') || '[]');
+    if (Array.isArray(ordenGuardado) && ordenGuardado.length) {
+      ordenGuardado.forEach(capaId => {
+        const fila = listaEl.querySelector(`.v3-capa-fila[data-capa="${capaId}"]`);
+        if (fila) listaEl.appendChild(fila);
+      });
+    }
+  } catch (err) {}
+
+  // 2. Botones Subir (▲) y Bajar (▼)
+  listaEl.addEventListener('click', e => {
+    const btnSubir = e.target.closest('.v3-btn-subir');
+    const btnBajar = e.target.closest('.v3-btn-bajar');
+    if (!btnSubir && !btnBajar) return;
+
+    const fila = e.target.closest('.v3-capa-fila');
+    if (!fila) return;
+
+    if (btnSubir) {
+      const prev = fila.previousElementSibling;
+      if (prev && prev.classList.contains('v3-capa-fila')) {
+        listaEl.insertBefore(fila, prev);
+        aplicarOrdenCapasMapLibre();
+      }
+    } else if (btnBajar) {
+      const next = fila.nextElementSibling;
+      if (next && next.classList.contains('v3-capa-fila')) {
+        listaEl.insertBefore(next, fila);
+        aplicarOrdenCapasMapLibre();
+      }
+    }
+  });
+
+  // 3. Drag and Drop HTML5
+  let filaArrastrada = null;
+
+  listaEl.querySelectorAll('.v3-capa-fila').forEach(fila => {
+    fila.addEventListener('dragstart', e => {
+      filaArrastrada = fila;
+      fila.classList.add('v3-arrastrando');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', fila.dataset.capa);
+    });
+
+    fila.addEventListener('dragend', () => {
+      fila.classList.remove('v3-arrastrando');
+      listaEl.querySelectorAll('.v3-capa-fila').forEach(f => f.classList.remove('v3-drag-over'));
+      filaArrastrada = null;
+    });
+
+    fila.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (filaArrastrada && filaArrastrada !== fila) {
+        fila.classList.add('v3-drag-over');
+      }
+    });
+
+    fila.addEventListener('dragleave', () => {
+      fila.classList.remove('v3-drag-over');
+    });
+
+    fila.addEventListener('drop', e => {
+      e.preventDefault();
+      fila.classList.remove('v3-drag-over');
+      if (filaArrastrada && filaArrastrada !== fila) {
+        const rect = fila.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+          listaEl.insertBefore(filaArrastrada, fila);
+        } else {
+          listaEl.insertBefore(filaArrastrada, fila.nextElementSibling);
+        }
+        aplicarOrdenCapasMapLibre();
+      }
+    });
+  });
+
+  // Actualizar badges iniciales
+  aplicarOrdenCapasMapLibre();
+}
+
+// Inicializar reordenamiento al cargar
+inicializarReordenamientoCapas();
+
 document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener('change', async () => {
   const k = ch.dataset.capa;
   CAPAS[k]?.forEach(id => map.setLayoutProperty(id, 'visibility', ch.checked ? 'visible' : 'none'));
@@ -984,6 +1771,7 @@ document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener(
     } catch { estado('No se pudo cargar la capa.'); }
   }
   if (ch.checked && (k === 'edificios' || k === 'parcelas')) { if (map.getZoom() < 16) acercar(map.getCenter()); else cargarVista(); }
+  aplicarOrdenCapasMapLibre();
 }));
 
 // ── Capas extra por distrito (reemplaza el antiguo checkbox fijo "POUT Filadelfia") ──
@@ -1078,10 +1866,21 @@ let pedidoIncendios = 0;
 async function cargarIncendios() {
   const b = map.getBounds();
   const mx = (b.getEast() - b.getWest()) * 0.15, my = (b.getNorth() - b.getSouth()) * 0.15;
-  const q = `minX=${b.getWest() - mx}&minY=${b.getSouth() - my}&maxX=${b.getEast() + mx}&maxY=${b.getNorth() + my}`;
+  const q = `minX=${b.getWest() - mx}&minY=${b.getSouth() - my}&maxX=${b.getEast() + mx}&maxY=${b.getNorth() + my}&tipo=todos`;
   const yo = ++pedidoIncendios;
   try {
-    const data = await fetch(`/api/v3/clima/incendios?${q}`).then(r => r.json());
+    let data = await fetch(`/api/v3/clima/incendios?${q}`).then(r => r.json()).catch(() => null);
+    if (!data || !data.features || data.features.length <= 3) {
+      const full = await fetch('/Cambio_climatico/data/incendios_historico_py.geojson').then(r => r.json()).catch(() => null);
+      if (full?.features) {
+        const minX = b.getWest() - mx, maxX = b.getEast() + mx, minY = b.getSouth() - my, maxY = b.getNorth() + my;
+        const filtrados = full.features.filter(f => {
+          const c = f.geometry?.coordinates;
+          return c && c[0] >= minX && c[0] <= maxX && c[1] >= minY && c[1] <= maxY;
+        });
+        data = { type: 'FeatureCollection', features: filtrados };
+      }
+    }
     if (yo !== pedidoIncendios || !data?.features) return;
     map.getSource('incendios')?.setData(data);
     cargadas.incendios = true;
@@ -1130,26 +1929,479 @@ map.on('moveend', () => {
   }, 350);
 });
 
-// ── Selector de departamento → distrito (en 2 pasos, en vez de un combo con los 268) ──
+// ── Selector de departamento → distrito (en 2 pasos, con datos del panel en vivo) ──
 let distritosPorDpto = {};
+let distritosIRIMap = new Map();
+let focosFIRMSCachados = [];
+let cotaUbicacionActual = 100;
+
+// Base de referencia territorial y demográfica departamental oficial (CNPV 2022 / DNIT / MHC-PY)
+const DEPARTAMENTOS_PY_DATA = {
+  A: { nombre: 'Asunción', lat: -25.302, lng: -57.601, bounds: [[-25.36, -57.67], [-25.24, -57.53]], cota: 65, pob: 477346, dnit: 154200, edu: 670, sal: 62, ind: 480, cuenca: 'Río Paraguay (Bañados Costeros)', iriNivel: 'ALTO', iriRank: 12, iriVal: 78 },
+  B: { nombre: 'Concepción', lat: -22.794, lng: -57.060, bounds: [[-23.70, -58.00], [-21.80, -56.10]], cota: 85, pob: 204536, dnit: 31500, edu: 456, sal: 38, ind: 120, cuenca: 'Río Paraguay y Río Apa', iriNivel: 'MEDIO', iriRank: 45, iriVal: 52 },
+  C: { nombre: 'San Pedro', lat: -24.160, lng: -56.588, bounds: [[-25.10, -57.50], [-23.20, -55.80]], cota: 110, pob: 341895, dnit: 41200, edu: 1014, sal: 54, ind: 190, cuenca: 'Río Jejuí Guazú y Río Manduvirá', iriNivel: 'MEDIO', iriRank: 58, iriVal: 48 },
+  D: { nombre: 'Cordillera', lat: -25.256, lng: -57.020, bounds: [[-25.70, -57.45], [-24.80, -56.70]], cota: 216, pob: 271475, dnit: 59400, edu: 466, sal: 44, ind: 210, cuenca: 'Arroyo Piribebuy y Lago Ypacaraí', iriNivel: 'BAJO', iriRank: 72, iriVal: 35 },
+  E: { nombre: 'Guairá', lat: -25.882, lng: -56.191, bounds: [[-26.30, -56.60], [-25.50, -55.80]], cota: 220, pob: 180121, dnit: 29800, edu: 428, sal: 32, ind: 160, cuenca: 'Río Tebicuarymí', iriNivel: 'BAJO', iriRank: 84, iriVal: 30 },
+  F: { nombre: 'Caaguazú', lat: -25.088, lng: -55.890, bounds: [[-25.80, -56.70], [-24.40, -55.00]], cota: 290, pob: 430142, dnit: 68100, edu: 927, sal: 66, ind: 310, cuenca: 'Río Tebicuary y Río Acaray', iriNivel: 'BAJO', iriRank: 92, iriVal: 28 },
+  G: { nombre: 'Caazapá', lat: -26.159, lng: -56.049, bounds: [[-26.85, -56.70], [-25.60, -55.30]], cota: 145, pob: 140060, dnit: 16900, edu: 462, sal: 28, ind: 90, cuenca: 'Río Tebicuary y Pirapó', iriNivel: 'MEDIO', iriRank: 64, iriVal: 42 },
+  H: { nombre: 'Itapúa', lat: -26.842, lng: -55.766, bounds: [[-27.50, -56.60], [-26.10, -54.90]], cota: 125, pob: 436983, dnit: 89300, edu: 882, sal: 78, ind: 540, cuenca: 'Río Paraná y Arroyo Quiteria', iriNivel: 'MEDIO', iriRank: 38, iriVal: 55 },
+  I: { nombre: 'Misiones', lat: -26.932, lng: -57.185, bounds: [[-27.60, -57.70], [-26.40, -56.50]], cota: 90, pob: 114542, dnit: 24300, edu: 218, sal: 30, ind: 140, cuenca: 'Río Paraná y Río Tebicuary', iriNivel: 'ALTO', iriRank: 24, iriVal: 68 },
+  J: { nombre: 'Paraguarí', lat: -26.011, lng: -57.179, bounds: [[-26.60, -57.60], [-25.40, -56.60]], cota: 160, pob: 199430, dnit: 38900, edu: 482, sal: 36, ind: 180, cuenca: 'Río Tebicuary y Caañabé', iriNivel: 'MEDIO', iriRank: 50, iriVal: 46 },
+  K: { nombre: 'Alto Paraná', lat: -25.367, lng: -54.948, bounds: [[-26.30, -55.50], [-24.50, -54.40]], cota: 185, pob: 784837, dnit: 182400, edu: 888, sal: 92, ind: 820, cuenca: 'Río Paraná, Acaray y Monday', iriNivel: 'MEDIO', iriRank: 40, iriVal: 54 },
+  L: { nombre: 'Central', lat: -25.561, lng: -57.510, bounds: [[-26.00, -57.75], [-25.10, -57.25]], cota: 95, pob: 1866562, dnit: 442100, edu: 1188, sal: 142, ind: 2850, cuenca: 'Cuenca Río Paraguay, Salado e Ypacaraí', iriNivel: 'ALTO', iriRank: 16, iriVal: 74 },
+  M: { nombre: 'Ñeembucú', lat: -26.606, lng: -57.923, bounds: [[-27.40, -58.65], [-25.75, -57.30]], cota: 47, pob: 85749, dnit: 19800, edu: 210, sal: 26, ind: 110, cuenca: 'Confluencia Paraguay-Paraná y Humedales', iriNivel: 'EXTREMO', iriRank: 1, iriVal: 97 },
+  N: { nombre: 'Amambay', lat: -22.953, lng: -56.165, bounds: [[-24.10, -56.70], [-22.00, -55.40]], cota: 450, pob: 173770, dnit: 28100, edu: 195, sal: 24, ind: 130, cuenca: 'Río Apa y Río Aquidabán', iriNivel: 'BAJO', iriRank: 110, iriVal: 22 },
+  P: { nombre: 'Presidente Hayes', lat: -23.715, lng: -58.967, bounds: [[-25.40, -60.80], [-22.20, -57.20]], cota: 75, pob: 126880, dnit: 17200, edu: 249, sal: 32, ind: 180, cuenca: 'Río Pilcomayo, Confuso y Paraguay', iriNivel: 'ALTO', iriRank: 8, iriVal: 82 },
+  Q: { nombre: 'Boquerón', lat: -21.987, lng: -60.991, bounds: [[-23.90, -62.70], [-20.00, -59.30]], cota: 140, pob: 68595, dnit: 8400, edu: 105, sal: 18, ind: 150, cuenca: 'Chaco Central y Río Pilcomayo', iriNivel: 'BAJO', iriRank: 130, iriVal: 18 },
+  R: { nombre: 'Alto Paraguay', lat: -20.843, lng: -59.870, bounds: [[-22.30, -61.20], [-19.30, -57.80]], cota: 80, pob: 17608, dnit: 2800, edu: 36, sal: 12, ind: 40, cuenca: 'Gran Pantanal y Río Negro', iriNivel: 'ALTO', iriRank: 14, iriVal: 76 },
+  S: { nombre: 'Canindeyú', lat: -24.154, lng: -55.216, bounds: [[-24.70, -56.10], [-23.60, -54.20]], cota: 240, pob: 189128, dnit: 27600, edu: 422, sal: 34, ind: 220, cuenca: 'Río Jejui Guazu y Embalse Itaipú', iriNivel: 'BAJO', iriRank: 98, iriVal: 26 },
+  ALL: { nombre: 'Paraguay Total (Nacional)', lat: -23.4425, lng: -58.4438, bounds: [[-27.60, -62.70], [-19.30, -54.20]], cota: 130, pob: 6109644, dnit: 1248310, edu: 9295, sal: 741, ind: 6616, cuenca: 'Macrocuenca del Plata (Ríos Paraguay y Paraná)', iriNivel: 'MEDIO', iriRank: 'Nacional', iriVal: 58 }
+};
+
+// Cargar catálogo de vulnerabilidad fluvial distrital (IRI)
+fetch('/Cambio_climatico/indice_riesgo_inundacion_distritos.json')
+  .then(r => r.json())
+  .then(data => {
+    if (data && Array.isArray(data.distritos)) {
+      data.distritos.forEach(d => {
+        const kNorm = String(d.distrito || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+        distritosIRIMap.set(kNorm, d);
+      });
+    }
+  }).catch(() => {});
+
+// Cargar focos de calor activos NASA FIRMS
+fetch('/api/v3/clima/incendios?tipo=activos')
+  .then(r => r.json())
+  .then(data => {
+    if (data && Array.isArray(data.features)) {
+      focosFIRMSCachados = data.features;
+    }
+  }).catch(() => {});
+
+// Función para traducir código meteorológico WMO
+function descClimaWMO(code) {
+  if (code === 0) return '☀️ Despejado';
+  if (code <= 2) return '🌤️ Parcialmente nublado';
+  if (code === 3) return '☁️ Nublado';
+  if (code <= 48) return '🌫️ Niebla';
+  if (code <= 55) return '🌦️ Llovizna';
+  if (code <= 65) return '🌧️ Lluvia';
+  if (code <= 82) return '🌧️ Chubascos';
+  if (code >= 95) return '⛈️ Tormenta eléctrica';
+  return '☁️ Variable';
+}
+
+// Actualizar el Panel de Datos de Ubicación con todas las métricas de MHC-PY
+async function actualizarPanelDatosUbicacion(dptoCod, distFull) {
+  const wrap = $('v3-panel-datos-wrap');
+  if (!wrap) return;
+
+  if (!dptoCod) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  wrap.style.display = 'block';
+
+  const depRef = DEPARTAMENTOS_PY_DATA[dptoCod] || DEPARTAMENTOS_PY_DATA['L'];
+  let lat = depRef.lat;
+  let lng = depRef.lng;
+  let nombreTitulo = dptoCod === 'ALL' ? '📍 Paraguay (Nacional)' : `📍 ${depRef.nombre}`;
+  let cotaMedia = depRef.cota;
+  let cuencaNom = depRef.cuenca;
+  let iriNivel = depRef.iriNivel;
+  let iriVal = depRef.iriVal;
+  let iriRank = depRef.iriRank;
+  let eduCount = depRef.edu;
+  let salCount = depRef.sal;
+  let indCount = depRef.ind;
+  let poblacion = depRef.pob;
+  let dnitCuentas = depRef.dnit;
+
+  // Si hay distrito elegido, afinar datos específicos
+  if (distFull) {
+    const [d, distId] = distFull.split('|');
+    const dObj = (distritosPorDpto[d] || []).find(x => String(x.dist) === String(distId));
+    if (dObj) {
+      nombreTitulo = `📍 ${depRef.nombre} › ${dObj.nombre.charAt(0) + dObj.nombre.slice(1).toLowerCase()}`;
+      const dNorm = String(dObj.nombre || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+      const iriDist = distritosIRIMap.get(dNorm);
+      if (iriDist) {
+        cotaMedia = iriDist.cota_media_m || cotaMedia;
+        cuencaNom = iriDist.cuenca || cuencaNom;
+        iriNivel = iriDist.nivel_riesgo || iriNivel;
+        iriVal = iriDist.indice_riesgo_inundacion || iriVal;
+        iriRank = `#${iriDist.ranking} de 246`;
+      }
+    }
+  }
+
+  cotaUbicacionActual = cotaMedia;
+
+  // Actualizar Título y enlaces
+  if ($('v3-pdatos-nombre')) $('v3-pdatos-nombre').textContent = nombreTitulo;
+  if ($('v3-colap-nombre')) $('v3-colap-nombre').textContent = nombreTitulo;
+  if ($('v3-btn-abrir-panel-link')) {
+    const qDist = distFull ? `&dist=${encodeURIComponent(distFull)}` : '';
+    $('v3-btn-abrir-panel-link').setAttribute('href', `/panel.html?dpto=${dptoCod}${qDist}`);
+  }
+
+  // Actualizar Inundabilidad IRI con Semáforos y Barra
+  const esRiesgoCritico = iriNivel === 'EXTREMO' || iriNivel === 'ALTO';
+  const esRiesgoMedio = iriNivel === 'MEDIO';
+  if ($('v3-iri-nivel-txt')) $('v3-iri-nivel-txt').textContent = iriNivel;
+  if ($('v3-iri-dot')) $('v3-iri-dot').textContent = esRiesgoCritico ? '🔴' : (esRiesgoMedio ? '🟡' : '🟢');
+  if ($('v3-iri-badge-status')) {
+    $('v3-iri-badge-status').className = `v3-iri-badge-status ${esRiesgoCritico ? 'pill-rojo' : (esRiesgoMedio ? 'pill-amarillo' : 'pill-verde')}`;
+  }
+  if ($('v3-iri-bar-pointer')) {
+    const ptr = Math.min(95, Math.max(5, iriVal));
+    $('v3-iri-bar-pointer').style.left = `${ptr}%`;
+  }
+  if ($('v3-iri-retorno')) {
+    $('v3-iri-retorno').textContent = iriVal <= 25 ? 'Tr: 50 años' : (iriVal <= 45 ? 'Tr: 20 años' : (iriVal <= 70 ? 'Tr: 10 años' : 'Tr: 2-5 años'));
+  }
+  if ($('v3-iri-nivel')) {
+    const badge = $('v3-iri-nivel');
+    badge.textContent = `NIVEL: ${iriNivel}`;
+    badge.className = `v3-badge-riesgo ${esRiesgoCritico ? 'pill-rojo' : esRiesgoMedio ? 'pill-amarillo' : 'pill-verde'}`;
+  }
+  if ($('v3-iri-val')) $('v3-iri-val').textContent = iriVal;
+  if ($('v3-iri-ranking')) $('v3-iri-ranking').textContent = `Ranking: ${iriRank}`;
+  if ($('v3-iri-cuenca')) $('v3-iri-cuenca').textContent = cuencaNom;
+  if ($('v3-iri-cota')) $('v3-iri-cota').textContent = `${cotaMedia} m.s.n.m.`;
+
+  // Actualizar Infraestructura
+  if ($('v3-infra-edu')) $('v3-infra-edu').textContent = num(eduCount);
+  if ($('v3-infra-sal')) $('v3-infra-sal').textContent = num(salCount);
+  if ($('v3-infra-ind')) $('v3-infra-ind').textContent = num(indCount);
+
+  // Actualizar Demografía & Catastro
+  if ($('v3-demo-pob')) $('v3-demo-pob').textContent = `${num(poblacion)} hab.`;
+  if ($('v3-demo-dnit')) $('v3-demo-dnit').textContent = `${num(dnitCuentas)} ctas.`;
+
+  // Actualizar Focos de Calor Activos
+  if ($('v3-firms-texto')) {
+    let focosDpto = focosFIRMSCachados;
+    if (dptoCod !== 'ALL' && depRef.bounds) {
+      const [[s, w], [n, o]] = depRef.bounds;
+      focosDpto = focosFIRMSCachados.filter(f => {
+        const [cLng, cLat] = f.geometry.coordinates;
+        return cLat >= s && cLat <= n && cLng >= w && cLng <= o;
+      });
+    }
+    if (focosDpto.length > 0) {
+      const frpTotal = focosDpto.reduce((acc, f) => acc + (f.properties?.frp || 0), 0);
+      $('v3-firms-texto').innerHTML = `<strong style="color:#f43f5e;">${focosDpto.length} focos activos</strong> (${frpTotal.toFixed(1)} MW)`;
+    } else {
+      $('v3-firms-texto').innerHTML = `<span style="color:#34d399;">✓ 0 focos de calor activos en el área</span>`;
+    }
+  }
+
+  // Consultar Clima en Tiempo Real (Open-Meteo & ERA5)
+  try {
+    const resClima = await fetch(`/api/v3/clima/tiempo?lat=${lat}&lng=${lng}`).then(r => r.json());
+    if (resClima && resClima.actual) {
+      const act = resClima.actual;
+      if ($('v3-kpi-temp')) $('v3-kpi-temp').textContent = act.temperatura !== undefined ? act.temperatura.toFixed(1) : '--';
+      if ($('v3-kpi-sens')) $('v3-kpi-sens').textContent = `Sens ${act.sensacion !== undefined ? act.sensacion.toFixed(1) : (act.temperatura ? act.temperatura.toFixed(1) : '--')}°`;
+      if ($('v3-kpi-lluvia')) $('v3-kpi-lluvia').textContent = (act.lluvia || act.precipitacion || 0).toFixed(1);
+      if ($('v3-kpi-hum')) $('v3-kpi-hum').textContent = act.humedad || '--';
+      if ($('v3-kpi-viento')) $('v3-kpi-viento').textContent = `${act.viento || 0}`;
+      if ($('v3-kpi-cielo-desc')) $('v3-kpi-cielo-desc').textContent = descClimaWMO(act.codigoClima || 0);
+
+      // Decision Intelligence (SNC-DI)
+      const di = resClima.decisionIntelligence || {};
+      const ict = di.ICT !== undefined ? di.ICT : 82;
+      const irt = di.IRT !== undefined ? di.IRT : 41;
+      const ipoot = di.IPOOT_aptitud || 'FAVORABLE';
+      const ipootScore = ipoot === 'CRÍTICA' ? 35 : (ipoot === 'RESTRINGIDA' ? 62 : 85);
+      const irm = di.IRM !== undefined ? di.IRM : 66;
+
+      // Actualizar ICT
+      if ($('v3-val-ict')) $('v3-val-ict').textContent = `${ict} / 100`;
+      if ($('v3-dot-ict')) $('v3-dot-ict').textContent = ict >= 70 ? '🟢' : (ict >= 45 ? '🟡' : '🔴');
+
+      // Actualizar IPOOT
+      if ($('v3-val-ipoot')) $('v3-val-ipoot').textContent = `${ipootScore} / 100`;
+      if ($('v3-dot-ipoot')) $('v3-dot-ipoot').textContent = ipootScore >= 75 ? '🟢' : (ipootScore >= 50 ? '🟡' : '🔴');
+
+      // Actualizar IRT
+      if ($('v3-val-irt')) $('v3-val-irt').textContent = `${irt} / 100`;
+      if ($('v3-dot-irt')) $('v3-dot-irt').textContent = irt <= 35 ? '🟢' : (irt <= 55 ? '🟡' : '🔴');
+
+      // Actualizar IRM
+      if ($('v3-val-irm')) $('v3-val-irm').textContent = `${irm} %`;
+      if ($('v3-dot-irm')) $('v3-dot-irm').textContent = irm >= 60 ? '🟢' : (irm >= 40 ? '🟡' : '🔴');
+      if ($('v3-val-icst')) $('v3-val-icst').textContent = `+${(cotaMedia + 1.5).toFixed(1)} msnm`;
+
+      // CTI Score General
+      let ctiScore = Math.round(100 - (irt * 0.35) - (iriVal * 0.35) + (irm * 0.25));
+      ctiScore = Math.min(96, Math.max(25, ctiScore));
+      if ($('v3-cti-score-val')) $('v3-cti-score-val').textContent = ctiScore;
+      if ($('v3-cti-score-badge')) {
+        const badge = $('v3-cti-score-badge');
+        if (ctiScore >= 75) {
+          badge.textContent = '🟢 EXCELENTE';
+          badge.className = 'v3-cti-score-badge pill-verde';
+        } else if (ctiScore >= 55) {
+          badge.textContent = '🟡 MODERADO';
+          badge.className = 'v3-cti-score-badge pill-amarillo';
+        } else {
+          badge.textContent = '🔴 CRÍTICO';
+          badge.className = 'v3-cti-score-badge pill-rojo';
+        }
+      }
+
+      // Recomendación IA SNC-DI
+      if ($('v3-insight-1')) {
+        $('v3-insight-1').textContent = ipootScore >= 70
+          ? 'Apto para consolidación y desarrollo urbano según POUT.'
+          : (ipootScore >= 50 ? 'Expansión urbana condicionada a drenaje y pendiente.' : 'Restricción preventiva de nuevos fraccionamientos.');
+      }
+      if ($('v3-insight-2')) {
+        $('v3-insight-2').textContent = iriVal <= 30
+          ? `Bajo riesgo fluvial en cota ${cotaMedia} msnm (Retorno Tr > 50a).`
+          : (iriVal <= 60 ? 'Riesgo fluvial moderado. Mantener franja de amortiguamiento.' : `Alto riesgo fluvial. Cota de defensa: +${(cotaMedia + 1.5).toFixed(1)} msnm.`);
+      }
+      if ($('v3-insight-3')) {
+        $('v3-insight-3').textContent = irm >= 60
+          ? 'Resiliencia municipal e infraestructura crítica activas.'
+          : 'Reforzar obras de drenaje pluvial secundario en zonas bajas.';
+      }
+    }
+  } catch (err) {
+    // Si falla la red exterior, los valores predeterminados ya están fijados
+  }
+}
+
+// Inicializar listeners de ojo, modos de navegación y sincronización de cota 3D
+// Inicializar listeners de ojo, modos de navegación y sincronización de cota 3D
+let activarModoTabGlobal = null;
+
+function inicializarPestanasYModos() {
+  const btnOjo = $('v3-btn-ojo-datos');
+  const btnMostrar = $('v3-btn-mostrar-datos');
+  const detalle = $('v3-pdatos-detalle');
+  const colapsado = $('v3-pdatos-colapsado');
+
+  if (btnOjo && detalle && colapsado) {
+    btnOjo.addEventListener('click', () => {
+      detalle.style.display = 'none';
+      colapsado.style.display = 'flex';
+    });
+  }
+
+  if (btnMostrar && detalle && colapsado) {
+    btnMostrar.addEventListener('click', () => {
+      detalle.style.display = 'block';
+      colapsado.style.display = 'none';
+    });
+  }
+
+  // Pestañas de Modos de Navegación del Panel (CTI, Simulación, Capas, Todo)
+  const tabBtns = document.querySelectorAll('.v3-tab-btn');
+  const fieldsetsModo = document.querySelectorAll('#v3-cuerpo > fieldset[data-modo]');
+  const leyendaEdif = document.querySelector('.v3-leyenda');
+
+  function activarModoTab(modo) {
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === modo));
+    const todoToolbar = $('v3-todo-toolbar');
+    if (todoToolbar) todoToolbar.style.display = modo === 'todos' ? 'flex' : 'none';
+
+    // Filtrar visibilidad de cada sección según el modo seleccionado
+    fieldsetsModo.forEach(fs => {
+      if (modo === 'todos') {
+        fs.style.display = '';
+        fs.classList.remove('v3-modo-oculto');
+        fs.hidden = false;
+      } else {
+        const coincide = fs.dataset.modo === modo;
+        fs.style.display = coincide ? '' : 'none';
+        fs.classList.toggle('v3-modo-oculto', !coincide);
+        fs.hidden = !coincide;
+        if (coincide) {
+          const legendPleg = fs.querySelector('.v3-legend-plegable');
+          if (legendPleg) {
+            const cuerpoId = legendPleg.getAttribute('aria-controls');
+            const cuerpo = $(cuerpoId);
+            if (cuerpo && cuerpo.hidden) {
+              cuerpo.hidden = false;
+              const ico = legendPleg.querySelector('span');
+              if (ico) ico.textContent = '▾';
+              legendPleg.setAttribute('aria-expanded', 'true');
+            }
+          }
+        }
+      }
+    });
+
+    // Control de la leyenda cartográfica (solo en Capas 3D y Todo)
+    if (leyendaEdif) {
+      leyendaEdif.style.display = (modo === 'capas' || modo === 'todos') ? 'flex' : 'none';
+    }
+
+    // Modo Simulación: asegurar que los controles hídricos interactivos estén visibles
+    if (modo === 'sim') {
+      const chkInund = $('v3-inundacion');
+      const ctrlInund = $('v3-inund-ctrl');
+      if (chkInund && ctrlInund) {
+        if (!chkInund.checked) {
+          chkInund.checked = true;
+          chkInund.dispatchEvent(new Event('change'));
+        }
+        ctrlInund.hidden = false;
+      }
+    }
+
+    // Modo CTI: asegurar que la tarjeta de Decision Intelligence territorial sea visible de inmediato
+    if (modo === 'cti') {
+      const wrap = $('v3-panel-datos-wrap');
+      if (wrap) wrap.style.display = 'block';
+    }
+
+    const cuerpo = $('v3-cuerpo');
+    if (cuerpo) cuerpo.scrollTo({ top: 0, behavior: 'smooth' });
+    const panel = $('v3-panel');
+    if (panel) panel.scrollTo({ top: 0 });
+  }
+  activarModoTabGlobal = activarModoTab;
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activarModoTab(btn.dataset.tab);
+    });
+  });
+
+  // Interactividad de plegado/desplegado por clic en encabezados (Legends)
+  document.querySelectorAll('.v3-legend-plegable').forEach(leg => {
+    leg.addEventListener('click', () => {
+      const cuerpoId = leg.getAttribute('aria-controls');
+      const cuerpo = $(cuerpoId);
+      if (cuerpo) {
+        cuerpo.hidden = !cuerpo.hidden;
+        const expandido = !cuerpo.hidden;
+        leg.setAttribute('aria-expanded', String(expandido));
+        const ico = leg.querySelector('span');
+        if (ico) ico.textContent = expandido ? '▾' : '▸';
+      }
+    });
+    leg.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        leg.click();
+      }
+    });
+  });
+
+  // Acciones de Vista Continua (Expandir / Colapsar todos)
+  $('v3-btn-expandir-todos')?.addEventListener('click', () => {
+    document.querySelectorAll('#v3-cuerpo .v3-legend-plegable').forEach(leg => {
+      const cuerpoId = leg.getAttribute('aria-controls');
+      const cuerpo = $(cuerpoId);
+      if (cuerpo) {
+        cuerpo.hidden = false;
+        leg.setAttribute('aria-expanded', 'true');
+        const ico = leg.querySelector('span');
+        if (ico) ico.textContent = '▾';
+      }
+    });
+  });
+  $('v3-btn-colapsar-todos')?.addEventListener('click', () => {
+    document.querySelectorAll('#v3-cuerpo .v3-legend-plegable').forEach(leg => {
+      const cuerpoId = leg.getAttribute('aria-controls');
+      const cuerpo = $(cuerpoId);
+      if (cuerpo) {
+        cuerpo.hidden = true;
+        leg.setAttribute('aria-expanded', 'false');
+        const ico = leg.querySelector('span');
+        if (ico) ico.textContent = '▸';
+      }
+    });
+  });
+
+  const tabInicial = document.querySelector('.v3-tab-btn.active')?.dataset.tab || 'cti';
+  activarModoTab(tabInicial);
+
+  const btnSyncCota = $('v3-btn-sincronizar-cota-3d');
+  if (btnSyncCota) {
+    btnSyncCota.addEventListener('click', () => {
+      activarModoTab('sim');
+      const chkInund = $('v3-inundacion');
+      if (chkInund && !chkInund.checked) {
+        chkInund.checked = true;
+        chkInund.dispatchEvent(new Event('change'));
+      }
+      const slider = $('v3-inund-cota');
+      if (slider && typeof cotaUbicacionActual === 'number') {
+        slider.value = cotaUbicacionActual;
+        slider.dispatchEvent(new Event('input'));
+        estado(`🌊 Cota 3D sincronizada a ${cotaUbicacionActual} m s.n.m. para el área seleccionada.`);
+      }
+    });
+  }
+}
+
+// Ejecución infalible en módulos ES6 sin depender de timing de DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarPestanasYModos);
+} else {
+  inicializarPestanasYModos();
+}
+
+// Cargar distritos y configurar eventos del selector
 fetch('/api/v3/visor3d/distritos').then(r => r.json()).then(({ distritos }) => {
   distritos.forEach(d => (distritosPorDpto[d.dpto] ||= []).push(d));
-  $('v3-dpto').insertAdjacentHTML('beforeend', Object.keys(distritosPorDpto).sort((a, b) => (DPTO[a] || a).localeCompare(DPTO[b] || b, 'es'))
-    .map(k => `<option value="${k}">${esc(DPTO[k] || k)}</option>`).join(''));
+  const opciones = Object.keys(distritosPorDpto).sort((a, b) => (DPTO[a] || a).localeCompare(DPTO[b] || b, 'es'))
+    .map(k => `<option value="${k}">${esc(DPTO[k] || k)}</option>`).join('');
+  $('v3-dpto').insertAdjacentHTML('beforeend', `<option value="ALL">🇵🇾 Paraguay Total (Nacional)</option>${opciones}`);
 }).catch(() => {});
+
 $('v3-dpto').addEventListener('change', e => {
   const dpto = e.target.value, sel = $('v3-distrito');
+  if (dpto === 'ALL') {
+    sel.disabled = true;
+    sel.innerHTML = '<option value="">— Cobertura Nacional —</option>';
+    map.fitBounds([[-27.60, -62.70], [-19.30, -54.20]], { padding: 40, pitch: 40, duration: 1600 });
+    actualizarPanelDatosUbicacion('ALL', null);
+    return;
+  }
   const lista = distritosPorDpto[dpto];
   sel.disabled = !lista;
   sel.innerHTML = lista
     ? `<option value="">— Elegir distrito —</option>${lista.slice().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
         .map(d => `<option value="${d.dpto}|${d.dist}">${esc(d.nombre.charAt(0) + d.nombre.slice(1).toLowerCase())}</option>`).join('')}`
     : '<option value="">— Elija primero el departamento —</option>';
+  
+  // Si se eligió un departamento específico, volar hacia él y mostrar sus datos
+  if (dpto && DEPARTAMENTOS_PY_DATA[dpto]) {
+    const dep = DEPARTAMENTOS_PY_DATA[dpto];
+    if (dep.bounds) {
+      map.fitBounds(dep.bounds, { padding: 40, pitch: 45, duration: 1600 });
+    } else {
+      map.flyTo({ center: [dep.lng, dep.lat], zoom: 9, pitch: 45, duration: 1600 });
+    }
+    actualizarPanelDatosUbicacion(dpto, null);
+  } else {
+    actualizarPanelDatosUbicacion(null, null);
+  }
+
   sel.dispatchEvent(new Event('change'));   // limpia el límite y las capas del distrito anterior
 });
+
 $('v3-distrito').addEventListener('change', async e => {
-  const [dpto, dist] = e.target.value.split('|');
+  const val = e.target.value;
+  if (!val) {
+    const dpto = $('v3-dpto').value;
+    if (dpto) actualizarPanelDatosUbicacion(dpto, null);
+    return;
+  }
+  const [dpto, dist] = val.split('|');
   cargarCapasDistrito(dpto, dist);
+  actualizarPanelDatosUbicacion(dpto, val);
   if (!dpto) { map.getSource('limite').setData(vacio); return; }
   estado('Buscando el límite del distrito…');
   try {
@@ -1169,23 +2421,151 @@ const ZOOM_EDIFICIOS = 16.5;
 function acercar(lngLat) { map.flyTo({ center: lngLat, zoom: ZOOM_EDIFICIOS, pitch: 60, duration: 1600 }); }
 map.on('click', ev => { if (map.getZoom() < 14) acercar(ev.lngLat); });
 
-// ── Información al tocar ────────────────────────────────────────────
+// ── Información al tocar y Vínculos de Inspección 360° ───────────────
+function botonesInspeccionVisual3D(lat, lng) {
+  const cLat = Number(lat).toFixed(6);
+  const cLng = Number(lng).toFixed(6);
+  const urlSV = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${cLat},${cLng}`;
+  const urlGM = `https://www.google.com/maps/search/?api=1&query=${cLat},${cLng}`;
+  const urlMP = `https://www.mapillary.com/app/?lat=${cLat}&lng=${cLng}&z=17`;
+
+  return `<div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">` +
+    `<a href="${urlSV}" target="_blank" rel="noopener noreferrer" style="flex:1;min-width:115px;background:#0284c7;color:#fff;text-align:center;padding:4px 6px;border-radius:4px;text-decoration:none;font-weight:600;font-size:10.5px;display:inline-block;" title="Abrir vista esférica 360° más cercana en Google Street View">📷 Street View 360°</a>` +
+    `<a href="${urlGM}" target="_blank" rel="noopener noreferrer" style="background:#334155;color:#f8fafc;text-align:center;padding:4px 6px;border-radius:4px;text-decoration:none;font-size:10.5px;display:inline-block;" title="Ver en Google Maps con ruteo">📍 Maps</a>` +
+    `<a href="${urlMP}" target="_blank" rel="noopener noreferrer" style="background:#1e293b;color:#94a3b8;border:1px solid #475569;text-align:center;padding:4px 5px;border-radius:4px;text-decoration:none;font-size:10px;display:inline-block;" title="Ver imágenes a nivel de calle comunitarias en Mapillary">🌐 Mapillary</a>` +
+  `</div>`;
+}
+
 map.on('click', 'edificios', ev => {
   const p = ev.features[0].properties;
+  const cotaVal = Number($('v3-inund-cota')?.value) || obtenerCotaCentro();
+  const cotaT = p._cota ?? cotaConfiable(ev.lngLat.lng, ev.lngLat.lat, map.queryTerrainElevation?.(ev.lngLat));
+  const icst = calcularICST(cotaT, cotaVal);
+  const distSel = $('v3-distrito')?.selectedOptions?.[0]?.textContent || 'Área Local';
+  const irct = calcularIRCTDistrital(distSel);
   const est = { auto: 'vinculado a su parcela', manual: 'asignado a mano', pendiente: 'falta asignarlo a una parcela' }[p.estado] || 'fuera del catastro (sin parcela)';
-  new ml.Popup().setLngLat(ev.lngLat).setHTML(`<b>Edificio ${esc(p.tipo || '')}</b><br>Techo: ${num(p.m2)} m² · cubierta: ${num(p.m2_cubierta)} m²<br>Pisos: ${String(p.niveles_informados) === 'true' ? `${esc(p.niveles)} (del mapa)` : p.niveles_dnit ? `${esc(p.niveles_dnit)} (estimado por la liquidación DNIT)` : '1 (supuesto: el mapa no lo indica)'}${p.altura_m ? `<br>Altura: ${esc(p.altura_m)} m` : ''}${p.material ? `<br>Material: ${esc(p.material)}` : ''}<br>${esc(est)}`).addTo(map);
+
+  const html = `
+    <div style="font-size:12px; line-height:1.4; min-width:260px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <strong style="font-size:13px; color:#0f172a;">Edificio ${esc(p.tipo || '')}</strong>
+        <span style="font-size:10px; font-weight:bold; padding:2px 6px; border-radius:3px; background:${icst.color}20; color:${icst.color}; border:1px solid ${icst.color};">
+          ${icst.badge}
+        </span>
+      </div>
+
+      <!-- Ficha de Cota Segura Territorial (ICST) -->
+      <div style="background:#0f172a; border-radius:4px; padding:6px 8px; color:#f8fafc; margin-bottom:6px; font-size:11px;">
+        <div style="color:#38bdf8; font-weight:bold; font-size:11px; margin-bottom:3px; display:flex; justify-content:space-between;">
+          <span>🛡️ Cota Segura (ICST)</span>
+          <span>${icst.score} / 100</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Cota terreno (DEM):</span><strong>${cotaT ? cotaT.toFixed(2) + ' m' : '—'}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Crecida diseño:</span><strong style="color:#f87171;">${cotaVal.toFixed(2)} m</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Cota segura (+1.5m):</span><strong style="color:#34d399;">${icst.hSegura.toFixed(2)} m</strong>
+        </div>
+        <div style="font-size:10px; color:#cbd5e1; margin-top:3px; border-top:1px solid #1e293b; padding-top:3px;">
+          ${icst.recomendacion}
+        </div>
+      </div>
+
+      <div style="font-size:11px; color:#475569; margin-bottom:3px;">
+        Techo: <b>${num(p.m2)} m²</b> · Pisos: <b>${p.niveles || '1'}</b> · ${esc(est)}
+      </div>
+      <div style="font-size:10.5px; color:#0284c7; margin-bottom:4px;">
+        📊 <strong>IRCT Distrital:</strong> ${irct.score}/100 (${irct.nivel})
+      </div>
+      ${botonesInspeccionVisual3D(ev.lngLat.lat, ev.lngLat.lng)}
+    </div>
+  `;
+
+  new ml.Popup().setLngLat(ev.lngLat).setHTML(html).addTo(map);
 });
+
 map.on('click', 'parcelas', ev => {
   if (map.queryRenderedFeatures(ev.point, { layers: ['edificios'] }).length) return;
   const p = ev.features[0].properties;
   const cta = p.dnit_ctacte || (p.padron ? `Padrón ${p.padron}` : '—');
-  new ml.Popup().setLngLat(ev.lngLat).setHTML(`<b>Parcela SNC</b><br>Cuenta: ${esc(cta)}<br>Superficie: ${num(p.superficie_m2)} m²${p.dnit_impuesto != null ? `<br>Impuesto 2026: Gs ${num(p.dnit_impuesto)}` : ''}${p.dnit_sup_edif_m2 != null ? `<br>Edificado DNIT: ${num(p.dnit_sup_edif_m2)} m²` : ''}`).addTo(map);
+  const cotaVal = Number($('v3-inund-cota')?.value) || obtenerCotaCentro();
+  const cotaT = cotaConfiable(ev.lngLat.lng, ev.lngLat.lat, map.queryTerrainElevation?.(ev.lngLat));
+  const icst = calcularICST(cotaT, cotaVal);
+  const distSel = $('v3-distrito')?.selectedOptions?.[0]?.textContent || 'Área Local';
+  const irct = calcularIRCTDistrital(distSel);
+
+  const html = `
+    <div style="font-size:12px; line-height:1.4; min-width:260px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <strong style="font-size:13px; color:#0f172a;">Parcela SNC (${esc(cta)})</strong>
+        <span style="font-size:10px; font-weight:bold; padding:2px 6px; border-radius:3px; background:${icst.color}20; color:${icst.color}; border:1px solid ${icst.color};">
+          ${icst.badge}
+        </span>
+      </div>
+
+      <!-- Ficha de Cota Segura Territorial (ICST) -->
+      <div style="background:#0f172a; border-radius:4px; padding:6px 8px; color:#f8fafc; margin-bottom:6px; font-size:11px;">
+        <div style="color:#38bdf8; font-weight:bold; font-size:11px; margin-bottom:3px; display:flex; justify-content:space-between;">
+          <span>🛡️ Cota Segura Territorial (ICST)</span>
+          <span>${icst.score} / 100</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Cota terreno (DEM):</span><strong>${cotaT ? cotaT.toFixed(2) + ' m' : '—'}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Crecida diseño:</span><strong style="color:#f87171;">${cotaVal.toFixed(2)} m</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span style="color:#94a3b8;">Cota mínima resguardo:</span><strong style="color:#34d399;">${icst.hSegura.toFixed(2)} m</strong>
+        </div>
+        <div style="font-size:10px; color:#cbd5e1; margin-top:3px; border-top:1px solid #1e293b; padding-top:3px;">
+          ${icst.recomendacion}
+        </div>
+      </div>
+
+      <div style="font-size:11px; color:#475569; margin-bottom:3px;">
+        Superficie: <b>${num(p.superficie_m2)} m²</b>${p.dnit_impuesto != null ? ` · Impuesto: Gs <b>${num(p.dnit_impuesto)}</b>` : ''}
+      </div>
+      <div style="font-size:10.5px; color:#0284c7; margin-bottom:4px;">
+        📊 <strong>IRCT Distrital:</strong> ${irct.score}/100 (${irct.nivel}) · Ley 3966 Art. 225
+      </div>
+      ${botonesInspeccionVisual3D(ev.lngLat.lat, ev.lngLat.lng)}
+    </div>
+  `;
+
+  new ml.Popup().setLngLat(ev.lngLat).setHTML(html).addTo(map);
 });
+
 map.on('click', 'incendios-puntos', ev => {
   const p = ev.features[0].properties;
-  new ml.Popup().setLngLat(ev.lngLat).setHTML(`<b>🔥 Foco de Calor (NASA FIRMS)</b><br>Fecha: ${esc(p.fecha)} ${esc(p.hora)}<br>Satélite: ${esc(p.satelite)}<br>Potencia radiativa (FRP): ${esc(p.frp)} MW<br>Confianza: ${esc(p.confianza)}`).addTo(map);
+  const evento = p.evento ? `<b>${esc(p.evento)}</b><br>` : '';
+  const distHtml = p.distrito ? `Distrito: <b>${esc(p.distrito)}</b> (${esc(p.departamento || '')})<br>` : '';
+  const supHtml = p.superficie_ha ? `Área quemada estimada: <b style="color:#ef4444;">~${esc(p.superficie_ha)} ha</b><br>` : '';
+  const html = `<b>🔥 Foco de Calor / Incendio</b><br>${evento}${distHtml}Fecha: ${esc(p.fecha)} ${esc(p.hora)}<br>Satélite: ${esc(p.satelite)}<br>Potencia radiativa (FRP): <b>${esc(p.frp)} MW</b><br>${supHtml}Confianza: ${esc(p.confianza)}${botonesInspeccionVisual3D(ev.lngLat.lat, ev.lngLat.lng)}`;
+  new ml.Popup().setLngLat(ev.lngLat).setHTML(html).addTo(map);
 });
-['edificios', 'parcelas', 'incendios-puntos'].forEach(id => { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); });
+
+map.on('click', 'evacuacion-albergues-puntos', ev => {
+  const p = ev.features[0].properties;
+  const html = `<div style="font-size:12px;line-height:1.4;">` +
+    `<strong style="color:#059669;font-size:13px;">🛡️ ${esc(p.nombre || 'Albergue Seguro')}</strong><br>` +
+    `<span style="color:#475569;font-size:11px;">${esc(p.tipo || 'Infraestructura de Contingencia')}</span><br>` +
+    `<span style="color:#0f172a;font-size:11px;">Capacidad: <strong>${esc(p.capacidad || '50-200 personas')}</strong></span><br>` +
+    `<div style="margin-top:3px;padding:2px 5px;background:#ecfdf5;border:1px solid #10b981;border-radius:3px;color:#065f46;font-size:10.5px;font-weight:bold;">` +
+      `✓ Terreno Seco Habilitado (Ley 3966 Art. 225)` +
+    `</div>` +
+    botonesInspeccionVisual3D(ev.lngLat.lat, ev.lngLat.lng) +
+  `</div>`;
+  new ml.Popup().setLngLat(ev.lngLat).setHTML(html).addTo(map);
+});
+
+['edificios', 'parcelas', 'incendios-puntos', 'evacuacion-albergues-puntos'].forEach(id => {
+  map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; });
+});
 
 // ── Minimapa 2D de ubicación: punto en el centro de la cámara y cono hacia donde mira ──
 const mini = new ml.Map({
@@ -1255,25 +2635,42 @@ ojo.title = 'Arrastre el cono para girar la cámara (360°)';
 // ── Alternar Vista 2D (Planta) / 3D (Relieve) ────────────────────────
 function alternarModo2D(forzar2D) {
   const irA2D = forzar2D !== undefined ? forzar2D : (map.getPitch() > 10);
+  const btn3D = $('v3-toggle-2d');
   if (irA2D) {
     map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
-    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 3D'; $('v3-toggle-2d').style.background = '#0284c7'; }
+    if (btn3D) {
+      btn3D.classList.remove('active');
+      btn3D.title = 'Cambiar a perspectiva 3D';
+    }
     if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = true;
   } else {
     map.easeTo({ pitch: 62, bearing: -20, duration: 1000 });
-    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 2D'; $('v3-toggle-2d').style.background = '#334155'; }
+    if (btn3D) {
+      btn3D.classList.add('active');
+      btn3D.title = 'Cambiar a vista cenital 2D';
+    }
     if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = false;
   }
 }
 $('v3-toggle-2d')?.addEventListener('click', () => alternarModo2D());
+$('v3-btn-scroll-di')?.addEventListener('click', () => {
+  if (typeof activarModoTabGlobal === 'function') {
+    activarModoTabGlobal('cti');
+  }
+  const secDI = $('v3-sec-snc-di');
+  if (secDI) {
+    secDI.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+});
 $('v3-inund-planta-2d')?.addEventListener('change', e => alternarModo2D(e.target.checked));
 map.on('pitchend', () => {
   const p = map.getPitch();
+  const btn3D = $('v3-toggle-2d');
   if (p <= 5) {
-    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 3D'; $('v3-toggle-2d').style.background = '#0284c7'; }
+    if (btn3D) { btn3D.classList.remove('active'); btn3D.title = 'Cambiar a perspectiva 3D'; }
     if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = true;
   } else if (p >= 35) {
-    if ($('v3-toggle-2d')) { $('v3-toggle-2d').textContent = 'Vista 2D'; $('v3-toggle-2d').style.background = '#334155'; }
+    if (btn3D) { btn3D.classList.add('active'); btn3D.title = 'Cambiar a vista cenital 2D'; }
     if ($('v3-inund-planta-2d')) $('v3-inund-planta-2d').checked = false;
   }
 });

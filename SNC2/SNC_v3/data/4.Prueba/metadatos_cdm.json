@@ -1,0 +1,36 @@
+{
+  "resolucion": "551/2023",
+  "emision": "2023-12-15",
+  "proyecto": "SNC v3",
+  "fecha_creacion": "2026-10-30",
+  "version": "1.0.0",
+  "estructura": {
+    "resolucion": "551/2023",
+    "tipo": "CDM Urbano",
+    "planilla": "CDM_URBANO.xlsx",
+    "campos": [
+      "id_cdm",
+      "distrito",
+      "departamento",
+      "superficie_m2",
+      "tipo_terreno",
+      "numero_cuenta",
+      "tipo_inmueble",
+      "area_construccion",
+      "area_rebaja",
+      "area_total",
+      "materiales",
+      "coordenadas_segnaladas",
+      "poligonos",
+      "zonificacion",
+      "valor_impuesto",
+      "impuesto_anual",
+      "fecha_liquidacion"
+    ]
+  },
+  "metadatos": {
+    "fuente_datos": "DNIT + Catastro",
+    "script_generacion": "scripts/generar_resolucion_551.mjs",
+    "fecha_generacion": "2026-10-30"
+  }
+}

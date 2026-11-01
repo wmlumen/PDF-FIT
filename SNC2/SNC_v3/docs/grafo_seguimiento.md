@@ -18,11 +18,11 @@
 | # | Tarea | Estado | Bloqueante | Entregable | Fecha |
 |---|-------|--------|------------|------------|-------|
 | W1 | Conectar API DNIT a datos dinámicos (analisis-datos.js) | 🟡 En progreso | — | `analisis-datos.js` consulta API | 2026-10-28 |
-| W2 | Expander FODA con indicadores de riesgo (ambiental, jurídico, urbano, fiscal) | 🔴 Bloqueado: falta fuente de datos | — | 4 paneles + N indicadores | 2026-10-28 |
+| W2 | Expander FODA con indicadores de riesgo (ambiental, jurídico, urbano, fiscal) | ✅ Completado | — | 4 paneles + N indicadores (FODA Climático 246 distritos) | 2026-11-01 |
 | W3 | Agregar sección "Recomendación Inteligente" (auto dictamen) | 🔴 Bloqueado: requiere motor DI | W2 | Sección en análisis territorial | 2026-10-28 |
 | W4 | Conectar mapa Leaflet a datos reales | 🟢 Pendiente | N/A | Mapa con datos de DNIT | 2026-10-28 |
 | W5 | Migrar a PostGIS / GeoServer (SNC v4) | 🔴 Bloqueado: arquitectura mayor | N/A | Nuevo stack | 2026-10-28 |
-| W6 | Integrar capas ambientales (INFONA, MADES, Humedales) | 🔴 Bloqueado: fuente externa | — | Cervantes / Humedales | 2026-10-30 |
+| W6 | Integrar capas ambientales (INFONA, MADES, Humedales) | ✅ Completado | — | Cobertura forestal INFONA (2000-2015) + Red hídrica nacional | 2026-11-01 |
 | W7 | Integrar capa notarial (DGRP, Títulos, Hipotecas, Embargos) | 🔴 Bloqueado: fuente externa | — | DGRP / Títulos | 2026-10-30 |
 | W8 | Integrar capa municipal (POUT, Plan Regulador, COS, CUS, Zonificación) | 🔴 Bloqueado: fuente externa | — | POUT / COS / CUS | 2026-10-30 |
 | W9 | Generar PDF auto-dictamen (SNC 551) | ✅ Completado | — | PDF por expediente | 2026-10-28 |
@@ -35,7 +35,7 @@
 | W16 | Consolidación territorial DB y Parquet (departamentos, distritos, cascos, POUT, barrios, manzanas) con benchmark | ✅ Completado | — | `catastro_territorio.sqlite`, `data/parquet/` | 2026-10-29 |
 | W17 | Login, Registro y Alta de Usuario/Cliente con selector de Perfil de Uso previsto (Ley 551/2023) | ✅ Completado | — | `index.html`, `register.html`, `js/authModal.js` | 2026-10-29 |
 | W18 | Fiscalización de Patentes Comerciales (5 estados: vigente, clandestina, mora, inhabilitada, no declarada) e inspectores | ✅ Completado | — | `municipalPatentesServicio.js`, `patentes_comerciales.sqlite`, `js/patentesMunicipalUI.js` | 2026-10-29 |
-| W19 | Portal Ciudadano: Situación tributaria integral (DNIT + Municipal), Semáforo, Vinculación Cta. Cte. y Notificaciones | ✅ Completado | — | `ciudadanoNotificacionesServicio.js`, `ciudadano_notificaciones.sqlite`, `js/ciudadanoNotifUI.js` | 2026-10-29 |
+| W20 | Simulación hidrológica por cotas en visor-3d.html (semilla = agua visible + expansión por DEM + buffer solo visual) | 🟡 En progreso | W4 | `visor-3d.js`, `visor-3d.html` | 2026-10-31 |
 
 ---
 

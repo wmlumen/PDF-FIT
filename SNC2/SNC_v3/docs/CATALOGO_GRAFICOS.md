@@ -23,6 +23,7 @@ Reglas generales (ver también la regla de turnos en `AGENTS.md`):
 | Densidad 2D | https://r-graph-gallery.com/2d-density-chart.html | Relación entre superficie del lote y valor del m² (o valor fiscal y edificación) con miles de cuentas | Pendiente: requiere una muestra de cuentas exportada por el generador y un plugin de densidad (rejilla hexagonal) |
 | Torta, dona, polar | — | Composición (participación de departamentos en el impuesto) | Hecho (máximo 8 porciones + "Otros") |
 | Línea, área, puntos | — | Series y evolución 2024–2026 | Hecho |
+| Ranking de Riesgo de Inundación (Lollipop / Barras) | https://r-graph-gallery.com/301-custom-lollipop-chart.html#baseline | Índice de Riesgo de Inundación (IRI 0–100) en 266 distritos (CC-05/06): ordenados por vulnerabilidad combinando cota DEM, hidrografía y catastro | Hecho (`Cambio_climatico/indice-riesgo-inundacion.mjs`) |
 
 ## Qué muestra la vista ampliada
 

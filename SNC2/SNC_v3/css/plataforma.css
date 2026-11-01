@@ -33,6 +33,7 @@ main { padding: 16px max(16px, 3vw) 48px; max-width: 1400px; margin: 0 auto; }
 .pf-mod select { background: #0b1220; color: var(--pf-txt); border: 1px solid var(--pf-borde); border-radius: 6px; padding: 3px 6px; }
 .pf-msg { min-height: 20px; color: var(--pf-acento); font-size: 13px; margin: 6px 0; }
 .pf-vacio { color: var(--pf-tenue); font-style: italic; }
+.pf-ayuda { color: var(--pf-tenue); font-size: 12px; margin: -4px 0 8px; }
 /* Gestión municipal */
 .gm-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin-bottom: 8px; }
 .gm-res { background: #0b1220; border: 1px solid var(--pf-borde); border-left: 3px solid var(--pf-borde); border-radius: 8px; padding: 6px 8px; cursor: pointer; text-align: left; color: var(--pf-txt); font: inherit; }

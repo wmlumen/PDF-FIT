@@ -386,6 +386,10 @@
       { nombre: "Exportar Topografía", icon: "fa-file-export", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Exportar DXF, SHP, GeoJSON, GeoTIFF (UTM 21S).", funciones: ["v3-exportar", "exportDXF", "exportSHP", "exportGeoTIFF"] },
       { nombre: "Inundación & Riesgo Hídrico", icon: "fa-water", app: ["visor"], modulo: "3d", color: "#f472b6", desc: "Simulación de crecidas, cotas históricas DMH/DINAC y desborde.", funciones: ["v3-inundacion", "v3-inund-cota", "generarPoligonoInundacion"] },
 
+      // === CAMBIO CLIMÁTICO & DECISION INTELLIGENCE ===
+      { nombre: "MHC-PY Cambio Climático & IPOOT", icon: "fa-cloud-sun-rain", app: ["visor", "municipal", "admin"], modulo: "clima", color: "#06b6d4", desc: "Monitoreo térmico, focos activos NASA FIRMS, riesgo de inundación distrital y aptitud parcelaria Ley 3966.", funciones: ["panel.html", "/api/v3/clima/tiempo", "/api/v3/clima/incendios"] },
+      { nombre: "Análisis Territorial & DNIT", icon: "fa-chart-pie", app: ["visor", "municipal", "admin"], modulo: "economia", color: "#10b981", desc: "Estudio económico y fiscal de los 266 distritos con liquidación inmobiliaria oficial.", funciones: ["/analisis-territorial/", "AnalisisTerritorial.html"] },
+
       // === DATOS MAESTROS & IMPORTACIÓN ===
       { nombre: "Importar Archivos", icon: "fa-file-import", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "SHP/ZIP, GeoJSON, KML, DXF, Excel.", funciones: ["LocalActions.openProjectFile"] },
       { nombre: "DBF Generator", icon: "fa-database", app: ["visor"], modulo: "datos", color: "#38bdf8", desc: "Generación de archivos DBF.", funciones: ["generarDBF"] },

@@ -100,7 +100,7 @@ async function handleLogin(e) {
     });
     const data = await res.json();
     if (!res.ok || !data.token) throw new Error(data.error || 'Credenciales inválidas');
-    if (data.user?.role !== 'admin' && data.user?.role !== 'superadmin') {
+    if (!['admin', 'superadmin', 'soporte_plataforma'].includes(data.user?.role)) {
       throw new Error('Este usuario no cuenta con privilegios de Administrador o Super Administrador');
     }
     setToken(data.token);
@@ -277,7 +277,7 @@ function renderMembersTable(members) {
       </td>
       <td class="px-4 py-3"><span class="px-2 py-0.5 rounded bg-gray-800 text-amber-300 border border-gray-700 font-mono text-[10px]">${u.plan || 'free'}</span></td>
       <td class="px-4 py-3">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'superadmin' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : u.role === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : u.role === 'admin_municipal' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : u.role === 'admin_notarial' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : u.role === 'professional' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : u.role === 'notary' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-gray-700 text-gray-300'}">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'superadmin' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : u.role === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : u.role === 'admin_municipal' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : u.role === 'admin_notarial' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : u.role === 'professional' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : u.role === 'notary' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : u.role === 'soporte_plataforma' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-gray-700 text-gray-300'}">
           ${u.role}
         </span>
       </td>

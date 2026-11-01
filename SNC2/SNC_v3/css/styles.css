@@ -257,8 +257,14 @@
         .main-view { display: none; flex: 1; flex-direction: column; }
         .main-view.active { display: flex; min-height: 0; }
 
-        /* Fixed container */
-        .fixed {
+        /* Contenedor fijo principal (sidebar + mapa), debajo del header.
+           Alternativa de Tailwind "top-16 left-0 right-0 bottom-0 flex" por si el
+           CDN de Tailwind no carga. Va con .app-shell (no bastaba ".fixed": al
+           tener la misma especificidad que cualquier utilidad de Tailwind, un
+           elemento como el contenedor de toasts ("fixed bottom-4 right-4 z-50")
+           quedaba con top/left de aca mezclados con el bottom/right de Tailwind
+           y se estiraba a toda la pantalla, tapando el panel entero. */
+        .app-shell.fixed {
             position: fixed;
             top: 4rem;  /* below header */
             left: 0;
@@ -2333,6 +2339,25 @@ body.theme-monochrome #at-table tbody tr.at-selected { background: rgba(0,0,0,.0
   pointer-events: none;
   transition: bottom 0.2s ease;
 }
+
+.stack-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 8px;
+  padding: 5px 9px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.stack-toggle-btn:hover { color: #e2e8f0; border-color: rgba(148, 163, 184, 0.6); }
+#map-bottom-left-stack.collapsed > *:not(.stack-toggle-btn) { display: none !important; }
 
 #map-bottom-left-stack > * {
   pointer-events: auto;

@@ -18,14 +18,15 @@ const chip = (t, k = t) => `<span class="pf-chip ${esc(k)}">${esc(t)}</span>`;
 
 function dibujarClientes() {
   $('pf-clientes').innerHTML = clientes.length ? clientes.map(c => `<tr data-id="${esc(c.id)}" class="${c.id === sel ? 'pf-sel' : ''}"><td><b>${esc(c.nombre)}</b><br><small>${esc(c.id)}${c.cod_dpto ? ` · ${esc(c.cod_dpto)}|${esc(c.cod_distrito)}` : ''}</small></td>
-    <td>${esc(c.tipo)}</td><td>${esc(c.plan?.nombre || '—')}</td><td>${chip(c.estado)}</td><td>${chip(c.pago.estado.replace('_', ' '), c.pago.estado)}</td><td>${c.modulos.length}</td></tr>`).join('')
-    : '<tr><td colspan="6" class="pf-vacio">Sin clientes todavía.</td></tr>';
+    <td>${esc(c.tipo)}</td><td>${esc(c.plan?.nombre || '—')}</td><td>${chip(c.estado)}</td><td>${chip(c.pago.estado.replace('_', ' '), c.pago.estado)}</td><td>${c.modulos.length}</td>
+    <td>${c.tipo === 'municipalidad' ? c.dependencias.length : '—'}</td><td>${c.usuarios.length}</td></tr>`).join('')
+    : '<tr><td colspan="8" class="pf-vacio">Sin clientes todavía.</td></tr>';
   $('pf-clientes').querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { sel = tr.dataset.id; dibujarClientes(); ficha(clientes.find(c => c.id === sel)); }));
 }
 
 function ficha(c) {
   const nuevo = !c;
-  c = c || { id: '', tipo: 'municipalidad', nombre: '', estado: 'prueba', plan_id: 'municipal', ajustes: [], usuarios: [], pagos: [], modulos: [], pago: { estado: '—', detalle: '' } };
+  c = c || { id: '', tipo: 'municipalidad', nombre: '', estado: 'prueba', plan_id: 'municipal', ajustes: [], usuarios: [], pagos: [], modulos: [], dependencias: [], pago: { estado: '—', detalle: '' } };
   const op = (vals, v) => vals.map(x => `<option value="${esc(x[0])}" ${String(x[0]) === String(v ?? '') ? 'selected' : ''}>${esc(x[1])}</option>`).join('');
   const plan = planes.find(p => p.id === c.plan_id);
   $('pf-detalle').innerHTML = `<h2>${nuevo ? 'Alta de cliente' : esc(c.nombre)}</h2>
@@ -52,9 +53,16 @@ function ficha(c) {
       const aj = c.ajustes.find(a => a.modulo === k), enPlan = plan?.modulos.includes(k), on = c.modulos.includes(k);
       return `<div class="pf-mod ${on ? 'on' : ''}"><div><b>${esc(n)}</b><br><small>${enPlan ? 'Incluido en el plan' : 'No incluido en el plan'}${on ? ' · habilitado' : ' · no habilitado'}</small></div>
         <select data-mod="${k}" aria-label="Ajuste de ${esc(n)}"><option value="plan" ${!aj ? 'selected' : ''}>Según plan</option><option value="si" ${aj?.habilitado ? 'selected' : ''}>Habilitar</option><option value="no" ${aj && !aj.habilitado ? 'selected' : ''}>Quitar</option></select></div>`; }).join('')}</div>
-    <h2>Usuarios del cliente</h2>
-    <table class="pf-tabla"><tbody>${c.usuarios.map(u => `<tr><td>${esc(u.email)}</td><td>${esc(u.rol)}</td><td><button type="button" class="pf-boton sec" data-quitar="${esc(u.email)}">Quitar</button></td></tr>`).join('') || '<tr><td class="pf-vacio">Sin usuarios.</td></tr>'}</tbody></table>
-    <form class="pf-fila" id="pf-form-usuario"><input name="email" type="email" placeholder="email" required aria-label="Email"><select name="rol" aria-label="Rol">${catalogo.roles.map(r => `<option>${r}</option>`).join('')}</select><button class="pf-boton" type="submit">Agregar</button></form>
+    <h2>Dependencias (${c.dependencias.length})</h2>
+    <p class="pf-ayuda">Divisiones internas del cliente (p. ej. Catastro, Obras, Notificación, Planificación, Intendencia, Junta Municipal de una municipalidad). Un cliente de uso directo (profesional) normalmente no necesita ninguna: sus usuarios van "Sin dependencia".</p>
+    ${c.tipo === 'municipalidad' ? `<div class="pf-fila" id="pf-dep-rapidas">${['Catastro', 'Obras', 'Notificación', 'Planificación', 'Intendencia', 'Junta Municipal'].filter(n => !c.dependencias.some(d => d.nombre === n)).map(n => `<button type="button" class="pf-boton sec" data-dep-rapida="${esc(n)}">+ ${esc(n)}</button>`).join('') || '<span class="pf-ayuda">Ya están creadas las dependencias típicas.</span>'}</div>` : ''}
+    <table class="pf-tabla"><tbody>${c.dependencias.map(d => `<tr><td><b>${esc(d.nombre)}</b><br><small>${esc(d.id)}</small></td><td>${esc(d.notas || '')}</td><td>${c.usuarios.filter(u => u.dependencia_id === d.id).length} miembro(s)</td><td><button type="button" class="pf-boton sec" data-quitar-dep="${esc(d.id)}">Quitar</button></td></tr>`).join('') || '<tr><td colspan="4" class="pf-vacio">Sin dependencias todavía.</td></tr>'}</tbody></table>
+    <form class="pf-fila" id="pf-form-dependencia"><input name="id" placeholder="identificador (catastro)" required aria-label="Identificador"><input name="nombre" placeholder="Nombre (Dirección de Catastro)" required aria-label="Nombre"><input name="notas" placeholder="Notas (opcional)" aria-label="Notas"><button class="pf-boton" type="submit">Agregar dependencia</button></form>
+    <h2>Usuarios del cliente (${c.usuarios.length} en total)</h2>
+    <table class="pf-tabla"><tbody>${c.usuarios.map(u => `<tr><td>${esc(u.email)}</td><td>${esc(u.dependencia_nombre || 'Sin dependencia')}</td><td>${esc(u.rol)}</td><td><button type="button" class="pf-boton sec" data-quitar="${esc(u.email)}">Quitar</button></td></tr>`).join('') || '<tr><td colspan="4" class="pf-vacio">Sin usuarios.</td></tr>'}</tbody></table>
+    <form class="pf-fila" id="pf-form-usuario"><input name="email" type="email" placeholder="email" required aria-label="Email">
+      <select name="dependencia_id" aria-label="Dependencia"><option value="">Sin dependencia (nivel cliente)</option>${c.dependencias.map(d => `<option value="${esc(d.id)}">${esc(d.nombre)}</option>`).join('')}</select>
+      <select name="rol" aria-label="Rol">${catalogo.roles.map(r => `<option>${r}</option>`).join('')}</select><button class="pf-boton" type="submit">Agregar</button></form>
     <h2>Pagos</h2>
     <table class="pf-tabla"><tbody>${c.pagos.map(p => `<tr><td>${esc(p.periodo)}</td><td>${gs(p.monto)}</td><td>${esc(p.comprobante || '')}</td><td>${chip(p.estado)}</td></tr>`).join('') || '<tr><td class="pf-vacio">Sin pagos informados.</td></tr>'}</tbody></table>`}`;
   $('pf-form-cliente').addEventListener('submit', async e => {
@@ -74,6 +82,21 @@ function ficha(c) {
   });
   $('pf-detalle').querySelectorAll('button[data-quitar]').forEach(b => b.addEventListener('click', async () => {
     try { await api(`/api/v3/plataforma/clientes/${encodeURIComponent(c.id)}/usuarios/${encodeURIComponent(b.dataset.quitar)}`, 'DELETE'); msg('Usuario quitado.'); await cargar(); }
+    catch (err) { msg(err.message); }
+  }));
+  $('pf-form-dependencia').addEventListener('submit', async e => {
+    e.preventDefault();
+    try { await api(`/api/v3/plataforma/clientes/${encodeURIComponent(c.id)}/dependencias`, 'POST', Object.fromEntries(new FormData(e.target))); msg('Dependencia agregada.'); await cargar(); }
+    catch (err) { msg(err.message); }
+  });
+  $('pf-dep-rapidas')?.querySelectorAll('button[data-dep-rapida]').forEach(b => b.addEventListener('click', async () => {
+    const nombre = b.dataset.depRapida;
+    const id = nombre.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    try { await api(`/api/v3/plataforma/clientes/${encodeURIComponent(c.id)}/dependencias`, 'POST', { id, nombre }); msg(`Dependencia "${nombre}" agregada.`); await cargar(); }
+    catch (err) { msg(err.message); }
+  }));
+  $('pf-detalle').querySelectorAll('button[data-quitar-dep]').forEach(b => b.addEventListener('click', async () => {
+    try { await api(`/api/v3/plataforma/clientes/${encodeURIComponent(c.id)}/dependencias/${encodeURIComponent(b.dataset.quitarDep)}`, 'DELETE'); msg('Dependencia quitada.'); await cargar(); }
     catch (err) { msg(err.message); }
   }));
 }

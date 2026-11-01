@@ -2915,6 +2915,19 @@ function planDeActualizacion(d) {
     const maxZ = Math.max(...zPorcent);
     if (maxZ >= 70) gA.push(`<b>Superficie crítica.</b> Una sola zona concentra ${pct(maxZ)} del impuesto urbano: dependencia extrema de un área para la recaudación.`);
   }
+
+  // ── Vulnerabilidad Ambiental y Riesgo Climático Territorial (MHC-PY / SNC-DI) ──
+  if (d?.clima) {
+    const c = d.clima;
+    if (c.indice_riesgo_inundacion >= 65) {
+      gA.push(`<b>Vulnerabilidad y Riesgo Hídrico Crítico (IRI: ${c.indice_riesgo_inundacion}/100 · Ranking #${c.ranking} de 246):</b> Distrito emplazado en cuenca ${c.cuenca} con cota media ${c.cota_media_m} m.s.n.m. y ${Math.round(c.exposicion_catastral * 100)}% de parcelas expuestas a riesgo fluvial. Requiere franja de amortiguamiento hídrico obligatoria (Ley 3966 Art. 235) y defensas costeras para proteger la base catastral.`);
+    }
+    if (c.cota_media_m < 85) {
+      gD.push(`<b>Exposición Altimétrica Crítica:</b> Cota media de ${c.cota_media_m} m.s.n.m. frente a crecidas fluviales y eventos pluviométricos extremos del escenario IPCC (+18% volumen). Obligación de exigir cota mínima de fundación (+0.60 m) en loteamientos.`);
+    }
+    gO.push(`<b>Planificación Resiliente POUT:</b> Aplicar el Índice de Aptitud Parcelaria (IPOOT) y captación de plusvalía urbana para financiar obras de drenaje pluvial y defensas ribereñas.`);
+  }
+
   $('fortalezas').innerHTML = `<h4>Fortalezas</h4>` + gF.map(x => `<li>${x}</li>`).join('');
   $('debilidades').innerHTML = `<h4>Debilidades</h4>` + gD.map(x => `<li>${x}</li>`).join('');
   $('oportunidades').innerHTML = `<h4>Oportunidades</h4>` + gO.map(x => `<li>${x}</li>`).join('');

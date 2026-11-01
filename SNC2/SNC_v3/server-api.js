@@ -94,6 +94,8 @@ app.get('/apple-touch-icon.png', (req, res) => res.sendFile(join(__dirname, 'app
 const PUBLIC_HTML_FILES = new Map([
   ['/index.html', 'index.html'],
   ['/panel.html', 'Cambio_climatico/panel.html'],
+  ['/lumen.html', 'lumen.html'],
+  ['/lumen', 'lumen.html'],
   ['/login-directo.html', 'login-directo.html'],
   ['/login-safe.html', 'login-safe.html'],
   ['/register.html', 'register.html'],
@@ -525,13 +527,13 @@ app.get('/api/v3/clima/tiempo', async (req, res) => {
 });
 
 // ==========================================
-// ENDPOINT NASA FIRMS FOCOS DE CALOR (SNC-CC, Tarea CC-02)
-// GET /api/v3/clima/incendios?minX=&minY=&maxX=&maxY=
+// ENDPOINT NASA FIRMS & HISTÓRICO DE INCENDIOS (SNC-CC, Tarea CC-02)
+// GET /api/v3/clima/incendios?minX=&minY=&maxX=&maxY=&tipo=&anio=&distrito=&minFRP=
 // ==========================================
 app.get('/api/v3/clima/incendios', async (req, res) => {
   try {
-    const { minX, minY, maxX, maxY } = req.query;
-    const data = await clima.obtenerFocosIncendios({ minX, minY, maxX, maxY });
+    const { minX, minY, maxX, maxY, tipo, anio, distrito, minFRP } = req.query;
+    const data = await clima.obtenerFocosIncendios({ minX, minY, maxX, maxY, tipo, anio, distrito, minFRP });
     return res.json(data);
   } catch (e) {
     logger.error('clima incendios error', e);
@@ -627,6 +629,105 @@ app.get('/api/v3/infraestructura/salud', async (req, res) => {
     return res.json(cacheSalud);
   } catch (e) {
     logger.error('infraestructura salud error', e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT INFRAESTRUCTURA EDUCATIVA (MHC-PY, Paso C2)
+// GET /api/v3/infraestructura/educacion
+// ==========================================
+let cacheEducacion = null;
+app.get('/api/v3/infraestructura/educacion', async (req, res) => {
+  try {
+    if (!cacheEducacion) {
+      const ruta = join(__dirname, 'data', 'infraestructura_educacion.geojson');
+      if (existsSync(ruta)) {
+        cacheEducacion = JSON.parse(readFileSync(ruta, 'utf8'));
+      } else {
+        return res.status(404).json({ error: 'Datos de educación no disponibles' });
+      }
+    }
+    const { minX, minY, maxX, maxY, distrito } = req.query;
+    let filtradas = cacheEducacion.features;
+
+    if (distrito) {
+      const distNorm = String(distrito).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      filtradas = filtradas.filter(f => {
+        const d = (f.properties.distrito || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        return d.includes(distNorm) || distNorm.includes(d);
+      });
+    }
+
+    if (minX && minY && maxX && maxY) {
+      const x1 = parseFloat(minX), y1 = parseFloat(minY), x2 = parseFloat(maxX), y2 = parseFloat(maxY);
+      filtradas = filtradas.filter(f => {
+        const [cLng, cLat] = f.geometry.coordinates;
+        return cLng >= x1 && cLng <= x2 && cLat >= y1 && cLat <= y2;
+      });
+    }
+
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.json({
+      type: 'FeatureCollection',
+      metadata: { ...cacheEducacion.metadata, filtrados: filtradas.length },
+      features: filtradas
+    });
+  } catch (e) {
+    logger.error('infraestructura educacion error', e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// ==========================================
+// ENDPOINT ZONAS INDUSTRIALES Y POUT (MHC-PY, Opción 3)
+// GET /api/v3/pout/industria
+// ==========================================
+let cacheIndustriaPout = null;
+app.get('/api/v3/pout/industria', async (req, res) => {
+  try {
+    if (!cacheIndustriaPout) {
+      const ruta = join(__dirname, 'data', 'industria_logistica_py.geojson');
+      if (existsSync(ruta)) {
+        cacheIndustriaPout = JSON.parse(readFileSync(ruta, 'utf8'));
+      } else {
+        return res.status(404).json({ error: 'Datos de zonas industriales no disponibles' });
+      }
+    }
+    const { minX, minY, maxX, maxY, distrito, sector } = req.query;
+    let filtradas = cacheIndustriaPout.features;
+
+    if (distrito) {
+      const distNorm = String(distrito).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      filtradas = filtradas.filter(f => {
+        const d = (f.properties.distrito || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        return d.includes(distNorm) || distNorm.includes(d);
+      });
+    }
+
+    if (sector) {
+      filtradas = filtradas.filter(f => f.properties.sector === sector);
+    }
+
+    if (minX && minY && maxX && maxY) {
+      const x1 = parseFloat(minX), y1 = parseFloat(minY), x2 = parseFloat(maxX), y2 = parseFloat(maxY);
+      filtradas = filtradas.filter(f => {
+        if (f.geometry.type === 'Point') {
+          const [cLng, cLat] = f.geometry.coordinates;
+          return cLng >= x1 && cLng <= x2 && cLat >= y1 && cLat <= y2;
+        }
+        return true; // Polígonos de zonas POUT se incluyen en la vista
+      });
+    }
+
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.json({
+      type: 'FeatureCollection',
+      metadata: { ...cacheIndustriaPout.metadata, filtrados: filtradas.length },
+      features: filtradas
+    });
+  } catch (e) {
+    logger.error('pout industria error', e);
     return res.status(500).json({ error: e.message });
   }
 });

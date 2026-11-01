@@ -12,186 +12,441 @@
   <div class="v3-mini" aria-label="Minimapa de ubicación: el cono indica hacia dónde mira la cámara"><div id="v3-minimapa"></div></div>
 
   <aside class="v3-panel" id="v3-panel" aria-label="Controles del visor 3D">
-    <div class="v3-cab">
-      <h1>Visor 3D catastral</h1>
-      <div class="v3-cab-acciones">
-        <button type="button" class="v3-btn-top" id="v3-toggle-2d" title="Alternar entre perspectiva 3D y vista cenital 2D">Vista 2D</button>
-        <a href="/panel.html" target="_blank" class="v3-btn-top v3-btn-clima-top" title="Abrir Panel MHC-PY de Cambio Climático">🌍 Clima</a>
-        <a href="/" class="v3-btn-top" title="Volver al Catastro 2D">← 2D</a>
-        <button type="button" class="v3-plegar" id="v3-plegar" aria-expanded="true" title="Plegar / desplegar el panel">−</button>
+    <div class="v3-top-sticky">
+      <div class="v3-cab">
+        <div class="v3-cab-fila1">
+          <h1>Visor 3D</h1>
+          <button type="button" class="v3-plegar" id="v3-plegar" aria-expanded="true" title="Plegar / desplegar el panel">−</button>
+        </div>
+        <div class="v3-nav-segmented" role="toolbar" aria-label="Navegación del visor">
+          <button type="button" class="v3-btn-segment active" id="v3-toggle-2d" title="Alternar perspectiva 3D / vista cenital">3D</button>
+          <a href="/" class="v3-btn-segment" title="Volver al Catastro Tradicional 2D (SNC)">2D</a>
+          <button type="button" class="v3-btn-segment" id="v3-btn-scroll-di" title="Centro Territorial Inteligente (SNC-DI)">IA</button>
+        </div>
+        <a href="/panel.html" target="_blank" class="v3-btn-top v3-btn-clima-top" title="Abrir Panel MHC-PY de Cambio Climático">🌦 Clima</a>
+      </div>
+      <div class="v3-tabs-modos" role="tablist" aria-label="Modos del visor">
+        <button type="button" class="v3-tab-btn" data-tab="sim" title="Simulación Hidrológica y Crecida 4D">🌊 Simulación</button>
+        <button type="button" class="v3-tab-btn active" data-tab="cti" title="Centro Territorial Inteligente, Clima y Ubicación">🧠 CTI</button>
+        <button type="button" class="v3-tab-btn" data-tab="capas" title="Capas, Relieve y Mapa Base">🗺️ Capas 3D</button>
+        <button type="button" class="v3-tab-btn" data-tab="todos" title="Ver todas las secciones">☰ Todo</button>
+      </div>
+      <div id="v3-todo-toolbar" class="v3-todo-toolbar" style="display:none;">
+        <span class="v3-todo-lbl">📋 Vista Continua</span>
+        <div class="v3-todo-actions">
+          <button type="button" id="v3-btn-expandir-todos" class="v3-btn-todo-act" title="Desplegar todos los módulos">▾ Expandir</button>
+          <button type="button" id="v3-btn-colapsar-todos" class="v3-btn-todo-act" title="Plegar todos los módulos">▴ Colapsar</button>
+        </div>
       </div>
     </div>
     <div class="v3-cuerpo" id="v3-cuerpo">
-      <fieldset id="v3-fieldset-ubicacion">
-        <legend id="v3-ubic-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-ubic-cuerpo">Ubicación <span id="v3-ubic-ico">▾</span></legend>
-        <div id="v3-ubic-cuerpo" class="v3-ubic-cuerpo">
-          <label>Departamento
-            <select id="v3-dpto" aria-label="Elegir departamento"><option value="">— Elegir departamento —</option></select></label>
-          <label>Distrito
-            <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Elija primero el departamento —</option></select></label>
+      <fieldset id="v3-fieldset-sim" class="v3-instrumento" data-modo="sim">
+        <legend id="v3-sim-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-sim-cuerpo"><span id="v3-sim-ico">▾</span> Simulación Hidrológica & Crecida</legend>
+        <div id="v3-sim-cuerpo">
+        <div class="v3-instr-seccion">
+          <p class="v3-instr-seccion-titulo">📍 Cuenca</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <label style="font-size:11px;color:#94a3b8;font-weight:600;">Ubicación / Cuenca:</label>
+            <span id="v3-inund-cota-base-txt" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">Base: — m</span>
+          </div>
+          <select id="v3-inund-cuenca" style="width:100%;padding:4px 6px;border-radius:6px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;font-size:11px;">
+            <option value="local" selected>🎯 Punto Actual (Detección automática en cualquier lugar del país)</option>
+            <optgroup label="Cuencas Principales DMH / DINAC">
+              <option value="asuncion">🌊 Río Paraguay — Pto. Asunción (Datum 55.4m)</option>
+              <option value="concepcion">🌊 Río Paraguay — Pto. Concepción (Datum 62m)</option>
+              <option value="pilar">🌊 Río Paraguay — Pto. Pilar (Datum 44m)</option>
+              <option value="ayolas">🌊 Río Paraná — Ayolas / Yacyretá (83m)</option>
+              <option value="cde">🌊 Río Paraná — Ciudad del Este (175m)</option>
+              <option value="piribebuy">🏞️ Cuenca Interior — Cordillera / Piribebuy (216m)</option>
+              <option value="chaco">🌵 Chaco Central — Filadelfia / Boquerón (135m)</option>
+              <option value="bahianegra">🌿 Río Paraguay — Bahía Negra / Pantanal (85m)</option>
+            </optgroup>
+          </select>
+        </div>
+        <label class="v3-op"><input type="checkbox" id="v3-inundacion"> Simular crecida / inundación</label>
+        <div id="v3-inund-ctrl" hidden>
+          <div class="v3-instr-seccion">
+            <p class="v3-instr-seccion-titulo">💧 Nivel de agua (cota)</p>
+            <div id="v3-inund-presets" class="v3-inund-presets-grid">
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-norm" data-delta="0" style="background:#334155;">Base (0m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-aler" data-delta="2" style="background:#0284c7;">Alerta (+2m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-crit" data-delta="5" style="background:#f59e0b;">Crítica (+5m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-rec" data-delta="8" style="background:#e11d48;">Récord (+8m)</button>
+            </div>
+            <p class="v3-instr-rotulo" style="margin:4px 0 2px;">Cota lámina de agua</p>
+            <div class="v3-instr-nivel">
+              <div class="v3-instr-nivel-izq">
+                <span class="v3-instr-punto" id="v3-instr-punto" style="color:#34d399;" aria-hidden="true"></span>
+                <output id="v3-inund-nivel">BASE</output>
+              </div>
+              <output id="v3-inund-cota-o">— m</output>
+            </div>
+            <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
+            <!-- Timeline Player 4D de Propagación de Crecida -->
+            <div class="v3-timeline-wrap" style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:6px 8px;margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span style="font-size:10.5px;color:#94a3b8;font-weight:600;">⏱️ Propagación Temporal (Onda 4D):</span>
+                <output id="v3-tiempo-o" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">T = 0h (Estiaje)</output>
+              </div>
+              <input type="range" id="v3-tiempo-slider" min="0" max="24" step="0.5" value="0" style="width:100%;margin-bottom:4px;">
+              <div class="v3-timeline-ctrls">
+                <div class="v3-tctrl-row1">
+                  <button type="button" class="v3-boton" id="v3-tiempo-prev" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Retroceder 1 hora">◀ -1h</button>
+                  <button type="button" class="v3-boton v3-btn-play-4d" id="v3-inund-animar">▶ Reproducir Onda (4D)</button>
+                  <button type="button" class="v3-boton" id="v3-tiempo-next" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Avanzar 1 hora">+1h ▶</button>
+                </div>
+                <button type="button" class="v3-boton v3-btn-recalc-base" id="v3-inund-recalc" title="Muestrear cota base en la vista actual">↻ Recalcular Cota Base en Vista</button>
+              </div>
+            </div>
+            <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
+            <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
+          </div>
 
-        <!-- TARJETA DINÁMICA DE DATOS DEL PANEL TERRITORIAL & CLIMA (MHC-PY) -->
+          <div class="v3-instr-seccion">
+            <p class="v3-instr-seccion-titulo">🌧️ Lluvia</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label style="font-size:11px;color:#94a3b8;font-weight:600;">Acumulada (sube la cota):</label>
+              <output id="v3-lluvia-o" class="v3-instr-dato" style="font-size:11px;color:#5eead4;font-weight:bold;">0 mm</output>
+            </div>
+            <input type="range" id="v3-lluvia" min="0" max="450" step="5" value="0" style="width:100%;">
+            <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="25" style="padding:3px 6px;font-size:10px;background:#334155;">Estiaje (25mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="120" style="padding:3px 6px;font-size:10px;background:#0284c7;">Tormenta (120mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="200" style="padding:3px 6px;font-size:10px;background:#f59e0b;">Sudestada (200mm)</button>
+              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="380" style="padding:3px 6px;font-size:10px;background:#e11d48;">El Niño (380mm)</button>
+              <button type="button" class="v3-boton" id="v3-btn-lluvia-real" style="padding:3px 8px;font-size:10px;background:#0f766e;color:#fff;border:1px solid #14b8a6;border-radius:4px;" title="Carga la precipitación real registrada en este punto según reanálisis ERA5 / Copernicus">🌧️ Lluvia real (ERA5)</button>
+            </div>
+            <label style="font-size:11px;color:#94a3b8;display:block;margin-top:6px;">Suelo / escorrentía
+              <select id="v3-suelo" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
+                <option value="auto" id="v3-suelo-auto" selected>Automático (según el punto)</option>
+                <option value="0.42">Oriental, porosa (C = 0,42)</option>
+                <option value="0.82">Chaco húmedo, arcilloso (C = 0,82)</option>
+                <option value="0.68">Urbano / suelo saturado (C = 0,68)</option>
+              </select>
+            </label>
+            <div style="display:flex;gap:4px;margin-top:6px;align-items:flex-end;">
+              <label style="font-size:11px;color:#94a3b8;flex:1;">Duración de la lluvia (h)
+                <input type="number" id="v3-lluvia-horas" min="0" max="120" step="1" value="0" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;background:#0b1220;border:1px solid #334155;border-radius:6px;color:#e2e8f0;">
+              </label>
+              <label style="font-size:11px;color:#94a3b8;flex:1.3;">Intensidad
+                <select id="v3-lluvia-intensidad" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
+                  <option value="2">Llovizna (2 mm/h)</option>
+                  <option value="7" selected>Moderada (7 mm/h)</option>
+                  <option value="15">Fuerte (15 mm/h)</option>
+                  <option value="30">Torrencial (30 mm/h)</option>
+                </select>
+              </label>
+            </div>
+            <p class="v3-fuente" id="v3-lluvia-horas-calc" style="margin-top:3px;">0 h × 0 mm/h = 0 mm acumulados.</p>
+            <p id="v3-dinac" style="font-size:11px;font-weight:bold;margin:6px 0 0;"></p>
+            <p class="v3-fuente" style="margin-top:4px;">Estimación: la lluvia efectiva (mm × coeficiente) mueve la cota entre el nivel normal y el récord histórico de la cuenca elegida (o ±16 m del punto actual si no hay cuenca). No reemplaza un modelo hidrológico.</p>
+          </div>
+
+          <div id="v3-inund-analitica" hidden class="v3-instr-seccion v3-instr-tiles">
+            <p class="v3-instr-seccion-titulo" style="grid-column:1/-1;">📊 Resultados & Alertas de Infraestructura</p>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Volumen</span>
+              <output id="v3-vol-o" class="v3-instr-dato">— hm³</output>
+            </div>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Caudal</span>
+              <output id="v3-caudal-o" class="v3-instr-dato">— m³/s</output>
+            </div>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Construcciones</span>
+              <output id="v3-edif-afect-o" class="v3-instr-dato" style="color:#f87171;">0 bajo agua</output>
+            </div>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Vías / Aislamiento</span>
+              <output id="v3-vias-afect-o" class="v3-instr-dato" style="color:#fbbf24;">0 km cortados</output>
+            </div>
+            <div class="v3-instr-tile" style="grid-column:1/-1;background:rgba(15,23,42,0.9);border:1px solid #334155;padding:6px 8px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="v3-instr-rotulo" style="color:#38bdf8;font-size:10.5px;">🛡️ Cota Segura Territorial (ICST)</span>
+                <output id="v3-icst-badge" style="font-size:11px;font-weight:bold;color:#34d399;">100% Apto</output>
+              </div>
+              <p id="v3-icst-detalle" style="font-size:10px;color:#94a3b8;margin:2px 0 0;line-height:1.3;">Evaluación parcelaria según margen de resguardo normativo (+1.50 m s.n.m.).</p>
+            </div>
+            <label class="v3-op" style="margin-top:2px;font-size:11px;grid-column:1/-1;"><input type="checkbox" id="v3-flujo" checked> Vectores de flujo animados sobre los cauces</label>
+            <div style="display:flex;gap:4px;margin-top:6px;grid-column:1/-1;flex-wrap:wrap;">
+              <button type="button" class="v3-boton" id="v3-btn-evacuacion" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#059669;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Traza rutas seguras desde construcciones inundadas hacia escuelas y centros de salud seguros">🏃 Trazar Rutas de Evacuación</button>
+              <button type="button" class="v3-boton" id="v3-btn-pdf-4d" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#0284c7;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Exporta dictamen técnico con hidrograma 4D y tabla horaria">📄 Exportar Reporte 4D</button>
+            </div>
+            <p id="v3-evac-info" style="grid-column:1/-1;font-size:10.5px;color:#34d399;margin:4px 0 0;line-height:1.4;" hidden></p>
+          </div>
+        </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="v3-fieldset-ubicacion" data-modo="cti">
+        <legend id="v3-ubic-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-ubic-cuerpo"><span id="v3-ubic-ico">▾</span> Ubicación</legend>
+        <div id="v3-ubic-cuerpo" class="v3-ubic-cuerpo">
+          <div class="v3-ubic-selects-row">
+            <label>Departamento
+              <select id="v3-dpto" aria-label="Elegir departamento"><option value="">— Depto —</option></select>
+            </label>
+            <label>Distrito
+              <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Distrito —</option></select>
+            </label>
+          </div>
+
+        <!-- TARJETA DINÁMICA DE DATOS DEL PANEL TERRITORIAL & CLIMA (CTI / SNC-DI) -->
         <div id="v3-panel-datos-wrap" class="v3-panel-datos-wrap" style="display:none;">
-          <!-- Cabecera de Datos con Toggle Ojo y Acceso Directo -->
+          <!-- Cabecera Ejecutiva CTI con Breadcrumb y Toggle Ojo -->
           <div class="v3-pdatos-cab">
             <div class="v3-pdatos-titulo">
-              <span class="v3-pdatos-beacon"></span>
-              <strong id="v3-pdatos-nombre">Paraguay</strong>
+              <span class="v3-pdatos-badge-cti">CTI</span>
+              <strong class="v3-pdatos-breadcrumb" id="v3-pdatos-nombre">📍 Paraguay</strong>
             </div>
             <div class="v3-pdatos-acciones">
-              <button type="button" id="v3-btn-ojo-datos" class="v3-btn-ojo" title="Ocultar / Mostrar detalle de datos del panel">👁️</button>
-              <a id="v3-btn-abrir-panel-link" href="/panel.html" target="_blank" class="v3-btn-mini-panel" title="Abrir en Panel MHC-PY completo (2D)">🌍 2D ↗</a>
+              <button type="button" id="v3-btn-ojo-datos" class="v3-btn-ojo" title="Ocultar / Mostrar detalle ejecutivo">👁️</button>
+              <a id="v3-btn-abrir-panel-link" href="/panel.html" target="_blank" class="v3-btn-mini-panel" title="Abrir en Panel MHC-PY completo (2D)">2D ↗</a>
             </div>
           </div>
 
           <!-- Contenido Detallado de Datos del Panel -->
           <div id="v3-pdatos-detalle" class="v3-pdatos-detalle">
-            
-            <!-- 1. Clima en Tiempo Real -->
-            <div class="v3-pdatos-seccion">
-              <div class="v3-pdatos-sec-cab">
-                <span>🌡️ CLIMA EN VIVO</span>
-                <span id="v3-clima-fuente" class="v3-badge-sm">Open-Meteo & ERA5</span>
+
+            <!-- Resumen Ejecutivo: Índice Territorial General -->
+            <div class="v3-cti-header-card">
+              <div class="v3-cti-score-box">
+                <span class="v3-cti-score-val" id="v3-cti-score-val">82</span>
+                <span class="v3-cti-score-base">/100</span>
               </div>
-              <div class="v3-kpi-grid">
-                <div class="v3-kpi-card">
-                  <div class="v3-kpi-lbl">Temperatura</div>
-                  <div class="v3-kpi-val"><span id="v3-kpi-temp">--</span>°C</div>
-                  <div class="v3-kpi-sub" id="v3-kpi-sens">Sens: --°C</div>
-                </div>
-                <div class="v3-kpi-card">
-                  <div class="v3-kpi-lbl">Lluvia & Humedad</div>
-                  <div class="v3-kpi-val"><span id="v3-kpi-lluvia">--</span> <small>mm</small></div>
-                  <div class="v3-kpi-sub" id="v3-kpi-hum">Hum: --%</div>
-                </div>
-              </div>
-              <div class="v3-meteo-barra" id="v3-meteo-cielo">
-                <span>💨 Viento: <b id="v3-kpi-viento">-- km/h</b></span>
-                <span id="v3-kpi-cielo-desc">● Tiempo real</span>
+              <div class="v3-cti-score-info">
+                <div class="v3-cti-score-title">ÍNDICE TERRITORIAL GENERAL</div>
+                <div class="v3-cti-score-badge pill-verde" id="v3-cti-score-badge">🟢 EXCELENTE</div>
               </div>
             </div>
 
-            <!-- 2. Decision Intelligence (MHC-PY / SNC-DI) -->
-            <div class="v3-pdatos-seccion">
+            <!-- 1. Clima en Vivo Compacto Horizontal (Weather Strip) -->
+            <div class="v3-pdatos-seccion v3-sec-clima-compacta">
+              <div class="v3-clima-strip">
+                <div class="v3-cstrip-col" title="Temperatura y Sensación Térmica">
+                  <span class="v3-cstrip-ico">🌡️</span>
+                  <div class="v3-cstrip-data">
+                    <span class="v3-cstrip-val"><strong id="v3-kpi-temp">--</strong>°C</span>
+                    <span class="v3-cstrip-sub" id="v3-kpi-sens">Sens --°</span>
+                  </div>
+                </div>
+                <div class="v3-cstrip-col" title="Humedad Relativa">
+                  <span class="v3-cstrip-ico">💧</span>
+                  <div class="v3-cstrip-data">
+                    <span class="v3-cstrip-val"><strong id="v3-kpi-hum">--</strong>%</span>
+                    <span class="v3-cstrip-sub">Humedad</span>
+                  </div>
+                </div>
+                <div class="v3-cstrip-col" title="Precipitación Acumulada">
+                  <span class="v3-cstrip-ico">🌧️</span>
+                  <div class="v3-cstrip-data">
+                    <span class="v3-cstrip-val"><strong id="v3-kpi-lluvia">--</strong><small>mm</small></span>
+                    <span class="v3-cstrip-sub">Lluvia</span>
+                  </div>
+                </div>
+                <div class="v3-cstrip-col" title="Velocidad del Viento">
+                  <span class="v3-cstrip-ico">🌬️</span>
+                  <div class="v3-cstrip-data">
+                    <span class="v3-cstrip-val"><strong id="v3-kpi-viento">--</strong><small>km/h</small></span>
+                    <span class="v3-cstrip-sub" id="v3-kpi-cielo-desc">Viento</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Decision Intelligence (SNC-DI) - Tarjetas Compactas 2x2 + Semáforos -->
+            <div class="v3-pdatos-seccion" id="v3-sec-snc-di">
               <div class="v3-pdatos-sec-cab">
                 <span>🎯 DECISION INTELLIGENCE (SNC-DI)</span>
+                <span class="v3-badge-sm">Panel Ejecutivo</span>
               </div>
-              <div class="v3-metricas-lista">
-                <div class="v3-metrica-fila">
-                  <span title="Índice de Confort Climático Territorial"><strong>ICT</strong> (Confort Climático):</span>
-                  <span id="v3-val-ict" class="v3-badge-pill pill-verde">-- / 100</span>
+              <div class="v3-di-compact-grid">
+                <!-- ICT: Confort Climático -->
+                <div class="v3-di-card" id="v3-card-ict">
+                  <div class="v3-di-head">
+                    <span class="v3-di-sigla" title="Índice de Confort Climático Territorial">ICT</span>
+                    <span class="v3-di-dot" id="v3-dot-ict">🟢</span>
+                  </div>
+                  <div class="v3-di-label">Confort Clima</div>
+                  <div class="v3-di-val" id="v3-val-ict">82 / 100</div>
                 </div>
-                <div class="v3-metrica-fila">
-                  <span title="Índice de Riesgo Territorial"><strong>IRT</strong> (Riesgo Territorial):</span>
-                  <span id="v3-val-irt" class="v3-badge-pill pill-amarillo">-- / 100</span>
+
+                <!-- IPOOT: Aptitud Suelo -->
+                <div class="v3-di-card" id="v3-card-ipoot">
+                  <div class="v3-di-head">
+                    <span class="v3-di-sigla" title="Aptitud Catastral Territorial POUT">IPOOT</span>
+                    <span class="v3-di-dot" id="v3-dot-ipoot">🟢</span>
+                  </div>
+                  <div class="v3-di-label">Aptitud Suelo</div>
+                  <div class="v3-di-val" id="v3-val-ipoot">85 / 100</div>
                 </div>
-                <div class="v3-metrica-fila">
-                  <span title="Aptitud Catastral Territorial"><strong>IPOOT</strong> (Aptitud Suelo):</span>
-                  <span id="v3-val-ipoot" class="v3-badge-pill pill-verde" style="font-weight:700;">FAVORABLE</span>
+
+                <!-- IRT: Riesgo Territorial -->
+                <div class="v3-di-card" id="v3-card-irt">
+                  <div class="v3-di-head">
+                    <span class="v3-di-sigla" title="Índice de Riesgo Territorial">IRT</span>
+                    <span class="v3-di-dot" id="v3-dot-irt">🟡</span>
+                  </div>
+                  <div class="v3-di-label">Riesgo Territ.</div>
+                  <div class="v3-di-val" id="v3-val-irt">41 / 100</div>
                 </div>
-                <div class="v3-metrica-fila">
-                  <span title="Resiliencia Municipal Ley 3966"><strong>IRM</strong> (Resiliencia):</span>
-                  <span id="v3-val-irm" style="color:#38bdf8;font-weight:700;">-- %</span>
+
+                <!-- IRM: Resiliencia Municipal -->
+                <div class="v3-di-card" id="v3-card-irm">
+                  <div class="v3-di-head">
+                    <span class="v3-di-sigla" title="Resiliencia Municipal Ley 3966">IRM</span>
+                    <span class="v3-di-dot" id="v3-dot-irm">🟢</span>
+                  </div>
+                  <div class="v3-di-label">Resiliencia</div>
+                  <div class="v3-di-val" id="v3-val-irm">66 %</div>
                 </div>
-                <div class="v3-metrica-fila">
-                  <span title="Cota Segura de Inundación"><strong>ICST</strong> (Cota Segura):</span>
-                  <span id="v3-val-icst" style="color:#34d399;font-weight:700;">--</span>
+              </div>
+
+              <!-- Recomendación IA (SNC-DI Insights) -->
+              <div class="v3-ia-insights-box">
+                <div class="v3-ia-insights-title">
+                  <span>🤖 RECOMENDACIÓN IA</span>
+                  <span class="v3-ia-badge-live">En vivo</span>
                 </div>
+                <ul class="v3-ia-insights-list" id="v3-ia-insights-list">
+                  <li><span class="v3-ia-check">✓</span> <span id="v3-insight-1">Apto para expansión y consolidación urbana.</span></li>
+                  <li><span class="v3-ia-check">✓</span> <span id="v3-insight-2">Bajo riesgo fluvial en cota de emplazamiento.</span></li>
+                  <li><span class="v3-ia-check">✓</span> <span id="v3-insight-3">Requiere drenaje pluvial secundario en zonas bajas.</span></li>
+                </ul>
               </div>
             </div>
 
-            <!-- 3. Riesgo de Inundabilidad Distrital (IRI) -->
+            <!-- 3. Riesgo de Inundabilidad Distrital (IRI) con Barra Semáforo -->
             <div class="v3-pdatos-seccion" id="v3-sec-inundacion">
               <div class="v3-pdatos-sec-cab">
-                <span>🌊 VULNERABILIDAD FLUVIAL (IRI)</span>
+                <span>🌊 RIESGO DE INUNDACIÓN (IRI)</span>
                 <span id="v3-iri-ranking" class="v3-badge-sm">Ranking: --</span>
               </div>
               <div class="v3-iri-box">
-                <div class="v3-iri-top">
-                  <span id="v3-iri-nivel" class="v3-badge-riesgo pill-amarillo">NIVEL: --</span>
-                  <span id="v3-iri-val" style="font-size:12px;font-weight:bold;color:#f8fafc;">IRI: -- / 100</span>
+                <div class="v3-iri-header-row">
+                  <div class="v3-iri-badge-status pill-verde" id="v3-iri-badge-status">
+                    <span class="v3-iri-dot" id="v3-iri-dot">🟢</span>
+                    <strong id="v3-iri-nivel-txt">BAJO</strong>
+                    <span id="v3-iri-nivel" style="display:none;">NIVEL: BAJO</span>
+                  </div>
+                  <div class="v3-iri-score-num">
+                    <span id="v3-iri-val">--</span><small>/100</small>
+                  </div>
                 </div>
-                <div class="v3-iri-detalles">
-                  <div>Cuenca: <strong id="v3-iri-cuenca">--</strong></div>
-                  <div>Cota Media: <strong id="v3-iri-cota">-- m.s.n.m.</strong></div>
+
+                <!-- Barra Visual de Riesgo 0 a 100 -->
+                <div class="v3-iri-bar-container">
+                  <div class="v3-iri-bar-labels">
+                    <span>0</span>
+                    <span>Bajo</span>
+                    <span>Moderado</span>
+                    <span>Crítico</span>
+                    <span>100</span>
+                  </div>
+                  <div class="v3-iri-bar-track">
+                    <div class="v3-iri-bar-pointer" id="v3-iri-bar-pointer" style="left: 15%;">●</div>
+                  </div>
                 </div>
+
+                <div class="v3-iri-specs-grid">
+                  <div class="v3-iri-spec">
+                    <span class="v3-iri-spec-lbl">Cuenca:</span>
+                    <strong class="v3-iri-spec-val" id="v3-iri-cuenca">--</strong>
+                  </div>
+                  <div class="v3-iri-spec">
+                    <span class="v3-iri-spec-lbl">Cota Media:</span>
+                    <strong class="v3-iri-spec-val" id="v3-iri-cota">-- m.s.n.m.</strong>
+                  </div>
+                  <div class="v3-iri-spec">
+                    <span class="v3-iri-spec-lbl">Retorno (Tr):</span>
+                    <strong class="v3-iri-spec-val" id="v3-iri-retorno">Tr: 50 años</strong>
+                  </div>
+                  <div class="v3-iri-spec">
+                    <span class="v3-iri-spec-lbl">Cota Segura:</span>
+                    <strong class="v3-iri-spec-val" id="v3-val-icst" style="color:#34d399;">--</strong>
+                  </div>
+                </div>
+
                 <button type="button" id="v3-btn-sincronizar-cota-3d" class="v3-btn-sync-cota" title="Ajustar el tirante hídrico de la simulación 3D a la cota de este distrito">
                   🌊 Aplicar Cota a Simulación 3D
                 </button>
               </div>
             </div>
 
-            <!-- 4. Infraestructura Crítica & Clústeres (MEC / Salud / POUT) -->
-            <div class="v3-pdatos-seccion">
-              <div class="v3-pdatos-sec-cab">
-                <span>🏛️ INFRAESTRUCTURA & CLÚSTERES</span>
+            <!-- Módulos Complementarios Plegables (Infraestructura, Focos NASA, Demografía) -->
+            <details id="v3-cti-mas-detalles" class="v3-cti-mas-datos">
+              <summary class="v3-cti-mas-summary">📊 Más Datos (Infraestructura, Satélites, Demografía)</summary>
+              <!-- 4. Infraestructura Crítica & Clústeres (MEC / Salud / POUT) -->
+              <div class="v3-pdatos-seccion">
+                <div class="v3-pdatos-sec-cab">
+                  <span>🏛️ INFRAESTRUCTURA & CLÚSTERES</span>
+                </div>
+                <div class="v3-infra-grid">
+                  <div class="v3-infra-chip">
+                    <span class="v3-infra-ico">🏫</span>
+                    <div class="v3-infra-info">
+                      <span class="v3-infra-num" id="v3-infra-edu">--</span>
+                      <span class="v3-infra-txt">Escuelas (MEC)</span>
+                    </div>
+                  </div>
+                  <div class="v3-infra-chip">
+                    <span class="v3-infra-ico">🏥</span>
+                    <div class="v3-infra-info">
+                      <span class="v3-infra-num" id="v3-infra-sal">--</span>
+                      <span class="v3-infra-txt">Centros Salud</span>
+                    </div>
+                  </div>
+                  <div class="v3-infra-chip">
+                    <span class="v3-infra-ico">🏭</span>
+                    <div class="v3-infra-info">
+                      <span class="v3-infra-num" id="v3-infra-ind">--</span>
+                      <span class="v3-infra-txt">Industrias (POUT)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="v3-infra-grid">
-                <div class="v3-infra-chip">
-                  <span class="v3-infra-ico">🏫</span>
-                  <div class="v3-infra-info">
-                    <span class="v3-infra-num" id="v3-infra-edu">--</span>
-                    <span class="v3-infra-txt">Escuelas (MEC)</span>
-                  </div>
-                </div>
-                <div class="v3-infra-chip">
-                  <span class="v3-infra-ico">🏥</span>
-                  <div class="v3-infra-info">
-                    <span class="v3-infra-num" id="v3-infra-sal">--</span>
-                    <span class="v3-infra-txt">Centros Salud</span>
-                  </div>
-                </div>
-                <div class="v3-infra-chip">
-                  <span class="v3-infra-ico">🏭</span>
-                  <div class="v3-infra-info">
-                    <span class="v3-infra-num" id="v3-infra-ind">--</span>
-                    <span class="v3-infra-txt">Industrias (POUT)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- 5. Focos de Calor Activos NASA FIRMS -->
-            <div class="v3-pdatos-seccion">
-              <div class="v3-pdatos-sec-cab">
-                <span>🔥 FOCOS DE CALOR (NASA FIRMS)</span>
+              <!-- 5. Focos de Calor Activos NASA FIRMS -->
+              <div class="v3-pdatos-seccion">
+                <div class="v3-pdatos-sec-cab">
+                  <span>🔥 FOCOS DE CALOR (NASA FIRMS)</span>
+                </div>
+                <div class="v3-firms-box" id="v3-firms-box">
+                  <span id="v3-firms-ico">🛰️</span>
+                  <span id="v3-firms-texto">Consultando satélites MODIS/VIIRS…</span>
+                </div>
               </div>
-              <div class="v3-firms-box" id="v3-firms-box">
-                <span id="v3-firms-ico">🛰️</span>
-                <span id="v3-firms-texto">Consultando satélites MODIS/VIIRS…</span>
-              </div>
-            </div>
 
-            <!-- 6. Demografía & Catastro (CNPV 2022 & DNIT) -->
-            <div class="v3-pdatos-seccion">
-              <div class="v3-pdatos-sec-cab">
-                <span>📋 DEMOGRAFÍA & CATASTRO</span>
-              </div>
-              <div class="v3-demo-grid">
-                <div class="v3-demo-col">
-                  <span class="v3-demo-lbl">Población (CNPV 2022)</span>
-                  <strong class="v3-demo-val" id="v3-demo-pob">--</strong>
+              <!-- 6. Demografía & Catastro (CNPV 2022 & DNIT) -->
+              <div class="v3-pdatos-seccion">
+                <div class="v3-pdatos-sec-cab">
+                  <span>📋 DEMOGRAFÍA & CATASTRO</span>
                 </div>
-                <div class="v3-demo-col">
-                  <span class="v3-demo-lbl">Cuentas DNIT (Aprox)</span>
-                  <strong class="v3-demo-val" id="v3-demo-dnit">--</strong>
+                <div class="v3-demo-grid">
+                  <div class="v3-demo-col">
+                    <span class="v3-demo-lbl">Población (CNPV 2022)</span>
+                    <strong class="v3-demo-val" id="v3-demo-pob">--</strong>
+                  </div>
+                  <div class="v3-demo-col">
+                    <span class="v3-demo-lbl">Cuentas DNIT (Aprox)</span>
+                    <strong class="v3-demo-val" id="v3-demo-dnit">--</strong>
+                  </div>
                 </div>
               </div>
-            </div>
+            </details>
 
           </div>
 
           <!-- Barra de Colapsado (cuando el ojo oculta el detalle) -->
           <div id="v3-pdatos-colapsado" class="v3-pdatos-colapsado" style="display:none;">
-            <span class="v3-colap-txt"><span id="v3-colap-nombre">Paraguay</span> · Datos Clima & Territorio (Ocultos)</span>
+            <span class="v3-colap-txt"><span id="v3-colap-nombre">Paraguay</span> · Centro Territorial Inteligente</span>
             <button type="button" id="v3-btn-mostrar-datos" class="v3-btn-mostrar-pdatos">👁️ Mostrar</button>
           </div>
         </div>
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend id="v3-base-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-base-cuerpo">Mapa base <span id="v3-base-ico">▾</span></legend>
+      <fieldset id="v3-fieldset-base" data-modo="capas">
+        <legend id="v3-base-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-base-cuerpo"><span id="v3-base-ico">▾</span> Mapa base</legend>
         <div id="v3-base-cuerpo">
           <label class="v3-op"><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
           <label class="v3-op"><input type="radio" name="base" value="satelite"> Satélite</label>
@@ -200,8 +455,8 @@
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend id="v3-capas-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-capas-cuerpo">Capas y Superposición <span id="v3-capas-ico">▾</span></legend>
+      <fieldset id="v3-fieldset-capas" data-modo="capas">
+        <legend id="v3-capas-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-capas-cuerpo"><span id="v3-capas-ico">▾</span> Capas & Superposición</legend>
         <div id="v3-capas-cuerpo">
           <p class="v3-ayuda" style="margin:2px 0 6px;color:#94a3b8;font-size:10.5px;line-height:1.35;">
             ↕️ <strong>Orden de Capas:</strong> el 1º arriba se ve al frente de todo; los de abajo van detrás. Use <strong>▲/▼</strong> o arrastre para reordenar.
@@ -315,162 +570,30 @@
         </div>
       </fieldset>
 
-      <fieldset><legend>Terreno (cotas)</legend>
-        <label class="v3-op"><input type="checkbox" id="v3-terreno" checked> Relieve 3D</label>
-        <label class="v3-op"><input type="checkbox" id="v3-sombra" checked> Sombreado del relieve</label>
-        <label class="v3-op"><input type="checkbox" id="v3-hipso"> Altura en colores (tinta hipsométrica)</label>
-        <div id="v3-hipso-ctrl" hidden style="display:grid;gap:4px;margin:2px 0 4px;padding:6px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
-          <label style="font-size:11px;">Paleta
-            <select id="v3-hipso-paleta"><option value="clasico">Clásica (verde → blanco)</option><option value="espectral">Espectral (azul → rojo)</option><option value="gris">Gris topográfico</option></select>
-          </label>
-          <label class="v3-op" style="font-size:11px;"><input type="checkbox" id="v3-hipso-bandas"> Por bandas (sin degradado, para distinguir mejor las cotas)</label>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;"><span>Transparencia</span><output id="v3-hipso-opac-o">75%</output></div>
-          <input type="range" id="v3-hipso-opac" min="10" max="100" step="5" value="75">
-        </div>
-        <label class="v3-op"><input type="checkbox" id="v3-curvas"> Curvas de nivel con cotas</label>
-        <div class="v3-hipso-ley" id="v3-hipso-ley" hidden><span class="v3-rampa"></span><div class="v3-rampa-et"><span>50</span><span>250</span><span>450</span><span>700</span><span>850 m</span></div></div>
-        <label>Exageración vertical <output id="v3-exag-o">1,5×</output>
-          <input type="range" id="v3-exag" min="1" max="5" step="0.5" value="1.5"></label>
-        <p class="v3-cota" id="v3-cota">Cota del centro: —</p>
-      </fieldset>
-
-      <fieldset class="v3-instrumento"><legend>Sim. hidrológica — cualquier punto del país</legend>
-        <span class="v3-instr-esquina tl" aria-hidden="true"></span><span class="v3-instr-esquina tr" aria-hidden="true"></span>
-        <span class="v3-instr-esquina bl" aria-hidden="true"></span><span class="v3-instr-esquina br" aria-hidden="true"></span>
-        <div class="v3-instr-seccion">
-          <p class="v3-instr-seccion-titulo">📍 Cuenca</p>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <label style="font-size:11px;color:#94a3b8;font-weight:600;">Ubicación / Cuenca:</label>
-            <span id="v3-inund-cota-base-txt" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">Base: — m</span>
-          </div>
-          <select id="v3-inund-cuenca" style="width:100%;padding:4px 6px;border-radius:6px;background:#0f172a;border:1px solid #334155;color:#e2e8f0;font-size:11px;">
-            <option value="local" selected>🎯 Punto Actual (Detección automática en cualquier lugar del país)</option>
-            <optgroup label="Cuencas Principales DMH / DINAC">
-              <option value="asuncion">🌊 Río Paraguay — Pto. Asunción (Datum 55.4m)</option>
-              <option value="concepcion">🌊 Río Paraguay — Pto. Concepción (Datum 62m)</option>
-              <option value="pilar">🌊 Río Paraguay — Pto. Pilar (Datum 44m)</option>
-              <option value="ayolas">🌊 Río Paraná — Ayolas / Yacyretá (83m)</option>
-              <option value="cde">🌊 Río Paraná — Ciudad del Este (175m)</option>
-              <option value="piribebuy">🏞️ Cuenca Interior — Cordillera / Piribebuy (216m)</option>
-              <option value="chaco">🌵 Chaco Central — Filadelfia / Boquerón (135m)</option>
-              <option value="bahianegra">🌿 Río Paraguay — Bahía Negra / Pantanal (85m)</option>
-            </optgroup>
-          </select>
-        </div>
-        <label class="v3-op"><input type="checkbox" id="v3-inundacion"> Simular crecida / inundación</label>
-        <div id="v3-inund-ctrl" hidden>
-          <div class="v3-instr-seccion">
-            <p class="v3-instr-seccion-titulo">💧 Nivel de agua (cota)</p>
-            <div id="v3-inund-presets" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;">
-              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-norm" data-delta="0" style="padding:3px 6px;font-size:10.5px;background:#334155;">Base (0m)</button>
-              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-aler" data-delta="2" style="padding:3px 6px;font-size:10.5px;background:#0284c7;">Alerta (+2m)</button>
-              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-crit" data-delta="5" style="padding:3px 6px;font-size:10.5px;background:#f59e0b;">Crítica (+5m)</button>
-              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-rec" data-delta="8" style="padding:3px 6px;font-size:10.5px;background:#e11d48;">Récord (+8m)</button>
-            </div>
-            <p class="v3-instr-rotulo" style="margin:4px 0 2px;">Cota lámina de agua</p>
-            <div class="v3-instr-nivel">
-              <div class="v3-instr-nivel-izq">
-                <span class="v3-instr-punto" id="v3-instr-punto" style="color:#34d399;" aria-hidden="true"></span>
-                <output id="v3-inund-nivel">BASE</output>
-              </div>
-              <output id="v3-inund-cota-o">— m</output>
-            </div>
-            <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
-            <!-- Timeline Player 4D de Propagación de Crecida -->
-            <div class="v3-timeline-wrap" style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:6px 8px;margin-top:6px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                <span style="font-size:10.5px;color:#94a3b8;font-weight:600;">⏱️ Propagación Temporal (Onda 4D):</span>
-                <output id="v3-tiempo-o" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">T = 0h (Estiaje)</output>
-              </div>
-              <input type="range" id="v3-tiempo-slider" min="0" max="24" step="0.5" value="0" style="width:100%;margin-bottom:4px;">
-              <div style="display:flex;gap:4px;align-items:center;">
-                <button type="button" class="v3-boton" id="v3-tiempo-prev" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Retroceder 1 hora">◀ -1h</button>
-                <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:4px 8px;font-size:11px;background:#0284c7;color:#fff;font-weight:600;">▶ Reproducir Onda (4D)</button>
-                <button type="button" class="v3-boton" id="v3-tiempo-next" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Avanzar 1 hora">+1h ▶</button>
-                <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:3px 6px;font-size:10px;background:#334155;" title="Muestrear cota base en la vista">↻ Base</button>
-              </div>
-            </div>
-            <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
-            <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
-          </div>
-
-          <div class="v3-instr-seccion">
-            <p class="v3-instr-seccion-titulo">🌧️ Lluvia</p>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label style="font-size:11px;color:#94a3b8;font-weight:600;">Acumulada (sube la cota):</label>
-              <output id="v3-lluvia-o" class="v3-instr-dato" style="font-size:11px;color:#5eead4;font-weight:bold;">0 mm</output>
-            </div>
-            <input type="range" id="v3-lluvia" min="0" max="450" step="5" value="0" style="width:100%;">
-            <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
-              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="25" style="padding:3px 6px;font-size:10px;background:#334155;">Estiaje (25mm)</button>
-              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="120" style="padding:3px 6px;font-size:10px;background:#0284c7;">Tormenta (120mm)</button>
-              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="200" style="padding:3px 6px;font-size:10px;background:#f59e0b;">Sudestada (200mm)</button>
-              <button type="button" class="v3-boton v3-lluvia-btn" data-mm="380" style="padding:3px 6px;font-size:10px;background:#e11d48;">El Niño (380mm)</button>
-              <button type="button" class="v3-boton" id="v3-btn-lluvia-real" style="padding:3px 8px;font-size:10px;background:#0f766e;color:#fff;border:1px solid #14b8a6;border-radius:4px;" title="Carga la precipitación real registrada en este punto según reanálisis ERA5 / Copernicus">🌧️ Lluvia real (ERA5)</button>
-            </div>
-            <label style="font-size:11px;color:#94a3b8;display:block;margin-top:6px;">Suelo / escorrentía
-              <select id="v3-suelo" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
-                <option value="auto" id="v3-suelo-auto" selected>Automático (según el punto)</option>
-                <option value="0.42">Oriental, porosa (C = 0,42)</option>
-                <option value="0.82">Chaco húmedo, arcilloso (C = 0,82)</option>
-                <option value="0.68">Urbano / suelo saturado (C = 0,68)</option>
-              </select>
+      <fieldset id="v3-fieldset-terreno" data-modo="capas">
+        <legend id="v3-terreno-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-terreno-cuerpo"><span id="v3-terreno-ico">▾</span> Terreno y Cotas</legend>
+        <div id="v3-terreno-cuerpo">
+          <label class="v3-op"><input type="checkbox" id="v3-terreno" checked> Relieve 3D</label>
+          <label class="v3-op"><input type="checkbox" id="v3-sombra" checked> Sombreado del relieve</label>
+          <label class="v3-op"><input type="checkbox" id="v3-hipso"> Altura en colores (tinta hipsométrica)</label>
+          <div id="v3-hipso-ctrl" hidden style="display:grid;gap:4px;margin:2px 0 4px;padding:6px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+            <label style="font-size:11px;">Paleta
+              <select id="v3-hipso-paleta"><option value="clasico">Clásica (verde → blanco)</option><option value="espectral">Espectral (azul → rojo)</option><option value="gris">Gris topográfico</option></select>
             </label>
-            <div style="display:flex;gap:4px;margin-top:6px;align-items:flex-end;">
-              <label style="font-size:11px;color:#94a3b8;flex:1;">Duración de la lluvia (h)
-                <input type="number" id="v3-lluvia-horas" min="0" max="120" step="1" value="0" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;background:#0b1220;border:1px solid #334155;border-radius:6px;color:#e2e8f0;">
-              </label>
-              <label style="font-size:11px;color:#94a3b8;flex:1.3;">Intensidad
-                <select id="v3-lluvia-intensidad" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
-                  <option value="2">Llovizna (2 mm/h)</option>
-                  <option value="7" selected>Moderada (7 mm/h)</option>
-                  <option value="15">Fuerte (15 mm/h)</option>
-                  <option value="30">Torrencial (30 mm/h)</option>
-                </select>
-              </label>
-            </div>
-            <p class="v3-fuente" id="v3-lluvia-horas-calc" style="margin-top:3px;">0 h × 0 mm/h = 0 mm acumulados.</p>
-            <p id="v3-dinac" style="font-size:11px;font-weight:bold;margin:6px 0 0;"></p>
-            <p class="v3-fuente" style="margin-top:4px;">Estimación: la lluvia efectiva (mm × coeficiente) mueve la cota entre el nivel normal y el récord histórico de la cuenca elegida (o ±16 m del punto actual si no hay cuenca). No reemplaza un modelo hidrológico.</p>
+            <label class="v3-op" style="font-size:11px;"><input type="checkbox" id="v3-hipso-bandas"> Por bandas (sin degradado, para distinguir mejor las cotas)</label>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;"><span>Transparencia</span><output id="v3-hipso-opac-o">75%</output></div>
+            <input type="range" id="v3-hipso-opac" min="10" max="100" step="5" value="75">
           </div>
-
-          <div id="v3-inund-analitica" hidden class="v3-instr-seccion v3-instr-tiles">
-            <p class="v3-instr-seccion-titulo" style="grid-column:1/-1;">📊 Resultados & Alertas de Infraestructura</p>
-            <div class="v3-instr-tile">
-              <span class="v3-instr-rotulo">Volumen</span>
-              <output id="v3-vol-o" class="v3-instr-dato">— hm³</output>
-            </div>
-            <div class="v3-instr-tile">
-              <span class="v3-instr-rotulo">Caudal</span>
-              <output id="v3-caudal-o" class="v3-instr-dato">— m³/s</output>
-            </div>
-            <div class="v3-instr-tile">
-              <span class="v3-instr-rotulo">Construcciones</span>
-              <output id="v3-edif-afect-o" class="v3-instr-dato" style="color:#f87171;">0 bajo agua</output>
-            </div>
-            <div class="v3-instr-tile">
-              <span class="v3-instr-rotulo">Vías / Aislamiento</span>
-              <output id="v3-vias-afect-o" class="v3-instr-dato" style="color:#fbbf24;">0 km cortados</output>
-            </div>
-            <div class="v3-instr-tile" style="grid-column:1/-1;background:rgba(15,23,42,0.9);border:1px solid #334155;padding:6px 8px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span class="v3-instr-rotulo" style="color:#38bdf8;font-size:10.5px;">🛡️ Cota Segura Territorial (ICST)</span>
-                <output id="v3-icst-badge" style="font-size:11px;font-weight:bold;color:#34d399;">100% Apto</output>
-              </div>
-              <p id="v3-icst-detalle" style="font-size:10px;color:#94a3b8;margin:2px 0 0;line-height:1.3;">Evaluación parcelaria según margen de resguardo normativo (+1.50 m s.n.m.).</p>
-            </div>
-            <label class="v3-op" style="margin-top:2px;font-size:11px;grid-column:1/-1;"><input type="checkbox" id="v3-flujo" checked> Vectores de flujo animados sobre los cauces</label>
-            <div style="display:flex;gap:4px;margin-top:6px;grid-column:1/-1;flex-wrap:wrap;">
-              <button type="button" class="v3-boton" id="v3-btn-evacuacion" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#059669;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Traza rutas seguras desde construcciones inundadas hacia escuelas y centros de salud seguros">🏃 Trazar Rutas de Evacuación</button>
-              <button type="button" class="v3-boton" id="v3-btn-pdf-4d" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#0284c7;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Exporta dictamen técnico con hidrograma 4D y tabla horaria">📄 Exportar Reporte 4D</button>
-            </div>
-            <p id="v3-evac-info" style="grid-column:1/-1;font-size:10.5px;color:#34d399;margin:4px 0 0;line-height:1.4;" hidden></p>
-          </div>
+          <label class="v3-op"><input type="checkbox" id="v3-curvas"> Curvas de nivel con cotas</label>
+          <div class="v3-hipso-ley" id="v3-hipso-ley" hidden><span class="v3-rampa"></span><div class="v3-rampa-et"><span>50</span><span>250</span><span>450</span><span>700</span><span>850 m</span></div></div>
+          <label>Exageración vertical <output id="v3-exag-o">1,5×</output>
+            <input type="range" id="v3-exag" min="1" max="5" step="0.5" value="1.5"></label>
+          <p class="v3-cota" id="v3-cota">Cota del centro: —</p>
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend id="v3-exp-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="false" aria-controls="v3-exp-cuerpo">Exportar topografía (UTM 21S) <span id="v3-exp-ico">▸</span></legend>
+      <fieldset id="v3-fieldset-exp" data-modo="capas">
+        <legend id="v3-exp-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="false" aria-controls="v3-exp-cuerpo"><span id="v3-exp-ico">▸</span> Exportar topografía (UTM 21S)</legend>
         <div id="v3-exp-cuerpo" hidden>
           <label>Zona <select id="v3-exp-zona"><option value="vista">Lo que se ve (centro, hasta ~6 km)</option><option value="distrito">Distrito elegido (recortado a su límite)</option></select></label>
           <label>Formato <select id="v3-exp-formato"><option value="dxf">DXF – AutoCAD (curvas 3D)</option><option value="shp">SHP – Shapefile (zip)</option><option value="geojson">GeoJSON</option><option value="tif">GeoTIFF – modelo de elevación</option></select></label>
@@ -493,6 +616,6 @@
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
   <script src="/vendor/jspdf.umd.min.js"></script>
   <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261101e"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101_todofix"></script>
 </body>
 </html>

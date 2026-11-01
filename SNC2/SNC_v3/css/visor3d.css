@@ -1,29 +1,461 @@
 /* Visor 3D catastral (visor-3d.html) */
-* { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+  overflow-x: hidden !important;
+}
 #mapa { position: absolute; inset: 0; }
-.v3-panel { position: absolute; top: 12px; left: 12px; z-index: 5; width: 290px; max-height: calc(100vh - 24px); overflow-y: auto;
-  background: rgba(15, 23, 42, .93); border: 1px solid #334155; border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
-  transition: transform .25s ease; }
-.v3-panel.v3-oculto { transform: translateX(-340px); }
-.v3-pestana { position: absolute; top: 16px; left: 302px; z-index: 6; width: 20px; height: 48px; padding: 0;
-  background: rgba(15, 23, 42, .93); color: #7dd3fc; border: 1px solid #334155; border-left: none; border-radius: 0 10px 10px 0;
-  font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, .35); transition: left .25s ease; }
-.v3-pestana.v3-oculto { left: 0; border-left: 1px solid #334155; }
-.v3-cab { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid #1e293b; }
-.v3-cab h1 { margin: 0; font-size: 15px; color: #7dd3fc; }
-.v3-plegar { width: 28px; height: 28px; border: 1px solid #334155; border-radius: 7px; background: #1e293b; color: #cbd5e1; font-size: 16px; cursor: pointer; }
-.v3-cuerpo { padding: 10px 12px 12px; display: grid; gap: 10px; font-size: 12.5px; }
-.v3-cuerpo[hidden] { display: none; }
-.v3-cuerpo label { display: grid; gap: 4px; color: #cbd5e1; }
-.v3-cuerpo label.v3-op { display: flex; align-items: center; gap: 7px; }
-select, input[type=range] { width: 100%; }
-select { padding: 6px 8px; border-radius: 7px; border: 1px solid #334155; background: #0b1220; color: #e2e8f0; }
-fieldset { margin: 0; padding: 8px 10px; border: 1px solid #1e293b; border-radius: 9px; display: grid; gap: 6px; }
-legend { padding: 0 4px; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-.v3-legend-plegable { cursor: pointer; user-select: none; }
-.v3-legend-plegable:hover { color: #7dd3fc; }
+
+/* ── Reglas Generales de Contenedores y Tarjetas Antidesborde ── */
+.card,
+.section,
+.control,
+.metric,
+fieldset,
+.v3-panel-section,
+.v3-pdatos-seccion,
+.v3-instrumento,
+.v3-panel-datos-wrap {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* ── Panel Lateral Izquierdo Rediseñado (Cero Scroll Interno - Visibilidad Directa 100%) ── */
+.v3-panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  display: flex;
+  flex-direction: column;
+  background: rgba(11, 17, 32, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.08);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.v3-panel::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.v3-panel.v3-oculto {
+  transform: translateX(-350px);
+}
+
+/* Pestaña flotante para reabrir cuando el panel está oculto */
+.v3-pestana {
+  position: absolute;
+  top: 16px;
+  left: 336px;
+  z-index: 6;
+  width: 22px;
+  height: 48px;
+  padding: 0;
+  background: rgba(11, 17, 32, 0.95);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.v3-pestana.v3-oculto {
+  left: 0;
+  border-left: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* ── Contenedor Sticky Superior Ultra Compacto (Fijo al Tope, No hace Scroll) ── */
+.v3-top-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── Cabecera Superior Fija ── */
+.v3-cab {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: rgba(11, 17, 32, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-cab-fila1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 6px;
+}
+.v3-cab h1 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7dd3fc;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.v3-cab-acciones {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.v3-nav-segmented {
+  display: flex;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  padding: 1px;
+  gap: 1px;
+  box-sizing: border-box;
+}
+.v3-btn-segment {
+  flex: 1;
+  text-align: center;
+  padding: 3px 0;
+  font-size: 10px;
+}
+.v3-btn-clima-top {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+  padding: 3px 0;
+  font-size: 10px;
+  border-radius: 6px;
+}
+
+/* ── Pestañas de Modos en 1 Fila de 4 Columnas Compacta ── */
+.v3-tabs-modos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 3px 6px;
+  gap: 3px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-tab-btn {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 1px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.15s ease;
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.v3-tab-btn:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+.v3-tab-btn.active {
+  color: #ffffff;
+  background: #0284c7;
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+}
+.v3-btn-top {
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  background: rgba(30, 41, 59, 0.8);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.v3-btn-top:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.v3-btn-clima-top {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.v3-plegar {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex: none;
+}
+.v3-plegar:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+/* ── Cuerpo y Secciones (Acordeones Planos estilo ArcGIS Dashboard - Scroll Único y Limpio) ── */
+.v3-cuerpo {
+  padding: 4px 8px 10px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 8px !important;
+  font-size: 11.5px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.25) transparent;
+}
+.v3-cuerpo::-webkit-scrollbar {
+  width: 4px !important;
+  display: block !important;
+}
+.v3-cuerpo::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.v3-cuerpo::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25) !important;
+  border-radius: 4px !important;
+}
+.v3-cuerpo::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5) !important;
+}
+.v3-cuerpo[hidden], [hidden] {
+  display: none !important;
+}
+.v3-ubic-cuerpo {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-ubic-cuerpo[hidden] {
+  display: none !important;
+}
+.v3-cuerpo label {
+  display: grid;
+  gap: 3px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 600;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-cuerpo label.v3-op {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Ocultamiento absoluto de disclaimers y textos explicativos redundantes */
+.v3-fuente,
+.v3-ayuda,
+.v3-inund-info {
+  display: none !important;
+}
+.v3-cuerpo label.v3-op {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+select {
+  width: 100%;
+  max-width: 100%;
+  padding: 7px 9px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #090e1a;
+  color: #f1f5f9;
+  font-size: 11.5px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+/* Toolbar de Vista Continua (Todo) */
+.v3-todo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(15, 23, 42, 0.98);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-todo-lbl {
+  font-weight: 800;
+  color: #7dd3fc;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.v3-todo-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.v3-btn-todo-act {
+  background: #1e293b;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #cbd5e1;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.v3-btn-todo-act:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #38bdf8;
+}
+
+/* ── Acordeones Planos estilo ArcGIS Dashboard (Sin cajas ni cápsulas envolventes) ── */
+fieldset {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0 !important;
+  min-height: min-content;
+  gap: 7px;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+fieldset[hidden],
+fieldset.v3-modo-oculto,
+fieldset[style*="display: none"] {
+  display: none !important;
+}
+legend, .v3-instrumento legend {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 0 5px 0 !important;
+  margin: 0 0 4px 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1.5px solid rgba(56, 189, 248, 0.25) !important;
+  border-radius: 0 !important;
+  color: #7dd3fc !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  user-select: none !important;
+  transition: all 0.15s ease !important;
+}
+legend:hover, .v3-instrumento legend:hover {
+  color: #38bdf8 !important;
+  border-bottom-color: #38bdf8 !important;
+  background: transparent !important;
+}
+.v3-legend-plegable {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.v3-legend-plegable span {
+  font-size: 11px;
+  color: #38bdf8;
+  display: inline-block;
+  width: 13px;
+  flex-shrink: 0;
+}
 output { color: #7dd3fc; font-weight: 700; }
 .v3-mues { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
 .v3-edif { background: #f59e0b; } .v3-parc { background: transparent; border: 2px solid #fde047; } .v3-lim { background: transparent; border: 2px solid #f472b6; }
@@ -37,7 +469,13 @@ output { color: #7dd3fc; font-weight: 700; }
 .maplibregl-popup-content { background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; font-size: 12px; line-height: 1.5; }
 .maplibregl-popup-tip { border-top-color: #0f172a !important; border-bottom-color: #0f172a !important; }
 .maplibregl-popup-close-button { color: #94a3b8; }
-@media (max-width: 600px) { .v3-panel { width: calc(100% - 24px); } }
+@media (max-width: 600px) {
+  .v3-panel { width: calc(100% - 24px); }
+}
+@media (max-width: 360px) {
+  .v3-di-compact-grid { grid-template-columns: minmax(0, 1fr); }
+  .v3-clima-strip { grid-template-columns: minmax(0, 1fr); }
+}
 .v3-leyenda[hidden] { display: none; }
 
 /* Minimapa 2D de ubicación con cono de visión */
@@ -62,20 +500,20 @@ output { color: #7dd3fc; font-weight: 700; }
 .v3-boton { padding: 8px 10px; border: 0; border-radius: 8px; background: #0284c7; color: #fff; font-weight: 700; cursor: pointer; }
 .v3-boton:hover { background: #0369a1; } .v3-boton:disabled { opacity: .6; cursor: wait; }
 
-/* ── Instrumento de simulación hidrológica: telemetría de sala de control ── */
-.v3-instrumento { position: relative; background: #050810; border-color: #163042; overflow: hidden; }
-.v3-instrumento::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background: repeating-linear-gradient(0deg, rgba(94, 234, 212, .025) 0px, rgba(94, 234, 212, .025) 1px, transparent 1px, transparent 3px);
+/* ── Instrumento de simulación hidrológica plano (ArcGIS style) ── */
+.v3-instrumento {
+  position: relative;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
-.v3-instrumento > * { position: relative; z-index: 1; }
-.v3-instr-esquina { position: absolute; width: 9px; height: 9px; border: 2px solid #2dd4bf; opacity: .5; z-index: 2; pointer-events: none; }
-.v3-instr-esquina.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-.v3-instr-esquina.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
-.v3-instr-esquina.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
-.v3-instr-esquina.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.v3-instrumento::before,
+.v3-instr-esquina {
+  display: none !important;
+}
 
-.v3-instrumento legend, .v3-instr-rotulo {
+.v3-instr-rotulo {
   font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #5a8c93;
 }
@@ -92,13 +530,79 @@ output { color: #7dd3fc; font-weight: 700; }
 
 .v3-instr-nivel {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 9px 10px; margin-bottom: 2px; border-radius: 4px;
+  padding: 8px 10px; margin-bottom: 2px; border-radius: 6px;
   background: linear-gradient(180deg, rgba(94, 234, 212, .07), rgba(94, 234, 212, .02));
   border: 1px solid #163042;
+  box-sizing: border-box;
+  width: 100%;
 }
-.v3-instr-nivel-izq { display: flex; align-items: center; gap: 7px; }
-.v3-instr-nivel #v3-inund-nivel { font-size: 13px; font-weight: 700; letter-spacing: .05em; }
-.v3-instr-nivel #v3-inund-cota-o { font-size: 17px; font-weight: 700; color: #5eead4 !important; text-shadow: 0 0 10px rgba(94, 234, 212, .5); }
+.v3-instr-nivel-izq { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.v3-instr-nivel #v3-inund-nivel { font-size: 12px; font-weight: 700; letter-spacing: .05em; white-space: nowrap; }
+.v3-instr-nivel #v3-inund-cota-o { font-size: 15px; font-weight: 700; color: #5eead4 !important; text-shadow: 0 0 10px rgba(94, 234, 212, .5); flex-shrink: 0; white-space: nowrap; }
+
+/* Presets de Cota (Grid de 4 columnas simétricas) */
+.v3-inund-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+.v3-inund-presets-grid .v3-inund-btn {
+  padding: 5px 2px !important;
+  font-size: 10px !important;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 5px;
+}
+
+/* Timeline Controls 4D */
+.v3-timeline-ctrls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.v3-tctrl-row1 {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) 50px;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-btn-play-4d {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v3-btn-recalc-base {
+  background: #1e293b !important;
+  color: #7dd3fc !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  padding: 4px 8px !important;
+  font-size: 10.5px !important;
+  font-weight: 600;
+  width: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+.v3-btn-recalc-base:hover {
+  background: #334155 !important;
+  color: #ffffff !important;
+}
 
 .v3-instr-seccion { border: 1px solid #163042; border-radius: 6px; padding: 7px 8px; margin: 8px 0; background: rgba(94, 234, 212, .02); }
 .v3-instr-seccion-titulo {
@@ -111,3 +615,715 @@ output { color: #7dd3fc; font-weight: 700; }
 #v3-caudal-o.v3-instr-dato { color: #34d399 !important; }
 
 .v3-instrumento input[type=range] { height: 4px; border-radius: 2px; accent-color: #5eead4; }
+
+/* ── Lista de Capas Plana tipo ArcGIS Dashboard ── */
+.v3-capas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-capa-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  user-select: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-capa-fila:hover {
+  background: rgba(56, 189, 248, 0.08);
+}
+.v3-capa-fila label.v3-op {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11.5px;
+  color: #e2e8f0;
+  cursor: pointer;
+  white-space: normal !important;
+  word-break: break-word;
+  line-height: 1.25;
+}
+.v3-capa-fila label.v3-op span {
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+}
+.v3-drag-handle,
+.v3-capa-orden,
+.v3-capa-botones {
+  display: none !important;
+}
+
+/* ── Tarjeta Dinámica de Datos del Panel (MHC-PY en Visor 3D) ── */
+.v3-panel-datos-wrap {
+  margin-top: 6px;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed rgba(56, 189, 248, 0.25);
+  border-radius: 0;
+  padding: 6px 0;
+  font-size: 11.5px;
+  box-shadow: none;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.v3-pdatos-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-pdatos-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.v3-pdatos-badge-cti {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #0b1120;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+  flex: none;
+}
+.v3-pdatos-breadcrumb {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  word-break: break-word;
+  white-space: normal;
+  min-width: 0;
+}
+.v3-pdatos-beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  flex: none;
+  animation: v3-pulso 1.8s ease-in-out infinite;
+}
+.v3-pdatos-acciones {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.v3-btn-ojo {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+.v3-btn-ojo:hover {
+  background: #334155;
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+.v3-btn-mini-panel {
+  background: #0284c7;
+  color: #ffffff !important;
+  text-decoration: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 3px 8px;
+  display: inline-block;
+  transition: background 0.15s ease;
+}
+.v3-btn-mini-panel:hover {
+  background: #0369a1;
+}
+
+/* ── Selectores de Ubicación en 1 Sola Fila ── */
+.v3-ubic-selects-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Resumen Ejecutivo CTI Compacto ── */
+.v3-cti-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 7px;
+  padding: 4px 8px;
+  margin: 4px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.v3-cti-score-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 6px;
+  padding: 2px 6px;
+  min-width: 48px;
+}
+.v3-cti-score-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: #38bdf8;
+  line-height: 1;
+}
+.v3-cti-score-base {
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 700;
+}
+.v3-cti-score-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 1;
+}
+.v3-cti-score-title {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.v3-cti-score-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.v3-pdatos-seccion {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.v3-pdatos-sec-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.v3-pdatos-sec-cab > span:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+  word-break: break-word;
+  white-space: normal;
+}
+.v3-badge-sm {
+  font-size: 8.5px;
+  font-weight: 700;
+  background: rgba(14, 165, 233, 0.15);
+  color: #38bdf8;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  white-space: nowrap;
+  flex: none;
+}
+
+/* 1. Clima en Vivo Compacto Horizontal (Weather Strip de 4 Columnas) */
+.v3-sec-clima-compacta {
+  margin-top: 3px;
+  padding-top: 0;
+  border-top: none;
+}
+.v3-clima-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 6px;
+  padding: 4px 3px !important;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+.v3-cstrip-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1px;
+  padding: 2px 1px !important;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.v3-cstrip-ico {
+  font-size: 13px;
+  line-height: 1;
+  flex: none;
+}
+.v3-cstrip-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  min-width: 0;
+}
+.v3-cstrip-val {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+}
+.v3-cstrip-val strong {
+  font-size: 11px;
+}
+.v3-cstrip-sub {
+  font-size: 8px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2. Decision Intelligence (SNC-DI) - Cuadrícula Compacta 2x2 y Semáforos */
+.v3-di-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.v3-di-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 6px;
+  padding: 3px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+.v3-di-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(30, 41, 59, 0.85);
+}
+.v3-di-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.v3-di-sigla {
+  font-size: 9.5px;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.04em;
+}
+.v3-di-dot {
+  font-size: 9px;
+  line-height: 1;
+}
+.v3-di-label {
+  font-size: 8px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.v3-di-val {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+/* Acordeón Plegable de Datos Secundarios CTI */
+.v3-cti-mas-datos {
+  margin-top: 6px;
+  border-top: 1px dashed rgba(56, 189, 248, 0.25);
+  padding-top: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.v3-cti-mas-summary {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  cursor: pointer;
+  padding: 3px 0;
+  outline: none;
+  user-select: none;
+}
+.v3-cti-mas-summary:hover {
+  color: #7dd3fc;
+}
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+.v3-di-card:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(30, 41, 59, 0.85);
+}
+.v3-di-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.v3-di-sigla {
+  font-size: 10px;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.05em;
+}
+.v3-di-dot {
+  font-size: 10px;
+  line-height: 1;
+}
+.v3-di-label {
+  font-size: 9px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.v3-di-val {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+/* Recomendación IA Insights Box */
+.v3-ia-insights-box {
+  background: linear-gradient(135deg, rgba(2, 6, 23, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  border-radius: 8px;
+  padding: 7px 9px;
+  box-shadow: inset 0 0 12px rgba(14, 165, 233, 0.08);
+}
+.v3-ia-insights-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+.v3-ia-insights-title > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.v3-ia-badge-live {
+  font-size: 8.5px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex: none;
+}
+.v3-ia-insights-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+}
+.v3-ia-insights-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 10px;
+  color: #cbd5e1;
+  line-height: 1.25;
+}
+.v3-ia-check {
+  color: #34d399;
+  font-weight: 900;
+  font-size: 11px;
+  flex: none;
+}
+
+/* 3. Vulnerabilidad Fluvial (IRI) con Barra Semáforo */
+.v3-iri-box {
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.v3-iri-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.v3-iri-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.v3-iri-score-num {
+  font-size: 14px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+.v3-iri-score-num small {
+  font-size: 10px;
+  color: #64748b;
+}
+
+/* Barra de Riesgo 0 - 100 */
+.v3-iri-bar-container {
+  margin: 6px 0 8px;
+}
+.v3-iri-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8.5px;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.v3-iri-bar-track {
+  position: relative;
+  height: 6px;
+  background: linear-gradient(90deg, #10b981 0%, #fbbf24 45%, #f97316 75%, #ef4444 100%);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.v3-iri-bar-pointer {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 0 0 4px #000000, 0 0 6px #ffffff;
+  pointer-events: none;
+  transition: left 0.3s ease;
+}
+
+.v3-iri-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 8px;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.v3-iri-spec {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.v3-iri-spec-lbl {
+  font-size: 8.5px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.v3-iri-spec-val {
+  font-size: 10.5px;
+  color: #f1f5f9;
+  font-weight: 700;
+}
+
+.v3-badge-pill {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.pill-verde { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.pill-amarillo { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+.pill-rojo { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+.v3-badge-riesgo {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.v3-btn-sync-cota {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #0284c7;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(2, 132, 199, 0.15));
+  color: #38bdf8;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+.v3-btn-sync-cota:hover {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+}
+
+/* 4. Infraestructura & Clústeres (3 columnas balanceadas) */
+.v3-infra-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.v3-infra-chip {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 8px;
+  padding: 6px 4px;
+  text-align: center;
+}
+.v3-infra-ico {
+  font-size: 15px;
+  display: block;
+  margin-bottom: 2px;
+}
+.v3-infra-num {
+  font-size: 13px;
+  font-weight: 900;
+  color: #38bdf8;
+  display: block;
+  line-height: 1.2;
+}
+.v3-infra-txt {
+  font-size: 9px;
+  color: #94a3b8;
+  line-height: 1.15;
+  display: block;
+}
+
+/* 5. Focos de Calor Activos NASA FIRMS */
+.v3-firms-box {
+  background: rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  border-radius: 6px;
+  padding: 6px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: #fda4af;
+}
+
+/* 6. Demografía & Catastro */
+.v3-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.v3-demo-col {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: center;
+}
+.v3-demo-lbl {
+  display: block;
+  font-size: 9px;
+  color: #94a3b8;
+  margin-bottom: 1px;
+}
+.v3-demo-val {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+/* Barra Colapsada */
+.v3-pdatos-colapsado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+.v3-btn-mostrar-pdatos {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #38bdf8;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.v3-btn-mostrar-pdatos:hover {
+  background: #0284c7;
+  color: #ffffff;
+}

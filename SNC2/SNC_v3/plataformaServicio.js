@@ -60,7 +60,13 @@ export function iniciar() {
       muni_id TEXT, cod_dpto TEXT, cod_distrito INTEGER, plan_id TEXT REFERENCES planes(id), estado TEXT NOT NULL DEFAULT 'prueba',
       prueba_hasta TEXT, alta_en TEXT DEFAULT (datetime('now')), notas TEXT)`);
     await run(`CREATE TABLE IF NOT EXISTS cliente_modulos (cliente_id TEXT, modulo TEXT, habilitado INTEGER NOT NULL, PRIMARY KEY (cliente_id, modulo))`);
-    await run(`CREATE TABLE IF NOT EXISTS usuarios_cliente (email TEXT PRIMARY KEY, cliente_id TEXT NOT NULL, rol TEXT NOT NULL, alta_por TEXT, alta_en TEXT DEFAULT (datetime('now')))`);
+    // Dependencias: divisiones internas de un cliente (p.ej. Catastro, Ambiental, Notarial de una
+    // municipalidad). Un cliente "profesional" de uso directo simplemente no tiene ninguna: sus
+    // usuarios cuelgan del cliente sin dependencia (dependencia_id NULL).
+    await run(`CREATE TABLE IF NOT EXISTS dependencias (id TEXT PRIMARY KEY, cliente_id TEXT NOT NULL, nombre TEXT NOT NULL, notas TEXT, alta_en TEXT DEFAULT (datetime('now')))`);
+    await run(`CREATE TABLE IF NOT EXISTS usuarios_cliente (email TEXT PRIMARY KEY, cliente_id TEXT NOT NULL, dependencia_id TEXT, rol TEXT NOT NULL, alta_por TEXT, alta_en TEXT DEFAULT (datetime('now')))`);
+    // Migración silenciosa: bases creadas antes de que existiera dependencia_id.
+    await run(`ALTER TABLE usuarios_cliente ADD COLUMN dependencia_id TEXT`).catch(() => {});
     await run(`CREATE TABLE IF NOT EXISTS pagos (id INTEGER PRIMARY KEY AUTOINCREMENT, cliente_id TEXT NOT NULL, periodo TEXT NOT NULL, monto INTEGER NOT NULL, medio TEXT,
       comprobante TEXT, estado TEXT NOT NULL DEFAULT 'pendiente', cargado_por TEXT, cargado_en TEXT DEFAULT (datetime('now')), verificado_por TEXT, verificado_en TEXT, observacion TEXT)`);
     for (const p of PLANES_BASE) await run('INSERT OR IGNORE INTO planes (id, nombre, precio_mensual, modulos_json) VALUES (?,?,?,?)', [p.id, p.nombre, p.precio_mensual, JSON.stringify(p.modulos)]);
@@ -97,12 +103,16 @@ export function modulosEfectivos(plan, ajustes, pago) {
 
 // ─── consultas ──────────────────────────────────────────────────────────────────────────────────
 async function fichaCliente(c) {
-  const [plan, ajustes, pagos, usuarios] = await Promise.all([
+  const [plan, ajustes, pagos, usuarios, dependencias] = await Promise.all([
     get('SELECT * FROM planes WHERE id = ?', [c.plan_id]), all('SELECT modulo, habilitado FROM cliente_modulos WHERE cliente_id = ?', [c.id]),
-    all('SELECT * FROM pagos WHERE cliente_id = ? ORDER BY periodo DESC, id DESC', [c.id]), all('SELECT email, rol, alta_por, alta_en FROM usuarios_cliente WHERE cliente_id = ? ORDER BY email', [c.id])]);
+    all('SELECT * FROM pagos WHERE cliente_id = ? ORDER BY periodo DESC, id DESC', [c.id]),
+    all('SELECT email, dependencia_id, rol, alta_por, alta_en FROM usuarios_cliente WHERE cliente_id = ? ORDER BY email', [c.id]),
+    all('SELECT * FROM dependencias WHERE cliente_id = ? ORDER BY nombre', [c.id])]);
   const pago = estadoPago(c, pagos);
+  const nombreDep = new Map(dependencias.map(d => [d.id, d.nombre]));
+  const usuariosConDependencia = usuarios.map(u => ({ ...u, dependencia_nombre: u.dependencia_id ? (nombreDep.get(u.dependencia_id) || null) : null }));
   return { ...c, plan: plan ? { id: plan.id, nombre: plan.nombre, precio_mensual: plan.precio_mensual, modulos: JSON.parse(plan.modulos_json) } : null,
-    ajustes, pago, modulos: modulosEfectivos(plan, ajustes, pago), pagos, usuarios };
+    ajustes, pago, modulos: modulosEfectivos(plan, ajustes, pago), pagos, usuarios: usuariosConDependencia, dependencias };
 }
 export async function listarClientes() { await iniciar(); return Promise.all((await all('SELECT * FROM clientes ORDER BY nombre')).map(fichaCliente)); }
 export async function cliente(id) { await iniciar(); const c = await get('SELECT * FROM clientes WHERE id = ?', [id]); if (!c) throw new ErrorPlataforma('Cliente no encontrado', 404); return fichaCliente(c); }
@@ -151,17 +161,45 @@ export async function guardarPlan(b) {
     precio_mensual=excluded.precio_mensual, modulos_json=excluded.modulos_json, activo=excluded.activo`, [id, texto(b.nombre), Math.max(0, Math.round(Number(b.precio_mensual) || 0)), JSON.stringify(mods), b.activo === false ? 0 : 1]);
   return listarPlanes();
 }
-/** Usuario de un cliente. El admin de un cliente solo puede dar de alta usuarios de su propio cliente y no otros administradores. */
+/** Dependencia (división interna) de un cliente: p.ej. Catastro, Ambiental, Notarial de una municipalidad. */
+export async function guardarDependencia(clienteId, b) {
+  await iniciar();
+  await cliente(clienteId);
+  const id = idSeguro(b.id);
+  if (!texto(b.nombre)) throw new ErrorPlataforma('Falta el nombre de la dependencia');
+  await run(`INSERT INTO dependencias (id, cliente_id, nombre, notas) VALUES (?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET nombre = excluded.nombre, notas = excluded.notas`, [id, clienteId, texto(b.nombre), texto(b.notas, 300)]);
+  return cliente(clienteId);
+}
+/** Quita una dependencia; no se puede si todavía tiene usuarios asignados (hay que reasignarlos o quitarlos antes). */
+export async function quitarDependencia(clienteId, dependenciaId) {
+  await iniciar();
+  const d = await get('SELECT * FROM dependencias WHERE id = ? AND cliente_id = ?', [dependenciaId, clienteId]);
+  if (!d) throw new ErrorPlataforma('Dependencia no encontrada', 404);
+  const conUsuarios = await get('SELECT COUNT(*) AS n FROM usuarios_cliente WHERE dependencia_id = ?', [dependenciaId]);
+  if (conUsuarios.n > 0) throw new ErrorPlataforma('Reasigne o quite primero a los usuarios de esta dependencia', 409);
+  await run('DELETE FROM dependencias WHERE id = ?', [dependenciaId]);
+  return cliente(clienteId);
+}
+/** Usuario de un cliente, opcionalmente dentro de una de sus dependencias (si no, queda al nivel del cliente).
+ * El admin de un cliente solo puede dar de alta usuarios de su propio cliente y no otros administradores. */
 export async function guardarUsuario(clienteId, b, porEmail, esSuperadmin) {
   await iniciar();
   await cliente(clienteId);
   const rol = String(b.rol || 'consulta');
   if (!ROLES_CLIENTE.includes(rol)) throw new ErrorPlataforma(`Rol: ${ROLES_CLIENTE.join(', ')}`);
   if (rol === 'admin_cliente' && !esSuperadmin) throw new ErrorPlataforma('Solo la administración general asigna administradores de cliente', 403);
+  let dependenciaId = null;
+  if (b.dependencia_id) {
+    const dep = await get('SELECT id FROM dependencias WHERE id = ? AND cliente_id = ?', [b.dependencia_id, clienteId]);
+    if (!dep) throw new ErrorPlataforma('Esa dependencia no pertenece a este cliente');
+    dependenciaId = dep.id;
+  }
   const e = email(b.email);
   const otro = await get('SELECT cliente_id FROM usuarios_cliente WHERE email = ?', [e]);
   if (otro && otro.cliente_id !== clienteId) throw new ErrorPlataforma('Ese email ya pertenece a otro cliente', 409);
-  await run('INSERT INTO usuarios_cliente (email, cliente_id, rol, alta_por) VALUES (?,?,?,?) ON CONFLICT(email) DO UPDATE SET rol = excluded.rol', [e, clienteId, rol, porEmail]);
+  await run('INSERT INTO usuarios_cliente (email, cliente_id, dependencia_id, rol, alta_por) VALUES (?,?,?,?,?) ON CONFLICT(email) DO UPDATE SET dependencia_id = excluded.dependencia_id, rol = excluded.rol',
+    [e, clienteId, dependenciaId, rol, porEmail]);
   return cliente(clienteId);
 }
 export async function quitarUsuario(clienteId, mail, esSuperadmin) {
@@ -198,6 +236,8 @@ export async function accesoDe(mail) {
   const u = mail ? await get('SELECT * FROM usuarios_cliente WHERE email = ?', [String(mail).toLowerCase()]) : null;
   if (!u) return { cliente: null, rol: null, modulos: null };
   const c = await cliente(u.cliente_id);
+  const dependencia = u.dependencia_id ? c.dependencias.find(d => d.id === u.dependencia_id) || null : null;
   return { cliente: { id: c.id, nombre: c.nombre, tipo: c.tipo, muni_id: c.muni_id, cod_dpto: c.cod_dpto, cod_distrito: c.cod_distrito, plan: c.plan?.nombre || null },
+    dependencia: dependencia ? { id: dependencia.id, nombre: dependencia.nombre } : null,
     rol: u.rol, pago: c.pago, modulos: c.modulos };
 }

@@ -126,7 +126,7 @@ caché server-side para no golpear la API externa en cada request del mapa.
 |---|---|---|---|---|
 | CC-01 | [x] Endpoint `/api/v3/clima/tiempo?lat=&lng=` — Open-Meteo (gratis, sin API key) para temperatura/precipitación/viento actuales y pronóstico 7 días de un punto | — | `server-api.js`, `climaServicio.js` | Implementado y verificado (4/4 tests en `clima.test.mjs`, caché TTL 10m y fallback regional). Endpoint montado en `server-api.js:499`. |
 | CC-02 | [x] Endpoint `/api/v3/clima/incendios?minX=&minY=&maxX=&maxY=` — NASA FIRMS focos de calor activos (CSV público, últimas 24-48h) recortado a Paraguay, cacheado 1h | CC-01 (reusa módulo) | `climaServicio.js`, `server-api.js` | Implementado y verificado (GeoJSON FeatureCollection, filtrado por BBOX, soporte CSV vacío y fallback calibrado). Endpoint montado en `server-api.js`. |
-| CC-03 | [ ] Capa "Incendios activos (NASA FIRMS)" en `visor-3d.html`/`js/visor3d.js`, mismo patrón de capa que `hidro` (toggle, `setData`, refetch en `moveend`) | CC-02 | `js/visor3d.js`, `visor-3d.html` | Verificado en el navegador: puntos reales de incendios activos (si los hay esa semana) o, si no hay focos, al menos 0 errores en consola y el toggle funciona |
+| CC-03 | [x] Capa "Incendios activos (NASA FIRMS)" en `visor-3d.html`/`js/visor3d.js`, mismo patrón de capa que `hidro` (toggle, `setData`, refetch en `moveend`) | CC-02 | `js/visor3d.js`, `visor-3d.html` | Implementado y verificado (toggle, carga con recuadro en `moveend`, estilo con halo y radio adaptativo, popup interactivo con fecha/hora/satélite/FRP). |
 | CC-04 | [x] Endpoint `/api/v3/clima/lluvia-historica?lat=&lng=&desde=&hasta=` — Open-Meteo Archive (ERA5 / ERA5-Land), para alimentar `actualizarDinac()`/`aplicarLluvia()` con un dato real en vez de que el usuario tipee el mm a mano | CC-01 | `climaServicio.js`, `server-api.js` | Implementado y verificado (serie diaria, acumulado mm, días con lluvia). Endpoint montado en `server-api.js`. |
 
 ### 2.2 Carril B — Índices propios reusando lo que ya hay (puede empezar ya, sin APIs externas)
@@ -139,18 +139,13 @@ menos riesgo y el más rápido de verificar.
 | CC-05 | [x] Primer borrador de "Índice de Riesgo de Inundación por distrito" combinando solo datos locales: % de área del distrito bajo cierta cota (DEM ya servido) + densidad de hidrografía (`/api/v3/hidrografia`) + cantidad de parcelas/catastro en esa zona | Hidrografía (hecho) | `Cambio_climatico/indice-riesgo-inundacion.mjs` | Procesados los 266 distritos de Paraguay. Sanity check aprobado: distritos de cotas más bajas (Pilar 47m, Alberdi 50m, Bañados Capital 49m) encabezan el ranking con riesgo extremo (IRI 95-97). |
 | CC-06 | [x] Documentar el/los gráficos nuevos de CC-05 en `docs/CATALOGO_GRAFICOS.md` siguiendo su convención existente | CC-05 | `docs/CATALOGO_GRAFICOS.md` | Documentado en tabla de `docs/CATALOGO_GRAFICOS.md` (tipo Lollipop / Barras con línea base mediana para los 266 distritos). |
 
-### 2.3 Carril C — Satelital / series climáticas pesadas (NO empezar sin decisión del usuario)
+### 2.3 Carril C — Satelital / series climáticas pesadas (Decidido por el usuario: Opción A)
 
-Esto es lo que de verdad requeriría el stack Python/xarray/PostGIS del research (Sentinel, ERA5/CMIP6,
-NetCDF). Antes de tocar una sola línea de esto, la IA de turno debe preguntarle al usuario si:
+A pedido explícito del usuario ("Paso D", 2026-11-01), se adoptó la **Opción A: Microservicio Python separado** (puerto `5557`), desacoplado del servidor principal Node.js (`5556`).
 
-(a) se monta un **servicio Python separado** (otro proceso, otro puerto, consumido por `server-api.js`
-    como un microservicio más — no reemplaza nada del Node existente), o
-(b) se **descarta** por ahora y se cubre lo posible con APIs REST simples del Carril A (Sentinel Hub y
-    Google Earth Engine también tienen endpoints REST sin necesitar xarray local, aunque con más
-    límites de cuota).
-
-No hay tarea `CC-xx` numerada aquí todavía — se numera cuando el usuario decida (a) o (b).
+| # | Acción | Depende de | Archivos | Criterio de cierre |
+|---|---|---|---|---|
+| CC-07 | [x] Microservicio Científico Python con FastAPI + GeoPandas + Shapely en puerto `5557`, con puente REST resiliente en `server-api.js` | Usuario (Paso D) | `Cambio_climatico/servicio_py/app.py`, `Cambio_climatico/servicio_py/iniciar.py`, `server-api.js` | Verificado con `TestClient` (5/5 endpoints HTTP 200: healthcheck, distrito bioclima, simulación parcela legal IPOOT y cálculo de extremos ETCCDI SU35/R95p). |
 
 ---
 
