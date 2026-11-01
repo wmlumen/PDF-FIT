@@ -13,7 +13,7 @@ const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'data'
 const LAYERS = [
   { shp: 'barrios_piri', out: 'barrios', group: 'base' },
   { shp: 'Vias_generales Piri', out: 'vias', group: 'base' },
-  { shp: 'hidro piribebuy', out: 'hidro', group: 'base' },
+  // { shp: 'hidro piribebuy', out: 'hidro', group: 'base' }, -- Eliminado a pedido del usuario
   { shp: 'ZONA DE INFLUENCIA', out: 'zona_influencia', group: 'base' },
   { shp: 'VERTEDERO', out: 'vertedero', group: 'vertedero' },
   { shp: 'VERTEDERO INTEGRADO', out: 'vertedero_integrado', group: 'vertedero' },

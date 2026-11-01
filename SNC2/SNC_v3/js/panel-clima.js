@@ -1378,10 +1378,8 @@ async function evaluarParcelasEnVista() {
     let hidroGeoJson = null;
 
     if (esPiribebuyCasco) {
-      [parcelasGeoJson, hidroGeoJson] = await Promise.all([
-        fetch('/data/municipal/piribebuy/casco/lotes_casco_historico.geojson').then(r => r.json()),
-        fetch('/data/municipal/piribebuy/base/hidro.geojson').then(r => r.json())
-      ]);
+      parcelasGeoJson = await fetch('/data/municipal/piribebuy/casco/lotes_casco_historico.geojson').then(r => r.json());
+      hidroGeoJson = null;
     } else {
       const q = `minX=${minX}&minY=${minY}&maxX=${maxX}&maxY=${maxY}`;
       [parcelasGeoJson, hidroGeoJson] = await Promise.all([
@@ -3174,19 +3172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Toggle de Red Hídrica Fluvial
-  const chipHidro = document.getElementById('chip-hidro-local');
-  if (chipHidro) {
-    chipHidro.addEventListener('click', () => {
-      chipHidro.classList.toggle('active');
-      const activo = chipHidro.classList.contains('active');
-      if (capaHidroLayer && map) {
-        if (activo) map.addLayer(capaHidroLayer);
-        else map.removeLayer(capaHidroLayer);
-      }
-    });
-  }
-
   // Toggle de Capa Distrital
   const chipDist = document.getElementById('chip-distritos');
   if (chipDist) {
@@ -3316,7 +3301,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Chips informativos secundarios
-  document.querySelectorAll('.chip:not(#chip-parcelas):not(#chip-hidro-local):not(#chip-distritos):not(#chip-firms):not(#chip-incendios-hist):not(#chip-estaciones):not(#chip-salud):not(#chip-educacion):not(#chip-industria):not(#chip-bosques)').forEach(chip => {
+  document.querySelectorAll('.chip:not(#chip-parcelas):not(#chip-distritos):not(#chip-firms):not(#chip-incendios-hist):not(#chip-estaciones):not(#chip-salud):not(#chip-educacion):not(#chip-industria):not(#chip-bosques)').forEach(chip => {
     chip.addEventListener('click', () => chip.classList.toggle('active'));
   });
 

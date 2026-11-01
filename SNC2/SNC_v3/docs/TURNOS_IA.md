@@ -6,6 +6,27 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Antigravity · Eliminación de Red Hídrica Fluvial de Piribebuy · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, probar_panel.mjs, scripts/convert-piribebuy.mjs, data/2.Municipal/piribebuy/base/hidro.geojson
+- **Requerimiento del Usuario**: *"Red Hídrica Fluvial de piribebuy, eliminar"*.
+- **Acciones Realizadas**:
+  1. **HTML Frontends (`panel.html` y `Cambio_climatico/panel.html`)**:
+     - Se eliminó el chip de filtro `<span class="chip active" id="chip-hidro-local">💧 Red Hídrica Fluvial</span>` de la barra de capas territoriales y satelitales en ambos archivos.
+  2. **Lógica de Control (`js/panel-clima.js`)**:
+     - En `evaluarParcelasEnVista()`: Se eliminó la petición a `/data/municipal/piribebuy/base/hidro.geojson`, manteniendo únicamente la carga de los 91 lotes de `lotes_casco_historico.geojson`.
+     - En la sección de inicialización y eventos: Se retiró el listener de `chip-hidro-local` y se saneó el selector secundario `:not(#chip-hidro-local)`.
+  3. **Capa y Datos Físicos**:
+     - Se eliminó del repositorio con `git rm` el archivo `data/2.Municipal/piribebuy/base/hidro.geojson`.
+     - En `scripts/convert-piribebuy.mjs`, se comentó la entrada de conversión `{ shp: 'hidro piribebuy', out: 'hidro', group: 'base' }` para evitar su regeneración accidental.
+     - En `AGENTS.md` (§3.1), se actualizó la descripción de la estructura municipal `base/` retirando la referencia a `hidro`.
+  4. **Pruebas y Verificación**:
+     - Se actualizó `probar_panel.mjs` removiendo la aserción sobre `hidro.geojson`.
+     - Ejecución de `node probar_panel.mjs`: 100% OK con endpoints en vivo.
+     - Verificación de codificación: `npm run lint:encoding` (0 mojibake en 3.420 archivos de texto).
+     - Suite completa: `npm test` 100% verde (incluyendo `portal-ciudadano.test.mjs`, `api-security.test.mjs`, `fase11-ccc.test.mjs`, etc.).
+  5. **Coordinación Multi-IA**:
+     - Locks tomados y liberados en `js/panel-clima.js`, `panel.html` y `Cambio_climatico/panel.html`.
+     - Registro de habilidades en `skills.json`: `eliminar_red_hidrica_piribebuy` y `eliminar_red_hidrica_piribebuy_html`.
+
 ### 2026-11-01 · Claude · Visibilidad de pastillas de distrito y mapa base en panel.html (a pedido del usuario) · js/panel-clima.js
 - **Pedido 1**: "http://localhost:5556/panel.html como mejoro la visivilidad" (captura con ~20 pastillas "DISTRITO X" del Área Metropolitana superpuestas) → se ofrecieron 2 opciones, el usuario eligió "1" (el fix real, no el paliativo).
 - **Causa**: `agruparMarcadoresPorProximidadYDistrito()` (niveles 2 a 5: Departamento/Distrito/Urbano-Rural/Barrio) crea una pastilla por grupo sin chequear si su centro en pantalla queda pegado al de otra — en el Área Metropolitana (~20 distritos chicos y pegados) eso las hace chocar.

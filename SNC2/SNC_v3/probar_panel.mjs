@@ -84,7 +84,7 @@ console.log('\n--- Probando Endpoints de Datos en Vivo ---');
   assert.equal(rsk.total_distritos, 246, 'Debe coincidir con los 246 distritos');
 }
 
-// 7. Capas Parcelarias e Hidrológicas de Piribebuy (Opción A)
+// 7. Capas Parcelarias de Piribebuy (Opción A)
 {
   const resLotes = await fetch('http://localhost:5556/data/municipal/piribebuy/casco/lotes_casco_historico.geojson');
   assert.equal(resLotes.status, 200);
@@ -92,13 +92,6 @@ console.log('\n--- Probando Endpoints de Datos en Vivo ---');
   console.log(`\n✅ Capa Parcelas Piribebuy (/data/municipal/piribebuy/casco/lotes_casco_historico.geojson):`);
   console.log(`   - Parcelas cargadas: ${lotes.features.length}`);
   assert.equal(lotes.features.length, 91, 'Debe contener los 91 lotes del casco histórico');
-
-  const resHidro = await fetch('http://localhost:5556/data/municipal/piribebuy/base/hidro.geojson');
-  assert.equal(resHidro.status, 200);
-  const hidro = await resHidro.json();
-  console.log(`✅ Red Hídrica Piribebuy (/data/municipal/piribebuy/base/hidro.geojson):`);
-  console.log(`   - Tramos fluviales: ${hidro.features.length}`);
-  assert.ok(hidro.features.length > 50, 'Debe contener la red hídrica completa');
 }
 
 console.log('\n====================================================');

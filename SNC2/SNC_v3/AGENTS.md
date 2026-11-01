@@ -208,7 +208,7 @@ data/
 ├── 4.Prueba/                # Datos de test y muestras
 ├── municipal/               # ÚNICA carpeta de capas municipales (por municipio)
 │   ├── piribebuy/           # Capas de Piribebuy por carpeta de grupo (subgrupos del panel)
-│   │   ├── base/            # Base territorial: barrios, vias, hidro, zona_influencia
+│   │   ├── base/            # Base territorial: barrios, vias, zona_influencia
 │   │   ├── vertedero/       # Vertedero y entorno: vertedero, vertedero_500/1000, vertedero_integrado, centro
 │   │   └── casco/           # Casco histórico: casco_historico, vuelo_casco
 │   └── test_muni/           # Municipio de prueba (info.json + parcelas.geojson)
