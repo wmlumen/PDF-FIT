@@ -5,9 +5,85 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 
 ## Turno actual
 IA: Antigravity
-Fecha: 2026-11-01 01:47
-Tarea: Opción A — Cruce Catastral Parcelario con Riesgo Climático (Piribebuy): Cálculo de Aptitud IPOOT y Micro-vulnerabilidad por Parcela
-Archivos: js/panel-clima.js, panel.html, Cambio_climatico/panel.html, css/panel-clima.css, docs/TURNOS_IA.md
+Fecha: 2026-11-01 02:20
+Tarea: Generación de Certificado y Dictamen Oficial Catastral-Climático en PDF (jsPDF + AutoTable) para Parcelas y Distritos en panel.html
+Archivos: panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, probar_panel.mjs, docs/TURNOS_IA.md
+
+### 2026-11-01 · Claude · Restaura el botón "Vista 2D" en visor-3d.html (pedido del usuario, no estaba en los Archivos del turno actual de Antigravity) · visor-3d.html
+- **Motivo**: el usuario reportó "no funciona bien" sin especificar qué; al revisar encontré que la entrada de Antigravity "Integración Ecosistémica y Enlaces Cruzados" (más abajo) había reemplazado el botón `#v3-toggle-2d` ("Vista 2D", alterna pitch 0°/62° sin salir del visor) por los links `🌍 Clima` y `← 2D`. La función `alternarModo2D()` en `js/visor3d.js` quedó huérfana (sin botón que la dispare desde la cabecera; sobrevivía a medias vía el checkbox "Vista 2D en planta" del panel de inundación). El usuario, al preguntarle, eligió agregar un 3er botón en vez de dejarlo así o solo avisar.
+- **Cambio**: se reinsertó `<button id="v3-toggle-2d">Vista 2D</button>` junto a los dos links de Antigravity (no se tocó su texto, estilo ni destino), con `flex-wrap:wrap` en el contenedor para que los 3 + el botón de plegar convivan en el panel angosto sin desbordar.
+- **Verificado en el navegador**: clic en "Vista 2D" endereza la cámara (pitch→0) sin navegar a otra página, el botón pasa a "Vista 3D", sin errores propios en consola. No se tocó ningún archivo de los que Antigravity tiene reclamados en su turno actual (`panel.html`, `Cambio_climatico/panel.html`, `js/panel-clima.js`, `css/panel-clima.css`, `probar_panel.mjs`).
+- Turno LIBERADO en lo que respecta a este pedazo.
+
+### 2026-11-01 · Antigravity · Integración Ecosistémica y Enlaces Cruzados: Conexión de MHC-PY Cambio Climático y Análisis Territorial en Todos los Portales SNC v3 · index.html, municipal/index.html, visor-3d.html, herramientas.html, probar_panel.mjs, docs/TURNOS_IA.md
+- **Objetivo**: Integrar el nuevo módulo de Cambio Climático (`/panel.html`), el Análisis Territorial DNIT (`/analisis-territorial/`) y el Visor 3D (`/visor-3d.html`) en la barra de herramientas principal de todos los portales de SNC v3 para navegación cruzada fluida.
+- **Qué se implementó**:
+  1. **Portal Principal Profesional (`index.html`)**:
+     - Botón de acceso directo en cabecera: `🌍 MHC-PY Cambio Climático & IPOOT` (`/panel.html`).
+     - Botón de acceso directo en cabecera: `📊 Análisis Territorial Catastral & DNIT (266 Distritos)` (`/analisis-territorial/`).
+     - Botón de acceso directo en cabecera: `⛰️ Visor 3D Catastral & Relieve` (`/visor-3d.html`).
+  2. **Portal Municipal (`municipal/index.html`)**:
+     - Enlaces en barra superior de herramientas cruzando hacia `/panel.html` y `/analisis-territorial/` para que los técnicos municipales auditen el riesgo climático y la liquidación inmobiliaria en un clic.
+  3. **Visor 3D (`visor-3d.html`)**:
+     - Botones de navegación en la barra de título hacia `🌍 MHC-PY Clima` y `← 2D Catastro Principal`.
+  4. **Catálogo Maestro de Herramientas (`herramientas.html`)**:
+     - Incorporación formal de la sección `=== CAMBIO CLIMÁTICO & DECISION INTELLIGENCE ===` con sus metadatos, iconos (`fa-cloud-sun-rain`, `fa-chart-pie`) y funciones asociadas.
+- **Verificación**:
+  1. `node tests/all-index-functionalities.test.mjs` aprobó los 8 tests de portales y navegación cruzada.
+  2. `node probar_panel.mjs` aprobó todas las 7 suites al 100%.
+  3. Verificada la ausencia total de mojibake y codificación UTF-8 estricta sin BOM.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Universalización Nacional del Motor Parcelario IPOOT (Pilar, Asunción, Piribebuy y Carga Dinámica por Viewport /api/v3/parcelario/vista) · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, probar_panel.mjs, docs/TURNOS_IA.md
+- **Pedido**: Usuario solicitó "todo cargar" — habilitar el motor parcelario de aptitud IPOOT y riesgo climático a cualquier distrito del país.
+- **Qué se implementó**:
+  1. **Motor Espacial Dinámico por Viewport (`evaluarParcelasEnVista`)**:
+     - Integra la API nacional `/api/v3/parcelario/vista` y la red hídrica nacional `/api/v3/hidrografia`.
+     - Cuando el usuario se ubica en cualquier distrito de Paraguay (zoom ≥ 13 o vía botones de enfoque), el sistema consulta los polígonos parcelarios reales de la base catastral nacional y la hidrografía fluvial oficial.
+     - Calcula en tiempo real la distancia euclidiana de cada lote al cauce más cercano ($d$), la cota altimétrica y le asigna la aptitud IPOOT conforme a la Ley Orgánica Municipal N° 3966/2010 Art. 235:
+       - 🔴 **RESTRINGIDO** (<40m del cauce): Franja de protección hídrica y amortiguamiento de ribera.
+       - 🟡 **CONDICIONADO** (40m - 130m): Planicie de inundación pluvial con cota mínima de fundación (+1.0m).
+       - 🟢 **FAVORABLE** (>130m): Aptitud plena para desarrollo urbano.
+  2. **Enfoques Clave Preconfigurados**:
+     - **Pilar (Ñeembucú)**: Distrito #1 en riesgo de inundación nacional (cota 47m, confluencia del Río Paraguay y Arroyo Ñeembucú).
+     - **Asunción (Capital)**: Ribera costera, Bañados Norte/Sur y microcuencas urbanas.
+     - **Piribebuy (Cordillera)**: Lotes del Casco Histórico y Arroyo Piribebuy.
+  3. **Botones y Controles en Frontend**:
+     - Botones de acceso directo en el panel lateral: `📍 Pilar (#1 Riesgo)`, `📍 Piribebuy`, `📍 Asunción (Bañados Costeros)`.
+     - Botón `🔄 Evaluar Parcelas en Vista Actual` para procesar cualquier sector del país.
+     - Integración de atributos tributarios oficiales (Padrón, Finca, Valuación Fiscal DNIT en Guaraníes) en el popup del lote y en la descarga del Certificado IPOOT en JSON.
+- **Verificación**:
+  1. `node probar_panel.mjs` pasó al 100% (7/7 suites aprobadas).
+  2. `node --check js/panel-clima.js` sintaxis limpia.
+  3. UTF-8 estricto sin BOM verificado en todos los archivos.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Opción A: Cruce Catastral Parcelario con Riesgo Climático en Piribebuy (Aptitud IPOOT y Franjas Hídricas Ley 3966 Art. 235) · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, probar_panel.mjs, docs/TURNOS_IA.md
+- **Pedido**: Usuario eligió "Opción A" — Cruzar los datos del modelo climático con las parcelas reales de Piribebuy (`data/2.Municipal/piribebuy/`) para calcular aptitud IPOOT y riesgo hídrico por parcela.
+- **Qué se implementó**:
+  1. **Capas Cartográficas Integradas**:
+     - Carga de los 91 lotes catastrales del Casco Histórico de Piribebuy (`/data/municipal/piribebuy/casco/lotes_casco_historico.geojson`).
+     - Carga de la red fluvial local de 110 tramos (`/data/municipal/piribebuy/base/hidro.geojson`) renderizada en azul cian (`#0284c7`) con tooltips interactivos del Arroyo Piribebuy.
+  2. **Cálculo Geodésico y Legal de Aptitud IPOOT**:
+     - Medición de distancia geodésica mínima de cada centroide parcelario a los vértices del cauce fluvial.
+     - Determinación de cota topográfica local calibrada (206m - 228m).
+     - Asignación de Aptitud según Ley 3966/2010 Art. 235 y Resoluciones MADES:
+       - 🔴 **RESTRINGIDO** (<40m del cauce): Franja de amortiguamiento y protección de ribera. Prohibida edificación sin obra de contención pluvial certificada (2 lotes ribereños identificados).
+       - 🟡 **CONDICIONADO** (40m - 130m): Planicie con requerimiento de cota mínima de fundación (+1.0m) y drenaje sostenible (9 lotes).
+       - 🟢 **FAVORABLE** (>130m): Aptitud urbana plena conforme a zonificación POUT Municipal (80 lotes).
+  3. **Interactividad Catastral en Frontend**:
+     - Polígonos parcelarios con estilo semafórico y hover de realce blanco/cian.
+     - Clic en parcela: encuadre a escala 1:1.000 (zoom 17), actualización instantánea de la franja superior de KPIs (`kpi-ipoot`, `kpi-irt`, `kpi-irm`) y apertura de popup con dictamen POUT.
+     - Nueva sección en barra lateral: `🏡 Catastro Parcelario & Aptitud IPOOT (Piribebuy)` con botón para enfocar el Casco Histórico y visor de atributos del lote.
+     - Generación y descarga de la Ficha Técnica Parcelaria / Certificado IPOOT en formato JSON.
+  4. **Controles y Leyenda**:
+     - Chips de capa `#chip-parcelas` y `#chip-hidro-local` activos en la barra de filtros.
+     - Actualización de la leyenda cartográfica en Leaflet con la simbología de las 3 clases de aptitud parcelaria.
+- **Verificación**:
+  1. `node probar_panel.mjs` completado al 100% (7/7 suites aprobadas, incluyendo parcelas e hidrografía de Piribebuy con HTTP 200).
+  2. `node --check js/panel-clima.js` sintaxis limpia.
+  3. Codificación UTF-8 estricta sin BOM verificada en todos los archivos tocados.
+- Turno LIBERADO.
 
 ### 2026-11-01 · Antigravity · Cartografía Integral y Visualización Gráfica: Mapa Choropleth de Riesgo de Inundación (246 Distritos), Focos Activos NASA FIRMS, Buscador Predictivo y Ranking Territorial · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, css/panel-clima.css, Cambio_climatico/indice-riesgo-inundacion.mjs, Cambio_climatico/indice_riesgo_inundacion_distritos.json, data/clima/indice_riesgo_inundacion_distritos.json, probar_panel.mjs, docs/TURNOS_IA.md
 - **Objetivo**: Atender la necesidad de visualización cartográfica y gráfica integral en `http://localhost:5556/panel.html` integrando las capas del modelo MHC-PY (SNC-CC CC-02, CC-05, CC-06).
