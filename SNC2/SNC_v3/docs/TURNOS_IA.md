@@ -6,6 +6,32 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Claude · Reorganizar "Sim. hidrológica" en sub-secciones (pedido del usuario) · visor-3d.html, css/visor3d.css
+- **Pedido**: el usuario seleccionó el fieldset "Sim. hidrológica — cualquier punto del país" y pidió "rediseñar"; al preguntar qué parte, eligió "reorganizar los controles adentro" (no estilo, no plegado).
+- **Cambio**: el contenido (antes todo mezclado en un solo bloque de +1000px) se agrupó en 4 sub-secciones con título y borde propio (nueva clase `.v3-instr-seccion` + `.v3-instr-seccion-titulo` en `css/visor3d.css`): 📍 Cuenca, 💧 Nivel de agua (cota), 🌧️ Lluvia, 📊 Resultados. Ningún control se agregó/quitó ni cambió de `id`; solo se reagrupó en `<div>`s. El rótulo "🌧️ Lluvia acumulada" dentro de la sección Lluvia se acortó a "Acumulada" para no repetir la palabra con el título nuevo.
+- **Verificado**: los 25 `id` del bloque siguen apareciendo exactamente una vez (`grep -c` por cada uno). En el navegador: las 4 secciones se ven agrupadas con su título, Resultados mantiene la grilla de 2 columnas (Volumen/Caudal) + el checkbox de vectores de flujo debajo, sin errores propios en consola.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Habilitación Directa de /panel.html en Raíz y Rutas Públicas · panel.html, server-api.js, docs/TURNOS_IA.md
+- **Pedido**: `http://localhost:5556/panel.html`
+- **Qué se hizo**:
+  1. Se registró `/panel.html` en `PUBLIC_HTML_FILES` y en la ruta de express de `server-api.js`.
+  2. Se colocó el archivo `panel.html` directamente en la raíz del proyecto para acceso instantáneo vía cualquier servidor web estático o directo desde el explorador.
+- **Verificado**: `panel.html` (24.946 bytes) en la raíz, `node --check server-api.js` limpio (código 0).
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Publicación HTTP y Cableado de Rutas para Cambio Climático · server-api.js, Cambio_climatico/panel.html, docs/TURNOS_IA.md
+- **Pedido**: `http://localhost:5556/Cambio_climatico/panel.html`
+- **Qué se hizo**:
+  1. Se configuró en `server-api.js` la ruta estática y el manejador directo para servir el panel:
+     - `app.use('/Cambio_climatico', express.static(join(__dirname, 'Cambio_climatico'), STATIC_OPTIONS))`
+     - `app.get(['/Cambio_climatico', '/Cambio_climatico/', '/Cambio_climatico/panel.html', '/panel-clima.html'], (req, res) => res.sendFile(...))`
+  2. En `Cambio_climatico/panel.html`:
+     - Se integró la consulta local hacia `/api/v3/clima/tiempo` (con fallback transparente a Open-Meteo directo si corre en local/offline).
+     - Se conectó la capa interactiva `🔥 Focos de Calor (FIRMS)` en el mapa Leaflet consumiendo el endpoint `/api/v3/clima/incendios`.
+- **Nota de servidor (Regla 6 AGENTS.md)**: El proceso del servidor existente (`pid 30368`) está en ejecución; para que el puerto 5556 sirva la nueva ruta en memoria, requiere reinicio del proceso (`npm start`), o puede abrirse directamente el archivo `Cambio_climatico/panel.html` en el navegador.
+- Turno LIBERADO.
+
 ### 2026-11-01 · Claude · "Mapa base" y "Capas" plegables (pedido del usuario) · visor-3d.html, js/visor3d.js
 - **Pedido**: el usuario seleccionó los fieldsets "Mapa base" y "Capas" y pidió "ocultar/mostrar" en ambos.
 - **Cambio**: mismo patrón que ya tenía "Exportar topografía" (legend clickeable con `role="button"`, ícono ▸/▾, `aria-expanded`). Se generalizó la lógica: `toggleExportar()` pasó a ser `plegable(legendId, cuerpoId, icoId)`, reutilizada para los 3 casos (`v3-exp-*`, `v3-base-*`, `v3-capas-*`). Ambas secciones nuevas arrancan expandidas (son de uso frecuente), a diferencia de Exportar que arranca colapsada.

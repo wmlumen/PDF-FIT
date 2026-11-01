@@ -100,6 +100,11 @@ output { color: #7dd3fc; font-weight: 700; }
 .v3-instr-nivel #v3-inund-nivel { font-size: 13px; font-weight: 700; letter-spacing: .05em; }
 .v3-instr-nivel #v3-inund-cota-o { font-size: 17px; font-weight: 700; color: #5eead4 !important; text-shadow: 0 0 10px rgba(94, 234, 212, .5); }
 
+.v3-instr-seccion { border: 1px solid #163042; border-radius: 6px; padding: 7px 8px; margin: 8px 0; background: rgba(94, 234, 212, .02); }
+.v3-instr-seccion-titulo {
+  margin: 0 0 6px; font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #2dd4bf;
+}
 .v3-instr-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .v3-instr-tile { border: 1px solid #163042; border-radius: 4px; padding: 6px 8px; background: rgba(94, 234, 212, .03); display: grid; gap: 3px; }
 .v3-instr-tile output { font-size: 14px; font-weight: 700; color: #5eead4; }

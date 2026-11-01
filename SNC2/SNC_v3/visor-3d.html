@@ -79,7 +79,8 @@
       <fieldset class="v3-instrumento"><legend>Sim. hidrológica — cualquier punto del país</legend>
         <span class="v3-instr-esquina tl" aria-hidden="true"></span><span class="v3-instr-esquina tr" aria-hidden="true"></span>
         <span class="v3-instr-esquina bl" aria-hidden="true"></span><span class="v3-instr-esquina br" aria-hidden="true"></span>
-        <div style="margin-bottom:8px;">
+        <div class="v3-instr-seccion">
+          <p class="v3-instr-seccion-titulo">📍 Cuenca</p>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <label style="font-size:11px;color:#94a3b8;font-weight:600;">Ubicación / Cuenca:</label>
             <span id="v3-inund-cota-base-txt" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">Base: — m</span>
@@ -100,31 +101,35 @@
         </div>
         <label class="v3-op"><input type="checkbox" id="v3-inundacion"> Simular crecida / inundación</label>
         <div id="v3-inund-ctrl" hidden>
-          <div id="v3-inund-presets" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;">
-            <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-norm" data-delta="0" style="padding:3px 6px;font-size:10.5px;background:#334155;">Base (0m)</button>
-            <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-aler" data-delta="2" style="padding:3px 6px;font-size:10.5px;background:#0284c7;">Alerta (+2m)</button>
-            <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-crit" data-delta="5" style="padding:3px 6px;font-size:10.5px;background:#f59e0b;">Crítica (+5m)</button>
-            <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-rec" data-delta="8" style="padding:3px 6px;font-size:10.5px;background:#e11d48;">Récord (+8m)</button>
-          </div>
-          <p class="v3-instr-rotulo" style="margin:4px 0 2px;">Cota lámina de agua</p>
-          <div class="v3-instr-nivel">
-            <div class="v3-instr-nivel-izq">
-              <span class="v3-instr-punto" id="v3-instr-punto" style="color:#34d399;" aria-hidden="true"></span>
-              <output id="v3-inund-nivel">BASE</output>
+          <div class="v3-instr-seccion">
+            <p class="v3-instr-seccion-titulo">💧 Nivel de agua (cota)</p>
+            <div id="v3-inund-presets" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;">
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-norm" data-delta="0" style="padding:3px 6px;font-size:10.5px;background:#334155;">Base (0m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-aler" data-delta="2" style="padding:3px 6px;font-size:10.5px;background:#0284c7;">Alerta (+2m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-crit" data-delta="5" style="padding:3px 6px;font-size:10.5px;background:#f59e0b;">Crítica (+5m)</button>
+              <button type="button" class="v3-boton v3-inund-btn" id="v3-btn-rec" data-delta="8" style="padding:3px 6px;font-size:10.5px;background:#e11d48;">Récord (+8m)</button>
             </div>
-            <output id="v3-inund-cota-o">— m</output>
+            <p class="v3-instr-rotulo" style="margin:4px 0 2px;">Cota lámina de agua</p>
+            <div class="v3-instr-nivel">
+              <div class="v3-instr-nivel-izq">
+                <span class="v3-instr-punto" id="v3-instr-punto" style="color:#34d399;" aria-hidden="true"></span>
+                <output id="v3-inund-nivel">BASE</output>
+              </div>
+              <output id="v3-inund-cota-o">— m</output>
+            </div>
+            <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
+            <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
+              <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:5px 8px;font-size:11.5px;">▶ Simular crecida</button>
+              <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:5px 8px;font-size:11.5px;background:#334155;" title="Recalcular sobre la vista actual">↻ Muestrear aquí</button>
+            </div>
+            <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
+            <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
           </div>
-          <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
-          <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
-            <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:5px 8px;font-size:11.5px;">▶ Simular crecida</button>
-            <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:5px 8px;font-size:11.5px;background:#334155;" title="Recalcular sobre la vista actual">↻ Muestrear aquí</button>
-          </div>
-          <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
-          <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
 
-          <div style="margin-top:8px;padding:7px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+          <div class="v3-instr-seccion">
+            <p class="v3-instr-seccion-titulo">🌧️ Lluvia</p>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label style="font-size:11px;color:#94a3b8;font-weight:600;">🌧️ Lluvia acumulada (sube la cota):</label>
+              <label style="font-size:11px;color:#94a3b8;font-weight:600;">Acumulada (sube la cota):</label>
               <output id="v3-lluvia-o" class="v3-instr-dato" style="font-size:11px;color:#5eead4;font-weight:bold;">0 mm</output>
             </div>
             <input type="range" id="v3-lluvia" min="0" max="450" step="5" value="0" style="width:100%;">
@@ -160,7 +165,8 @@
             <p class="v3-fuente" style="margin-top:4px;">Estimación: la lluvia efectiva (mm × coeficiente) mueve la cota entre el nivel normal y el récord histórico de la cuenca elegida (o ±16 m del punto actual si no hay cuenca). No reemplaza un modelo hidrológico.</p>
           </div>
 
-          <div id="v3-inund-analitica" hidden class="v3-instr-tiles" style="margin-top:8px;">
+          <div id="v3-inund-analitica" hidden class="v3-instr-seccion v3-instr-tiles">
+            <p class="v3-instr-seccion-titulo" style="grid-column:1/-1;">📊 Resultados</p>
             <div class="v3-instr-tile">
               <span class="v3-instr-rotulo">Volumen</span>
               <output id="v3-vol-o" class="v3-instr-dato">— hm³</output>
@@ -196,6 +202,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261101b"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101c"></script>
 </body>
 </html>
