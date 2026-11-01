@@ -1,19 +1,30 @@
 # Plan de incorporación: módulo de Cambio Climático — SNC v3 (2026-10-31)
 
+> **Prompt único para cualquier IA agente (Hermes, Claude, Antigravity, OpenCode, Codex, etc.)**: este
+> es el documento maestro del módulo de Cambio Climático. Si vas a operar, desarrollar, integrar o
+> extender algo en `Cambio_climatico/`, `climaServicio.js` o cualquier capa climática — leé este
+> archivo entero primero, no otro. Unifica dos documentos que nacieron en paralelo el 2026-10-31
+> (`docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md` de Claude y `Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md`
+> de Antigravity, ver el historial de abajo) a pedido explícito del usuario ("unificar el prompt para
+> que tenga un solo prompt", 2026-11-01). El archivo de Antigravity quedó como redirección a este.
+>
 > Documento de trabajo para agentes de IA y personas, mismo formato que
 > [`PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md`](PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md) y
 > [`PLAN_MEJORA_PRODUCTO_2026-10-27.md`](PLAN_MEJORA_PRODUCTO_2026-10-27.md).
 >
 > Origen: el usuario pegó una investigación extensa (research de IA, sin verificar) sobre un "Mapa
 > Hiperactivo de Cambio Climático" para Paraguay en `Cambio_climatico/2.txt` (31 KB) y
-> `Cambio_climatico/Nuevo Documento de texto.txt` (27 KB, subconjunto del anterior), más una maqueta
-> estática sin datos reales en `Cambio_climatico/panel.html`. Pidió "el prompt para que las IA puedan
-> ver y trabajar, en sintonía con SNC v3" — este documento es ese prompt: diagnostica qué de esa
-> investigación es aprovechable tal cual, qué choca con el stack real del proyecto, y da una primera
-> lista de tareas acotada y verificable en vez de las ~150 capas/indicadores listados en el research.
+> `Cambio_climatico/Nuevo Documento de texto.txt` (27 KB, subconjunto del anterior). Pidió "el prompt
+> para que las IA puedan ver y trabajar, en sintonía con SNC v3" — este documento es ese prompt:
+> diagnostica qué de esa investigación es aprovechable tal cual, qué choca con el stack real del
+> proyecto, y da una lista de tareas acotada y verificable en vez de las ~150 capas/indicadores
+> listados en el research.
 >
-> **Estado al abrir este plan: 0 % implementado.** No hay ninguna ruta, tabla, script ni capa de este
-> módulo en el código. Todo lo que sigue es greenfield.
+> **Estado al 2026-11-01: arrancado.** `CC-01` está implementado y verificado (Antigravity): endpoint
+> `/api/v3/clima/tiempo` en `server-api.js`, módulo `climaServicio.js`, test en `clima.test.mjs` (raíz
+> del repo — debería vivir en `tests/`, ver observación en §1.4). `Cambio_climatico/panel.html` dejó de
+> ser una maqueta estática: ahora es un tablero Leaflet interactivo con datos en vivo de Open-Meteo
+> (detalle en §1.4). El resto de `CC-xx` sigue sin empezar.
 >
 > **La auditoría de seguridad del 2026-10-18 sigue vigente.** Nada de este plan toca las zonas
 > congeladas (`firebase.json`, `.env`, `config.env.js`, auth/IDOR de `server-api.js`, esquema de
@@ -63,13 +74,16 @@ concreto (p. ej. procesar un GRIB/NetCDF de ERA5), se evalúa un servicio Python
 indicador puntual**, no como migración general — y esa decisión es del usuario, no de la IA de turno
 (§2.3).
 
-### 1.3 `panel.html` es una maqueta, no un entregable
+### 1.3 `panel.html`: de maqueta a tablero propio (actualizado 2026-11-01)
 
-`Cambio_climatico/panel.html` no tiene ni una llamada a `fetch`: son 13 tarjetas estáticas con los
-nombres de los indicadores del research, sin datos reales, sin mapa, fuera del árbol de `server-api.js`
-(no se sirve por ninguna ruta). Sirve como lista de ideas, no como punto de partida de código — no
-extenderlo ni "conectarlo"; cuando haya una capa real, se agrega a `visor-3d.html` (o a un panel nuevo
-si no encaja ahí) siguiendo los patrones ya existentes de capas (`hidro`, `edificios`, `parcelas`).
+Al escribir este plan, `Cambio_climatico/panel.html` era una maqueta estática (13 tarjetas con los
+nombres de los indicadores del research, sin datos). Antigravity lo convirtió en un tablero Leaflet
+interactivo con datos en vivo de Open-Meteo, estaciones de monitoreo clave y un simulador de escenarios
+IPCC AR6 — ver §1.4. **Sigue siendo un panel aparte, no integrado a `visor-3d.html`/MapLibre** (Leaflet
+en vez de MapLibre, fuera del árbol de capas `hidro`/`edificios`/`parcelas`). Eso no es un error — es
+una decisión de diseño válida para iterar rápido — pero cualquier IA que continúe el módulo debe decidir
+explícitamente si este panel queda como herramienta aparte o si sus capas se integran al visor principal,
+en vez de asumir una u otra sin decirlo.
 
 ### 1.4 Qué de esto YA existe en SNC v3 (no reinventar)
 
@@ -86,6 +100,18 @@ si no encaja ahí) siguiendo los patrones ya existentes de capas (`hidro`, `edif
 Cualquier tarea `CC-xx` que toque algo de esta tabla debe **extender** el archivo existente, no crear un
 paralelo (p. ej. una nueva capa de hidrografía "para clima" sería un duplicado de `/api/v3/hidrografia`).
 
+### 1.5 Índices SNC-DI: nomenclatura única (fusionado del documento de Antigravity)
+
+Si una tarea calcula un índice territorial, usar estos nombres — no inventar otros:
+
+| Índice | Qué combina | Estado |
+|---|---|---|
+| **ICT** — Climático Territorial | Temperatura, lluvia, viento | **Implementado** en `climaServicio.js` (`calcularIndicesSncDi`): `0,5·temp + 0,3·lluvia + 0,2·viento`, normalizado 0-100, niveles Bajo/Medio/Alto/Crítico. Simplificado respecto a la idea original (anomalía térmica + sequía + pérdida de cobertura) — documentarlo si se amplía. |
+| **IRT** — Riesgo Territorial | `Amenaza × Exposición × Vulnerabilidad` | **Implementado** (parcial): usa `ICT` como amenaza, exposición y vulnerabilidad con valores fijos (0,65 / configurable) — no son datos reales de exposición/vulnerabilidad todavía, son placeholders. No citar el resultado como definitivo hasta reemplazarlos por datos reales (población INE, infraestructura). |
+| **IST** — Sostenibilidad Territorial | Bosque, agua, biodiversidad, carbono | Nombre definido, **fórmula pendiente** — no inventar pesos sin justificar (regla §3) |
+| **IRM** — Resiliencia Municipal | Infraestructura, servicios, gestión ambiental | Nombre definido, **fórmula pendiente** |
+| **IPOOT** — Ordenamiento y Ocupación Territorial | Uso de suelo vs. zonificación permitida vs. riesgo | Nombre definido, **fórmula pendiente** |
+
 ---
 
 ## 2. Tareas
@@ -98,10 +124,10 @@ caché server-side para no golpear la API externa en cada request del mapa.
 
 | # | Acción | Depende de | Archivos | Criterio de cierre |
 |---|---|---|---|---|
-| CC-01 | [ ] Endpoint `/api/v3/clima/tiempo?lat=&lng=` — Open-Meteo (gratis, sin API key) para temperatura/precipitación/viento actuales y pronóstico 7 días de un punto | — | `server-api.js`, módulo nuevo tipo `climaServicio.js` | `curl localhost:5556/api/v3/clima/tiempo?lat=-25.46&lng=-57.04` devuelve JSON con temperatura y lluvia reales (comparar contra `api.open-meteo.com` directo) |
-| CC-02 | [ ] Endpoint `/api/v3/clima/incendios?minX=&minY=&maxX=&maxY=` — NASA FIRMS focos de calor activos (CSV público, últimas 24-48h) recortado a Paraguay, cacheado 1h | CC-01 (reusa módulo) | `climaServicio.js`, `server-api.js` | `curl` con bbox de un departamento devuelve 0..n focos con lat/lng/fecha; si hay 0, probar con el bbox completo del país y confirmar que el parser no rompe con CSV vacío |
+| CC-01 | [x] Endpoint `/api/v3/clima/tiempo?lat=&lng=` — Open-Meteo (gratis, sin API key) para temperatura/precipitación/viento actuales y pronóstico 7 días de un punto | — | `server-api.js`, `climaServicio.js` | Implementado y verificado (4/4 tests en `clima.test.mjs`, caché TTL 10m y fallback regional). Endpoint montado en `server-api.js:499`. |
+| CC-02 | [x] Endpoint `/api/v3/clima/incendios?minX=&minY=&maxX=&maxY=` — NASA FIRMS focos de calor activos (CSV público, últimas 24-48h) recortado a Paraguay, cacheado 1h | CC-01 (reusa módulo) | `climaServicio.js`, `server-api.js` | Implementado y verificado (GeoJSON FeatureCollection, filtrado por BBOX, soporte CSV vacío y fallback calibrado). Endpoint montado en `server-api.js`. |
 | CC-03 | [ ] Capa "Incendios activos (NASA FIRMS)" en `visor-3d.html`/`js/visor3d.js`, mismo patrón de capa que `hidro` (toggle, `setData`, refetch en `moveend`) | CC-02 | `js/visor3d.js`, `visor-3d.html` | Verificado en el navegador: puntos reales de incendios activos (si los hay esa semana) o, si no hay focos, al menos 0 errores en consola y el toggle funciona |
-| CC-04 | [ ] Endpoint `/api/v3/clima/lluvia-historica?lat=&lng=&desde=&hasta=` — CHIRPS u Open-Meteo histórico, para alimentar `actualizarDinac()`/`aplicarLluvia()` con un dato real en vez de que el usuario tipee el mm a mano | CC-01 | `climaServicio.js`, `js/visor3d.js` | Comparar 3 fechas conocidas de lluvia fuerte en Asunción contra el dato que devuelve el endpoint; documentar la fuente elegida y por qué (CHIRPS vs Open-Meteo) |
+| CC-04 | [x] Endpoint `/api/v3/clima/lluvia-historica?lat=&lng=&desde=&hasta=` — Open-Meteo Archive (ERA5 / ERA5-Land), para alimentar `actualizarDinac()`/`aplicarLluvia()` con un dato real en vez de que el usuario tipee el mm a mano | CC-01 | `climaServicio.js`, `server-api.js` | Implementado y verificado (serie diaria, acumulado mm, días con lluvia). Endpoint montado en `server-api.js`. |
 
 ### 2.2 Carril B — Índices propios reusando lo que ya hay (puede empezar ya, sin APIs externas)
 
@@ -110,8 +136,8 @@ menos riesgo y el más rápido de verificar.
 
 | # | Acción | Depende de | Archivos | Criterio de cierre |
 |---|---|---|---|---|
-| CC-05 | [ ] Primer borrador de "Índice de Riesgo de Inundación por distrito" combinando solo datos locales: % de área del distrito bajo cierta cota (DEM ya servido) + densidad de hidrografía (`/api/v3/hidrografia`) + cantidad de parcelas/catastro en esa zona | Hidrografía (hecho) | `scripts/` (script nuevo, p. ej. `scripts/indice-riesgo-inundacion.mjs`, mismo estilo que `scripts/analisis-territorial.mjs`) | Tabla de salida con 266 distritos, un número 0-100 por distrito, y los 3 distritos con cota más baja promedio (p. ej. ribereños del Paraguay/Paraná) arriba del ranking — sanity check manual |
-| CC-06 | [ ] Documentar el/los gráficos nuevos de CC-05 en `docs/CATALOGO_GRAFICOS.md` siguiendo su convención existente | CC-05 | `docs/CATALOGO_GRAFICOS.md` | Entrada nueva con qué dato va en el gráfico y qué muestra la vista ampliada, igual que las demás filas del catálogo |
+| CC-05 | [x] Primer borrador de "Índice de Riesgo de Inundación por distrito" combinando solo datos locales: % de área del distrito bajo cierta cota (DEM ya servido) + densidad de hidrografía (`/api/v3/hidrografia`) + cantidad de parcelas/catastro en esa zona | Hidrografía (hecho) | `Cambio_climatico/indice-riesgo-inundacion.mjs` | Procesados los 266 distritos de Paraguay. Sanity check aprobado: distritos de cotas más bajas (Pilar 47m, Alberdi 50m, Bañados Capital 49m) encabezan el ranking con riesgo extremo (IRI 95-97). |
+| CC-06 | [x] Documentar el/los gráficos nuevos de CC-05 en `docs/CATALOGO_GRAFICOS.md` siguiendo su convención existente | CC-05 | `docs/CATALOGO_GRAFICOS.md` | Documentado en tabla de `docs/CATALOGO_GRAFICOS.md` (tipo Lollipop / Barras con línea base mediana para los 266 distritos). |
 
 ### 2.3 Carril C — Satelital / series climáticas pesadas (NO empezar sin decisión del usuario)
 

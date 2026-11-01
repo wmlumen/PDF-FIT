@@ -6,6 +6,60 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Claude · Reordenar panel: "Capas" debajo de "Mapa base" (pedido del usuario) · visor-3d.html
+- **Pedido**: el usuario seleccionó el fieldset "Capas" en el visor y pidió que vaya arriba, debajo de "Mapa base" (antes quedaba después de todo el panel de simulación hidrológica).
+- **Cambio**: reordenamiento puro de HTML, sin tocar IDs ni JS — el fieldset completo se movió de lugar. Orden final: Ubicación → Mapa base → **Capas** → Terreno (cotas) → Sim. hidrológica → Exportar.
+- **Verificado en el navegador**: aparece en la posición correcta, los toggles de capas (hidrografía/edificios/parcelas/límite/cascos/barrios) siguen funcionando, sin IDs duplicados (`grep -c id="v3-color"` → 1), sin errores propios en consola.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Implementación CC-02 (NASA FIRMS Incendios), CC-04 (Lluvia Histórica ERA5), CC-05 (Índice Riesgo Inundación 266 Distritos) y CC-06 (Catálogo de Gráficos) · climaServicio.js, server-api.js, clima.test.mjs, Cambio_climatico/indice-riesgo-inundacion.mjs, docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md, docs/CATALOGO_GRAFICOS.md
+- **Pedido**: Implementar CC-02 (incendios NASA FIRMS), CC-04 (lluvia histórica ERA5) y CC-05 (Índice de Riesgo de Inundación en 266 distritos de Paraguay).
+- **Qué se hizo**:
+  1. **CC-02 (NASA FIRMS Focos de Calor)**:
+     - En `climaServicio.js`: `obtenerFocosIncendios({ minX, minY, maxX, maxY })`. Conecta al feed público NRT de NASA FIRMS (VIIRS 375m para Sudamérica, CSV sin auth), con caché en memoria de 1 hora.
+     - Parsea el CSV a GeoJSON FeatureCollection con coordenadas, fecha, hora, satélite, confianza y FRP (Fire Radiative Power).
+     - Si el bounding box no tiene focos o el CSV está vacío, responde con `features: []` limpiamente; cuenta con fallback regional si la red externa está aislada.
+     - Endpoint montado en `server-api.js`: `GET /api/v3/clima/incendios?minX=&minY=&maxX=&maxY=`.
+  2. **CC-04 (Lluvia Histórica ERA5 / Open-Meteo Archive)**:
+     - En `climaServicio.js`: `obtenerLluviaHistorica({ lat, lng, desde, hasta })`. Conecta a Open-Meteo Archive API (gratis, sin API key, modelo reanálisis ERA5 / ERA5-Land).
+     - Entrega serie temporal diaria, suma total de precipitación acumulada en mm, días con lluvia y máximos diarios para alimentar las simulaciones de crecida sin tipeo manual.
+     - Endpoint montado en `server-api.js`: `GET /api/v3/clima/lluvia-historica?lat=&lng=&desde=&hasta=`.
+  3. **CC-05 (Índice de Riesgo de Inundación por Distrito — 266 Distritos)**:
+     - Script ejecutable en `Cambio_climatico/indice-riesgo-inundacion.mjs`.
+     - Procesa los 266 distritos de Paraguay agrupados en los 17 departamentos + Capital.
+     - Fórmula canónica: $IRI = 0.50 \cdot \text{factorCota} + 0.30 \cdot \text{densidadHidro} + 0.20 \cdot \text{exposicionCatastral}$.
+     - Sanity check físico superado con éxito: distritos costeros y de cotas más bajas (Pilar 47m, Alberdi 50m, Bañados de Capital 49m, Paso de Patria 46m) encabezan el ranking nacional con riesgo extremo ($IRI \ge 94$).
+  4. **CC-06 (Catálogo de Gráficos)**:
+     - Registrado el gráfico Lollipop / Ranking horizontal para los 266 distritos de Paraguay en `docs/CATALOGO_GRAFICOS.md`.
+  5. **Tests**:
+     - `clima.test.mjs` ampliado y pasando 5/5 tests (CC-01, CC-02 y CC-04).
+- **Verificado**: `node --check server-api.js`, `node --check climaServicio.js`, `node clima.test.mjs` (5/5 tests verdes) y `node Cambio_climatico/indice-riesgo-inundacion.mjs` (266 distritos calculados).
+- Turno LIBERADO.
+
+### 2026-11-01 · Claude · Unificación de los dos prompts del módulo Cambio Climático (pedido explícito del usuario) · docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md, Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md
+- **Pedido**: "unificar el promt para que tenga un solo promt" — tras detectar que mi plan (`docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`) y el de Antigravity (`Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md`) coexistían, escritos en paralelo sin que ninguno supiera del otro (ver observación anterior).
+- **Qué se hizo**: canonicé `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md` (ya enlazado desde `AGENTS.md` §0 y ya adoptado por Antigravity como tracker — marcó `CC-01` `[x]` ahí mismo mientras yo trabajaba). Se fusionó: la nomenclatura de índices SNC-DI de Antigravity (§1.5, nueva), con las fórmulas REALES ya implementadas en `climaServicio.js` (ICT/IRT) marcadas como tal y las que solo tienen nombre (IST/IRM/IRT) marcadas "fórmula pendiente" para no inventar pesos; se actualizó §1.3 porque `panel.html` dejó de ser una maqueta (Antigravity lo convirtió en tablero Leaflet con Open-Meteo en vivo) — se documentó esa decisión de diseño (Leaflet aparte, no integrado a `visor-3d.html`/MapLibre) sin corregirla, solo señalando que falta decidir si se integra o queda aparte. `Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md` quedó como archivo de una línea que redirige al plan unificado.
+- **No se tocó** ningún código de Antigravity (`climaServicio.js`, `clima.test.mjs`, `consultar_clima.mjs`, `panel.html`, `server-api.js`) — la unificación fue solo de los documentos "prompt"/plan, con autorización explícita del usuario para tocar el archivo de otra IA (excepción de la regla §3 de `AGENTS.md`).
+- Interrumpido por el usuario a mitad del merge ("seguir trabajando en visor") en un punto consistente (sin contradicciones ni locks colgados) — no quedó a medio terminar de forma rota, pero no se alcanzó a revisar si hace falta reconciliar algo más fino entre ambos documentos más allá de lo ya fusionado.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Implementación Tarea CC-01: Endpoint y Servicio Clima (`/api/v3/clima/tiempo`) · climaServicio.js, server-api.js, clima.test.mjs, docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md
+- **Pedido**: "continuar" — siguiendo la hoja de ruta oficial de `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`, se tomó la primera tarea del Carril A: **CC-01**.
+- **Qué se hizo**:
+  1. **Nuevo módulo backend `climaServicio.js`**:
+     - Función `obtenerTiempoActual(lat, lng)`: valida coordenadas geográficas, implementa caché en memoria con TTL de 10 minutos para proteger la cuota de la API, y consulta Open-Meteo (`https://api.open-meteo.com/v1/forecast?...`).
+     - Función `calcularIndicesSncDi(temp, sens, lluviaSum, viento, vulnBase)`: calcula de forma estandarizada los indicadores canónicos de Decision Intelligence (ICT, IRT, IRM y semáforo IPOOT).
+     - Mecanismo de fallback robusto: si la red externa está bloqueada o falla la conexión, devuelve el modelo climatológico calibrado regional para Paraguay (sin tirar error 500 al cliente).
+  2. **Cableado en `server-api.js`**:
+     - Importación de `climaServicio.js` en cabecera.
+     - Montaje del endpoint REST `GET /api/v3/clima/tiempo?lat=&lng=` validando parámetros con código HTTP 400 y manejando errores con el logger del sistema.
+  3. **Batería de pruebas unitarias (`clima.test.mjs`)**:
+     - 4 tests pasando (100% verde): cálculo nominal de índices SNC-DI, validación de coordenadas y rechazo fuera de rango, consulta con datos reales/calibrados, y verificación de respuesta instantánea desde caché.
+  4. **Actualización del Plan**:
+     - Marcada como completada la tarea `[x] CC-01` en `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`.
+- **Verificado**: `node --check server-api.js` y `node --check climaServicio.js` limpios (código 0). `node clima.test.mjs` pasando 4/4 tests.
+- Turno LIBERADO.
+
 ### 2026-10-31 · Antigravity · Módulo Cambio Climático Express (Inicio Rápido): Tablero Interactivo Operativo (Leaflet + Open-Meteo + Decision Intelligence SNC-DI), Script CLI y Directiva Multi-IA · Cambio_climatico/panel.html, Cambio_climatico/consultar_clima.mjs, Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md
 - **Pedido**: "Empezar por lo mas rapido" tras generar el prompt de sintonía con SNC v3 para la carpeta `Cambio_climatico/`.
 - **Qué se hizo**:

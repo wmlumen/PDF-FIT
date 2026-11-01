@@ -34,6 +34,22 @@
         <label class="v3-op"><input type="radio" name="base" value="blanco"> Lienzo en blanco (para capas)</label>
       </fieldset>
 
+      <fieldset><legend>Capas</legend>
+        <label class="v3-op"><input type="checkbox" data-capa="hidro" checked> <span class="v3-mues" style="background:#0ea5e9"></span> Hidrografía / Cauces (OSM, país)</label>
+        <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
+        <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
+        <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
+        <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
+        <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
+        <div id="v3-capas-distrito" hidden></div>
+        <label>Color de los edificios
+          <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
+        <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
+          <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
+        <label>Altura por piso <output id="v3-piso-o">3 m</output>
+          <input type="range" id="v3-piso" min="2.5" max="5" step="0.5" value="3"></label>
+      </fieldset>
+
       <fieldset><legend>Terreno (cotas)</legend>
         <label class="v3-op"><input type="checkbox" id="v3-terreno" checked> Relieve 3D</label>
         <label class="v3-op"><input type="checkbox" id="v3-sombra" checked> Sombreado del relieve</label>
@@ -150,22 +166,6 @@
         </div>
       </fieldset>
 
-      <fieldset><legend>Capas</legend>
-        <label class="v3-op"><input type="checkbox" data-capa="hidro" checked> <span class="v3-mues" style="background:#0ea5e9"></span> Hidrografía / Cauces (OSM, país)</label>
-        <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
-        <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
-        <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
-        <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
-        <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
-        <div id="v3-capas-distrito" hidden></div>
-        <label>Color de los edificios
-          <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
-        <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
-          <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
-        <label>Altura por piso <output id="v3-piso-o">3 m</output>
-          <input type="range" id="v3-piso" min="2.5" max="5" step="0.5" value="3"></label>
-      </fieldset>
-
       <fieldset>
         <legend id="v3-exp-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="false" aria-controls="v3-exp-cuerpo">Exportar topografía (UTM 21S) <span id="v3-exp-ico">▸</span></legend>
         <div id="v3-exp-cuerpo" hidden>
@@ -188,6 +188,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261031x"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101a"></script>
 </body>
 </html>
