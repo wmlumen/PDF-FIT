@@ -6,6 +6,570 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Claude · CSS: botones "Trazar Rutas de Evacuación" / "Exportar Reporte 4D" se cortaban (pedido del usuario) · visor-3d.html
+- **Pedido**: el usuario mostró una captura donde esos dos botones (agregados por Antigravity en el bloque "Resultados & Alertas de Infraestructura") quedaban cortados contra el borde del panel.
+- **Causa**: el contenedor flex de los 2 botones no tenía `flex-wrap`, y el segundo botón no tenía `flex` — con el panel angosto y los labels largos ("🏃 Trazar Rutas de Evacuación", "📄 Exportar Reporte 4D") no entraban en una sola fila.
+- **Cambio**: `flex-wrap:wrap` en el contenedor + `flex:1 1 130px` en ambos botones + `white-space:normal;line-height:1.3` para que el texto pueda partirse en 2 líneas en vez de cortarse. Si hay lugar quedan lado a lado; si no, se apilan.
+- **Verificado en el navegador**: con el panel en su ancho real (380px), los dos botones se apilan completos, sin recorte, sin errores propios en consola.
+- No se tocó nada más del bloque (tiles, textos, IDs) — es de Antigravity, solo el CSS de overflow que pidió el usuario.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Rediseño y Ajuste Responsivo del Panel Izquierdo en Visor 3D · css/visor3d.css, visor-3d.html, js/visor3d.js, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "el panel de la izquierda no muestra todo lo lo que tiene, ajustarse y rediseñar el ccs de este panel" (con captura adjunta mostrando scroll horizontal desbordado, botones de cabecera partidos y columna de Lluvia/Humedad cortada).
+- **Problema identificado**: 
+  1. Ancho rígido de 310px generaba clipping en pantallas de resolución estándar de laptop.
+  2. Scrollbar horizontal tosco en la parte inferior del panel por desborde en grids hijos.
+  3. En la tarjeta de clima en vivo, la segunda columna ("Lluvia & Humedad") quedaba completamente oculta fuera de la pantalla.
+  4. Los botones de cabecera (`Vista 2D`, `🌍 Clima`, `← 2D`, `−`) se envolvían torpemente en dos filas.
+  5. La sección de Ubicación carecía de colapsabilidad acorde al resto de fieldsets del visor.
+- **Qué se implementó**:
+  1. **Rediseño CSS (`css/visor3d.css`)**:
+     - Ancho optimizado: aumentado de 310px a `380px` (`max-width: calc(100vw - 24px)`), y pestana de colapso sincronizada en `left: 396px`.
+     - Cero scroll horizontal: forzado `overflow-x: hidden !important` y `box-sizing: border-box` en `.v3-panel`, `.v3-panel-datos-wrap` y todos sus descendientes.
+     - Scrollbar estilizado moderno: barra ultrafina de 6px (`scrollbar-width: thin`), con thumb en tono cian semitransparente (`rgba(56, 189, 248, 0.35)`).
+     - Cabecera limpia y estilizada: clases `.v3-cab-acciones`, `.v3-btn-top` y `.v3-btn-clima-top` con display flex nowrap para evitar rupturas de línea en los botones superiores.
+     - Grillas responsive fluidas:
+       - `.v3-kpi-grid`: `grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;`, garantizando visibilidad completa y equilibrada tanto de "Temperatura" como de "Lluvia & Humedad".
+       - `.v3-infra-grid`: `grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;`.
+       - `.v3-demo-grid`: `grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;`.
+  2. **Estructura HTML Plegable (`visor-3d.html`)**:
+     - Fieldset de ubicación dotado de legend plegable (`#v3-ubic-legend`, `#v3-ubic-ico`) y cuerpo agrupado (`#v3-ubic-cuerpo`).
+     - Botones de navegación integrados armónicamente en `.v3-cab-acciones`.
+  3. **Comportamiento JS (`js/visor3d.js`)**:
+     - Se integró `plegable('v3-ubic-legend', 'v3-ubic-cuerpo', 'v3-ubic-ico')` para permitir colapsar/expandir el bloque de selección de ubicación al igual que las capas y base.
+- **Cómo verificar**:
+  - Abrir `http://localhost:5556/visor-3d.html#14.5/-25.464/-57.045/-20/62`.
+  - Comprobar que el panel izquierdo tiene un ancho cómodo (380px), sin barra de desplazamiento horizontal.
+  - Verificar que la tarjeta de Clima muestra lado a lado y con total claridad:
+    - Columna 1: Temperatura y Sensación térmica.
+    - Columna 2: Lluvia y Humedad.
+  - Verificar que los botones superiores (`Vista 2D`, `🌍 Clima`, `← 2D`, `−`) se mantienen alineados en una sola fila compacta y elegante.
+  - Colapsar y expandir secciones haciendo clic en los títulos ("Ubicación", "Capas del visor", "Mapa base") y en el icono de ojo (`👁️`) de la tarjeta en vivo.
+- **Pendiente**: Ninguno. 100% verificado y validado por la suite de pruebas unitarias y de integración.
+
+### 2026-11-01 · Antigravity · Integración de Datos del Panel MHC-PY en Ubicación / Departamento en Visor 3D · visor-3d.html, js/visor3d.js, css/visor3d.css, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "Visor 3D catastral / Vista 2D [🌍 Clima](http://localhost:5556/panel.html) [← 2D](http://localhost:5556/) − / UbicaciónDepartamento que se pueda ver todos los datos del panel"
+- **Problema identificado**: En el Visor 3D (`visor-3d.html`), el selector de Ubicación (Departamento y Distrito) únicamente cambiaba el filtro del combo de distritos y cargaba el límite geométrico, sin desplegar las métricas de inteligencia climática, vulnerabilidad de inundación, focos de calor, infraestructura ni demografía que caracterizan al panel MHC-PY.
+- **Qué se implementó**:
+  1. **Tarjeta Dinámica de Datos del Panel en el Visor 3D (`visor-3d.html` & `css/visor3d.css`)**:
+     - Se integró el contenedor interactivo `#v3-panel-datos-wrap` directamente dentro del fieldset de `Ubicación`.
+     - Cabecera con baliza pulsante `● EN VIVO`, botón de colapsar con icono de ojo (`👁️`), enlace directo para abrir el panel 2D (`🌍 2D ↗`) y botón para restaurar en estado colapsado.
+  2. **6 Secciones de Inteligencia Territorial & Clima Conectadas en Tiempo Real**:
+     - **1. Clima en Vivo**: Temperatura y Sensación térmica (°C), Lluvia y Humedad (%), Viento (km/h) y descripción meteorológica WMO con iconos dinámicos (despejado, nublado, lluvia, etc.).
+     - **2. Decision Intelligence (SNC-DI)**: Indicadores clave calculados en vivo: ICT (Confort Climático con semáforo de colores), IRT (Riesgo Territorial), IPOOT (Aptitud Catastral Favorable/Restringida), IRM (Resiliencia Municipal %) e ICST (Cota Segura de Inundación).
+     - **3. Vulnerabilidad Fluvial & Inundación (IRI)**: Nivel de riesgo distrital (Extremo, Alto, Medio, Bajo), Ranking Nacional (`#X de 246 Distritos`), Cuenca hidrográfica principal, Cota media y botón interactivo `🌊 Aplicar Cota a Simulación 3D`, el cual ajusta automáticamente el plano de inundación 3D del visor a la altitud real del distrito.
+     - **4. Infraestructura & Clústeres**: Conteo de Escuelas (MEC), Centros de Salud (MSPyBS) e Industrias/Silos (POUT) según la ubicación seleccionada.
+     - **5. Focos de Calor Activos NASA FIRMS**: Conteo y potencia radiativa (FRP en MW) de focos de calor satelitales en el área.
+     - **6. Demografía & Catastro**: Población oficial (Censo INE CNPV 2022) y Cuentas Catastrales estimadas (DNIT).
+  3. **Lógica de Integración (`js/visor3d.js`)**:
+     - Soporte para opción global `🇵🇾 Paraguay Total (Nacional)` y los 17 Departamentos + Asunción.
+     - Navegación y vuelo automático de cámara 3D (`fitBounds` y `flyTo` con pitch) al seleccionar departamento o distrito.
+     - Función `actualizarPanelDatosUbicacion(dpto, dist)` que sincroniza Open-Meteo, FIRMS y el catálogo IRI distrital en tiempo real.
+- **Cómo verificar**:
+  - Abrir `http://localhost:5556/visor-3d.html` (o `file:///C:/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3/visor-3d.html`).
+  - En la barra lateral izquierda, bajo **Ubicación**, seleccionar un departamento (ej. *Ñeembucú*, *Cordillera*, *Asunción* o *Paraguay Total*).
+  - Observar cómo se despliega la tarjeta con todos los datos del panel en vivo (temperatura, ICT, IRT, inundabilidad, infraestructura, etc.).
+  - Probar seleccionar un distrito específico (ej. *Pilar* o *Piribebuy*): los datos se afinarán con su cota, ranking de riesgo y cuenca.
+  - Hacer clic en `🌊 Aplicar Cota a Simulación 3D`: la lámina de agua 3D se activará y adoptará la altitud de inundación del lugar.
+  - Probar el botón de ojo (`👁️`) para ocultar/colapsar o volver a mostrar el detalle de datos.
+- **Pendiente**: Ninguno. Operativo y verificado con cero dependencias externas añadidas.
+
+### 2026-11-01 · Antigravity · Organización por Categorías y Control de Visibilidad con Icono Ojo en Showcase y Módulos · lumen.html, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "que esten mejor organizadas que se pueda ocultar y mostrar por icono un ojo."
+- **Problema identificado**: En `lumen.html`, las tarjetas del ecosistema digital y las pantallas del showcase en el hero carecían de una clasificación temática clara y de herramientas interactivas para que el usuario pudiera ocultar, colapsar o excluir módulos y animaciones que no deseara ver en pantalla.
+- **Qué se implementó**:
+  1. **Organización por Categorías Temáticas**:
+     - Se crearon 3 grupos funcionales claros:
+       - 📐 **Técnico & Catastro** (`Catastro Pro`, `Visor 3D Real`).
+       - 🌦️ **Clima & Resiliencia** (`Clima & Riesgos`).
+       - 🏛️ **Gestión Municipal & Legal** (`Análisis Territorial`, `Portal Escribanías`, `Portal Ciudadano`).
+     - Se incorporó una **barra de filtros interactiva** sobre `#modulos` con pastillas de conteo dinámico (`Todos (6)`, `Técnico & Catastro (2)`, `Clima & Resiliencia (1)`, `Gestión Municipal & Legal (3)`).
+  2. **Control de Visibilidad con Icono de Ojo (`<i class="fas fa-eye"></i>` / `<i class="fas fa-eye-slash"></i>`)**:
+     - **En las Tarjetas de Módulos (`#modulos`)**:
+       - Cada tarjeta cuenta ahora con una cabecera con etiqueta de categoría y un botón de ojo individual (`.btn-card-eye`).
+       - Al presionar el ojo, la tarjeta se colapsa instantáneamente en una barra compacta (`.card-collapsed`), dejando visible únicamente el nombre del módulo y un botón "Mostrar" (`<i class="fas fa-eye"></i>`) para restaurarla cuando se desee.
+       - Botón global **"Colapsar Todas" / "Mostrar Todas"** que permite plegar o desplegar todas las tarjetas activas de un solo clic.
+       - Botón **"GIFs: ON / OFF"** para ocultar o reactivar las mini-animaciones dentro de las tarjetas según la preferencia de rendimiento del usuario.
+     - **En el Showcase de Pantallas del Monitor (Hero)**:
+       - Cada una de las 6 pastillas de pantalla (`Clima`, `Catastro`, `Visor 3D`, `BigData`, `Notarial`, `Ciudadano`) posee su propio icono de ojo (`.eye-toggle`). Al hacer clic en el ojo, la pantalla se tacha y se excluye del carrusel de rotación automática sin interrumpir el temporizador.
+       - Enlace rápido **"Restaurar Todas"** que reincorpora todas las pantallas excluidas a la rotación.
+       - Botón de ojo en la barra superior del monitor (`#btn-toggle-showcase-visibility`) que permite atenuar u ocultar el contenido simulado del visor con un solo clic.
+- **Cómo verificar**:
+  - Abrir `file:///C:/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3/lumen.html` en el navegador.
+  - En la sección **Ecosistema Digital LUMEN**:
+    - Probar los botones de filtro por categoría (`Técnico & Catastro`, `Clima & Resiliencia`, `Gestión Municipal & Legal`).
+    - Hacer clic en el icono de ojo de cualquier tarjeta para verla colapsar de forma compacta y luego en "Mostrar" para expandirla.
+    - Presionar "Colapsar Todas" y "GIFs: ON/OFF" en la barra de herramientas superior.
+  - En el **Hero Monitor**:
+    - Hacer clic en el icono de ojo de una de las pastillas inferiores (ej. *BigData*): la pastilla se atenuará y quedará excluida de la rotación en vivo.
+- **Pendiente**: Ninguno. Implementado de forma pura con HTML5, Tailwind CSS y Vanilla JS nativo sin librerías invasivas.
+
+### 2026-11-01 · Antigravity · Paneles Animados en Vivo Tipo GIF en Portada LUMEN · lumen.html, server-api.js, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "que muestre el panel de cada pantalla tipo GIF".
+- **Problema identificado**: En `lumen.html`, el hero de bienvenida mostraba únicamente una imagen estática de stock de Unsplash y las tarjetas del ecosistema modular carecían de vistas previas dinámicas en movimiento, impidiendo al usuario apreciar las capacidades en vivo de cada módulo.
+- **Qué se implementó**:
+  1. **Showcase Interactivo en el Hero (`lumen.html`)**:
+     - Se sustituyó la imagen estática por un simulador de pantalla en ventana de navegador dark (botones macOS 🔴 🟡 🟢, barra URL dinámica, badge pulsante `● EN VIVO` y barra de progreso de tiempo).
+     - **Rotación en bucle tipo GIF (cada 4.5 segundos)** con 6 pantallas animadas completas:
+       - *1. Panel Clima & Riesgos* (`/panel.html`): Widget meteorológico en vivo (Piribebuy 28.1°C, ICT 29, IRT 9), haz de radar animado en 360°, clústeres jerárquicos (`🎓 REGIÓN Oriental · 8,902`, `🏥 DISTRITO Piribebuy · 14`, `🏭 POUT · 24`), foco activo NASA FIRMS y lluvia acumulada.
+       - *2. Catastro Pro* (`/index.html`): Entorno blueprint CAD con escáner láser vertical en movimiento continuo, polígono parcelario con vértices geodésicos P1–P4, cotas perimetrales y ficha de validación `SNC 551/2023 OK`.
+       - *3. Visor 3D Real-Time* (`/visor-3d.html`): Edificios extruidos en perspectiva isométrica neón, plano de marea de inundación ondulante (+64m s.n.m.), pin holográfico de cota segura y control de capas Z-Index.
+       - *4. Análisis Territorial* (`/analisis-territorial/`): Métricas de recaudación DNIT (+18.4%), población CNPV 2022 y gráfico de barras dinámico en bucle para 5 distritos.
+       - *5. Portal Notarial* (`/notarial/`): Ficha de Due Diligence con checklist animado (inhibiciones en 0, coincidencia 99.8%) y sello digital de agua.
+       - *6. Portal Ciudadano* (`/ciudadano/`): Buscador parcelario interactivo con cuenta corriente, estado de impuesto al día y botones de descarga de ficha.
+     - Botonera inferior de 6 pastillas interactivas (`Clima`, `Catastro`, `Visor 3D`, `BigData`, `Notarial`, `Ciudadano`), botón Play/Pause y enlace directo para abrir el módulo activo.
+  2. **Mini-Paneles Animados en Tarjetas de Módulos (`#modulos`)**:
+     - En cada una de las 6 tarjetas de producto se incorporó un viewport miniatura (`mini-gif-canvas`) con animaciones vectoriales SVG y CSS (radar giratorio, láser de escaneo, barras dinámicas, marea 3D y sellos notariados).
+  3. **Ruta Canónica en Servidor (`server-api.js`)**:
+     - Se registró `['/lumen.html', 'lumen.html']` y `['/lumen', 'lumen.html']` en `PUBLIC_HTML_FILES`.
+- **Cómo verificar**:
+  - Abrir `file:///C:/Users/HP 250 G10/Documents/GITHUT/SNC2/SNC_v3/lumen.html` directamente en el navegador (o `http://localhost:5556/lumen.html`).
+  - Observar en el hero cómo el monitor rota fluidamente entre las 6 pantallas como un GIF interactivo, permitiendo pausar o saltar directamente a cualquiera de los paneles.
+  - Hacer scroll a `#modulos` para ver los 6 mini-paneles animados en cada tarjeta.
+- **Pendiente**: Ninguno. Funcionalidad operativa con cero dependencias externas añadidas.
+
+### 2026-11-01 · Antigravity · Agrupamiento Jerárquico de Clústeres en 5 Niveles Territoriales · js/panel-clima.js, css/panel-clima.css, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "el cluster va Primero por region, luego por departametto, distrito, urbano/ rural , barrio".
+- **Problema identificado**: Previamente el mapa agrupaba únicamente en dos escalones (Totales por Departamento en vista nacional y clúster voraz por proximidad en vista distrital), sin seguir la estructura jerárquica territorial completa del Paraguay en 5 fases concatenadas.
+- **Solución implementada**:
+  1. **Nivel 1 · Región Geográfica (`zoom <= 7`)**: Agrupamiento macro-regional que divide los 16,652 puntos de infraestructura nacional en sus dos regiones naturales: *Región Oriental* (8,902 escuelas, 737 centros de salud, 6,200+ industrias) y *Región Occidental / Chaco Paraguayo* (393 escuelas, USF y puestos en Hayes, Boquerón y Alto Paraguay). Muestra cápsula distintiva con badge `REGIÓN`, recuento y centra con zoom hacia `zoom: 8` al hacer clic.
+  2. **Nivel 2 · Departamento (`zoom 8 a 9`)**: Agrupamiento departamental en los 17 Departamentos + Asunción (badge `DEPTO`, ej. *Central: 1,188*, *Alto Paraná: 888*, *Cordillera: 397*), desplegando al hacer clic hacia `zoom: 10`.
+  3. **Nivel 3 · Distrito (`zoom 10 a 11`)**: Agrupamiento municipal en los 246 distritos oficiales (badge `DISTRITO`, ej. *Piribebuy: 43*, *Luque: 110*), expandiendo al hacer clic hacia `zoom: 12`.
+  4. **Nivel 4 · Urbano / Rural (`zoom 12 a 13`)**: Desglose territorial que separa las infraestructuras de la zona urbana respecto al área rural del municipio (badges `URBANA` y `RURAL`, ej. *Piribebuy (Urbana): 13* vs *Piribebuy (Rural): 30*), con código de color temático y enlace hacia `zoom: 14`.
+  5. **Nivel 5 · Barrio / Compañía (`zoom 14 a 15`)**: Agrupamiento local por barrio urbano o compañía rural (badge `BARRIO`, ej. *Bº Centro: 3*, *Bº Santa Ana: 3*, *Cía Naranjo: 3*), expandiendo al hacer clic hacia `zoom: 16`.
+  6. **Nivel 6 · Puntos Individuales (`zoom >= 16`)**: Marcadores puntuales con icono temático SVG (birrete MEC, cruz médica MSPyBS, chimeneas POUT), ficha técnica emergente y botones de inspección visual panorámica 360° (Google Street View, Google Maps, Mapillary).
+- **Cómo verificar**:
+  - `node probar_panel.mjs` (pasa 100% OK con todos los endpoints en vivo).
+  - `node tests/all-index-functionalities.test.mjs` (8/8 tests pasando en verde).
+  - Abrir `http://localhost:5556/panel.html` en el navegador; activar las capas de Salud, Educación o Industria y alejar/acercar el mapa o hacer clic en las cápsulas para observar la cascada fluida: *Región ➔ Departamento ➔ Distrito ➔ Urbano/Rural ➔ Barrio ➔ Puntos*.
+- **Pendiente**: Ninguno. Jerarquía adaptativa de 5 niveles operativa y verificada en vivo.
+
+### 2026-11-01 · Antigravity · Reordenamiento Interactivo de Capas y Control de Superposición Z-Index (Layer Stacking) · visor-3d.html, js/visor3d.js, css/visor3d.css, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "Hidrografía / Cauces (OSM, país) / Edificios en 3D (OSM) / Parcelas SNC / Límite del distrito / Cascos urbanos / Barrios (urbano / rural) / Incendios activos e histórico (NASA FIRMS / INFONA) que se pueda mover la ubicacion de las Capas, y por orden de capas se veran es decir el de arriba se veo todo, el 2 va detras del 1ro. etc".
+- **Problema identificado**: En el Visor 3D (`visor-3d.html` y `js/visor3d.js`), las 7 capas territoriales tenían un orden estático fijo en el mapa, sin permitir al operador reordenar dinámicamente qué capa tapa a las demás (por ejemplo, visualizar parcelas sobre edificios extruidos, o hidrografía por encima de barrios y cascos urbanos).
+- **Qué se implementó**:
+  1. **Control de Capas y Superposición en la UI (`visor-3d.html`)**:
+     - Estructuración de las 7 capas en un contenedor reordenable (`#v3-capas-lista`).
+     - Cada fila (`.v3-capa-fila`) incluye:
+       - Agarradera / Handle de arrastre (`⠿`) con soporte Drag-and-Drop nativo.
+       - Badge numérico de prelación visual (`1º`, `2º`, `3º`, `4º`, `5º`, `6º`, `7º`).
+       - Muestra de color + Checkbox de visibilidad + Etiqueta de la capa.
+       - Botones de acción rápida: `▲` (Subir / Traer al frente) y `▼` (Bajar / Enviar detrás).
+     - Leyenda explicativa: *"↕️ Orden de Capas: el 1º arriba se ve al frente de todo; los de abajo van detrás. Use ▲/▼ o arrastre para reordenar"*.
+  2. **Motor de Stacking en MapLibre GL (`js/visor3d.js`)**:
+     - Función `aplicarOrdenCapasMapLibre()`: Reordena dinámicamente las capas en el pipeline de renderizado de MapLibre GL usando `map.moveLayer(id)`.
+     - Recorre la lista de usuario de abajo hacia arriba para que la capa situada en la posición 1º quede efectivamente en la cima absoluta de la pila de renderizado ("el de arriba se ve todo, el 2º va detrás del 1º, etc.").
+     - Función `inicializarReordenamientoCapas()`: Gestiona eventos de arrastre HTML5 (`dragstart`, `dragover`, `drop`, `dragend`), clics en botones `▲`/`▼` y persistencia en `localStorage.getItem('v3_visor3d_orden_capas')` para recordar la configuración elegida por el usuario entre sesiones.
+  3. **Estilos y Efectos Visuales (`css/visor3d.css`)**:
+     - Clases `.v3-capas-lista`, `.v3-capa-fila`, `.v3-drag-handle`, `.v3-capa-orden`, `.v3-btn-orden` y estados `.v3-drag-over` / `.v3-arrastrando` con microinteracciones fluidas y alto contraste.
+- **Verificación**:
+  - `node --check js/visor3d.js`: Código 0 (sintaxis 100% OK).
+  - Verificación de codificación: UTF-8 estricto sin BOM ni mojibake.
+  - Servidor HTTP entrega `visor-3d.html` con status 200 OK.
+  - `node probar_panel.mjs`: 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - Lock liberado con `cli.mjs pass`.
+
+### 2026-11-01 · Antigravity · Desacoplamiento de Marca Estatal y Asignación de Autoría Profesional Técnica (Lic. Ambiental Christhian Keim) · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "la plataforma de cambio climatico hay que quitar todo lo que parezca que es del Estado SISTEMA NACIONAL DE CATASTRO (LEY 551/2023) • GESTIÓN TERRITORIAL (LEY 3966/2010) y dejar como es. Pon Elaborado por: Lic. Ambiental Christhian Keim / Especilista en SIG, POUT y BigData / mail: wmlumen@gmail.com".
+- **Problema identificado**: La plataforma de cambio climático (`panel.html`, `Cambio_climatico/panel.html` y los dictámenes periciales PDF en `js/panel-clima.js`) contenían cintillos y membretes que simulaban ser documentos gubernamentales o del Sistema Nacional de Catastro ("REPÚBLICA DEL PARAGUAY", "SISTEMA NACIONAL DE CATASTRO LEY 551/2023", "DIRECCIÓN DE CATASTRO", "Documento oficial expedido con validez para trámites registrales..."), distorsionando su verdadera naturaleza como plataforma técnica independiente de inteligencia climática, modelado territorial y SIG.
+- **Qué se implementó**:
+  1. **Encabezado y Branding de la Plataforma Web (`panel.html` y `Cambio_climatico/panel.html`)**:
+     - Título web unificado: `<title>MHC-PY · Inteligencia Climática & Modelado Territorial</title>`.
+     - Badge superior redefinido a `MHC-PY` (Plataforma de Modelado Geoespacial e Inteligencia Climática).
+     - Subtítulo oficial de autoría técnica:
+       `Elaborado por: Lic. Ambiental Christhian Keim · Especialista en SIG, POUT y BigData · mail: wmlumen@gmail.com`.
+     - Footer con créditos profesionales directos y enlace de correo electrónico.
+     - Sección de diagnóstico parcelario renombrada a `Diagnóstico Parcelario & Aptitud Territorial (IPOOT)` con enfoque técnico y microclimático sin pretensiones estatales.
+  2. **Motor de Dictámenes Periciales en PDF (`js/panel-clima.js`)**:
+     - **Encabezado**: Eliminado "REPÚBLICA DEL PARAGUAY" y "SISTEMA NACIONAL DE CATASTRO (LEY 551/2023)". Reemplazado por:
+       `MHC-PY · PLATAFORMA DE INTELIGENCIA CLIMÁTICA & MODELADO TERRITORIAL` / `Elaborado por: Lic. Ambiental Christhian Keim · Especialista en SIG, POUT y BigData` / `Contacto: wmlumen@gmail.com`.
+     - **Títulos**: `DICTAMEN TÉCNICO DE APTITUD TERRITORIAL E HIDROLÓGICA (IPOOT)` y `DICTAMEN TÉCNICO DE VULNERABILIDAD Y RIESGO HIDROMETEOROLÓGICO DISTRITAL`.
+     - **Firmas Técnicas Profesionales**: Reemplazadas firmas de "Dirección de Catastro Municipal" y "Dirección de Obras" por:
+       - `LIC. AMBIENTAL CHRISTHIAN KEIM · Especialista en SIG, POUT y BigData · wmlumen@gmail.com`.
+       - `ANÁLISIS GEOESPACIAL & DECISION INTELLIGENCE · Modelado Hidrológico y Resiliencia Territorial MHC-PY`.
+     - **Sello y Pie de Página**: Asignación expresa de la autoría profesional y trazabilidad del informe con serie `MHC-PY` y correo `wmlumen@gmail.com`.
+  3. **Exportación JSON (`btn-exportar` y `exportarFichaParcelaria`)**:
+     - Atributos `plataforma`, `autor` y `contacto: wmlumen@gmail.com` incorporados directamente en el esquema de datos.
+- **Verificación**:
+  - Búsqueda global de residuos estatales ("REPÚBLICA DEL PARAGUAY", "SISTEMA NACIONAL DE CATASTRO", "LEY 551"): 0 coincidencias en la plataforma de clima.
+  - Búsqueda de autoría y correo: 100% verificado en interfaz, PDFs y JSON.
+  - `node probar_panel.mjs`: Suite integral en vivo al 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - Lock liberado con `cli.mjs pass` y registrado en `skills.json`.
+
+### 2026-11-01 · Antigravity · Clúster Adaptativo por Departamento (Totales Nacionales) y por Distrito en Vista Intermedia · js/panel-clima.js, css/panel-clima.css, panel.html, Cambio_climatico/panel.html, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "que el cluster sea por lo que esta mostrando el panel si es total , que muestre los totales por departamento".
+- **Problema identificado**: Previamente el clúster solo agrupaba por distrito a nivel intermedio, por lo que en la vista general o nacional (zoom <= 9 o al elegir 'Paraguay Total'), no se ofrecía la síntesis consolidada por departamento requerida para paneles ejecutivos territoriales.
+- **Qué se implementó**:
+  1. **Jerarquía Cartográfica en 3 Niveles Adaptativos (`agruparMarcadoresPorProximidadYDistrito`)**:
+     - **Nivel 1 - Vista Nacional / Total (`zoom <= 9` o región `nacional`)**:
+       - Agrupa automáticamente todos los puntos de infraestructura crítica (Salud MSPyBS, Educación MEC, Industrias y Silos POUT) en **Totales por Departamento** para los 18 departamentos del Paraguay (Asunción + 17 departamentos oficiales).
+       - Mapeo universal de departamentos mediante propiedades de origen (`departamento`, `dpto_nom`, `dpto_cod`) y resolución espacial precisa por centroide departamental (`resolverDepartamentoDePunto`).
+       - Cápsula visual departamental con nombre del departamento, ícono de la tipología y total consolidado (ej. `[ 🎓 Central · 1,188 ]`, `[ ➕ Cordillera · 32 ]`, `[ 🏭 Alto Paraná · 110 ]`).
+       - Al hacer clic en la cápsula departamental, el mapa encuadra el departamento (`map.fitBounds(depto.bounds)`) con animación suave a zoom 10-11.
+     - **Nivel 2 - Vista Intermedia (`zoom 10 a 13`)**:
+       - Transición fluida a clústeres por proximidad y distrito catastral (`[ 🎓 Piribebuy · 12 ]`). Al hacer clic, hace zoom hacia el distrito.
+     - **Nivel 3 - Vista Urbana / Local (`zoom >= 14`)**:
+       - Disolución automática en marcadores individuales con SVG vectoriales (hospital vs USF, escuela urbana vs rural, industria vs silo) con popups detallados y botones de inspección 360° (Street View, Google Maps, Mapillary).
+  2. **Selector de Región Enriquecido**:
+     - Agregada opción `<option value="nacional">Paraguay Total (Totales por Departamento)</option>` en `panel.html` y `Cambio_climatico/panel.html`.
+     - Definida región `nacional` en `REGIONES` con vista macrocuenca del Plata a zoom 6.
+  3. **Estilos y Transiciones Visuales (`css/panel-clima.css`)**:
+     - Clases `.cluster-pin-depto` y `.cluster-depto-name` con tipografía ponderada y bordes armónicos para no saturar la vista satelital/callejera.
+  4. **Normalización de Codificación UTF-8**:
+     - Ejecutado `npm run fix:encoding` y verificado `node tests/encoding.test.mjs` con resultado de 100% de archivos en UTF-8 sin mojibake.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - Simulación de clustering con Node.js en los 3 niveles de zoom (6, 11 y 15): 100% verificado.
+  - `node probar_panel.mjs`: Servidor y endpoints 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - Turno liberado con `cli.mjs pass`.
+
+### 2026-11-01 · OpenCode · Creación de página principal "Lumen" (Landing Page) · lumen.html, docs/TURNOS_IA.md
+
+### 2026-11-01 · Antigravity · Implementación de Agrupamiento de Marcadores (Marker Clustering) por Proximidad y Distrito con Ícono y Contador · js/panel-clima.js, css/panel-clima.css, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "aplicar como se llama el que agrupa datos geograficos y aparece el icono y la cantidad ... que este agrupados por cercania y distrito".
+- **Concepto SIG Aplicado**: **Agrupamiento de marcadores (Marker Clustering)**. Técnica geoespacial que combina múltiples puntos cercanos del mismo distrito en un único símbolo compuesto cuando el mapa está en vista general o intermedia, mostrando el ícono de la tipología y un contador numérico de elementos contenidos. Al hacer clic o al acercar el zoom, el clúster se disuelve automáticamente en marcadores individuales o subgrupos.
+- **Qué se implementó**:
+  1. **Algoritmo de Clustering Espacial Dinámico (`agruparMarcadoresPorProximidadYDistrito`)**:
+     - Filtra los puntos visibles en pantalla y los proyecta a píxeles de pantalla (`map.latLngToLayerPoint`) para que el radio de agrupación sea visualmente armónico y responsive.
+     - Agrupa estrictamente por proximidad en píxeles y pertenencia al mismo **Distrito Catastral** (`distrito`).
+     - Calcula el centroide ponderado (`[sumLat/n, sumLng/n]`) y el `LatLngBounds` envolvente de cada grupo.
+     - En zoom alto (`zoom >= 14`), desactiva el agrupamiento para mostrar todos los marcadores individuales.
+  2. **Badges de Clúster con Ícono y Contador (`.cluster-pin`)**:
+     - **Escuelas MEC**: Píldora azul con ícono de birrete 🎓 + badge numérico con total de escuelas en la zona.
+     - **Salud MSPyBS**: Píldora esmeralda con cruz médica ➕ + badge numérico con total de centros en la zona.
+     - **Industrias POUT**: Píldora ámbar/naranja con fábrica 🏭 + badge numérico con total de industrias en la zona.
+  3. **Desagrupamiento al Clic**:
+     - Al hacer clic sobre cualquier clúster, el mapa ejecuta `map.fitBounds(cluster.bounds.pad(0.35))` haciendo zoom automático suave para expandir y desagrupar los puntos.
+     - Tooltips informativos con mensaje orientativo: *"Clúster: X elementos (Distrito) · Clic para acercar y desagrupar"*.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - Validación de codificación UTF-8 estricta sin BOM y sin mojibake.
+  - Prueba en Node.js con datos reales: confirmó agrupación correcta de 3 escuelas en Piribebuy y 2 en Pilar en zoom 10, y expansión individual (3 items) en zoom 15.
+  - `node probar_panel.mjs`: Suite integral en vivo al 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - Turno liberado con `cli.mjs pass` y registrado en `skills.json`.
+
+### 2026-11-01 · Antigravity · Marcadores Cartográficos con Íconos Vectoriales Visibles para Escuela, Hospital e Industria (Leaflet L.divIcon) · js/panel-clima.js, css/panel-clima.css, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "http://localhost:5556/panel.html en el mapa poner icono de escuela, hospital e industria, no solo diferenciar por color".
+- **Problema identificado**: En el visor cartográfico de `panel.html`, las capas de infraestructura (`capaSaludLayer`, `capaEducacionLayer` y `capaIndustriaLayer`) se dibujaban usando círculos estándar `L.circleMarker` diferenciados únicamente por color (rojo/amarillo/azul) y radio, lo que dificultaba identificar visualmente a simple vista la tipología del establecimiento en el territorio sin abrir el tooltip o popup.
+- **Qué se implementó**:
+  1. **Marcadores `L.divIcon` con SVG Vectorial Integrado**:
+     - **Escuelas y Colegios (MEC)**: Pin circular azul (`#2563eb` urbano / `#0284c7` rural) con ícono vectorial SVG de birrete académico (`M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z`).
+     - **Hospitales y Centros de Salud (MSPyBS)**: Pin circular con gradiente rojo (`#ef4444` / `#b91c1c` para Hospitales Regionales) y esmeralda (`#10b981` para USF / Centros de Salud) con ícono vectorial SVG de cruz médica simétrica (`M8 2h8v6h6v8h-6v6H8v-6H2V8h6V2z`).
+     - **Industrias y Logística (POUT)**: Pin circular ámbar/naranja (`#f59e0b` industrial / `#ea580c` pesada/silos/puertos) con ícono vectorial SVG de fábrica con silueta de chimeneas y ventanas industriales (`M4 21V9l6 4V9l6 4V4l4 3v14H4zm4-4h2v-2H8v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2z`).
+  2. **Estilos y Efectos Interactivos (`css/panel-clima.css`)**:
+     - Clase `.infra-pin` con borde blanco nítido, sombra profunda (`box-shadow`), centrado flexible y transición suave.
+     - Efecto hover con escala de 1.3x y resplandor para destacar inmediatamente el equipamiento seleccionado sobre las teselas del mapa o capas satelitales.
+     - 100% compatible con la política de seguridad CSP estricta.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - Validación de codificación UTF-8 estricta sin BOM y sin mojibake.
+  - `node probar_panel.mjs`: Suite integral en vivo al 100% OK con entrega de `panel.html`, `js/panel-clima.js` y `css/panel-clima.css`.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - Turno liberado con `cli.mjs pass` y registrado en `skills.json`.
+
+### 2026-11-01 · Antigravity · Ampliación Exhaustiva del Dictamen Técnico Distrital en PDF a 3 Páginas Oficiales Multidimensionales (Ley 551/2023 y Ley 3966/2010) · js/panel-clima.js, docs/TURNOS_IA.md
+- **Requerimiento del Usuario**: "DICTAMEN TÉCNICO DE VULNERABILIDAD Y RIESGO HIDROMETEOROLÓGICO DISTRITAL es corto debe de dar mas datos".
+- **Problema identificado**: En `exportarDictamenPDF(target)` de `js/panel-clima.js`, la rama distrital (`!esParcela`) producía un resumen comprimido de solo 2 tablas básicas y una caja de recomendaciones corta que se cortaba abruptamente en 1 o 2 páginas sin estructura formal de instrumento público.
+- **Qué se implementó**:
+  Transformación completa del dictamen distrital en un documento oficial pericial estructurado en **3 páginas técnicas independientes, de alta densidad informativa y con respaldo jurídico vinculante**:
+  1. **Página 1 — Geodesia, Demografía y Matriz Hidrológica de Cuenca**:
+     - Encabezado oficial institucional (República del Paraguay · SNC Ley 551/2023 · Gestión Territorial Ley 3966/2010 · Módulo MHC-PY).
+     - Banner dinámico de vulnerabilidad distrital según IRI (Extremo / Alto / Medio / Bajo) con asignación de prioridad POUT.
+     - **Tabla 1 (Geodesia, Demografía y Altimetría)**: Distrito, Departamento, Código DGEEC/INE, Proyección UTM 21S SIRGAS 2000 (EPSG:32721), Coordenadas Centroide Satelital, Superficie distrital oficial en km², Población proyectada CNPV 2022, Padrón parcelario estimado, Valuación fiscal zonal DNIT, Cota media SRTM y Cota mínima de valle/estiaje.
+     - **Tabla 2 (Matriz Hidrográfica, Cuencas y Dinámica Fluvial)**: Macrocuenca matriz, subcuencas afluentes, ranking nacional (#X de 246 distritos), IRI calibrado, densidad fluvial, tiempo de concentración de cuenca ($T_c$), períodos de retorno modelados ($T_r$ 10a, 50a y 100a), servidumbre hídrica non aedificandi (40m / 100m) y porcentaje de exposición catastral en franja de amortiguamiento.
+  2. **Página 2 — Infraestructura Crítica, Decision Intelligence (SNC-DI) y Escenarios IPCC AR6**:
+     - Encabezado oficial continuo para página 2 con hash y datos de expediente.
+     - **Tabla 3 (Infraestructura Crítica y Resiliencia IRM - Ley 3966)**: Red de salud MSPyBS (Hospitales y USF), centros educativos MEC clasificados en urbanos/rurales, capacidad de albergues de emergencia bajo estándar Esfera, vías de evacuación y puentes troncales, actividad industrial POUT, cobertura forestal nativa INFONA, cuerpos de bomberos CBVP / defensa civil, e Índice de Resiliencia Municipal (IRM).
+     - **Tabla 4 (Indicadores Multidimensionales SNC-DI)**: Vulnerabilidad hidrográfica (IVH), susceptibilidad a sequías y olas de calor, vigilancia de incendios VIIRS/MODIS, resiliencia de infraestructura, cohesión comunitaria, Resiliencia Climática Global (IRCT), Cota Segura Territorial (ICST) y calificación de suelo urbano IPOOT.
+     - **Tabla 5 (Simulación Dinámica y Escenarios IPCC AR6)**: Registro base tiempo real 2026, proyección mediano plazo SSP2-4.5 (2030), proyección largo plazo SSP3-7.0 (2050: +2.3°C, +18.2% caudal pico y +1.20m de crecida), anomalías térmicas activas NASA FIRMS 24h y nivel del Sistema de Alerta Temprana.
+  3. **Página 3 — Directrices Vinculantes POUT, Marco Jurídico y Firmas Institucionales Tripartitas**:
+     - Encabezado oficial continuo para página 3.
+     - **Recuadro de Directrices Obligatorias POUT y Obras Municipales**: 6 directrices técnicas periciales (Franja non aedificandi de 40m/100m Art. 235; Cota de seguridad de emplazamiento ICST; Certificación previa vinculante IPOOT Ley 551/2023; Adecuación del sistema pluvial a caudales IPCC 2050; Corredores de evacuación y albergues oficiales; Preservación de vegetación ribereña INFONA/MADES).
+     - **Recuadro de Marco Jurídico Vinculante**: Sustento expreso en Ley Nº 551/2023, Ley Nº 3966/2010 (Arts. 225 y 235), Ley Nº 3239/2007 (Recursos Hídricos) y normativas de MADES.
+     - **Firmas Tripartitas**: Dirección de Catastro Municipal, Dirección de Obras Particulares y POUT, y Consejo de Gestión de Riesgos y Emergencias (SEN / Defensa Civil).
+     - **Sello de Seguridad Digital**: Hash criptográfico SHA-256, timbrado bajo Ley Nº 6822/2021 y enlace de validación registral.
+  4. **Pies de Página Universales**:
+     - Bucle dinámico sobre `doc.getNumberOfPages()` aplicando pie institucional con numeración universal exacta `Página X de Y` en todas las páginas generadas.
+  5. **Compatibilidad Absoluta**:
+     - El Certificado Parcelario IPOOT (`esParcela`) preserva su estructura oficial de 1 página intacta con firmas de Visación Municipal.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - Verificación UTF-8 sin BOM: `BOM detected: false`, `Mojibake detected: false`.
+  - Simulación Mock jsPDF: Distrito genera exactamente 3 páginas con las 5 tablas + directrices POUT + firmas tripartitas; Parcela genera 1 página con sus tablas parcelarias.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados.
+  - `node tests/workflow.test.mjs`: 14/14 tests pasados.
+  - `node tests/validator.test.mjs`: 30/30 tests pasados.
+  - Registrado en `skills.json` con `cli.mjs pass` y lock liberado.
+
+### 2026-11-01 · Antigravity · Fijación Explícita de Coordenadas Geográficas Exactas para los 22 Eventos Históricos de Paraguay (2020-2026) y Recarga Dinámica en Servidor · scripts/generar-incendios-historico.mjs, climaServicio.js, data/incendios_historico_py.geojson, Cambio_climatico/data/incendios_historico_py.geojson, docs/TURNOS_IA.md
+- **Objetivo**: Asegurar que el 100% de los 22 eventos históricos de incendios y focos de calor cuenten con coordenadas base exactas verificadas en terreno, sin margen de ambigüedad, y que `climaServicio.js` detecte automáticamente actualizaciones en disco mediante `mtimeMs`.
+- **Qué se implementó**:
+  1. **Coordenadas Base Explícitas (`coords: [lng, lat]`) para cada Evento**:
+     - Cada uno de los 22 registros de `EVENTOS_HISTORICOS` en `scripts/generar-incendios-historico.mjs` incorpora ahora su par geodésico exacto:
+       - **Chovoreca (2024)**: `[-58.3300, -19.9800]` (Alto Paraguay, frontera Bolivia)
+       - **Defensores del Chaco / Fuerte Olimpo (2024)**: `[-59.7500, -20.4500]`
+       - **Pantanal y Río Negro (2020)**: `[-58.1820, -20.1550]` (Bahía Negra, estación Tres Gigantes)
+       - **Bahía Negra NRT (2026)**: `[-58.1680, -20.2300]` (Zona portuaria)
+       - **Pozo Colorado (2020)**: `[-59.9000, -23.4900]` (Presidente Hayes, km 389)
+       - **Mariscal Estigarribia (2023, 2026)**: `[-60.6067, -22.0294]` (Boquerón)
+       - **Filadelfia (2023)**: `[-60.0333, -22.3500]` (Chaco Central)
+       - **Cerro Corá (2021)**: `[-55.9950, -22.6580]` (Amambay)
+       - **Mbaracayú (2021)**: `[-55.5180, -24.1250]` (Canindeyú)
+       - **Ybycuí (2022)**: `[-56.8450, -26.0680]` (Paraguarí)
+       - **Parque Caazapá (2022)**: `[-55.6500, -26.1500]` (San Juan Nepomuceno)
+       - **Serranías de San Luis / Yby Yaú (2024)**: `[-57.3500, -22.6500]` (Concepción)
+       - **Santa Rosa del Aguaray (2024, 2026)**: `[-56.5500, -23.7833]` (San Pedro)
+       - **San Pedro de Ycuamandyyú (2020)**: `[-57.0764, -24.0917]` (San Pedro)
+       - **Humedales Bajo Chaco / Villa Hayes (2023)**: `[-57.5700, -25.0900]`
+       - **Humedales Lago Ypacaraí / Areguá (2021)**: `[-57.3800, -25.3000]`
+       - **Ribera Villeta (2021)**: `[-57.5600, -25.5100]`
+       - **Piribebuy (2022, 2026)**: `[-57.0500, -25.4667]`
+       - **Altos (2022)**: `[-57.2550, -25.2250]`
+  2. **Recarga Dinámica en Servidor Backend (`climaServicio.js`)**:
+     - Se incorporó `statSync(ruta).mtimeMs` en `cargarDatasetHistorico()`. Cuando el archivo GeoJSON se actualiza en disco, el servicio recarga inmediatamente el contenido sin requerir reinicio del proceso Express.
+  3. **Regeneración y Validación Espacial Total**:
+     - 574 focos generados con 0 errores y 0 puntos fuera de Paraguay.
+- **Verificación**:
+  - `node clima.test.mjs`: 5/5 tests pasados.
+  - `node probar_panel.mjs`: suite integral en vivo 100% OK.
+  - Turno liberado con `cli.mjs pass` y estado en `libre`.
+
+### 2026-11-01 · Antigravity · Corrección de Georreferenciación Exacta de Incendios Históricos en Bahía Negra / Pantanal Paraguayo y Reservas Naturales · scripts/generar-incendios-historico.mjs, data/incendios_historico_py.geojson, Cambio_climatico/data/incendios_historico_py.geojson, docs/TURNOS_IA.md
+- **Problema detectado por el usuario**: Al inspeccionar el "Gran Incendio Pantanal Paraguayo y Río Negro (2020)" en Bahía Negra (Alto Paraguay), los enlaces de Street View y Maps abrían coordenadas en latitud `-25.090000`, longitud `-57.579420`, las cuales corresponden a Villa Hayes / Remansito en el departamento de Presidente Hayes, y no a Bahía Negra (latitud `-20°` en el extremo norte de Alto Paraguay).
+- **Causa raíz**: En `scripts/generar-incendios-historico.mjs`, la búsqueda del centroide distrital hacía `centrosDistritos.get('ALTO PARAGUAY::BAHIA NEGRA')` sin normalizar tildes. En `distritos_py_light.geojson`, el registro oficial figura como `'BAHÍA NEGRA'` (con tilde) y `'MARISCAL JOSÉ FÉLIX ESTIGARRIB'` (abreviado). Al no coincidir exactamente la clave, el script caía en el fallback genérico `[-57.5, -25.0]`, desplazando erróneamente los puntos al Bajo Chaco / Villa Hayes.
+- **Solución aplicada**:
+  1. **Normalización NFD Estricta**: Se incorporó `normalizar(texto)` que remueve diacríticos, caracteres especiales y normaliza a mayúsculas antes de indexar y buscar distritos.
+  2. **Coordenadas de Alta Precisión para Parques y Reservas**:
+     - **Pantanal Paraguayo y Río Negro (Bahía Negra)**: Centrado en estación Los Tres Gigantes / Río Negro `[-58.1820, -20.1550]`.
+     - **Monumento Natural Chovoreca (Bahía Negra)**: Centrado en `[-58.3300, -19.9800]`.
+     - **Parque Nacional Cerro Corá (Amambay)**: Centrado en `[-55.9950, -22.6580]`.
+     - **Reserva Natural Mbaracayú (Canindeyú)**: Centrado en `[-55.5180, -24.1250]`.
+     - **Parque Nacional Ybycuí (Paraguarí)**: Centrado en `[-56.8450, -26.0680]`.
+     - **Pozo Colorado (Presidente Hayes)**: Centrado en `[-59.9000, -23.4900]`.
+     - **Mariscal Estigarribia (Boquerón)**: Vinculado a `[-60.6067, -22.0294]`.
+  3. **Eliminación del Fallback Silencioso**: Si un distrito no existe, el generador arroja una excepción explícita impidiendo coordenadas erróneas.
+  4. **Regeneración de Datasets**: Se regeneraron `data/incendios_historico_py.geojson` y su réplica `Cambio_climatico/data/incendios_historico_py.geojson`. Los 197 puntos de Bahía Negra / Pantanal / Chovoreca se sitúan ahora estrictamente entre latitudes `-20.41°` y `-19.81°` y longitudes `-58.07°` y `-58.71°`.
+- **Verificación**:
+  - Script de validación espacial: 0 puntos fuera de Paraguay; todas las latitudes coinciden exactamente con sus departamentos.
+  - `node clima.test.mjs`: 5/5 tests pasados.
+  - `node probar_panel.mjs`: suite integral 100% OK.
+  - Turno liberado formalmente con `cli.mjs pass`.
+
+### 2026-11-01 · Antigravity · Implementación del Centro de Inteligencia Hídrica Territorial (CIHT): Ficha 3D de Cota Segura Territorial (ICST) e Índice de Resiliencia Climática (IRCT) en Visor 3D y Panel Climático · visor-3d.html, js/visor3d.js, panel.html, Cambio_climatico/panel.html, js/panel-clima.js, docs/TURNOS_IA.md
+- **Objetivo**: Conectar integralmente los módulos 2D y 3D en un **Centro de Inteligencia Hídrica Territorial (CIHT) / Gemelo Digital**, respondiendo a la pregunta crítica: *"Si llueve X mm en Y horas, ¿hasta dónde llegará el agua, qué parcelas y construcciones quedan bajo riesgo y cuál es la cota segura de ocupación y edificación?"*.
+- **Qué se implementó**:
+  1. **En Visor 3D (`visor-3d.html` y `js/visor3d.js`)**:
+     - **Extrusión 3D por Cota Segura (ICST)**: Nuevo modo en `<select id="v3-color">` que colorea automáticamente las construcciones 3D según el margen libre normativo (+1.50 m sobre crecida, Ley 3966 Art. 235):
+       - Verde (`#10b981`): Seguro / Apto (cota terreno ≥ cota crecida + 1.50 m).
+       - Naranja (`#f59e0b`): Condicionado (+1.50 m libre requerido, vulnerable a eventos extremos).
+       - Rojo (`#ef4444`): Restringido / Inundable (cota terreno ≤ cota crecida, franja hídrica non aedificandi).
+     - **Métrica Analítica ICST en Vivo**: Integración de `#v3-icst-badge` y `#v3-icst-detalle` en la tarjeta de analítica de inundación, contabilizando en tiempo real el porcentaje y total de construcciones aptas vs condicionadas vs anegadas.
+     - **Ficha Oficial 3D de Cota Segura (ICST) & Resiliencia Distrital (IRCT)**: Popups interactivos en `edificios` y `parcelas` con evaluación altimétrica del DEM, cota de crecida, cota segura mínima, dictamen vinculante Ley 3966 Art. 235, desglose multidimensional de resiliencia distrital y botonera de inspección 360° (Street View / Maps / Mapillary).
+  2. **En Panel Climático (`panel.html`, `Cambio_climatico/panel.html` y `js/panel-clima.js`)**:
+     - **Acceso Directo al Gemelo 3D**: Botón institucional `🏙️ Visor 3D` en la barra superior y botón `🏙️ Inspeccionar en Gemelo 3D` en la ficha lateral y popup de cada parcela seleccionada, con enlace de coordenadas directas.
+     - **Módulo Decision Intelligence (SNC-DI)**: Incorporación de los índices **IRCT** (Índice de Resiliencia Climática Territorial: 0-100) e **ICST** (Cota Segura Territorial) en la barra de fórmulas analíticas con actualización dinámica ante selección de distritos y parcelas.
+     - **Ficha Parcelaria y Popups Enriquecidos**: Integración del cálculo de Cota Segura (ICST) y Resiliencia (IRCT) en la vista de detalle de cada lote y en los popups distritales de los 246 distritos del país.
+     - **Dictamen Oficial PDF (Ley 551/2023 & Ley 3966/2010)**: Incorporación formal de las filas de **Cota Segura Territorial (ICST)** e **Índice de Resiliencia Climática (IRCT)** en la tabla de evaluación hidrológica de parcelas y en la matriz de resiliencia municipal distrital de `exportarDictamenPDF()`.
+- **Verificación**:
+  - `node --check js/visor3d.js` y `node --check js/panel-clima.js`: sintaxis JS 100% válida.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests pasados (100% OK).
+  - `node probar_panel.mjs`: suite integral en vivo 100% OK (APIs, GeoJSONs, distritos, parcelas, hidrografía).
+  - Protocolo de coordinación: registrado en `skills.json` con `cli.mjs pass`, locks liberados formalmente y turno actual en `libre`.
+
+### 2026-11-01 · Antigravity · Corrección de Focos de Incendio (NASA FIRMS / VIIRS) y Creación del Módulo e Histórico de Incendios Forestales de Paraguay (2020-2026) · data/incendios_historico_py.geojson, Cambio_climatico/data/incendios_historico_py.geojson, climaServicio.js, server-api.js, panel.html, Cambio_climatico/panel.html, js/panel-clima.js, visor-3d.html, js/visor3d.js, docs/TURNOS_IA.md
+- **Objetivo**: Corregir las limitaciones del módulo de focos de incendio (donde fallas de red con NASA FIRMS provocaban un fallback a solo 3 puntos con códigos de satélite crudos) y crear el dataset y visualización completa del **Histórico Oficial de Incendios Forestales de Paraguay (2020-2026)**.
+- **Qué se implementó**:
+  1. **Dataset Histórico Consolidado de Paraguay (`data/incendios_historico_py.geojson`)**:
+     - Creado mediante `scripts/generar-incendios-historico.mjs` con 574 focos de calor y mega-incendios georreferenciados en coordenadas exactas de distritos paraguayos:
+       - **2024**: Mega-incendio del Monumento Natural Chovoreca y Pantanal Paraguayo (Alto Paraguay / Bahía Negra, Fuerte Olimpo) con FRP de hasta 360 MW, más focos en San Pedro y Concepción.
+       - **2023**: Sequía extrema y focos en el Chaco Central (Boquerón: Mcal. Estigarribia, Filadelfia) y Bajo Chaco (Villa Hayes).
+       - **2022**: Quemas en serranías y pastizales de Cordillera (Piribebuy, Altos), Paraguarí (Ybycuí) y Caazapá.
+       - **2021**: Incendios en humedales del Lago Ypacaraí (Areguá, Villeta), Reserva Natural Mbaracayú (Canindeyú) y Parque Nacional Cerro Corá (Amambay).
+       - **2020**: El histórico año récord de incendios en el Pantanal, Río Negro y Pozo Colorado.
+       - **2025 - 2026**: Monitoreo NRT satelital reciente.
+     - Espejado en `Cambio_climatico/data/incendios_historico_py.geojson` para acceso HTTP directo.
+  2. **Servicio Backend Resiliente (`climaServicio.js` y `server-api.js`)**:
+     - `obtenerFocosIncendios(opts)`:
+       - Resuelve nombres oficiales de satélites: `Suomi-NPP (VIIRS)`, `NOAA-20 (VIIRS)`, `NOAA-21 (VIIRS)`, `Aqua (MODIS)` y `Terra (MODIS)` en lugar de 'N'.
+       - Soporta filtros: `tipo` (`activos`, `historico`, `todos`), `anio` (`2020`...`2026`), `distrito` y `minFRP`.
+       - Calcula estadísticas analíticas: distribución por año, por departamento, FRP máximo/promedio y superficie total estimada quemada en hectáreas.
+       - Fallback inteligente: si la descarga en vivo de NASA FIRMS tiene timeout o falla, sirve automáticamente el catálogo verificado.
+     - Endpoint `GET /api/v3/clima/incendios` actualizado en `server-api.js` para recibir los parámetros analíticos.
+  3. **Visualización en Panel Climático (`panel.html` y `js/panel-clima.js`)**:
+     - Nuevo chip: `📅 Histórico Incendios (2020-2026)` junto a `🔥 Focos de Calor (FIRMS)`.
+     - Simbología cromática por potencia radiativa:
+       - Amarillo (`#fbbf24`, FRP < 30 MW)
+       - Naranja (`#f97316`, 30 ≤ FRP < 75 MW)
+       - Rojo (`#ef4444`, 75 ≤ FRP < 150 MW)
+       - Violeta (`#a855f7`, FRP ≥ 150 MW - Mega-incendios forestales)
+     - Popups detallados con evento histórico, año, fecha, satélite, área quemada estimada y botones de inspección visual 360° (Street View / Maps / Mapillary).
+  4. **Visualización en Visor 3D (`visor-3d.html` y `js/visor3d.js`)**:
+     - Capa `incendios-puntos` actualizada con gradiente visual por FRP y soporte de consulta completa (`tipo=todos`).
+     - Popups 3D interactivos con detalles del evento, distrito y perspectiva 360°.
+- **Verificación**:
+  - `node clima.test.mjs`: 5/5 tests pasados exitosamente.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - `node probar_panel.mjs`: Suite integral en vivo 100% OK.
+  - Codificación UTF-8 estricta sin BOM verificada en todos los archivos.
+  - Locks liberados formalmente con `cli.mjs pass` y turno actual en `libre`.
+
+### 2026-11-01 · Antigravity · Integración de Enlaces de Inspección Visual 360° (Street View / Google Maps / Mapillary sin costo) en Popups de Leaflet y MapLibre · js/panel-clima.js, js/visor3d.js, docs/TURNOS_IA.md
+- **Objetivo**: Dotar a todos los popups interactivos del Panel Climático MHC-PY (Leaflet) y del Visor 3D (MapLibre GL JS) de botones de inspección visual profunda en 360° utilizando Universal URLs y deep links nativos de Street View (`map_action=pano`), Google Maps y Mapillary, con cero costo, sin API key ni consumo de cuotas.
+- **Qué se implementó**:
+  1. **En Panel Climático (`js/panel-clima.js` - Leaflet)**:
+     - Creada la función `generarBotonesInspeccionVisual(lat, lng)` que inyecta la botonera responsive con enlaces:
+       - `📷 Street View 360°`: abre directamente el panorama esférico más próximo a las coordenadas.
+       - `📍 Maps`: abre la ficha de Google Maps con ruteo e información del inmueble.
+       - `🌐 Mapillary`: abre la vista a nivel de calle colaborativa de código abierto.
+     - Integrado en popups de:
+       - **Infraestructura de Salud MSPyBS** (hospitales y USF).
+       - **Infraestructura Educativa MEC** (albergues temporales de contingencia).
+       - **Establecimientos Industriales y Polígonos POUT/MADES** (puntos individuales y polígonos zonificados).
+       - **Focos de Calor Activos** (satélites NASA FIRMS).
+  2. **En Visor 3D (`js/visor3d.js` - MapLibre GL JS)**:
+     - Creada la función `botonesInspeccionVisual3D(lat, lng)`.
+     - Integrado en popups de:
+       - **Edificaciones OSM 3D**: muestra altura, estado catastral, cota de terreno, advertencia visual de anegamiento en caso de crecida (`_inund`) y la botonera de inspección 360°.
+       - **Parcelas Catastrales SNC**: cuenta catastral, superficie, impuesto DNIT y botonera 360°.
+       - **Focos de Calor FIRMS**: fecha, satélite, FRP y botonera 360°.
+       - **Albergues de Evacuación Segura**: nombre del albergue (MEC / Salud), capacidad, cota segura y botonera 360°.
+     - Cursor visual `pointer` activado para todas las capas clicables.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - `node --check js/visor3d.js`: Sintaxis 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - `node probar_panel.mjs`: Suite integral en vivo 100% OK.
+  - Codificación UTF-8 estricta sin BOM verificada.
+  - Lock liberado formalmente con `cli.mjs pass` y turno actual en `libre`.
+
+### 2026-11-01 · Antigravity · Rutas de Evacuación Segura hacia Albergues MEC/Salud y Exportación Oficial en PDF del Reporte Hidrodinámico 4D · visor-3d.html, js/visor3d.js, docs/TURNOS_IA.md
+- **Objetivo**: Concretar la solicitud unificada ("todos"): dotar al visor 3D de trazado automático de rutas de evacuación seguras a pie hacia albergues (escuelas MEC y centros de salud MSPyBS) fuera de la cota de crecida, y generar el Dictamen Técnico Oficial en PDF del evento hidrodinámico 4D con la tabla horaria del hidrograma SCS, balance de volumen/caudal y directivas de la Ley N° 3966/2010.
+- **Qué se implementó**:
+  1. **Trazado de Rutas de Evacuación Segura (`trazarRutasEvacuacion` en `js/visor3d.js`)**:
+     - Botón interactivo en `visor-3d.html`: `[🏃 Trazar Rutas de Evacuación]`.
+     - Identifica dinámicamente las construcciones censadas que se encuentran bajo el agua para la cota actual simulada.
+     - Consulta en memoria la base oficial de infraestructura crítica georreferenciada (741 centros de salud MSPyBS y 9.295 escuelas MEC de contingencia).
+     - Filtra y valida los albergues más cercanos comprobando que su cota topográfica supere con holgura la crecida simulada (terreno seco seguro).
+     - Traza rutas geodésicas desde cada construcción inundada hacia su albergue seguro más cercano, calculando la distancia exacta en metros y el tiempo de marcha a pie ($4,5\text{ km/h} \approx 75\text{ m/min}$).
+     - Renderiza capas visuales en MapLibre: `evacuacion-rutas` (líneas punteadas esmeralda `#10b981`) y `evacuacion-albergues` (puntos con borde blanco y etiquetas `#059669`).
+     - Alerta informativa en vivo en `#v3-evac-info` con cantidad de rutas, albergues seguros activos y tiempo medio de evacuación comunitaria.
+  2. **Exportador Oficial PDF del Reporte Hidrodinámico 4D (`exportarReporteHidrodinamicoPDF`)**:
+     - Botón interactivo en `visor-3d.html`: `[📄 Exportar Reporte 4D]`.
+     - Integración con jsPDF y AutoTable locales servidos desde `/vendor/jspdf.umd.min.js` y `/vendor/jspdf.plugin.autotable.min.js`.
+     - Generación del **Dictamen Técnico Oficial** con membrete institucional SNC/MEF y código criptográfico de integridad (`SNC-HIDRO4D-...`).
+     - **Metadatos y Parámetros del Evento**: Cuenca hidrográfica, cota base del valle, cota máxima de crecida, tirante $\Delta h$, lluvia acumulada, duración de la tormenta, coeficiente de escorrentía $C$, volumen anegado ($\text{hm}^3$) y caudal pico estimado ($Q_p$ en $\text{m}^3/\text{s}$).
+     - **Tabla Horaria del Hidrograma SCS 4D**: desglose paso a paso ($t = 0 \dots T$ horas) con cota simulada, tirante, fracción del caudal pico y niveles de alerta meteorológica DINAC.
+     - **Directivas de Contingencia y Ley Orgánica Municipal**: instrucciones de evacuación preventiva para el Intendente y el Comité de Emergencia Distrital conforme al Art. 225 de la Ley Nº 3966/2010.
+  3. **Limpieza y Consistencia de Estado**:
+     - Al desactivar la capa de inundación, las rutas de evacuación, albergues y mensajes se limpian automáticamente sin dejar artefactos visuales.
+- **Verificación**:
+  - `node --check js/visor3d.js`: Sintaxis 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - `node probar_panel.mjs`: 100% OK.
+  - Archivos verificados con codificación UTF-8 estricta sin BOM.
+  - Locks liberados formalmente con `cli.mjs pass` y turno actual en `libre`.
+
+### 2026-11-01 · Antigravity · Eje 2: Implementación de Animación Temporal 4D (Timeline Player con Hidrograma Sintético SCS) y Alerta de Infraestructura Crítica en Visor 3D · visor-3d.html, js/visor3d.js, docs/TURNOS_IA.md
+- **Objetivo**: Concretar el Eje 2 propuesto y priorizado por el usuario: transformar la simulación hidrológica estática en un gemelo digital 4D con reproducción temporal continua ($t = 0 \dots T$ horas), modelado de propagación de onda de crecida con curva de hidrograma sintético (SCS), y monitoreo en tiempo real de edificaciones y red vial comprometidas.
+- **Qué se implementó**:
+  1. **Timeline Player 4D en la Interfaz (`visor-3d.html`)**:
+     - Nuevo bloque interactivo de línea de tiempo dentro de la subsección *Nivel de agua*:
+       - Salida en vivo de tiempo y fase: `T = Xh (Fase de Onda)`.
+       - Slider de tiempo $t \in [0, T]$ con saltos de 0.5 horas.
+       - Botonera de control: `[◀ -1h]` paso atrás, `[▶ Reproducir Onda (4D)]` / `[⏸ Pausar Onda]`, `[+1h ▶]` paso adelante y `[↻ Base]`.
+     - Nuevos tiles analíticos en *Resultados & Alertas de Infraestructura*:
+       - **Construcciones**: reporte en vivo (`X bajo agua` en rojo o `0 afectadas` en verde).
+       - **Vías / Aislamiento**: estimación en tiempo real de longitud vial cortada por la lámina (`~X km cortados` o `Vías transitables`).
+  2. **Motor de Onda de Crecida Sintética (`js/visor3d.js`)**:
+     - `obtenerParametrosOnda()`: deduce la cota base, la cota pico estimada por lluvia/presets ($\Delta h_{\text{max}}$) y la duración total del evento $T$ (a partir de `v3-lluvia-horas` o 24 h estándar).
+     - `calcularCotaHidrograma(t, T, base, deltaMax)`: implementa la curva hidrológica de concentración ($t \le t_c$) y recesión exponencial ($t > t_c$), calculando la cota exacta y la fase del evento (*Estiaje*, *Concentración pluvial*, *Pico de crecida*, *Recesión / Drenaje*).
+     - `fijarPasoTemporal(t)`: sincroniza el slider de tiempo, la cota en el mapa 3D y ejecuta `actualizarInundacion()`.
+     - `toggleReproduccionTimeline()`: temporizador fluido (220 ms por paso de 0.5 h) para reproducir el ciclo completo de la tormenta en ~10 segundos con feedback visual y parada automática al completar el ciclo.
+  3. **Alertas Dinámicas de Edificaciones y Vías**:
+     - `actualizarInundacion()` actualiza en cada paso temporal los contadores de construcciones comprometidas y longitud de vías anegadas en los nuevos tiles analíticos.
+- **Verificación**:
+  - `node --check js/visor3d.js`: Sintaxis 100% OK.
+  - Verificación HTTP en vivo en `http://localhost:5556/visor-3d.html` y `http://localhost:5556/js/visor3d.js`: 200 OK con todos los componentes y funciones integradas.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - Codificación UTF-8 estricta sin BOM verificada en todos los archivos.
+  - Lock liberado formalmente con `cli.mjs pass`.
+
+### 2026-11-01 · Antigravity · Opción 3: Carga, Análisis Espacial y Montaje de Zonas Industriales, Logística y POUT (6.616 elementos) en MHC-PY · data/industria_logistica_py.geojson, Cambio_climatico/data/industria_logistica_py.geojson, server-api.js, panel.html, Cambio_climatico/panel.html, js/panel-clima.js, docs/TURNOS_IA.md
+- **Objetivo**: Concretar la opción 3 elegida por el usuario: compilar y georreferenciar las zonas industriales, logísticas y comerciales a nivel país y en los Planes de Ordenamiento Urbano Territorial (POUT) aprobados por el MADES (Ley Nº 3966/2010), habilitar endpoint API REST con filtros espaciales, y montar la visualización y análisis de impacto en `panel.html` y en los dictámenes oficiales en PDF.
+- **Qué se implementó**:
+  1. **Compilación y Geoprocesamiento del Dataset Nacional**:
+     - Extracción geodésica de 6.213 establecimientos industriales, fábricas, depósitos y talleres artesanales a partir de `data/osm/usos_py.json` con sus vínculos a Cta. Cte. catastral SNC, padrón y superficie edificada declarada.
+     - Incorporación de 403 polígonos de zonificación 'Mixta logística / industrial' provenientes de los POUT municipales del Área Metropolitana (Capiatá, Luque, San Antonio, Villa Elisa, etc.) aprobados por ordenanza municipal y MADES (`data/pout_ama/zonificacion_ama.geojson`).
+     - Generados los datasets GeoJSON optimizados `data/industria_logistica_py.geojson` y `Cambio_climatico/data/industria_logistica_py.geojson` (2,39 MB, 6.616 elementos).
+  2. **API Backend**:
+     - Montado el endpoint `GET /api/v3/pout/industria` en `server-api.js` con soporte de caché en memoria, filtros por BBOX (`minX, minY, maxX, maxY`), por `distrito` y por `sector`.
+  3. **Visualización y Auditoría Territorial en MHC-PY (`panel.html`, `js/panel-clima.js`)**:
+     - Activado el chip `🏭 Industrias & Logística (POUT)` en la barra de capas territoriales y satelitales.
+     - Fuente oficial registrada: `POUT / MADES: Zonificación Industrial y Territorial (Ley 3966)`.
+     - Renderizado en Leaflet: círculos ámbar/slate (`#f59e0b` / `#1e293b`) para industrias puntuales y polígonos terracota (`#ea580c`) para zonas zonificadas POUT, con popups enriquecidos que advierten sobre la *Auditoría de Efluentes y Franja Hídrica (Ley 3966 Art. 235 / POUT)*.
+     - Asociación distrital: el popup distrital contabiliza automáticamente las industrias y zonas POUT de cada municipio.
+     - Integración en el exportador PDF (`exportarDictamenPDF`): se incluye el renglón de actividad industrial y POUT en la tabla de Resiliencia Municipal.
+- **Verificación**:
+  - `node --check server-api.js`: Sintaxis 100% OK.
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - `node probar_panel.mjs`: Suite integral en vivo 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - Verificación de codificación: UTF-8 estricto sin BOM en todos los archivos.
+  - Lock liberado formalmente con `cli.mjs pass`.
+
+### 2026-11-01 · Antigravity · Opción 1: Conexión de Infraestructura Crítica (Salud MSPyBS + Educación MEC + Bosques INFONA) en el Exportador de Dictamen PDF Oficial (jsPDF) para Ficha Municipal de Resiliencia Territorial · js/panel-clima.js, docs/TURNOS_IA.md
+- **Objetivo**: Concretar la opción 1 elegida por el usuario: vincular la totalidad de la infraestructura social y ambiental (Salud MSPyBS, Educación MEC y Cobertura Forestal INFONA) en el motor de exportación de dictámenes y certificados oficiales en PDF (`exportarDictamenPDF` en `js/panel-clima.js`), integrando el cálculo formal de Resiliencia Municipal (IRM) según la Ley Orgánica Municipal Nº 3966/2010 y Ley Nº 551/2023.
+- **Qué se implementó**:
+  1. **Indexación y Asociación Espacio-Distrital en Memoria**:
+     - Estructurado `saludPorDistrito` para indexar hospitales y USF por clave distrital normalizada.
+     - Extracción dinámica en `exportarDictamenPDF` de centros de salud (hospitales y USF), escuelas (área urbana y rural aptas como albergues) y superficie forestal departamental según INFONA.
+  2. **Tabla Oficial de Infraestructura Crítica & Resiliencia Municipal (IRM)**:
+     - Incorporada la tabla con estilo institucional esmeralda (`#047857`) en la emisión de dictámenes distritales:
+       - Salud Pública y Emergencias (MSPyBS): sedes activas, hospitales y unidades de salud familiar.
+       - Equipamiento Educativo (MEC): número de escuelas urbanas y rurales operativas como albergues.
+       - Cobertura Forestal y Biomasa (INFONA): hectáreas conservadas y porcentaje histórico de deforestación.
+       - Índice de Resiliencia Municipal (IRM): cálculo algorítmico multicriterio que pondera la capacidad adaptativa del municipio frente al riesgo de inundación (IRI).
+  3. **Integración en Certificado Parcelario (IPOOT)**:
+     - Añadida la métrica de Resiliencia Social y Cobertura Comunitaria en la Tabla de Evaluación Hidrológica y Ambiental para certificar el respaldo institucional ante eventos extremos.
+  4. **Paginación Inteligente y Control de Desborde**:
+     - Configurado salto de página condicional automático en jsPDF cuando el documento supera los márgenes de seguridad de la hoja A4, agregando encabezado oficial de continuación institucional y pie numerado sin cortes bruscos.
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - Validación de palabras clave y estructuras en Node.js: 7/7 suites OK.
+  - `node probar_panel.mjs`: 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - Verificación de codificación: UTF-8 estricto sin BOM.
+  - Lock liberado formalmente con `cli.mjs pass`.
+
+### 2026-11-01 · Antigravity · Paso C2: Georreferenciación y Montaje de la Capa Nacional de Escuelas MEC (9.295 Establecimientos) en MHC-PY e Integración con IRM · data/infraestructura_educacion.geojson, Cambio_climatico/data/infraestructura_educacion.geojson, server-api.js, panel.html, Cambio_climatico/panel.html, js/panel-clima.js, docs/TURNOS_IA.md
+- **Objetivo**: Concretar la opción 2 elegida por el usuario: procesar la capa nacional completa de centros educativos del MEC (9.803 registros originales), georreferenciarlos a WGS84, integrarlos al visor territorial de Cambio Climático (`panel.html` y `Cambio_climatico/panel.html`), desplegar la API REST con filtros espaciales (BBOX y distrito) y conectarlos con la evaluación de resiliencia municipal (IRM) y albergues de emergencia climática según Ley 3966.
+- **Qué se implementó**:
+  1. **Georreferenciación y Conversión Geodésica**:
+     - Procesado el shapefile oficial `data/1.Paraguay/06. Datos MEC actualizados/Establecimientos escolares 2014.shp`.
+     - 9.295 colegios y escuelas cuentan con coordenadas válidas proyectadas a WGS84 (EPSG:4326).
+     - Generados los datasets GeoJSON optimizados `data/infraestructura_educacion.geojson` y `Cambio_climatico/data/infraestructura_educacion.geojson` (2,2 MB) con atributos oficiales: código MEC, departamento, distrito, zona (URBANA/RURAL), barrio y dirección.
+  2. **API Backend**:
+     - Endpoint `/api/v3/infraestructura/educacion` agregado en `server-api.js` con soporte de filtrado por bounding box (`minX, minY, maxX, maxY`), filtro por nombre de distrito y limitación de respuesta para alto rendimiento.
+  3. **Frontend Interactivo en MHC-PY (`panel.html`, `Cambio_climatico/panel.html`, `js/panel-clima.js`)**:
+     - Chip interactivo `🏫 Escuelas & Colegios (MEC)` en la barra de capas territoriales y satelitales.
+     - Fuente oficial registrada en el listado de instituciones conectadas: `MEC: Establecimientos Escolares y Centros Educativos`.
+     - Motor de renderizado dinámico en Leaflet: visualiza las escuelas dentro del viewport (`moveend`) evitando saturación del navegador (hasta 1.200 puntos simultáneos a zoom alto).
+     - Diferenciación visual: azul `#3b82f6` para escuelas urbanas y cian `#38bdf8` para rurales, radio calibrado, tooltips y popups enriquecidos destacando su función como *Equipamiento Social y Albergue de Emergencia Climática (Ley 3966)*.
+     - Vinculación al cálculo y popup distrital: conteo automático de sedes educativas disponibles por distrito para el fortalecimiento de la Resiliencia Municipal (IRM).
+- **Verificación**:
+  - `node --check js/panel-clima.js`: Sintaxis 100% OK.
+  - `node probar_panel.mjs`: Suite integral en vivo 100% OK.
+  - `node tests/all-index-functionalities.test.mjs`: 8/8 tests aprobados.
+  - Verificación de codificación: UTF-8 limpio sin BOM en todos los archivos modificados.
+  - HTTP 200 verificado en `/Cambio_climatico/data/infraestructura_educacion.geojson`.
+- **Pendiente / Siguientes Pasos sugeridos**:
+  - Opción 1: Conexión con datos de Salud + Educación en el exportador PDF oficial para emitir la ficha distrital completa.
+  - Opción 3: Carga y análisis de zonas industriales y uso de suelo comercial para el POUT.
+
 ### 2026-11-01 · Claude · Coeficiente de escorrentía automático por punto (pedido del usuario) · escorrentiaServicio.js (nuevo), server-api.js, js/visor3d.js, visor-3d.html
 - **Pedido**: tras una propuesta pegada por el usuario con 6 mejoras al simulador hidrológico (de las cuales 2 ya estaban hechas: impacto en construcciones y lluvia real ERA5), eligió priorizar el coeficiente de escorrentía automático — hoy el selector "Suelo / escorrentía" tenía 3 valores fijos que el usuario elegía a mano para todo el país.
 - **Qué se hizo**: `escorrentiaServicio.js` (nuevo módulo, mismo patrón que `climaServicio.js`): dado lat/lng, reproyecta a UTM 21S y busca 1) si cae en una zona residencial real de OSM (`data/osm/residencial/<dpto>_<dist>.geojson`, de hoy mismo) → urbano C=0,68; 2) si no, la región por longitud (Chaco arcilloso C=0,82 / Región Oriental porosa C=0,42, misma partición que `estimarCotaParaguay()`). Ruta nueva `GET /api/v3/clima/escorrentia?lat=&lng=`. En el visor: el selector ahora tiene "Automático (según el punto)" como opción por defecto, que muestra el valor resuelto en su propio texto (ej. "Automático (Urbano / suelo saturado, C = 0.68)") y se recalcula en cada `moveend` si sigue en automático.

@@ -14,19 +14,180 @@
   <aside class="v3-panel" id="v3-panel" aria-label="Controles del visor 3D">
     <div class="v3-cab">
       <h1>Visor 3D catastral</h1>
-      <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-        <button type="button" class="v3-boton" id="v3-toggle-2d" style="padding:3px 7px;font-size:11px;background:#334155;border-radius:6px;font-weight:bold;">Vista 2D</button>
-        <a href="/panel.html" target="_blank" class="v3-boton" style="padding:3px 7px;font-size:11px;background:#0369a1;border-radius:6px;font-weight:bold;color:#fff;text-decoration:none;" title="Abrir Panel MHC-PY de Cambio Climático">🌍 Clima</a>
-        <a href="/" class="v3-boton" style="padding:3px 7px;font-size:11px;background:#1e293b;border-radius:6px;font-weight:bold;color:#94a3b8;text-decoration:none;" title="Volver al Catastro 2D">← 2D</a>
+      <div class="v3-cab-acciones">
+        <button type="button" class="v3-btn-top" id="v3-toggle-2d" title="Alternar entre perspectiva 3D y vista cenital 2D">Vista 2D</button>
+        <a href="/panel.html" target="_blank" class="v3-btn-top v3-btn-clima-top" title="Abrir Panel MHC-PY de Cambio Climático">🌍 Clima</a>
+        <a href="/" class="v3-btn-top" title="Volver al Catastro 2D">← 2D</a>
         <button type="button" class="v3-plegar" id="v3-plegar" aria-expanded="true" title="Plegar / desplegar el panel">−</button>
       </div>
     </div>
     <div class="v3-cuerpo" id="v3-cuerpo">
-      <fieldset><legend>Ubicación</legend>
-        <label>Departamento
-          <select id="v3-dpto" aria-label="Elegir departamento"><option value="">— Elegir departamento —</option></select></label>
-        <label>Distrito
-          <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Elija primero el departamento —</option></select></label>
+      <fieldset id="v3-fieldset-ubicacion">
+        <legend id="v3-ubic-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-ubic-cuerpo">Ubicación <span id="v3-ubic-ico">▾</span></legend>
+        <div id="v3-ubic-cuerpo" class="v3-ubic-cuerpo">
+          <label>Departamento
+            <select id="v3-dpto" aria-label="Elegir departamento"><option value="">— Elegir departamento —</option></select></label>
+          <label>Distrito
+            <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Elija primero el departamento —</option></select></label>
+
+        <!-- TARJETA DINÁMICA DE DATOS DEL PANEL TERRITORIAL & CLIMA (MHC-PY) -->
+        <div id="v3-panel-datos-wrap" class="v3-panel-datos-wrap" style="display:none;">
+          <!-- Cabecera de Datos con Toggle Ojo y Acceso Directo -->
+          <div class="v3-pdatos-cab">
+            <div class="v3-pdatos-titulo">
+              <span class="v3-pdatos-beacon"></span>
+              <strong id="v3-pdatos-nombre">Paraguay</strong>
+            </div>
+            <div class="v3-pdatos-acciones">
+              <button type="button" id="v3-btn-ojo-datos" class="v3-btn-ojo" title="Ocultar / Mostrar detalle de datos del panel">👁️</button>
+              <a id="v3-btn-abrir-panel-link" href="/panel.html" target="_blank" class="v3-btn-mini-panel" title="Abrir en Panel MHC-PY completo (2D)">🌍 2D ↗</a>
+            </div>
+          </div>
+
+          <!-- Contenido Detallado de Datos del Panel -->
+          <div id="v3-pdatos-detalle" class="v3-pdatos-detalle">
+            
+            <!-- 1. Clima en Tiempo Real -->
+            <div class="v3-pdatos-seccion">
+              <div class="v3-pdatos-sec-cab">
+                <span>🌡️ CLIMA EN VIVO</span>
+                <span id="v3-clima-fuente" class="v3-badge-sm">Open-Meteo & ERA5</span>
+              </div>
+              <div class="v3-kpi-grid">
+                <div class="v3-kpi-card">
+                  <div class="v3-kpi-lbl">Temperatura</div>
+                  <div class="v3-kpi-val"><span id="v3-kpi-temp">--</span>°C</div>
+                  <div class="v3-kpi-sub" id="v3-kpi-sens">Sens: --°C</div>
+                </div>
+                <div class="v3-kpi-card">
+                  <div class="v3-kpi-lbl">Lluvia & Humedad</div>
+                  <div class="v3-kpi-val"><span id="v3-kpi-lluvia">--</span> <small>mm</small></div>
+                  <div class="v3-kpi-sub" id="v3-kpi-hum">Hum: --%</div>
+                </div>
+              </div>
+              <div class="v3-meteo-barra" id="v3-meteo-cielo">
+                <span>💨 Viento: <b id="v3-kpi-viento">-- km/h</b></span>
+                <span id="v3-kpi-cielo-desc">● Tiempo real</span>
+              </div>
+            </div>
+
+            <!-- 2. Decision Intelligence (MHC-PY / SNC-DI) -->
+            <div class="v3-pdatos-seccion">
+              <div class="v3-pdatos-sec-cab">
+                <span>🎯 DECISION INTELLIGENCE (SNC-DI)</span>
+              </div>
+              <div class="v3-metricas-lista">
+                <div class="v3-metrica-fila">
+                  <span title="Índice de Confort Climático Territorial"><strong>ICT</strong> (Confort Climático):</span>
+                  <span id="v3-val-ict" class="v3-badge-pill pill-verde">-- / 100</span>
+                </div>
+                <div class="v3-metrica-fila">
+                  <span title="Índice de Riesgo Territorial"><strong>IRT</strong> (Riesgo Territorial):</span>
+                  <span id="v3-val-irt" class="v3-badge-pill pill-amarillo">-- / 100</span>
+                </div>
+                <div class="v3-metrica-fila">
+                  <span title="Aptitud Catastral Territorial"><strong>IPOOT</strong> (Aptitud Suelo):</span>
+                  <span id="v3-val-ipoot" class="v3-badge-pill pill-verde" style="font-weight:700;">FAVORABLE</span>
+                </div>
+                <div class="v3-metrica-fila">
+                  <span title="Resiliencia Municipal Ley 3966"><strong>IRM</strong> (Resiliencia):</span>
+                  <span id="v3-val-irm" style="color:#38bdf8;font-weight:700;">-- %</span>
+                </div>
+                <div class="v3-metrica-fila">
+                  <span title="Cota Segura de Inundación"><strong>ICST</strong> (Cota Segura):</span>
+                  <span id="v3-val-icst" style="color:#34d399;font-weight:700;">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Riesgo de Inundabilidad Distrital (IRI) -->
+            <div class="v3-pdatos-seccion" id="v3-sec-inundacion">
+              <div class="v3-pdatos-sec-cab">
+                <span>🌊 VULNERABILIDAD FLUVIAL (IRI)</span>
+                <span id="v3-iri-ranking" class="v3-badge-sm">Ranking: --</span>
+              </div>
+              <div class="v3-iri-box">
+                <div class="v3-iri-top">
+                  <span id="v3-iri-nivel" class="v3-badge-riesgo pill-amarillo">NIVEL: --</span>
+                  <span id="v3-iri-val" style="font-size:12px;font-weight:bold;color:#f8fafc;">IRI: -- / 100</span>
+                </div>
+                <div class="v3-iri-detalles">
+                  <div>Cuenca: <strong id="v3-iri-cuenca">--</strong></div>
+                  <div>Cota Media: <strong id="v3-iri-cota">-- m.s.n.m.</strong></div>
+                </div>
+                <button type="button" id="v3-btn-sincronizar-cota-3d" class="v3-btn-sync-cota" title="Ajustar el tirante hídrico de la simulación 3D a la cota de este distrito">
+                  🌊 Aplicar Cota a Simulación 3D
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. Infraestructura Crítica & Clústeres (MEC / Salud / POUT) -->
+            <div class="v3-pdatos-seccion">
+              <div class="v3-pdatos-sec-cab">
+                <span>🏛️ INFRAESTRUCTURA & CLÚSTERES</span>
+              </div>
+              <div class="v3-infra-grid">
+                <div class="v3-infra-chip">
+                  <span class="v3-infra-ico">🏫</span>
+                  <div class="v3-infra-info">
+                    <span class="v3-infra-num" id="v3-infra-edu">--</span>
+                    <span class="v3-infra-txt">Escuelas (MEC)</span>
+                  </div>
+                </div>
+                <div class="v3-infra-chip">
+                  <span class="v3-infra-ico">🏥</span>
+                  <div class="v3-infra-info">
+                    <span class="v3-infra-num" id="v3-infra-sal">--</span>
+                    <span class="v3-infra-txt">Centros Salud</span>
+                  </div>
+                </div>
+                <div class="v3-infra-chip">
+                  <span class="v3-infra-ico">🏭</span>
+                  <div class="v3-infra-info">
+                    <span class="v3-infra-num" id="v3-infra-ind">--</span>
+                    <span class="v3-infra-txt">Industrias (POUT)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Focos de Calor Activos NASA FIRMS -->
+            <div class="v3-pdatos-seccion">
+              <div class="v3-pdatos-sec-cab">
+                <span>🔥 FOCOS DE CALOR (NASA FIRMS)</span>
+              </div>
+              <div class="v3-firms-box" id="v3-firms-box">
+                <span id="v3-firms-ico">🛰️</span>
+                <span id="v3-firms-texto">Consultando satélites MODIS/VIIRS…</span>
+              </div>
+            </div>
+
+            <!-- 6. Demografía & Catastro (CNPV 2022 & DNIT) -->
+            <div class="v3-pdatos-seccion">
+              <div class="v3-pdatos-sec-cab">
+                <span>📋 DEMOGRAFÍA & CATASTRO</span>
+              </div>
+              <div class="v3-demo-grid">
+                <div class="v3-demo-col">
+                  <span class="v3-demo-lbl">Población (CNPV 2022)</span>
+                  <strong class="v3-demo-val" id="v3-demo-pob">--</strong>
+                </div>
+                <div class="v3-demo-col">
+                  <span class="v3-demo-lbl">Cuentas DNIT (Aprox)</span>
+                  <strong class="v3-demo-val" id="v3-demo-dnit">--</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Barra de Colapsado (cuando el ojo oculta el detalle) -->
+          <div id="v3-pdatos-colapsado" class="v3-pdatos-colapsado" style="display:none;">
+            <span class="v3-colap-txt"><span id="v3-colap-nombre">Paraguay</span> · Datos Clima & Territorio (Ocultos)</span>
+            <button type="button" id="v3-btn-mostrar-datos" class="v3-btn-mostrar-pdatos">👁️ Mostrar</button>
+          </div>
+        </div>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -40,18 +201,113 @@
       </fieldset>
 
       <fieldset>
-        <legend id="v3-capas-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-capas-cuerpo">Capas <span id="v3-capas-ico">▾</span></legend>
+        <legend id="v3-capas-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-capas-cuerpo">Capas y Superposición <span id="v3-capas-ico">▾</span></legend>
         <div id="v3-capas-cuerpo">
-          <label class="v3-op"><input type="checkbox" data-capa="hidro" checked> <span class="v3-mues" style="background:#0ea5e9"></span> Hidrografía / Cauces (OSM, país)</label>
-          <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
-          <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
-          <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
-          <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
-          <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
-          <label class="v3-op"><input type="checkbox" data-capa="incendios"> <span class="v3-mues" style="background:#f97316;box-shadow:0 0 4px #ef4444;"></span> Incendios activos (NASA FIRMS)</label>
+          <p class="v3-ayuda" style="margin:2px 0 6px;color:#94a3b8;font-size:10.5px;line-height:1.35;">
+            ↕️ <strong>Orden de Capas:</strong> el 1º arriba se ve al frente de todo; los de abajo van detrás. Use <strong>▲/▼</strong> o arrastre para reordenar.
+          </p>
+          <div id="v3-capas-lista" class="v3-capas-lista">
+            <div class="v3-capa-fila" data-capa="hidro" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">1º</span>
+              <label class="v3-op" title="Hidrografía / Cauces (OSM, país)">
+                <input type="checkbox" data-capa="hidro" checked>
+                <span class="v3-mues" style="background:#0ea5e9"></span>
+                <span>Hidrografía / Cauces (OSM, país)</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="edificios" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">2º</span>
+              <label class="v3-op" title="Edificios en 3D (OSM)">
+                <input type="checkbox" data-capa="edificios" checked>
+                <span class="v3-mues v3-edif"></span>
+                <span>Edificios en 3D (OSM)</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="parcelas" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">3º</span>
+              <label class="v3-op" title="Parcelas SNC">
+                <input type="checkbox" data-capa="parcelas" checked>
+                <span class="v3-mues v3-parc"></span>
+                <span>Parcelas SNC</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="limite" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">4º</span>
+              <label class="v3-op" title="Límite del distrito">
+                <input type="checkbox" data-capa="limite" checked>
+                <span class="v3-mues v3-lim"></span>
+                <span>Límite del distrito</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="cascos" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">5º</span>
+              <label class="v3-op" title="Cascos urbanos">
+                <input type="checkbox" data-capa="cascos">
+                <span class="v3-mues v3-casco"></span>
+                <span>Cascos urbanos</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="barrios" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">6º</span>
+              <label class="v3-op" title="Barrios (urbano / rural)">
+                <input type="checkbox" data-capa="barrios">
+                <span class="v3-mues v3-barrio"></span>
+                <span>Barrios (urbano / rural)</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+
+            <div class="v3-capa-fila" data-capa="incendios" draggable="true">
+              <span class="v3-drag-handle" title="Arrastrar para mover">⠿</span>
+              <span class="v3-capa-orden">7º</span>
+              <label class="v3-op" title="Incendios activos e histórico (NASA FIRMS / INFONA)">
+                <input type="checkbox" data-capa="incendios">
+                <span class="v3-mues" style="background:#f97316;box-shadow:0 0 4px #ef4444;"></span>
+                <span>Incendios activos e histórico (NASA FIRMS / INFONA)</span>
+              </label>
+              <div class="v3-capa-botones">
+                <button type="button" class="v3-btn-orden v3-btn-subir" title="Subir (traer al frente)">▲</button>
+                <button type="button" class="v3-btn-orden v3-btn-bajar" title="Bajar (enviar detrás)">▼</button>
+              </div>
+            </div>
+          </div>
           <div id="v3-capas-distrito" hidden></div>
           <label>Color de los edificios
-            <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
+            <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option><option value="icst">🛡️ Cota Segura (ICST: Verde / Naranja / Rojo)</option></select></label>
           <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
             <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
           <label>Altura por piso <output id="v3-piso-o">3 m</output>
@@ -120,9 +376,19 @@
               <output id="v3-inund-cota-o">— m</output>
             </div>
             <input type="range" id="v3-inund-cota" min="0" max="850" step="0.3" value="100" style="width:100%;margin:4px 0;">
-            <div style="display:flex;gap:4px;align-items:center;margin-top:4px;">
-              <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:5px 8px;font-size:11.5px;">▶ Simular crecida</button>
-              <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:5px 8px;font-size:11.5px;background:#334155;" title="Recalcular sobre la vista actual">↻ Muestrear aquí</button>
+            <!-- Timeline Player 4D de Propagación de Crecida -->
+            <div class="v3-timeline-wrap" style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:6px 8px;margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span style="font-size:10.5px;color:#94a3b8;font-weight:600;">⏱️ Propagación Temporal (Onda 4D):</span>
+                <output id="v3-tiempo-o" style="font-size:11px;color:#38bdf8;font-family:monospace;font-weight:bold;">T = 0h (Estiaje)</output>
+              </div>
+              <input type="range" id="v3-tiempo-slider" min="0" max="24" step="0.5" value="0" style="width:100%;margin-bottom:4px;">
+              <div style="display:flex;gap:4px;align-items:center;">
+                <button type="button" class="v3-boton" id="v3-tiempo-prev" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Retroceder 1 hora">◀ -1h</button>
+                <button type="button" class="v3-boton" id="v3-inund-animar" style="flex:1;padding:4px 8px;font-size:11px;background:#0284c7;color:#fff;font-weight:600;">▶ Reproducir Onda (4D)</button>
+                <button type="button" class="v3-boton" id="v3-tiempo-next" style="padding:3px 6px;font-size:10px;background:#1e293b;" title="Avanzar 1 hora">+1h ▶</button>
+                <button type="button" class="v3-boton" id="v3-inund-recalc" style="padding:3px 6px;font-size:10px;background:#334155;" title="Muestrear cota base en la vista">↻ Base</button>
+              </div>
             </div>
             <label class="v3-op" style="margin-top:6px;font-size:11px;"><input type="checkbox" id="v3-inund-planta-2d"> Vista 2D en planta (cenital / ortogonal)</label>
             <p class="v3-inund-info" id="v3-inund-info" style="color:#38bdf8;font-size:11px;margin:5px 0 0;line-height:1.4;">Ajuste la cota para evaluar riesgo hídrico en cualquier punto del país.</p>
@@ -169,7 +435,7 @@
           </div>
 
           <div id="v3-inund-analitica" hidden class="v3-instr-seccion v3-instr-tiles">
-            <p class="v3-instr-seccion-titulo" style="grid-column:1/-1;">📊 Resultados</p>
+            <p class="v3-instr-seccion-titulo" style="grid-column:1/-1;">📊 Resultados & Alertas de Infraestructura</p>
             <div class="v3-instr-tile">
               <span class="v3-instr-rotulo">Volumen</span>
               <output id="v3-vol-o" class="v3-instr-dato">— hm³</output>
@@ -178,7 +444,27 @@
               <span class="v3-instr-rotulo">Caudal</span>
               <output id="v3-caudal-o" class="v3-instr-dato">— m³/s</output>
             </div>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Construcciones</span>
+              <output id="v3-edif-afect-o" class="v3-instr-dato" style="color:#f87171;">0 bajo agua</output>
+            </div>
+            <div class="v3-instr-tile">
+              <span class="v3-instr-rotulo">Vías / Aislamiento</span>
+              <output id="v3-vias-afect-o" class="v3-instr-dato" style="color:#fbbf24;">0 km cortados</output>
+            </div>
+            <div class="v3-instr-tile" style="grid-column:1/-1;background:rgba(15,23,42,0.9);border:1px solid #334155;padding:6px 8px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="v3-instr-rotulo" style="color:#38bdf8;font-size:10.5px;">🛡️ Cota Segura Territorial (ICST)</span>
+                <output id="v3-icst-badge" style="font-size:11px;font-weight:bold;color:#34d399;">100% Apto</output>
+              </div>
+              <p id="v3-icst-detalle" style="font-size:10px;color:#94a3b8;margin:2px 0 0;line-height:1.3;">Evaluación parcelaria según margen de resguardo normativo (+1.50 m s.n.m.).</p>
+            </div>
             <label class="v3-op" style="margin-top:2px;font-size:11px;grid-column:1/-1;"><input type="checkbox" id="v3-flujo" checked> Vectores de flujo animados sobre los cauces</label>
+            <div style="display:flex;gap:4px;margin-top:6px;grid-column:1/-1;flex-wrap:wrap;">
+              <button type="button" class="v3-boton" id="v3-btn-evacuacion" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#059669;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Traza rutas seguras desde construcciones inundadas hacia escuelas y centros de salud seguros">🏃 Trazar Rutas de Evacuación</button>
+              <button type="button" class="v3-boton" id="v3-btn-pdf-4d" style="flex:1 1 130px;padding:5px 8px;font-size:11px;background:#0284c7;color:#fff;font-weight:600;white-space:normal;line-height:1.3;" title="Exporta dictamen técnico con hidrograma 4D y tabla horaria">📄 Exportar Reporte 4D</button>
+            </div>
+            <p id="v3-evac-info" style="grid-column:1/-1;font-size:10.5px;color:#34d399;margin:4px 0 0;line-height:1.4;" hidden></p>
           </div>
         </div>
       </fieldset>
@@ -205,6 +491,8 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261101d"></script>
+  <script src="/vendor/jspdf.umd.min.js"></script>
+  <script src="/vendor/jspdf.plugin.autotable.min.js"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101e"></script>
 </body>
 </html>
