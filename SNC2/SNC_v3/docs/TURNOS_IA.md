@@ -6,6 +6,29 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Claude · "Mapa base" y "Capas" plegables (pedido del usuario) · visor-3d.html, js/visor3d.js
+- **Pedido**: el usuario seleccionó los fieldsets "Mapa base" y "Capas" y pidió "ocultar/mostrar" en ambos.
+- **Cambio**: mismo patrón que ya tenía "Exportar topografía" (legend clickeable con `role="button"`, ícono ▸/▾, `aria-expanded`). Se generalizó la lógica: `toggleExportar()` pasó a ser `plegable(legendId, cuerpoId, icoId)`, reutilizada para los 3 casos (`v3-exp-*`, `v3-base-*`, `v3-capas-*`). Ambas secciones nuevas arrancan expandidas (son de uso frecuente), a diferencia de Exportar que arranca colapsada.
+- **Verificado en el navegador**: clic en "Mapa base" la colapsa (▸, radios ocultos) sin afectar "Capas" (sigue ▾, expandida); sin errores propios en consola. `node --check js/visor3d.js` limpio. Cache-busting `?v=20261101b`.
+- Turno LIBERADO.
+
+### 2026-11-01 · Antigravity · Implementación CC-03: Capa "Incendios Activos (NASA FIRMS)" en Visor 3D · visor-3d.html, js/visor3d.js, docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md
+- **Pedido**: "seguir" — completando la última tarea pendiente del Carril A: **CC-03**.
+- **Qué se hizo**:
+  1. **Integración en `visor-3d.html`**:
+     - Checkbox agregado en el fieldset "Capas" con muestra visual neón naranja/roja: `Incendios activos (NASA FIRMS)`.
+     - Cache-busting actualizado a `?v=20261101a`.
+  2. **Integración en `js/visor3d.js`**:
+     - Fuente GeoJSON `incendios` y capa MapLibre `incendios-puntos` (círculo con radio adaptativo según zoom: 3px a 10px, color `#f97316` con borde `#ef4444`).
+     - Función `cargarIncendios()` que consulta en vivo `/api/v3/clima/incendios` recortado por el recuadro visible del mapa con margen del 15%.
+     - Recarga automática en el evento `moveend` cuando la capa está activa.
+     - Popup interactivo al hacer clic sobre cualquier foco de calor mostrando: fecha, hora de adquisición satelital, satélite (VIIRS), FRP (potencia radiativa en MW) y nivel de confianza.
+     - Cambio de cursor a `pointer` en hover.
+  3. **Plan de Cambio Climático**:
+     - Marcada como completada `[x] CC-03` en `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`. Con esto quedan completados al 100% el **Carril A** (CC-01 a CC-04) y el **Carril B** (CC-05 y CC-06).
+- **Verificado**: `node --check js/visor3d.js` limpio (código 0). Sintaxis de `visor-3d.html` consistente y validada.
+- Turno LIBERADO.
+
 ### 2026-11-01 · Claude · Reordenar panel: "Capas" debajo de "Mapa base" (pedido del usuario) · visor-3d.html
 - **Pedido**: el usuario seleccionó el fieldset "Capas" en el visor y pidió que vaya arriba, debajo de "Mapa base" (antes quedaba después de todo el panel de simulación hidrológica).
 - **Cambio**: reordenamiento puro de HTML, sin tocar IDs ni JS — el fieldset completo se movió de lugar. Orden final: Ubicación → Mapa base → **Capas** → Terreno (cotas) → Sim. hidrológica → Exportar.

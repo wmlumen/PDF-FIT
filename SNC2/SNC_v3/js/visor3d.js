@@ -43,7 +43,8 @@ const map = new ml.Map({
       inundacion: { type: 'geojson', data: vacio },
       hidro: { type: 'geojson', data: vacio },
       edificios: { type: 'geojson', data: vacio }, parcelas: { type: 'geojson', data: vacio }, limite: { type: 'geojson', data: vacio },
-      cascos: { type: 'geojson', data: vacio }, barrios: { type: 'geojson', data: vacio }
+      cascos: { type: 'geojson', data: vacio }, barrios: { type: 'geojson', data: vacio },
+      incendios: { type: 'geojson', data: vacio }
     },
     layers: [
       { id: 'fondo', type: 'background', paint: { 'background-color': '#dfe6e9' } },
@@ -63,6 +64,14 @@ const map = new ml.Map({
       { id: 'inundacion-borde', type: 'line', source: 'inundacion', layout: { visibility: 'none' }, paint: { 'line-color': '#38bdf8', 'line-width': 1.5, 'line-opacity': 0.85 } },
       { id: 'barrios', type: 'fill', source: 'barrios', layout: { visibility: 'none' }, paint: { 'fill-color': ['match', ['get', 'zona'], 'urbana', '#fcd34d', '#5eead4'], 'fill-opacity': 0.28 } },
       { id: 'barrios-borde', type: 'line', source: 'barrios', layout: { visibility: 'none' }, paint: { 'line-color': ['match', ['get', 'zona'], 'urbana', '#b45309', '#0d9488'], 'line-width': 1 } },
+      { id: 'incendios-puntos', type: 'circle', source: 'incendios', layout: { visibility: 'none' },
+        paint: {
+          'circle-color': '#f97316',
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 6, 14, 10],
+          'circle-stroke-color': '#ef4444',
+          'circle-stroke-width': 1.5,
+          'circle-opacity': 0.90
+        } },
       { id: 'cascos', type: 'fill', source: 'cascos', layout: { visibility: 'none' }, paint: { 'fill-color': '#a78bfa', 'fill-opacity': 0.22 } },
       { id: 'cascos-borde', type: 'line', source: 'cascos', layout: { visibility: 'none' }, paint: { 'line-color': '#7c3aed', 'line-width': 2 } },
       { id: 'curvas', type: 'line', source: 'curvas', minzoom: 13, layout: { visibility: 'none', 'line-join': 'round' },
@@ -767,6 +776,29 @@ function aplicarLluvia() {
 $('v3-lluvia')?.addEventListener('input', aplicarLluvia);
 $('v3-suelo')?.addEventListener('change', aplicarLluvia);
 document.querySelectorAll('.v3-lluvia-btn').forEach(b => b.addEventListener('click', () => { $('v3-lluvia').value = b.dataset.mm; aplicarLluvia(); }));
+$('v3-btn-lluvia-real')?.addEventListener('click', async () => {
+  const c = map.getCenter();
+  const btn = $('v3-btn-lluvia-real');
+  btn.disabled = true;
+  const textoOrig = btn.textContent;
+  btn.textContent = 'Consultando ERA5…';
+  try {
+    const res = await fetch(`/api/v3/clima/lluvia-historica?lat=${c.lat.toFixed(4)}&lng=${c.lng.toFixed(4)}`).then(r => r.json());
+    if (res.status === 'ok') {
+      const mm = Math.min(450, Math.round(res.maximoDiario_mm || res.totalPrecipitacion_mm || 50));
+      $('v3-lluvia').value = mm;
+      aplicarLluvia();
+      estado(`Lluvia real ERA5 cargada para (${c.lat.toFixed(2)}, ${c.lng.toFixed(2)}): ${mm} mm`);
+    } else {
+      estado('No se pudo obtener registro de lluvia.');
+    }
+  } catch (err) {
+    estado('Error consultando ERA5: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = textoOrig;
+  }
+});
 
 // Duración de la lluvia (h) × intensidad (mm/h): otra forma de cargar los mm acumulados, además
 // del slider directo y los presets — útil para pensar "llovió 10 horas fuerte" en vez de "mm".
@@ -876,14 +908,20 @@ map.on('moveend', () => { clearTimeout(cargarCurvas.t); cargarCurvas.t = setTime
   cargarCurvas();
 }, 500); });
 
-// ── Exportar topografía ────────────────────────────────────────────
-function toggleExportar() {
-  const c = $('v3-exp-cuerpo'); c.hidden = !c.hidden;
-  $('v3-exp-ico').textContent = c.hidden ? '▸' : '▾';
-  $('v3-exp-legend').setAttribute('aria-expanded', String(!c.hidden));
+// ── Secciones plegables del panel (clic o Enter/Espacio en el título) ──
+function plegable(legendId, cuerpoId, icoId) {
+  const legend = $(legendId), cuerpo = $(cuerpoId), ico = $(icoId);
+  const act = () => {
+    cuerpo.hidden = !cuerpo.hidden;
+    ico.textContent = cuerpo.hidden ? '▸' : '▾';
+    legend.setAttribute('aria-expanded', String(!cuerpo.hidden));
+  };
+  legend.addEventListener('click', act);
+  legend.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
 }
-$('v3-exp-legend').addEventListener('click', toggleExportar);
-$('v3-exp-legend').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExportar(); } });
+plegable('v3-exp-legend', 'v3-exp-cuerpo', 'v3-exp-ico');
+plegable('v3-base-legend', 'v3-base-cuerpo', 'v3-base-ico');
+plegable('v3-capas-legend', 'v3-capas-cuerpo', 'v3-capas-ico');
 
 $('v3-exportar').addEventListener('click', async () => {
   const zona = $('v3-exp-zona').value, formato = $('v3-exp-formato').value, iv = $('v3-exp-iv').value;
@@ -907,12 +945,13 @@ $('v3-exportar').addEventListener('click', async () => {
 });
 
 // ── Capas ───────────────────────────────────────────────────────────
-const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'] };
+const CAPAS = { hidro: ['hidro-lineas', 'hidro-nombres'], edificios: ['edificios'], parcelas: ['parcelas'], limite: ['limite'], cascos: ['cascos', 'cascos-borde'], barrios: ['barrios', 'barrios-borde'], incendios: ['incendios-puntos'] };
 const cargadas = {};
 document.querySelectorAll('input[data-capa]').forEach(ch => ch.addEventListener('change', async () => {
   const k = ch.dataset.capa;
   CAPAS[k]?.forEach(id => map.setLayoutProperty(id, 'visibility', ch.checked ? 'visible' : 'none'));
   if (ch.checked && k === 'hidro') await cargarHidro();
+  if (ch.checked && k === 'incendios') await cargarIncendios();
   if (ch.checked && (k === 'cascos' || k === 'barrios') && !cargadas[k]) {
     estado(`Cargando ${k === 'cascos' ? 'cascos urbanos' : 'barrios (18 MB, la primera vez tarda)'}…`);
     try {
@@ -1010,6 +1049,21 @@ async function cargarHidro() {
   } catch {}
 }
 
+// Focos de calor e incendios activos (NASA FIRMS VIIRS 375m NRT) filtrados por la vista actual
+let pedidoIncendios = 0;
+async function cargarIncendios() {
+  const b = map.getBounds();
+  const mx = (b.getEast() - b.getWest()) * 0.15, my = (b.getNorth() - b.getSouth()) * 0.15;
+  const q = `minX=${b.getWest() - mx}&minY=${b.getSouth() - my}&maxX=${b.getEast() + mx}&maxY=${b.getNorth() + my}`;
+  const yo = ++pedidoIncendios;
+  try {
+    const data = await fetch(`/api/v3/clima/incendios?${q}`).then(r => r.json());
+    if (yo !== pedidoIncendios || !data?.features) return;
+    map.getSource('incendios')?.setData(data);
+    cargadas.incendios = true;
+  } catch {}
+}
+
 // Edificios y parcelas de la zona visible (el servidor limita el recuadro a ~5 × 5 km).
 let pedido = 0;
 async function cargarVista() {
@@ -1044,6 +1098,7 @@ map.on('moveend', () => {
     cargarVista();
     actualizarCota();
     if (document.querySelector('[data-capa="hidro"]')?.checked) cargarHidro();
+    if (document.querySelector('[data-capa="incendios"]')?.checked) cargarIncendios();
     if ($('v3-inundacion')?.checked && (!$('v3-inund-cuenca') || $('v3-inund-cuenca').value === 'local')) {
       actualizarInundacion();
     }
@@ -1101,7 +1156,11 @@ map.on('click', 'parcelas', ev => {
   const cta = p.dnit_ctacte || (p.padron ? `Padrón ${p.padron}` : '—');
   new ml.Popup().setLngLat(ev.lngLat).setHTML(`<b>Parcela SNC</b><br>Cuenta: ${esc(cta)}<br>Superficie: ${num(p.superficie_m2)} m²${p.dnit_impuesto != null ? `<br>Impuesto 2026: Gs ${num(p.dnit_impuesto)}` : ''}${p.dnit_sup_edif_m2 != null ? `<br>Edificado DNIT: ${num(p.dnit_sup_edif_m2)} m²` : ''}`).addTo(map);
 });
-['edificios', 'parcelas'].forEach(id => { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); });
+map.on('click', 'incendios-puntos', ev => {
+  const p = ev.features[0].properties;
+  new ml.Popup().setLngLat(ev.lngLat).setHTML(`<b>🔥 Foco de Calor (NASA FIRMS)</b><br>Fecha: ${esc(p.fecha)} ${esc(p.hora)}<br>Satélite: ${esc(p.satelite)}<br>Potencia radiativa (FRP): ${esc(p.frp)} MW<br>Confianza: ${esc(p.confianza)}`).addTo(map);
+});
+['edificios', 'parcelas', 'incendios-puntos'].forEach(id => { map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; }); map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; }); });
 
 // ── Minimapa 2D de ubicación: punto en el centro de la cámara y cono hacia donde mira ──
 const mini = new ml.Map({

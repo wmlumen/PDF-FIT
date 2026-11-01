@@ -27,27 +27,34 @@
           <select id="v3-distrito" aria-label="Elegir distrito" disabled><option value="">— Elija primero el departamento —</option></select></label>
       </fieldset>
 
-      <fieldset><legend>Mapa base</legend>
-        <label class="v3-op"><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
-        <label class="v3-op"><input type="radio" name="base" value="satelite"> Satélite</label>
-        <label class="v3-op"><input type="radio" name="base" value="ninguno"> Solo relieve</label>
-        <label class="v3-op"><input type="radio" name="base" value="blanco"> Lienzo en blanco (para capas)</label>
+      <fieldset>
+        <legend id="v3-base-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-base-cuerpo">Mapa base <span id="v3-base-ico">▾</span></legend>
+        <div id="v3-base-cuerpo">
+          <label class="v3-op"><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
+          <label class="v3-op"><input type="radio" name="base" value="satelite"> Satélite</label>
+          <label class="v3-op"><input type="radio" name="base" value="ninguno"> Solo relieve</label>
+          <label class="v3-op"><input type="radio" name="base" value="blanco"> Lienzo en blanco (para capas)</label>
+        </div>
       </fieldset>
 
-      <fieldset><legend>Capas</legend>
-        <label class="v3-op"><input type="checkbox" data-capa="hidro" checked> <span class="v3-mues" style="background:#0ea5e9"></span> Hidrografía / Cauces (OSM, país)</label>
-        <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
-        <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
-        <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
-        <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
-        <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
-        <div id="v3-capas-distrito" hidden></div>
-        <label>Color de los edificios
-          <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
-        <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
-          <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
-        <label>Altura por piso <output id="v3-piso-o">3 m</output>
-          <input type="range" id="v3-piso" min="2.5" max="5" step="0.5" value="3"></label>
+      <fieldset>
+        <legend id="v3-capas-legend" class="v3-legend-plegable" tabindex="0" role="button" aria-expanded="true" aria-controls="v3-capas-cuerpo">Capas <span id="v3-capas-ico">▾</span></legend>
+        <div id="v3-capas-cuerpo">
+          <label class="v3-op"><input type="checkbox" data-capa="hidro" checked> <span class="v3-mues" style="background:#0ea5e9"></span> Hidrografía / Cauces (OSM, país)</label>
+          <label class="v3-op"><input type="checkbox" data-capa="edificios" checked> <span class="v3-mues v3-edif"></span> Edificios en 3D (OSM)</label>
+          <label class="v3-op"><input type="checkbox" data-capa="parcelas" checked> <span class="v3-mues v3-parc"></span> Parcelas SNC</label>
+          <label class="v3-op"><input type="checkbox" data-capa="limite" checked> <span class="v3-mues v3-lim"></span> Límite del distrito</label>
+          <label class="v3-op"><input type="checkbox" data-capa="cascos"> <span class="v3-mues v3-casco"></span> Cascos urbanos</label>
+          <label class="v3-op"><input type="checkbox" data-capa="barrios"> <span class="v3-mues v3-barrio"></span> Barrios (urbano / rural)</label>
+          <label class="v3-op"><input type="checkbox" data-capa="incendios"> <span class="v3-mues" style="background:#f97316;box-shadow:0 0 4px #ef4444;"></span> Incendios activos (NASA FIRMS)</label>
+          <div id="v3-capas-distrito" hidden></div>
+          <label>Color de los edificios
+            <select id="v3-color"><option value="catastro">Según el catastro (vinculación)</option><option value="real">Realista (colores del mapa)</option></select></label>
+          <label>Hora del día (sol y sombras) <output id="v3-hora-o">15:00</output>
+            <input type="range" id="v3-hora" min="6" max="19" step="0.5" value="15"></label>
+          <label>Altura por piso <output id="v3-piso-o">3 m</output>
+            <input type="range" id="v3-piso" min="2.5" max="5" step="0.5" value="3"></label>
+        </div>
       </fieldset>
 
       <fieldset><legend>Terreno (cotas)</legend>
@@ -126,6 +133,7 @@
               <button type="button" class="v3-boton v3-lluvia-btn" data-mm="120" style="padding:3px 6px;font-size:10px;background:#0284c7;">Tormenta (120mm)</button>
               <button type="button" class="v3-boton v3-lluvia-btn" data-mm="200" style="padding:3px 6px;font-size:10px;background:#f59e0b;">Sudestada (200mm)</button>
               <button type="button" class="v3-boton v3-lluvia-btn" data-mm="380" style="padding:3px 6px;font-size:10px;background:#e11d48;">El Niño (380mm)</button>
+              <button type="button" class="v3-boton" id="v3-btn-lluvia-real" style="padding:3px 8px;font-size:10px;background:#0f766e;color:#fff;border:1px solid #14b8a6;border-radius:4px;" title="Carga la precipitación real registrada en este punto según reanálisis ERA5 / Copernicus">🌧️ Lluvia real (ERA5)</button>
             </div>
             <label style="font-size:11px;color:#94a3b8;display:block;margin-top:6px;">Suelo / escorrentía
               <select id="v3-suelo" style="width:100%;padding:3px 6px;font-size:11px;margin-top:2px;">
@@ -188,6 +196,6 @@
   <button type="button" class="v3-pestana" id="v3-pestana" title="Ocultar / mostrar el panel" aria-expanded="true" aria-controls="v3-panel">◂</button>
 
   <script src="/vendor/maplibre/maplibre-gl-csp.js"></script>
-  <script type="module" src="/js/visor3d.js?v=20261101a"></script>
+  <script type="module" src="/js/visor3d.js?v=20261101b"></script>
 </body>
 </html>
