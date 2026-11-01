@@ -1,0 +1,1458 @@
+Para construir un Mapa Hiperactivo de Cambio Climático (tipo IPCC/Copernicus pero adaptado a Paraguay), no basta con mostrar temperaturas. Debe integrar información climática, ambiental, territorial, socioeconómica y de riesgo en múltiples capas dinámicas.
+
+1. Capas climáticas básicas (obligatorias)
+
+Estas son las variables principales utilizadas por el IPCC y el Copernicus Interactive Climate Atlas.
+
+Temperatura media anual
+Temperatura máxima extrema
+Temperatura mínima extrema
+Olas de calor
+Días con temperatura superior a 35°C
+Precipitación anual
+Eventos de lluvia extrema
+Sequías
+Humedad relativa
+Velocidad del viento
+Radiación solar
+Evapotranspiración
+Índices de aridez
+2. Indicadores climáticos avanzados
+
+La NASA y Copernicus recomiendan incorporar indicadores de largo plazo.
+
+Concentración de CO₂
+Concentración de CH₄
+Balance de carbono
+Temperatura superficial terrestre
+Temperatura superficial oceánica
+Nivel del mar
+Contenido de calor oceánico
+Cobertura de nieve y hielo
+Fenómenos ENSO (El Niño y La Niña)
+3. Capas ambientales
+
+Muy importantes para Paraguay:
+
+Cobertura vegetal
+Bosque nativo
+Bosque degradado
+Reforestación
+Pasturas
+Cultivos
+Deforestación
+Pérdida anual de bosque
+Cambio de uso de suelo
+Deforestación histórica
+Biodiversidad
+Áreas protegidas
+Corredores biológicos
+Especies amenazadas
+Recursos hídricos
+Ríos
+Arroyos
+Humedales
+Acuíferos
+Calidad del agua
+4. Capas de riesgo climático
+
+Permiten pasar de un mapa informativo a uno de toma de decisiones.
+
+Amenazas
+Inundaciones
+Sequías
+Incendios forestales
+Olas de calor
+Tormentas severas
+Erosión
+Deslizamientos
+Vulnerabilidad
+Población expuesta
+Pobreza
+Infraestructura crítica
+Hospitales
+Escuelas
+Viviendas vulnerables
+Riesgo
+
+Riesgo = Amenaza × Exposición × Vulnerabilidad
+
+5. Capas territoriales y catastrales
+
+Si el proyecto será integrado con:
+
+Catastro
+Notarial
+POUT
+Gestión Municipal
+
+Conviene incluir:
+
+Departamentos
+Distritos
+Barrios
+Manzanas
+Parcelas
+Zonificación urbana
+Uso de suelo
+Ordenamiento territorial
+6. Capas agrícolas
+
+Muy relevantes para Paraguay.
+
+Producción
+Soja
+Maíz
+Trigo
+Arroz
+Ganadería
+Impacto climático
+Estrés hídrico
+Índice de productividad
+Aptitud agrícola futura
+Riesgo de pérdidas
+7. Capas energéticas
+Itaipú
+Yacyretá
+Acaray
+Redes eléctricas
+Potencial solar
+Potencial eólico
+Emisiones de GEI
+8. Capas socioeconómicas
+
+Permiten realizar análisis de adaptación.
+
+Población
+Densidad poblacional
+Índice de Desarrollo Humano
+Pobreza
+Acceso al agua
+Acceso a saneamiento
+Vulnerabilidad social
+9. Proyecciones futuras
+
+Una característica clave del Atlas del IPCC es mostrar escenarios futuros.
+
+Escenarios:
+
+2030
+2050
+2070
+2100
+
+Variables:
+
+Temperatura
+Lluvia
+Sequías
+Incendios
+Rendimiento agrícola
+Disponibilidad hídrica
+
+utilizando escenarios CMIP6 e IPCC AR6.
+
+10. Capas satelitales en tiempo real
+
+Para lograr un sistema verdaderamente hiperactivo:
+
+Sentinel 1
+Sentinel 2
+Sentinel 3
+Landsat
+MODIS
+ERA5
+Copernicus Climate Data Store
+NASA Earthdata
+11. Análisis predictivo con IA
+
+Más moderno que un GIS tradicional.
+
+Módulos:
+
+Predicción de inundaciones
+Predicción de incendios
+Predicción de sequías
+Predicción agrícola
+Detección automática de cambios de uso de suelo
+Alertas tempranas
+12. Arquitectura ideal para Paraguay
+Capa 1 - Datos
+Meteorología
+Satélites
+Hidrología
+Catastro
+POUT
+Ambiente
+Agricultura
+Capa 2 - Data Lake
+PostgreSQL/PostGIS
+Data Warehouse climático
+Capa 3 - GIS
+GeoServer
+MapServer
+Vector Tiles
+Capa 4 - IA
+Climate Intelligence
+Risk Intelligence
+Territorial Intelligence
+Capa 5 - Portal Web
+
+Visor tipo:
+
+Google Earth
+ArcGIS Experience Builder
+Copernicus Climate Atlas
+
+con:
+
+timeline histórico
+simulador 2030-2050-2100
+capas combinables
+análisis parcelario
+dashboard de riesgos
+alertas en tiempo real
+Fuentes internacionales recomendadas
+IPCC Interactive Atlas para proyecciones climáticas globales y regionales.
+Copernicus Climate Data Store (CDS) para observaciones, reanálisis ERA5 y proyecciones climáticas.
+Copernicus Interactive Climate Atlas con más de 35 variables climáticas y escenarios de calentamiento global.
+NASA EarthData Climate Indicators para indicadores globales, océanos, hielo, CO₂ y temperatura.
+
+Para tu proyecto en Paraguay, el siguiente nivel sería diseñar un Mapa Hiperactivo de Cambio Climático Territorial (MHC-PY) integrado con Catastro + POUT + Ambiente + Riesgos + SNC-DI (Decision Intelligence) en una sola plataforma nacional.
+
+Para un SIG de Cambio Climático, los indicadores más valiosos son los que pueden calcularse directamente a partir de capas geoespaciales, imágenes satelitales y datos meteorológicos oficiales.
+
+1. Indicadores que se obtienen directamente por SIG
+Cobertura y uso del suelo
+Bosque nativo
+Bosque degradado
+Deforestación anual
+Reforestación
+Agricultura
+Pasturas
+Áreas urbanizadas
+Humedales
+
+Fuentes oficiales y confiables
+
+Copernicus Land Monitoring Service
+Landsat (USGS)
+Sentinel-2
+INFONA (Paraguay)
+Mades (Paraguay)
+Indicadores de vegetación
+
+Mediante imágenes satelitales:
+
+NDVI (Índice de Vegetación)
+EVI (Vegetación Mejorada)
+SAVI
+Cobertura vegetal (%)
+Salud de cultivos
+Estrés de vegetación
+
+Fuentes
+
+Sentinel-2
+Landsat
+MODIS
+Copernicus
+Agua e hidrología
+Superficie inundada
+Evolución de humedales
+Variación de cuerpos de agua
+Sequía hidrológica
+Balance hídrico
+Áreas susceptibles a inundación
+
+Fuentes
+
+Sentinel-1 (Radar)
+Sentinel-2
+NASA EarthData
+Dirección de Meteorología e Hidrología (DINAC)
+Temperatura superficial
+LST (Land Surface Temperature)
+Islas de calor urbanas
+Temperatura media superficial
+Anomalías térmicas
+
+Fuentes
+
+MODIS
+Landsat Thermal
+ERA5
+Copernicus CDS
+Riesgo de incendios
+Carga combustible
+Índice de sequedad
+Focos de calor
+Riesgo de incendio
+
+Fuentes
+
+FIRMS NASA
+MODIS
+VIIRS
+Mades
+2. Indicadores climáticos oficiales
+Temperatura
+Temperatura media anual
+Temperatura máxima
+Temperatura mínima
+Olas de calor
+
+Fuente principal
+
+ERA5 Reanalysis
+Meteorología Nacional
+Copernicus CDS
+Precipitaciones
+Lluvia anual
+Intensidad de lluvia
+Días de precipitación extrema
+Tendencias climáticas
+
+Fuentes
+
+CHIRPS
+ERA5
+Meteorología Nacional
+Copernicus CDS
+Sequías
+SPI
+SPEI
+PDSI
+Humedad de suelo
+
+Fuentes
+
+Copernicus CDS
+NASA EarthData
+ERA5
+3. Indicadores topográficos
+
+A partir de modelos digitales de elevación.
+
+Cálculos GIS
+Pendiente
+Orientación
+Curvatura
+Acumulación de flujo
+Cuencas hidrográficas
+Riesgo de erosión
+
+Fuentes
+
+SRTM NASA
+Copernicus DEM
+ALOS PALSAR DEM
+4. Indicadores ambientales
+Calidad ambiental
+Fragmentación forestal
+Conectividad ecológica
+Índice de biodiversidad
+Presión humana
+
+Fuentes
+
+Mades
+Áreas Silvestres Protegidas
+WDPA (Protected Planet)
+5. Indicadores socioambientales
+
+Integrando SIG con datos censales.
+
+Vulnerabilidad
+Población expuesta
+Viviendas vulnerables
+Hospitales expuestos
+Escuelas expuestas
+Fuente
+INE Paraguay
+Catastro
+Municipios
+Sistema Nacional de Información Territorial
+6. Indicadores para Decision Intelligence
+
+Si tu plataforma SNC-DI integra SIG + Cambio Climático + POUT + Catastro, recomiendo calcular automáticamente:
+
+Índice Climático Territorial (ICT)
+
+Combinación de:
+
+Temperatura
+Sequía
+Precipitación extrema
+Deforestación
+
+Resultado:
+
+Muy Bajo
+Bajo
+Medio
+Alto
+Crítico
+Índice de Riesgo Territorial (IRT)
+
+Combina:
+
+Inundación
+Incendio
+Sequía
+Vulnerabilidad social
+Índice de Sostenibilidad Territorial (IST)
+
+Combina:
+
+Bosque
+Agua
+Biodiversidad
+Carbono
+Índice de Resiliencia Municipal (IRM)
+
+Combina:
+
+Infraestructura
+Servicios públicos
+Gestión ambiental
+Riesgo climático
+Fuentes oficiales prioritarias para Paraguay
+Categoría	FuenteMeteorología	DINAC / Dirección de Meteorología e Hidrología
+Ambiente	MADES
+Bosques	INFONA
+Estadísticas	INE
+Catastro	Servicio Nacional de Catastro
+Agricultura	MAG
+Hidrología	DINAC y Cuencas Nacionales
+Satélites	Sentinel, Landsat, MODIS
+Clima Global	Copernicus Climate Data Store
+Proyecciones Futuras	IPCC Interactive Atlas
+Indicadores Globales	NASA EarthData
+
+Para un Mapa Hiperactivo Nacional de Cambio Climático de Paraguay, yo estimaría entre 80 y 150 indicadores automáticos, calculados desde PostGIS y actualizados con Sentinel, ERA5, IPCC, DINAC, MADES, INFONA, INE y Catastro, permitiendo analizar riesgos desde nivel país hasta parcela catastral.
+
+Aquí tienes las principales fuentes oficiales y confiables para construir un SIG y Mapa Hiperactivo de Cambio Climático para Paraguay:
+
+🌎 Clima y proyecciones climáticas
+IPCC Interactive Atlas
+
+Proyecciones climáticas oficiales utilizadas en el Sexto Informe del IPCC.
+
+🔗 IPCC Interactive Atlas
+
+Copernicus Climate Data Store (CDS)
+
+Portal europeo con datos históricos, actuales y futuros de clima, ERA5, CMIP6 y CORDEX.
+
+🔗 Climate Data Store
+
+Copernicus Interactive Climate Atlas
+
+Atlas interactivo con más de 35 variables climáticas y escenarios de calentamiento global.
+
+🔗 Copernicus Interactive Climate Atlas
+
+ERA5 Reanalysis
+
+Datos climáticos globales desde 1940 hasta la actualidad.
+
+🔗 ERA5
+
+🛰️ Satélites
+Copernicus Sentinel Hub
+
+🔗 Sentinel Hub
+
+Copernicus Browser
+
+🔗 Copernicus Browser
+
+USGS Earth Explorer (Landsat)
+
+🔗 https://earthexplorer.usgs.gov
+
+NASA EarthData
+
+🔗 NASA EarthData
+
+NASA Climate Indicators
+
+Indicadores climáticos globales de temperatura, océanos, hielo y carbono.
+
+🔗 NASA Climate Indicators
+
+🌳 Bosques, ambiente y biodiversidad
+Global Forest Watch
+
+🔗 Global Forest Watch
+
+Protected Planet (WDPA)
+
+🔗 Protected Planet
+
+INFONA
+
+🔗 https://www.infona.gov.py
+
+MADES
+
+🔗 https://www.mades.gov.py
+
+🌧️ Precipitaciones y sequías
+CHIRPS
+
+🔗 https://www.chc.ucsb.edu/data/chirps
+
+SPEI Global Drought Monitor
+
+🔗 https://spei.csic.es
+
+Global Drought Observatory
+
+🔗 https://edo.jrc.ec.europa.eu
+
+🔥 Incendios forestales
+NASA FIRMS
+
+🔗 https://firms.modaps.eosdis.nasa.gov
+
+VIIRS Active Fires
+
+🔗 https://firms.modaps.eosdis.nasa.gov/map
+
+🗺️ Modelos digitales de terreno
+SRTM NASA
+
+🔗 https://www.earthdata.nasa.gov
+
+Copernicus DEM
+
+🔗 Copernicus DEM
+
+ALOS PALSAR DEM
+
+🔗 https://www.eorc.jaxa.jp/ALOS/en/index.htm
+
+🇵🇾 Datos oficiales de Paraguay
+Dirección de Meteorología e Hidrología (DINAC)
+
+🔗 https://www.meteorologia.gov.py
+
+Instituto Nacional de Estadística (INE)
+
+🔗 https://www.ine.gov.py
+
+Servicio Nacional de Catastro
+
+🔗 https://www.catastro.gov.py
+
+Ministerio de Agricultura y Ganadería (MAG)
+
+🔗 https://www.mag.gov.py
+
+Geoportal Nacional
+
+🔗 https://www.geoportal.gov.py
+
+🌍 Emisiones de GEI y carbono
+Climate Watch
+
+🔗 https://www.climatewatchdata.org
+
+EDGAR Emissions Database
+
+🔗 https://edgar.jrc.ec.europa.eu
+
+UNFCCC
+
+🔗 UNFCCC
+
+📊 Conjunto mínimo recomendado para Paraguay
+
+Si buscas un sistema nacional moderno, el núcleo debería alimentarse de:
+
+DINAC (clima y estaciones).
+INFONA (bosques).
+MADES (ambiente).
+INE (población y vulnerabilidad).
+Catastro (parcelas).
+Sentinel-1 y Sentinel-2 (cobertura y cambios).
+ERA5 (clima histórico).
+Copernicus CDS (indicadores climáticos).
+IPCC Atlas (proyecciones 2030-2050-2100).
+NASA EarthData (indicadores globales).
+
+Con estas fuentes puedes construir más del 90 % de los indicadores necesarios para un Sistema Nacional de Inteligencia Climática integrado con SIG, POUT, Catastro y Decision Intelligence.
+
+Además de las instituciones públicas, existen varias ONG y organizaciones técnicas que generan información geográfica, ambiental y climática muy valiosa para integrar en un SIG nacional de cambio climático.
+
+🦜 Guyra Paraguay
+
+Especializada en biodiversidad, monitoreo ambiental, áreas protegidas, corredores biológicos, aves y análisis espacial. Produce capas GIS, estudios científicos y monitoreo territorial.
+
+🔗 Sitio oficial de Guyra Paraguay
+
+Información útil para SIG:
+
+Áreas protegidas
+Biodiversidad
+Corredores ecológicos
+Cobertura vegetal
+Monitoreo satelital
+Datos de conservación
+🌳 Fundación Moisés Bertoni
+
+Trabaja en conservación, desarrollo sostenible, recursos hídricos, bosques y ordenamiento territorial. Administra la Reserva del Bosque Mbaracayú y desarrolla proyectos de investigación ambiental.
+
+🔗 Fundación Moisés Bertoni
+
+Información útil:
+
+Bosques
+Carbono
+Recursos hídricos
+Restauración ecológica
+Investigación científica
+Desarrollo territorial sostenible
+🌱 Alter Vida
+
+Centro de Estudios y Formación para el Ecodesarrollo. Realiza investigaciones sobre agroecología, recursos hídricos, gobernanza ambiental, agricultura sostenible y monitoreo comunitario.
+
+🔗 Alter Vida
+
+Información útil:
+
+Gestión integrada del agua
+Agroecología
+Agricultura sostenible
+Gobernanza ambiental
+Vulnerabilidad social y ambiental
+🐼 WWF Paraguay
+
+Una de las organizaciones ambientales más importantes del país. Trabaja en bosques, agua, clima, biodiversidad, producción sostenible y adaptación al cambio climático.
+
+🔗 WWF Paraguay
+
+Información útil:
+
+Cambio climático
+Bosques
+Restauración ecológica
+Agua
+Producción sostenible
+Pantanal paraguayo
+🌎 Organizaciones internacionales con datos para Paraguay
+Conservation International
+
+🔗 https://www.conservation.org
+
+The Nature Conservancy (TNC)
+
+🔗 https://www.nature.org
+
+BirdLife International
+
+🔗 https://www.birdlife.org
+
+IUCN (Unión Internacional para la Conservación de la Naturaleza)
+
+🔗 https://www.iucn.org
+
+Protected Planet
+
+🔗 https://www.protectedplanet.net
+
+Fuentes especialmente valiosas para un SIG Climático Nacional
+
+Si tuviera que seleccionar las ONG con mayor aporte para un sistema tipo Mapa Hiperactivo de Cambio Climático del Paraguay, priorizaría:
+
+Organización	Valor para SIGGuyra Paraguay	Biodiversidad, corredores, monitoreo ambiental
+WWF Paraguay	Cambio climático, bosques, agua
+Fundación Moisés Bertoni	Conservación, desarrollo territorial
+Alter Vida	Agua, agroecología, vulnerabilidad
+BirdLife International	Datos globales de biodiversidad
+IUCN	Áreas protegidas y ecosistemas
+TNC	Restauración y planificación territorial
+Capa adicional poco utilizada pero muy valiosa
+
+También te recomiendo incorporar fuentes de:
+
+Comunidades indígenas
+Organizaciones campesinas
+Juntas de saneamiento
+Comités de cuenca
+Universidades (UNA, FACEN, FIA, FPUNA)
+Centros de investigación del Chaco
+
+Estos actores generan información local que normalmente no aparece en Copernicus, NASA o IPCC y son fundamentales para construir indicadores de adaptación climática y resiliencia territorial a nivel de distrito, municipio e incluso comunidad.
+
+Si quieres que tu sistema obtenga datos automáticamente mediante API, estas son las fuentes más importantes para un mapa hiperactivo de cambio climático:
+
+🌍 APIs Climáticas
+1. Copernicus Climate Data Store (CDS API)
+
+Datos:
+
+Temperatura
+Precipitación
+Humedad
+Viento
+Radiación solar
+ERA5
+Proyecciones CMIP6
+
+Fuente: Copernicus Climate Data Store.
+
+🔗 Climate Data Store API
+
+2. NASA EarthData API
+
+Datos:
+
+MODIS
+Temperatura superficial
+Evapotranspiración
+Cobertura terrestre
+Incendios
+Hielo
+Carbono
+
+Fuente: NASA EarthData.
+
+🔗 NASA EarthData
+
+🔗 https://api.nasa.gov
+
+🛰️ APIs Satelitales
+3. Copernicus Sentinel API
+
+Datos:
+
+Sentinel-1 Radar
+Sentinel-2 Multiespectral
+Sentinel-3
+
+Ideal para:
+
+Deforestación
+Inundaciones
+Agricultura
+Cambio de uso de suelo
+
+🔗 Copernicus Data Space Ecosystem
+
+🔗 https://documentation.dataspace.copernicus.eu
+
+4. Sentinel Hub API
+
+Muy utilizada en GIS modernos.
+
+Permite:
+
+NDVI
+NBR
+NDWI
+Series temporales
+Procesamiento en tiempo real
+
+🔗 Sentinel Hub API
+
+5. Google Earth Engine API
+
+Datos integrados:
+
+Landsat
+Sentinel
+MODIS
+CHIRPS
+SRTM
+
+Ideal para:
+
+Machine Learning
+Análisis masivo
+Cambio climático
+
+🔗 Google Earth Engine
+
+🌧️ APIs de lluvia y sequía
+6. CHIRPS
+
+Datos:
+
+Precipitación histórica
+Sequías
+
+🔗 https://www.chc.ucsb.edu/data/chirps
+
+7. Open-Meteo API
+
+Gratuita.
+
+Datos:
+
+Clima actual
+Pronóstico
+Variables climáticas
+
+🔗 Open-Meteo
+
+Ejemplo:
+
+https://api.open-meteo.com/v1/forecast
+
+🔥 Incendios
+8. NASA FIRMS API
+
+Datos:
+
+Focos de calor
+Incendios activos
+MODIS
+VIIRS
+
+🔗 NASA FIRMS
+
+🌳 Bosques
+9. Global Forest Watch API
+
+Datos:
+
+Deforestación
+Cobertura forestal
+Alertas GLAD
+Bosques intactos
+
+🔗 Global Forest Watch API
+
+💧 Recursos Hídricos
+10. HydroSHEDS
+
+Datos:
+
+Cuencas
+Ríos
+Redes hidrográficas
+
+🔗 HydroSHEDS
+
+🌎 Emisiones de Carbono
+11. Climate Watch API
+
+Datos:
+
+CO₂
+CH₄
+NDC
+Inventarios de GEI
+
+🔗 https://www.climatewatchdata.org
+
+🗺️ APIs GIS Base
+12. OpenStreetMap Overpass API
+
+Datos:
+
+Caminos
+Escuelas
+Hospitales
+Infraestructura
+
+🔗 Overpass API
+
+13. GeoServer WMS/WFS
+
+Si creas tu propia Infraestructura Nacional de Datos Espaciales.
+
+Servicios:
+
+WMS
+WFS
+WMTS
+Vector Tiles
+
+🔗 GeoServer
+
+🇵🇾 APIs que convendría crear para Paraguay
+
+Muchos organismos paraguayos aún no exponen APIs modernas. Para una plataforma nacional recomendaría crear:
+
+API-Meteorología
+Temperatura
+Lluvia
+Viento
+Sequía
+
+Origen:
+
+DINAC
+API-Ambiente
+Áreas protegidas
+Licencias ambientales
+Bosques
+
+Origen:
+
+MADES
+INFONA
+API-Catastro
+Parcelas
+Distritos
+Departamentos
+
+Origen:
+
+SNC
+API-Riesgo Climático
+
+Calculada por tu sistema:
+
+{
+  "distrito": "Loma Plata",
+  "sequia": 82,
+  "incendio": 75,
+  "inundacion": 20,
+  "riesgo_total": "ALTO"
+}
+
+Mi recomendación para tu proyecto SNC-DI
+
+La arquitectura más potente sería:
+
+Copernicus + NASA + Sentinel + Global Forest Watch + CHIRPS + OpenStreetMap + Catastro + DINAC + INFONA + MADES
+
+Con estas fuentes podrías generar automáticamente más de 100 indicadores climáticos, ambientales, territoriales y de riesgo para cada departamento, distrito, barrio o parcela catastral de Paraguay.
+
+Sí. Si tu objetivo es crear un Mapa Hiperactivo Nacional de Cambio Climático y Territorio, aún faltan varias fuentes de alto valor que normalmente no aparecen en los proyectos SIG tradicionales.
+
+🛰️ Datos científicos avanzados
+GBIF (Biodiversidad mundial)
+
+Más de 3.000 millones de registros georreferenciados de especies. Sirve para modelar:
+
+Cambio de distribución de especies
+Impacto climático en biodiversidad
+Corredores ecológicos
+Especies invasoras
+
+🔗 GBIF
+
+API:
+
+https://api.gbif.org/v1/
+
+🌍 Datos de adaptación climática
+ND-GAIN
+
+Universidad de Notre Dame.
+
+Indicadores de:
+
+Vulnerabilidad climática
+Preparación institucional
+Capacidad de adaptación
+
+🔗 https://gain.nd.edu
+
+🌎 Riesgo global
+ThinkHazard
+
+Desarrollado por el Banco Mundial.
+
+Amenazas:
+
+Inundación
+Sequía
+Deslizamiento
+Sismos
+Incendios
+Calor extremo
+
+🔗 ThinkHazard
+
+💰 Economía Climática
+World Bank Climate Data
+
+Datos:
+
+Impactos económicos
+Pérdidas por desastres
+Infraestructura vulnerable
+Adaptación
+
+🔗 https://climateknowledgeportal.worldbank.org
+
+🌧️ Datos hidrológicos mundiales
+Global Runoff Data Centre (GRDC)
+
+Información de:
+
+Caudales
+Cuencas
+Escorrentía
+
+🔗 https://www.bafg.de/GRDC
+
+🏞️ Humedales
+Ramsar Sites Information Service
+
+Para:
+
+Humedales protegidos
+Ecosistemas acuáticos
+Sitios Ramsar del Paraguay
+
+🔗 Ramsar Sites
+
+🌡️ Carbono y emisiones
+Global Carbon Atlas
+
+Datos de:
+
+CO₂
+Balance de carbono
+Sumideros de carbono
+
+🔗 Global Carbon Atlas
+
+🏭 Contaminación atmosférica
+OpenAQ
+
+Monitoreo mundial de:
+
+PM2.5
+PM10
+NO₂
+SO₂
+O₃
+
+API abierta.
+
+🔗 OpenAQ
+
+🚜 Agricultura y seguridad alimentaria
+FAOSTAT
+
+Datos:
+
+Producción agrícola
+Ganadería
+Bosques
+Agua
+
+🔗 https://www.fao.org/faostat
+
+API:
+
+https://fenixservices.fao.org/faostat/api/
+
+🏘️ Datos urbanos
+Global Human Settlement Layer (GHSL)
+
+Datos satelitales sobre:
+
+Expansión urbana
+Densidad poblacional
+Infraestructura
+
+🔗 https://ghsl.jrc.ec.europa.eu
+
+Lo que casi nadie incorpora
+
+Estos son los datos que convierten un SIG en un sistema de Decision Intelligence Territorial.
+
+Infraestructura crítica
+Hospitales
+Centros de salud
+Escuelas
+Comisarías
+Subestaciones eléctricas
+Acueductos
+Plantas de tratamiento
+
+Origen:
+
+OpenStreetMap
+Instituciones nacionales
+Conectividad
+Internet
+Torres celulares
+Fibra óptica
+Cobertura 4G/5G
+
+Permite medir resiliencia territorial.
+
+Indicadores notariales y catastrales
+
+Integrando tu idea del SNC:
+
+Parcelas afectadas por inundación
+Parcelas afectadas por sequía
+Inmuebles en áreas de riesgo
+Valor de suelo expuesto
+Servidumbres ambientales
+Superposición con áreas protegidas
+Inteligencia social
+
+Con IA:
+
+Reclamos ciudadanos
+Redes sociales
+Noticias
+Denuncias ambientales
+
+Generando un:
+
+Índice de Percepción Territorial del Riesgo.
+
+El dato más moderno (2026)
+
+Los países más avanzados ya no trabajan solo con GIS.
+
+Están construyendo un Digital Twin Territorial (Gemelo Digital del Territorio):
+
+Capas integradas:
+
+Clima
+Catastro
+Ambiente
+Economía
+Movilidad
+Energía
+Agricultura
+Infraestructura
+Demografía
+
+y simulaciones:
+
+¿Qué pasa si aumenta 2°C?
+¿Qué pasa si llueve 400 mm en 48 horas?
+¿Qué pasa si desaparece 20 % del bosque?
+¿Qué distritos serán inviables agrícolamente en 2050?
+
+Para Paraguay, este enfoque sería incluso más potente que un SIG tradicional y encajaría perfectamente con la arquitectura SNC-DI (Sistema Nacional de Catastro + Decision Intelligence) que has venido planteando.
+
+Sí. Si quieres que tu plataforma sea realmente única en América Latina, el plus no está en tener más mapas, sino en integrar capas que casi ningún SIG climático incorpora.
+
+1. Huella Climática por Parcela
+
+La mayoría analiza departamentos o distritos.
+
+Tú podrías analizar cada finca o parcela:
+
+Riesgo de inundación
+Riesgo de sequía
+Riesgo de incendio
+Captura de carbono
+Pérdida forestal histórica
+Aptitud agrícola futura
+
+Resultado:
+
+"Esta parcela perderá un 35% de su productividad agrícola para 2050 bajo escenario SSP5-8.5."
+
+Eso es inteligencia territorial.
+
+2. Valor Económico del Riesgo
+
+La mayoría muestra colores.
+
+Tú podrías mostrar dinero.
+
+Ejemplo:
+
+Valor fiscal: 5 millones USD
+Riesgo de inundación: Alto
+Pérdida esperada anual: 350.000 USD
+
+Esto interesa a:
+
+Bancos
+Seguros
+Municipios
+Inversionistas
+3. Motor de Alertas Predictivas
+
+No solo mostrar datos.
+
+Predecir.
+
+Ejemplo:
+
+Riesgo de incendio en 7 días
+Riesgo de sequía en 30 días
+Riesgo de inundación en 72 horas
+
+Semáforo:
+
+🔵 Bajo
+
+🟡 Medio
+
+🟠 Alto
+
+🔴 Crítico
+
+4. Índice de Salud Territorial
+
+Un indicador propio paraguayo.
+
+Podría combinar:
+
+Bosque
+Agua
+Biodiversidad
+Carbono
+Uso de suelo
+Contaminación
+
+Resultado:
+
+IST = 87/100
+Salud Territorial = Muy Buena
+
+
+Nadie tiene hoy un indicador nacional de este tipo.
+
+5. Índice de Resiliencia Municipal
+
+Medir:
+
+Infraestructura
+Servicios públicos
+Hospitales
+Escuelas
+Conectividad
+Capacidad institucional
+
+Resultado:
+
+Municipio preparado para eventos extremos.
+
+6. Integración con Catastro
+
+Este sería uno de los diferenciales más fuertes.
+
+Al seleccionar una parcela:
+
+Mostrar:
+
+Titular
+Uso del suelo
+Cobertura vegetal
+Riesgo climático
+Restricciones ambientales
+Servidumbres
+POUT aplicado
+
+Todo en una sola pantalla.
+
+7. Gemelo Digital Territorial
+
+Mucho más avanzado que GIS.
+
+Permite preguntar:
+
+¿Qué ocurre si desaparece el 20% del bosque?
+¿Qué ocurre si la temperatura aumenta 2 °C?
+¿Qué ocurre si la lluvia disminuye 15%?
+¿Qué distritos serán más vulnerables?
+
+Simulación inmediata.
+
+8. IA Conversacional sobre el Territorio
+
+Un chatbot tipo ChatGPT conectado a la base territorial.
+
+Ejemplos:
+
+¿Cuál es el distrito con mayor vulnerabilidad hídrica del Chaco?
+
+¿Cuántas hectáreas de bosque perdió San Pedro desde 2000?
+
+¿Qué municipios tienen alto riesgo de incendios y baja cobertura forestal?
+
+La IA responde consultando el SIG.
+
+9. Información Proveniente de la Ciudadanía
+
+Muy poco utilizada.
+
+Aplicación móvil para reportar:
+
+Incendios
+Inundaciones
+Basurales
+Deforestación
+Contaminación de agua
+
+Con geolocalización y fotografía.
+
+Esto crea una capa de observación ciudadana.
+
+10. Módulo Notarial-Ambiental
+
+Este puede ser revolucionario para Paraguay.
+
+Antes de una transferencia de inmueble:
+
+El sistema verifica:
+
+Área protegida
+Humedal
+Bosque protegido
+Zona inundable
+Restricciones ambientales
+
+Genera automáticamente:
+
+Certificado de Riesgo Climático y Ambiental
+
+11. Mercado de Carbono
+
+Para cada inmueble:
+
+Carbono almacenado
+Carbono capturado anualmente
+Potencial de créditos de carbono
+
+Especialmente valioso para el Chaco y la Región Oriental.
+
+12. Índice de Seguridad Hídrica
+
+Muy importante para los próximos años.
+
+Combina:
+
+Lluvia
+Acuíferos
+Consumo
+Sequías
+Calidad del agua
+
+Resultado:
+
+Capacidad de abastecimiento futuro.
+
+13. Inteligencia Territorial Automática
+
+Que el sistema descubra cosas sin que el usuario pregunte.
+
+Ejemplo:
+
+"Se detectó pérdida de cobertura arbórea del 12% en los últimos 6 meses."
+
+"El riesgo de sequía aumentó un 18%."
+
+"Este distrito presentó el mayor deterioro ambiental del trimestre."
+
+14. Indicador POUT Inteligente
+
+Como vienes trabajando con el ordenamiento territorial, podrías crear:
+
+IPOOT (Índice Paraguayo de Ordenamiento y Ocupación Territorial)
+
+Mediría:
+
+Uso correcto del suelo
+Presión urbana
+Riesgo climático
+Disponibilidad hídrica
+Infraestructura
+
+Ayudaría a los municipios a tomar decisiones.
+
+15. Lo que realmente sería disruptivo
+
+Unir en una sola plataforma:
+
+SIG + Catastro + Ambiente + POUT + Riesgos + Economía + IA + Notarial + Decision Intelligence
+
+La mayoría de los países tienen estos sistemas separados. El verdadero plus es que un intendente, un notario, un agricultor o un ministerio vean la misma realidad territorial desde una única fuente y puedan simular escenarios futuros antes de tomar decisiones. Esa integración vale mucho más que añadir otras 50 capas de mapas.
+
+### Stack Tecnológico para la Plataforma de Simulación Climática y SIG
+
+Para estructurar una solución robusta, escalable y reproducible capaz de procesar datos multidimensionales, ejecutar cálculos de índices climáticos y renderizar capas geoespaciales, la arquitectura se divide en cuatro capas fundamentales:
+
+---
+
+### 1. Motor de Procesamiento y Análisis Geoespacial (Backend Científico)
+
+El procesamiento de datos de reanálisis y proyecciones (NetCDF4, GRIB, GeoTIFF) requiere herramientas con soporte nativo para tensores multidimensionales y cálculo distribuido:
+
+* **Lenguaje base:** Python (>= 3.11).
+* **Manipulación de mallas climáticas y cubos de datos:**
+* `xarray`: Manejo de arrays etiquetados con dimensiones de latitud, longitud, nivel de presión y tiempo.
+* `rioxarray` y `rasterio`: Integración directa de georreferenciación y operaciones de corte (*clipping*), reproyección (GDAL) y conversión a GeoTIFF.
+* `netCDF4` / `h5py`: Lectura a bajo nivel de estructuras HDF5/NetCDF de CMIP6 y ERA5.
+
+
+* **Cálculo de extremos climáticos:**
+* `xclim`: Librería especializada sobre `xarray` construida específicamente para calcular los índices de la OMM/ETCCDI (CDD, SU35, R95p, SPEI) con soporte de unidades y calendarios 360/365 días.
+* `climate-indices`: Generación de matrices SPI y SPEI calibradas por distribución de Pearson/Gamma.
+
+
+* **Computación paralela y fuera de memoria (*out-of-core*):**
+* `Dask`: Distribución de cómputo en clúster o multi-núcleo para series temporales de terabytes sin saturar RAM.
+
+
+
+---
+
+### 2. Base de Datos Espacial y Almacenamiento
+
+* **PostgreSQL + PostGIS:**
+* Almacenamiento de capas vectoriales (límites administrativos, catastro, infraestructura crítica, polígonos de cuencas).
+* Indexación espacial R-Tree (`GIST`) y consultas de superposición vectorial (`ST_Intersects`, `ST_Intersection`, `ST_Clip`).
+
+
+* **Cloud-Optimized Formats (Almacenamiento eficiente de rasters):**
+* **COG (Cloud Optimized GeoTIFF):** Para entrega de mosaicos raster bajo demanda vía HTTP GET range requests.
+* **Zarr:** Alternativa optimizada para almacenamiento en la nube de cubos climáticos multidimensionales NetCDF.
+
+
+* **Gestor de capas y metadatos:**
+* **GeoServer** o **Titheiler** (servidor ligero de teselas dinámicas en Python/FastAPI para COGs).
+
+
+
+---
+
+### 3. API y Orquestación del Pipeline
+
+* **Framework de Servicios Web:**
+* **FastAPI:** Exposición de endpoints asíncronos para solicitar reportes zonales, consultar series temporales de un punto específico o detonar simulaciones.
+* **Celery + Redis:** Gestión de colas de tareas asíncronas para el procesamiento pesado de NetCDF y generación de informes en segundo plano.
+
+
+* **Automatización de Pipelines:**
+* **Apache Airflow** o **Prefect:** Ingesta programada de nuevas corridas climáticas, descarga de catálogos Copernicus/NASA y ejecución de scripts de corrección de sesgo (*bias correction*).
+
+
+
+---
+
+### 4. Visualización Cartográfica y Frontend
+
+* **Framework de Aplicación:**
+* **React** o **Next.js** con **TypeScript**.
+
+
+* **Librerías de Visualización Cartográfica:**
+* **Mapbox GL JS** / **MapLibre GL JS**: Renderizado vectorial acelerado por WebGL con alto rendimiento para visualización fluida de capas de calor, isolíneas y polígonos de zonificación.
+* **Deck.gl**: Integración con MapLibre para renderizar mallas de datos climáticos masivos en 3D (ej. simulaciones de escorrentía, elevaciones DEM e islas de calor urbanas).
+* **Leaflet.js:** Alternativa ligera para mapas de consulta básicos y capas WMS/WMTS generadas por GeoServer.
+
+
+* **Gráficos e Indicadores:**
+* **Plotly.js** o **ECharts**: Curvas de persistencia, diagramas de caja para ensamble multimodelo e histogramas de precipitación.
+
+
+
+---
+
+### 5. Generación de Informes Técnicos Automatizados
+
+* **WeasyPrint / Typst:** Compilación desatendida de HTML5/CSS3 o plantillas tipográficas estructuradas directamente a PDF formal de alta resolución, incrustando tablas de métricas y capturas cartográficas vectoriales/rasterizadas.
+* **GeoPandas + Matplotlib/Seaborn:** Generación de cartografía temática estática y figuras complementarias en el servidor para adjuntar al informe.

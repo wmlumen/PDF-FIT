@@ -4,7 +4,27 @@ Reglas: ver "Regla de turnos entre IAs" en `AGENTS.md`. Cada IA agrega una entra
 Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 
 ## Turno actual
-Antigravity · 2026-10-31 · Consolidación Total "Todo en 1" en visor-3d.html: Pluviometría mm, Coeficiente de Suelo, Vectores de Flujo Hídrico, Barras Analíticas de Volumen/Caudal y Redirección Unificada · visor-3d.html, js/visor3d.js, server-api.js, visor-topografico.html, topographic_viewer.html
+libre
+
+### 2026-10-31 · Antigravity · Módulo Cambio Climático Express (Inicio Rápido): Tablero Interactivo Operativo (Leaflet + Open-Meteo + Decision Intelligence SNC-DI), Script CLI y Directiva Multi-IA · Cambio_climatico/panel.html, Cambio_climatico/consultar_clima.mjs, Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md
+- **Pedido**: "Empezar por lo mas rapido" tras generar el prompt de sintonía con SNC v3 para la carpeta `Cambio_climatico/`.
+- **Qué se hizo**:
+  1. **Directiva Multi-IA permanente**: se creó `Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md` fijando las reglas arquitectónicas, los 13 bloques temáticos y las fórmulas canónicas de los índices SNC-DI (ICT, IRT, IST, IRM, IPOOT) para que cualquier IA opere sin desalinearse del SNC v3.
+  2. **Tablero Interactivo Operativo (`Cambio_climatico/panel.html`)**: se transformó la maqueta estática previa en un centro de comando funcional interactivo con Leaflet (CartoDB DarkMatter), centrado en Paraguay con estaciones de monitoreo clave (Asunción, Piribebuy, Bahía Negra / Pantanal, Encarnación, CDE, Mcal. Estigarribia).
+  3. **Conexión en vivo y fallback local**: consulta en tiempo real a Open-Meteo API (sin claves, CORS abierto) con fallback offline/calibrado para Paraguay si no hay conexión; calcula dinámicamente en vivo la temperatura, sensación térmica, lluvia, humedad, ICT, IRT (Amenaza × Exposición × Vulnerabilidad), IRM y aptitud parcelaria IPOOT.
+  4. **Simulador de Escenarios IPCC AR6**: slider interactivo de anomalías térmicas (Presente 2026, 2030, 2050, 2100) que recalcula en tiempo real los índices de riesgo y afectación territorial.
+  5. **Exportador JSON**: botón para descargar el diagnóstico climático territorial estructurado compatible con los reportes catastrales de SNC v3.
+  6. **Script CLI rápido (`Cambio_climatico/consultar_clima.mjs`)**: script Node ejecutable con `node Cambio_climatico/consultar_clima.mjs [region]` para consultar métricas y calcular índices SNC-DI desde terminal.
+- **Verificado**: `node Cambio_climatico/consultar_clima.mjs piribebuy` ejecutado exitosamente con cálculo de ICT (27/100), IRT (7/100) e IRM (64/100). `panel.html` validado con sintaxis limpia y Leaflet interactivo. Ningún archivo congelado del core ni de auditoría fue tocado.
+- Turno LIBERADO.
+
+### 2026-10-31 · Claude · Plan de incorporación del módulo Cambio Climático (sin override: no tocó archivos congelados) · docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md, AGENTS.md
+- **Pedido**: el usuario pegó una investigación extensa (research de IA sin verificar) en `Cambio_climatico/2.txt` + `Nuevo Documento de texto.txt` + una maqueta estática `panel.html`, y pidió "el prompt para que las IA puedan ver y trabajar, en sintonía con SNC v3".
+- **Qué se hizo**: se leyó el research completo (research de ~150 indicadores/capas climáticas, ambientales, de riesgo, territoriales y un stack Python/xarray/PostGIS/Airflow/React propuesto) y se escribió `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md`, mismo formato que `PLAN_MEJORA_ANALISIS_TERRITORIAL_2026-10-28.md`: diagnóstico de qué del research es aprovechable tal cual (catálogo de fuentes/APIs) vs. qué choca con el stack real de SNC v3 (Node/Express/SQLite/MapLibre, no Python/PostGIS/Airflow), tabla de qué ya existe en el repo y no hay que duplicar (hidrografía de hoy mismo, simulación de inundación, terreno 3D, catastro, OSM, análisis territorial), y una primera lista `CC-01..CC-06` acotada y verificable por `curl`/captura, en 2 carriles que pueden empezar ya (API simple + caché; índices con datos locales) y un tercero (satelital pesado) explícitamente bloqueado hasta que el usuario decida el stack.
+- **Enlazado** desde `AGENTS.md` §0 como ítem 7 de la lectura obligatoria.
+- **Estado del módulo: 0 % implementado**, sin código, sin rutas, sin datos — el plan es el único artefacto de este turno. `panel.html` queda señalado explícitamente como maqueta sin datos reales, no como punto de partida de código.
+- No se tocó ningún archivo de la lista congelada de "Turno actual" (ni ninguna zona congelada por la auditoría); no hizo falta override.
+- Turno LIBERADO en lo que respecta a este pedazo.
 
 ### 2026-10-31 · Claude · Mapa base "Lienzo en blanco (para capas)" (override autorizado por el usuario) · visor-3d.html, js/visor3d.js
 - **Pedido**: "mi lienzo poner en blanco para usar con capas" — una opción de mapa base sin OpenStreetMap/Satélite/sombreado, fondo blanco liso, para ver las capas (hidrografía, parcelas, edificios) sin ruido visual del mapa base.
@@ -605,6 +625,7 @@ _(archivo:línea · qué se observó · evidencia · a quién corresponde)_
 - Informe de cascos urbanos · cita legal: la delimitación del área urbana es competencia municipal por ordenanza (Ley 3966/2010 Orgánica Municipal); la Ley 125/91 regula el impuesto inmobiliario, no define el límite urbano/rural. Revisar la redacción antes de usarla en el panel o en publicaciones. Corresponde a Antigravity.
 - `scripts/analisis-territorial.plantilla.html` · paneles FODA: el título aparece dos veces ("OPORTUNIDADES / OPORTUNIDADES") porque el HTML trae `<h4>` y el código vuelve a insertar `<h4>` dentro de la lista. Evidencia: vista Piribebuy 2026-10-28. Corresponde al autor del bloque FODA.
 - `scripts/analisis-territorial.plantilla.html` · `urgenciaIdistrito()`: los pesos suman 0,90 (máximo 90, no 100) y el redondeo a entero deja muchos empates (decenas de distritos con 59 y 60 en la vista país). Evidencia: ranking nacional del 2026-10-28. Corresponde a Hermes (autor de la pestaña del plan).
+- `Cambio_climatico/PROMPT_CAMBIO_CLIMATICO_SNCV3.md` vs. `docs/PLAN_CAMBIO_CLIMATICO_2026-10-31.md` · dos "documentos maestros" distintos para el mismo módulo, escritos en paralelo (misma franja horaria del 2026-10-31, ver los dos turnos de arriba) sin que ninguno supiera del otro: el de Antigravity fija pilares/fórmulas y ya pasó a implementar (`panel.html` + `consultar_clima.mjs`, con Open-Meteo en vivo); el mío diagnostica que el stack propuesto en el research (Python/xarray/PostGIS/Airflow) no es el de SNC v3 y acota el trabajo a tareas `CC-xx` verificables antes de construir nada. No es un error de ninguno de los dos — son respuestas legítimas e independientes al mismo pedido del usuario en sesiones distintas. No corregí ni fusioné el trabajo de Antigravity (regla §3). Le corresponde al usuario decidir si se consolidan en un solo documento o conviven, y a quien retome el módulo leer ambos antes de seguir.
 
 ### Cierre de turno · Claude · 2026-10-29
 - Hecho: `municipal/gestion.html` + `js/gestionMunicipal.js` (pestañas Locales y patentes con mapa, Inspecciones, Liquidaciones DNIT paginadas, Planificación = POUT del MADES, Avisos), estilos en `css/plataforma.css`, enlace en el tablero. Backend: `gestionMunicipalServicio.js`, `ciudadanoServicio.js`, rutas `/api/v3/gestion/*` y `/api/v3/ciudadano/{vincular,verificar,baja}`.
