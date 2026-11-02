@@ -268,15 +268,15 @@
           <div class="mt-1.5 grid grid-cols-3 gap-1.5 rounded-lg border border-blue-500/20 bg-blue-950/20 p-1.5">
             <div class="min-w-0">
               <p class="text-[8px] uppercase text-slate-500 truncate" title="Departamento">Dpto.</p>
-              <p id="stat-dpto-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              <p id="stat-dpto-map" class="whitespace-normal break-words leading-tight text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
             <div class="min-w-0">
               <p class="text-[8px] uppercase text-slate-500 truncate" title="Distrito">Distrito</p>
-              <p id="stat-dist-map" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              <p id="stat-dist-map" class="whitespace-normal break-words leading-tight text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
             <div class="min-w-0">
               <p class="text-[8px] uppercase text-slate-500 truncate" title="Barrio">Barrio</p>
-              <p id="stat-barrio" class="truncate text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
+              <p id="stat-barrio" class="whitespace-normal break-words leading-tight text-[10px] font-bold text-blue-200" title="Sin determinar">Sin determinar</p>
             </div>
           </div>
           </div>
@@ -1768,6 +1768,17 @@ import OverviewMap from '/js/overviewMap.js';
     LayerManager.get('py_residencial').visible = false;
     LayerManager.get('py_barrios').visible = false;
     LayerManager.get('py_cascos').visible = false;
+    // Hidrografía oficial nacional (ríos/arroyos/canales/lagunas/embalses con nombre; ver
+    // scripts/hidrografia-oficial.mjs) y puntos de infraestructura nacional (mismas fuentes que
+    // panel.html, sin duplicar el dato en dos lugares del repo).
+    LayerManager.registerLayer({ id: 'py_hidro', title: 'Hidrografía oficial (ríos, arroyos, lagunas)', parentId: 'g_paraguay', geometryType: 'LineString', sourceType: 'geojson' });
+    LayerManager.registerLayer({ id: 'py_escuelas', title: 'Escuelas y colegios (MEC)', parentId: 'g_paraguay', geometryType: 'Point', sourceType: 'geojson' });
+    LayerManager.registerLayer({ id: 'py_salud', title: 'Hospitales y USF (MSPyBS)', parentId: 'g_paraguay', geometryType: 'Point', sourceType: 'geojson' });
+    LayerManager.registerLayer({ id: 'py_industria', title: 'Industria y logística (POUT)', parentId: 'g_paraguay', geometryType: 'Point', sourceType: 'geojson' });
+    LayerManager.get('py_hidro').visible = false;
+    LayerManager.get('py_escuelas').visible = false;
+    LayerManager.get('py_salud').visible = false;
+    LayerManager.get('py_industria').visible = false;
 
     // Grupo "Mis archivos": capas que el propio usuario agrega como
     // referencia (no se suben al servidor, viven solo en esta sesión).

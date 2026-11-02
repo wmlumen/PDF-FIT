@@ -2314,7 +2314,11 @@ const PIRIBEBUY_LAYER_STYLES = {
     vertedero_500: { color: "#f97316", weight: 2, fillColor: "#fb923c", fillOpacity: 0.12 },
     vertedero_1000: { color: "#eab308", weight: 2, fillColor: "#facc15", fillOpacity: 0.08 },
     vuelo_casco: { color: "#a78bfa", weight: 2, fillColor: "#8b5cf6", fillOpacity: 0.12 },
-    casco_historico: { color: "#34d399", weight: 2, fillColor: "#10b981", fillOpacity: 0.12 }
+    casco_historico: { color: "#34d399", weight: 2, fillColor: "#10b981", fillOpacity: 0.12 },
+    py_hidro: { color: "#38bdf8", weight: 1.5 },
+    py_escuelas: { color: "#818cf8", radius: 5, fillColor: "#818cf8", fillOpacity: 0.85 },
+    py_salud: { color: "#f43f5e", radius: 5, fillColor: "#f43f5e", fillOpacity: 0.85 },
+    py_industria: { color: "#f59e0b", radius: 5, fillColor: "#f59e0b", fillOpacity: 0.85 }
 };
 const PIRIBEBUY_FOLDER_BY_GROUP = { g_base: "base", g_vert: "vertedero", g_casco: "casco" };
 const piribebuyLayers = new Map();
@@ -2358,7 +2362,18 @@ const NATIONAL_REFERENCE_FILES = {
     py_barrios: '../data/barrios_py_light.geojson',
     py_cascos: '../data/casco_urbano_snc.geojson',
     // Zonas residenciales de OSM (gris en el mapa base) con su barrio y cuentas DNIT (scripts/residencial-capa.py).
-    py_residencial: '../data/residencial_py_light.geojson'
+    py_residencial: '../data/residencial_py_light.geojson',
+    // Hidrografia oficial nacional, solo rios/arroyos/canales/lagunas/embalses CON nombre (ver
+    // scripts/hidrografia-oficial.mjs) y geometria simplificada (~160MB -> ~14.7MB) para que cargue
+    // como capa estatica liviana; los cauces sin nombre identificar y la version completa se sirven
+    // bbox-filtrados por /api/v3/hidrografia (visor 3D / panel clima), no por esta capa.
+    py_hidro: '../data/hidrografia_py_light.geojson',
+    // Infraestructura nacional (puntos): escuelas MEC, salud MSPyBS, industria/logistica POUT.
+    // Se apunta a Cambio_climatico/data/ (ya servido por el servidor, ya usado por panel.html) en vez
+    // de la copia de data/ con el mismo contenido, para no servir el mismo archivo por 2 rutas.
+    py_escuelas: '../Cambio_climatico/data/infraestructura_educacion.geojson',
+    py_salud: '../Cambio_climatico/data/infraestructura_salud.geojson',
+    py_industria: '../Cambio_climatico/data/industria_logistica_py.geojson'
 };
 
 function piribebuyUrl(node, id) {

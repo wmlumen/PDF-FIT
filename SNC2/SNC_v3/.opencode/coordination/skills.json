@@ -736,6 +736,149 @@
       "triggeredBy": "task_passed",
       "status": "pending_review",
       "createdAt": "2026-11-02T00:02:27.800Z"
+    },
+    {
+      "id": "imp_1793578328347_axfy82o8",
+      "skill": "simplificar_pastilla_cluster_icono_mas_total",
+      "agent": "Claude",
+      "description": "A pedido del usuario ('organizar de una forma mas simple el cluster'): crearMarcadorClusterJerarquico() ya no muestra el badge-tag de nivel ni el nombre del distrito/departamento en la pastilla; ahora es solo icono + numero (clase nueva cluster-pin-simple, css/panel-clima.css: padding 4px 6px, border-radius 999px). El nombre y nivel completos quedan en el tooltip/title nativo al pasar el mouse. Pastillas bajaron de hasta 364px a ~70px de ancho fijo. Verificado en vivo (zoom 10, Asuncion/Central, 71 pastillas): el solape severo (>35% de area cubierta) bajo de 43 a 16 pares solo por el cambio de tamano, sin tocar el solape entre capas distintas (eso sigue pendiente, ver nota para Antigravity). npm run lint:encoding OK, node --check OK, sin errores nuevos en consola.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T00:12:08.347Z"
+    },
+    {
+      "id": "imp_1793580393952_k6kzanbw",
+      "skill": "incorporar_arroyos_no_identificados_hidro",
+      "agent": "Claude",
+      "description": "A pedido del usuario (PY-IA/SIG/02.Hidrografia/01.Nacional/Rios principales poligonos: incorporar rios, capturar inundaciones/espejos de agua/laguna y arroyos no identificados). Se incorporo rios_paraguay_2012.shp (4582 cauces sin nombre ni atributos, sin .dbf) como fuente nueva en convertir.cmd y hidrografia-oficial.mjs. Se renombro el bucket 'otro' a 'arroyo_no_identificado' para lineas sin nombre (antes 23641 'otro' -> ahora 9 'otro' real + 28214 'arroyo_no_identificado'); se amplio el regex de arroyo para cubrir canadon/cañadón. Las 1071 areas (poligonos, HIDRO_PARAGUAY_2012_POLYt.shp, solo tienen un Id numerico, sin nombre) se reclasifican por cercania de bbox (margen ~1km) contra las lineas ya identificadas como laguna/embalse: 80 de 1071 quedaron como laguna/embalse (ej. 'Lago del Rio Yguazu'), el resto sigue como 'ribera' generico. HIDRO_PARAGUAY_2002.shp (106313 lineas, mas detallado que el 2012) se inspecciono pero NO se incorporo por redundancia/tamano (duplicaria ~160MB+ con el 2012 sin deduplicacion geometrica); queda pendiente de decision del usuario. El servidor en marcha tiene el cache de /api/v3/hidrografia viejo (hidroCache en memoria, server-api.js:466): falta reinicio para que sirva los datos nuevos, pendiente de confirmacion del usuario (regla de la sesion). npm run lint:encoding OK.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T00:46:33.952Z"
+    },
+    {
+      "id": "imp_1793580400442_j2dvc7p1",
+      "skill": "incorporar_arroyos_no_identificados_hidro",
+      "agent": "Claude",
+      "description": "convertir.cmd extendido para agregar rios_paraguay_2012.shp -> hidro_oficial_rios2012_sin_nombre.geojson (gitignorado, parte de data/1.Paraguay).",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T00:46:40.442Z"
+    },
+    {
+      "id": "imp_1793581016474_posg6uvg",
+      "skill": "sumar_hidro_2002",
+      "agent": "Claude",
+      "description": "A pedido explicito del usuario ('Sumalo igual') se sumo HIDRO_PARAGUAY_2002.shp (106.313 lineas, con NOMBRE, .prj propio UTM21S) como fuente adicional en convertir.cmd (-select NOMBRE) y hidrografia-oficial.mjs (detalle:'nacional_2002', clasificado con el mismo tipoDeNombre que 2012). NO reemplaza al 2012, se suma sin deduplicacion geometrica (advertido antes de sumarlo): puede haber el mismo rio dibujado 2 veces (2002 y 2012). Resultado: lineas.geojson paso de 48.796 a 154.867 features (396MB en disco, antes 201MB); laguna/embalse reclasificados en areas subio de 80 a 126 de 1071 (mas lineas con nombre 'laguna'/'embalse' disponibles del 2002 para el match por bbox). Medido: node -e JSON.parse del archivo nuevo tarda ~2.5s y usa ~1.6GB RSS en memoria (antes bastante menos) -- el servidor en marcha todavia no se reinicio con esto, pendiente de confirmacion explicita del usuario (ya se le aviso del costo de memoria/tiempo). npm run lint:encoding OK, node --check OK.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T00:56:56.474Z"
+    },
+    {
+      "id": "imp_1793581022206_ixg8ut90",
+      "skill": "sumar_hidro_2002",
+      "agent": "Claude",
+      "description": "convertir.cmd: se agrego conversion de HIDRO_PARAGUAY_2002.shp -> hidro_oficial_2002.geojson (-select NOMBRE).",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T00:57:02.206Z"
+    },
+    {
+      "id": "imp_1793584065329_eq1q3k1u",
+      "skill": "incorporar_capas_nacionales_py_grupo",
+      "agent": "Claude",
+      "description": "A pedido del usuario ('incorporar todos los datos nacionales que se tiene escuelas hidro salud etc'), se descubrio que index.html YA tiene un LayerManager/LayerPanel completo tipo ArcGIS (js/layerManager.js + js/layerPanel.js + js/layerDialog.js: arbol con carpetas, arrastrar y soltar, opacidad, rango de escala, renombrar, tabla de atributos, etc.) bajo el grupo g_paraguay ('Paraguay (referencia nacional)'), con 5 capas ya registradas (deptos/distritos/barrios/cascos/residencial). Se sumaron 4 capas nuevas al mismo grupo reusando ese sistema existente (NATIONAL_REFERENCE_FILES en js/mapEngine.js + LayerManager.registerLayer en index.html): py_hidro (hidrografia_py_light.geojson, 44215 features con nombre, geometria simplificada con ogr2ogr -simplify de 160MB a 14.7MB para que cargue en el navegador; la version completa/sin nombre se sigue sirviendo bbox-filtrada por /api/v3/hidrografia, no por esta capa estatica), py_escuelas/py_salud/py_industria apuntando a Cambio_climatico/data/*.geojson (NO se copiaron a data/ de nuevo: son bytes identicos -verificado con md5sum- a lo que ya usa panel.html, para no duplicar el mismo archivo en 2 rutas). Ruta nueva en server-api.js para /data/hidrografia_py_light.geojson (pendiente reinicio). Verificado en vivo: escuelas 9295 features, salud 741, industria 6616, todos renderizando con colores propios (PIRIBEBUY_LAYER_STYLES). npm run lint:encoding OK, node --check OK en los 3 archivos JS, tests/all-index-functionalities.test.mjs 8/8 OK.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:47:45.329Z"
+    },
+    {
+      "id": "imp_1793584069624_smj5b277",
+      "skill": "incorporar_capas_nacionales_py_grupo",
+      "agent": "Claude",
+      "description": "NATIONAL_REFERENCE_FILES extendido con py_hidro/py_escuelas/py_salud/py_industria; PIRIBEBUY_LAYER_STYLES con colores propios para las 4.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:47:49.624Z"
+    },
+    {
+      "id": "imp_1793584069767_qlju29b2",
+      "skill": "incorporar_capas_nacionales_py_grupo",
+      "agent": "Claude",
+      "description": "Ruta GET /data/hidrografia_py_light.geojson agregada (fuera de las zonas congeladas de la auditoria).",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:47:49.767Z"
+    },
+    {
+      "id": "imp_1793584270580_5wzfzcy9",
+      "skill": "evitar_solapamiento_pastillas_multicapa",
+      "agent": "Antigravity",
+      "description": "Motor unificado multicapa de infraestructura (Salud, Educacion, Industria): agrupa puntos bajo jerarquia de 5 niveles en capsulas multicapa conjuntas [🏥|🏫|🏭], resolviendo nombres oficiales y abreviaturas con normalizarDistritoPy; aplica algoritmo de declutter bidimensional por caja envolvente que fusiona capsulas cercanas sumando totales sin separar (cero colisiones visuales a cualquier nivel de zoom); y dispersion radial anti-colision para puntos individuales en zoom 16+.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:51:10.580Z"
+    },
+    {
+      "id": "imp_1793584286155_sh71xuol",
+      "skill": "estilos_capsula_multicapa_sin_solapamiento",
+      "agent": "Antigravity",
+      "description": "Estilos CSS para capsulas multicapa compactas (.cluster-capsule) con segmentos coloreados por sector (.capsule-seg-salud, .capsule-seg-escuela, .capsule-seg-industria) y elevacion visual z-index al interactuar.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:51:26.155Z"
+    },
+    {
+      "id": "imp_1793584286381_0gvw2s4k",
+      "skill": "actualizar_version_cache_panel_html",
+      "agent": "Antigravity",
+      "description": "Actualizacion de query string de version ?v=20261102a en panel.html para invalidar cache de navegador.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:51:26.381Z"
+    },
+    {
+      "id": "imp_1793584286664_lw2vjwdr",
+      "skill": "actualizar_version_cache_cambio_climatico_html",
+      "agent": "Antigravity",
+      "description": "Actualizacion de version ?v=20261102a en Cambio_climatico/panel.html.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T01:51:26.664Z"
+    },
+    {
+      "id": "imp_1793585440301_mruveoal",
+      "skill": "evitar_recorte_barrio_dpto_distrito",
+      "agent": "Claude",
+      "description": "A pedido del usuario (seleccion de #stat-barrio mostrando 'MARIA AUXILI...' cortado + 'no muestra todo el dato'): index.html:271,275,279 (Dpto./Distrito/Barrio en 'Estado del Proyecto') usaban 'truncate' (white-space:nowrap + ellipsis) en una grilla de 3 columnas con celdas de solo ~82px; nombres largos como 'Maria Auxiliadora' se cortaban. Se cambio 'truncate' por 'whitespace-normal break-words leading-tight' en los 3 <p> de valor (no en las etiquetas Dpto./Distrito/Barrio, que son fijas y cortas) para que el texto baje de linea en vez de cortarse. Verificado en vivo: con 'MARIA AUXILIADORA' el texto completo se ve en 2 lineas, scrollWidth=clientWidth (sin recorte), sin errores nuevos en consola. npm run lint:encoding y tests/all-index-functionalities.test.mjs (8/8) en verde.",
+      "codeChange": "",
+      "testsPassed": true,
+      "triggeredBy": "task_passed",
+      "status": "pending_review",
+      "createdAt": "2026-11-02T02:10:40.301Z"
     }
   ],
   "patterns": []

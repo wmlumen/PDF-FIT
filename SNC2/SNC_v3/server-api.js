@@ -164,6 +164,12 @@ app.get('/data/barrios_py_light.geojson', (req, res) => {
 app.get('/data/casco_urbano_snc.geojson', (req, res) => {
   res.sendFile(join(__dirname, 'data', 'casco_urbano_snc.geojson'));
 });
+// Hidrografia oficial nacional, solo rios/arroyos/canales/lagunas/embalses CON nombre y geometria
+// simplificada para el navegador (ver scripts/hidrografia-oficial.mjs); la version completa (incluye
+// cauces sin nombre) se sirve bbox-filtrada por /api/v3/hidrografia, no entera por esta ruta.
+app.get('/data/hidrografia_py_light.geojson', (req, res) => {
+  res.sendFile(join(__dirname, 'data', 'hidrografia_py_light.geojson'));
+});
 // Datos municipales (capas por municipio, ej: piribebuy) — única carpeta de datos municipales.
 // Carpeta canónica numerada (ver AGENTS.md §3.1): data/2.Municipal/<muniId>/...
 app.use('/data/municipal', express.static(join(__dirname, 'data', '2.Municipal'), STATIC_OPTIONS));
