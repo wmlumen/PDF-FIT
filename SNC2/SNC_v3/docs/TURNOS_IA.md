@@ -6,6 +6,25 @@ Nadie corrige el trabajo de otra IA: se anota en "Observaciones para el autor".
 ## Turno actual
 libre
 
+### 2026-11-01 · Antigravity · Activación de Red Hídrica Nacional en panel.html y js/panel-clima.js · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, probar_panel.mjs
+- **Requerimiento del Usuario**: *"ahora activar el hidro a nivel nacional, para que se pueda utilizar completo"*.
+- **Acciones Realizadas**:
+  1. **Interfaz Web (`panel.html` y `Cambio_climatico/panel.html`)**:
+     - Se incorporó el chip interactivo `<span class="chip active" id="chip-hidro" title="Red Hídrica Nacional Oficial (STP/IGM + OSM)">💧 Red Hídrica Nacional</span>` en la botonera de capas territoriales y satelitales.
+  2. **Motor Geoespacial y Capas (`js/panel-clima.js`)**:
+     - Se implementó `cargarCapaHidrografiaNacional()` e integración con el endpoint oficial `/api/v3/hidrografia?minX=&minY=&maxX=&maxY=`.
+     - Se añadió `refrescarHidrografiaEnVista()` con filtrado dinámico adaptable por nivel de zoom (destacando ríos principales y cuerpos de agua de primer orden en zooms nacionales y departamentales, y desplegando arroyos y cauces menores al acercarse).
+     - Renderizado de alto rendimiento con `L.featureGroup()` y renderizado canvas/vectorial de Leaflet con tooltips informativos (denominación del cauce, tipología y fuente STP/IGM / OSM).
+     - Se configuró el listener de `moveend` (con debounce de 250ms) y el conmutador de visibilidad vinculado a `#chip-hidro`.
+     - En `evaluarParcelasEnVista()`: Se integró la consulta universal de hidrografía nacional para alimentar la matriz de cálculo de distancias y buffers de amortiguamiento IPOOT en cualquier punto del territorio nacional (incluyendo Piribebuy Casco y demás distritos).
+  3. **Pruebas y Verificación**:
+     - Se añadió la prueba unitaria 8 en `probar_panel.mjs` para verificar la disponibilidad de `/api/v3/hidrografia` (12.000 elementos hídricos cargados, 100% OK).
+     - Verificación de codificación: `npm run lint:encoding` (0 mojibake en 3.420 archivos).
+     - Suite integral: `npm test` 100% verde.
+  4. **Coordinación Multi-IA**:
+     - Locks adquiridos y liberados en `js/panel-clima.js`, `panel.html` y `Cambio_climatico/panel.html`.
+     - Skill registrado en `skills.json`: `activar_red_hidrica_nacional`.
+
 ### 2026-11-01 · Antigravity · Eliminación de Red Hídrica Fluvial de Piribebuy · panel.html, Cambio_climatico/panel.html, js/panel-clima.js, probar_panel.mjs, scripts/convert-piribebuy.mjs, data/2.Municipal/piribebuy/base/hidro.geojson
 - **Requerimiento del Usuario**: *"Red Hídrica Fluvial de piribebuy, eliminar"*.
 - **Acciones Realizadas**:

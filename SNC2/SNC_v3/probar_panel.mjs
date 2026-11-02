@@ -94,6 +94,16 @@ console.log('\n--- Probando Endpoints de Datos en Vivo ---');
   assert.equal(lotes.features.length, 91, 'Debe contener los 91 lotes del casco histórico');
 }
 
+// 8. Red Hídrica Nacional (/api/v3/hidrografia - STP/IGM + OSM)
+{
+  const resHidro = await fetch('http://localhost:5556/api/v3/hidrografia?minX=-58&minY=-26&maxX=-57&maxY=-25');
+  assert.equal(resHidro.status, 200);
+  const hidro = await resHidro.json();
+  console.log(`\n✅ Red Hídrica Nacional (/api/v3/hidrografia):`);
+  console.log(`   - Elementos hídricos cargados: ${hidro.features.length}`);
+  assert.ok(hidro.features.length > 0, 'Debe contener elementos de la red hídrica nacional');
+}
+
 console.log('\n====================================================');
 console.log('🎉 TODAS LAS PRUEBAS INTEGRALES PASARON EXITOSAMENTE (100% OK)');
 console.log('====================================================\n');

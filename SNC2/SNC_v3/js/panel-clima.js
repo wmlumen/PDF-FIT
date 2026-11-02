@@ -366,6 +366,7 @@ async function cargarCapaDistritosInundacion() {
     cargarCapaEducacion();
     cargarCapaIndustria();
     cargarDatosBosques();
+    cargarCapaHidrografiaNacional();
 
   } catch (err) {
     console.warn('Error al cargar capa distrital:', err);
@@ -1351,6 +1352,117 @@ async function cargarDatosBosques() {
   }
 }
 
+// 4.3 Capa Hidrográfica Nacional (/api/v3/hidrografia - STP/IGM + OSM)
+let timerRefrescoHidro = null;
+let pedidoHidroActual = 0;
+
+async function cargarCapaHidrografiaNacional() {
+  if (capaHidroLayer || !map) return;
+  capaHidroLayer = L.featureGroup();
+
+  map.on('moveend', () => {
+    const chipHidro = document.getElementById('chip-hidro');
+    if (chipHidro && chipHidro.classList.contains('active')) {
+      refrescarHidrografiaEnVista();
+    }
+  });
+
+  map.addLayer(capaHidroLayer);
+  if (controlCapas) {
+    controlCapas.addOverlay(capaHidroLayer, '💧 Red Hídrica Nacional');
+  }
+
+  refrescarHidrografiaEnVista();
+}
+
+function refrescarHidrografiaEnVista() {
+  if (!map || !capaHidroLayer) return;
+  const chipHidro = document.getElementById('chip-hidro');
+  if (chipHidro && !chipHidro.classList.contains('active')) return;
+
+  clearTimeout(timerRefrescoHidro);
+  timerRefrescoHidro = setTimeout(async () => {
+    const b = map.getBounds();
+    const mx = (b.getEast() - b.getWest()) * 0.1;
+    const my = (b.getNorth() - b.getSouth()) * 0.1;
+    const minX = (b.getWest() - mx).toFixed(4);
+    const minY = (b.getSouth() - my).toFixed(4);
+    const maxX = (b.getEast() + mx).toFixed(4);
+    const maxY = (b.getNorth() + my).toFixed(4);
+
+    const zoom = map.getZoom();
+    const q = `minX=${minX}&minY=${minY}&maxX=${maxX}&maxY=${maxY}`;
+    const idPedido = ++pedidoHidroActual;
+
+    try {
+      const res = await fetch(`/api/v3/hidrografia?${q}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (idPedido !== pedidoHidroActual || !data || !Array.isArray(data.features)) return;
+
+      capaHidroLayer.clearLayers();
+
+      // Filtrado adaptable por escala/zoom para visualización óptima
+      let features = data.features;
+      if (zoom < 9) {
+        // En zoom nacional o departamental, destacar ríos principales y cuerpos de agua oficiales
+        features = features.filter(f => {
+          const p = f.properties || {};
+          return p.tipo === 'rio' || p.tipo === 'laguna' || (p.nombre && p.fuente === 'oficial');
+        });
+      } else if (zoom < 12) {
+        // En zoom intermedio, mostrar ríos, arroyos y elementos con denominación
+        features = features.filter(f => {
+          const p = f.properties || {};
+          return p.nombre || p.tipo === 'rio' || p.tipo === 'arroyo' || p.tipo === 'laguna';
+        });
+      }
+
+      if (!features.length) return;
+
+      const subCapa = L.geoJSON({ type: 'FeatureCollection', features }, {
+        style: (feature) => {
+          const geomType = feature.geometry?.type;
+          const p = feature.properties || {};
+          const isArea = geomType === 'Polygon' || geomType === 'MultiPolygon' || p.tipo === 'laguna' || p.tipo === 'humedal';
+          const isRio = p.tipo === 'rio' || (p.nombre && p.nombre.toLowerCase().startsWith('río'));
+
+          if (isArea) {
+            return {
+              fillColor: '#38bdf8',
+              fillOpacity: 0.45,
+              color: '#0284c7',
+              weight: 1.5,
+              opacity: 0.85
+            };
+          }
+          return {
+            color: isRio ? '#0284c7' : '#0ea5e9',
+            weight: isRio ? (zoom >= 13 ? 4 : 2.8) : (zoom >= 13 ? 2.5 : 1.6),
+            opacity: isRio ? 0.9 : 0.75,
+            lineCap: 'round',
+            lineJoin: 'round'
+          };
+        },
+        onEachFeature: (feature, layer) => {
+          const p = feature.properties || {};
+          const nom = p.nombre || (p.tipo === 'rio' ? 'Río Principal' : (p.tipo === 'arroyo' ? 'Arroyo Natural' : (p.tipo === 'laguna' ? 'Laguna / Humedal' : 'Cauce Hídrico')));
+          const fuenteTxt = p.fuente === 'oficial' ? 'STP / IGM Oficial' : 'OpenStreetMap Hidrografía';
+          const detalle = p.tipo ? `Tipo: ${p.tipo}` : '';
+          layer.bindTooltip(`💧 <strong>${nom}</strong><br><small style="opacity:0.85">${fuenteTxt}${detalle ? ' · ' + detalle : ''}</small>`, {
+            sticky: true,
+            className: 'v3-map-tooltip'
+          });
+        }
+      });
+
+      capaHidroLayer.addLayer(subCapa);
+    } catch (err) {
+      console.warn('Error al refrescar hidrografía nacional:', err);
+    }
+  }, 250);
+}
+
 // 5. Motor Universal de Evaluación Parcelaria IPOOT (Nacional)
 async function evaluarParcelasEnVista() {
   if (!map) return;
@@ -1377,14 +1489,17 @@ async function evaluarParcelasEnVista() {
     let parcelasGeoJson = null;
     let hidroGeoJson = null;
 
+    const q = `minX=${minX}&minY=${minY}&maxX=${maxX}&maxY=${maxY}`;
+
     if (esPiribebuyCasco) {
-      parcelasGeoJson = await fetch('/data/municipal/piribebuy/casco/lotes_casco_historico.geojson').then(r => r.json());
-      hidroGeoJson = null;
+      [parcelasGeoJson, hidroGeoJson] = await Promise.all([
+        fetch('/data/municipal/piribebuy/casco/lotes_casco_historico.geojson').then(r => r.json()),
+        fetch(`/api/v3/hidrografia?${q}`).then(r => r.json()).catch(() => null)
+      ]);
     } else {
-      const q = `minX=${minX}&minY=${minY}&maxX=${maxX}&maxY=${maxY}`;
       [parcelasGeoJson, hidroGeoJson] = await Promise.all([
         fetch(`/api/v3/parcelario/vista?${q}`).then(r => r.json()),
-        fetch(`/api/v3/hidrografia?${q}`).then(r => r.json())
+        fetch(`/api/v3/hidrografia?${q}`).then(r => r.json()).catch(() => null)
       ]);
     }
 
@@ -1400,21 +1515,16 @@ async function evaluarParcelasEnVista() {
 function renderizarParcelasConIpoot(parcelasGeoJson, hidroGeoJson) {
   if (!map || !parcelasGeoJson || !parcelasGeoJson.features) return;
 
-  // Limpiar capas previas si existen
+  // Limpiar capa previa de parcelas si existe
   if (capaParcelasLayer) {
     map.removeLayer(capaParcelasLayer);
     controlCapas.removeLayer(capaParcelasLayer);
     capaParcelasLayer = null;
   }
-  if (capaHidroLayer) {
-    map.removeLayer(capaHidroLayer);
-    controlCapas.removeLayer(capaHidroLayer);
-    capaHidroLayer = null;
-  }
   parcelasIndex.clear();
   parcelaSeleccionadaLayer = null;
 
-  // Extraer puntos de cauces fluviales en el área visible
+  // Extraer puntos de cauces fluviales en el área visible para cálculo de amortiguamiento IPOOT
   const riverPoints = [];
   if (hidroGeoJson && hidroGeoJson.features) {
     hidroGeoJson.features.forEach(f => {
@@ -1425,23 +1535,6 @@ function renderizarParcelasConIpoot(parcelasGeoJson, hidroGeoJson) {
         riverPoints.push([x, y]);
       });
     });
-
-    // Dibujar red fluvial local
-    capaHidroLayer = L.geoJSON(hidroGeoJson, {
-      style: {
-        color: '#0284c7',
-        weight: 3.5,
-        opacity: 0.9,
-        lineCap: 'round',
-        lineJoin: 'round'
-      },
-      onEachFeature: (feature, layer) => {
-        const nom = feature.properties?.NOMBRE || feature.properties?.name || 'Recurso Hídrico Fluvial';
-        layer.bindTooltip(`💧 <strong>${nom}</strong> (Red Fluvial Natural)`, { sticky: true, className: 'v3-map-tooltip' });
-      }
-    });
-    capaHidroLayer.addTo(map);
-    controlCapas.addOverlay(capaHidroLayer, '💧 Red Hídrica Fluvial');
   }
 
   // Cota y cuenca del contexto actual
@@ -3172,6 +3265,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Toggle de Red Hídrica Nacional
+  const chipHidro = document.getElementById('chip-hidro');
+  if (chipHidro) {
+    chipHidro.addEventListener('click', () => {
+      chipHidro.classList.toggle('active');
+      const activo = chipHidro.classList.contains('active');
+      if (capaHidroLayer && map) {
+        if (activo) {
+          map.addLayer(capaHidroLayer);
+          refrescarHidrografiaEnVista();
+        } else {
+          map.removeLayer(capaHidroLayer);
+        }
+      }
+    });
+  }
+
   // Toggle de Capa Distrital
   const chipDist = document.getElementById('chip-distritos');
   if (chipDist) {
@@ -3301,7 +3411,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Chips informativos secundarios
-  document.querySelectorAll('.chip:not(#chip-parcelas):not(#chip-distritos):not(#chip-firms):not(#chip-incendios-hist):not(#chip-estaciones):not(#chip-salud):not(#chip-educacion):not(#chip-industria):not(#chip-bosques)').forEach(chip => {
+  document.querySelectorAll('.chip:not(#chip-parcelas):not(#chip-hidro):not(#chip-distritos):not(#chip-firms):not(#chip-incendios-hist):not(#chip-estaciones):not(#chip-salud):not(#chip-educacion):not(#chip-industria):not(#chip-bosques)').forEach(chip => {
     chip.addEventListener('click', () => chip.classList.toggle('active'));
   });
 
