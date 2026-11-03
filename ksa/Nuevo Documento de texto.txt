@@ -1,0 +1,417 @@
+Para convertir este plano a AutoCAD profesional (DWG/DXF) no basta con vectorizar la imagen. Debe redibujarse siguiendo normas CAD, porque la imagen tiene perspectiva de impresión y los espesores no representan medidas reales.
+
+Estructura CAD recomendada
+Capas (Layers)
+A-MURO          Color 7   0.50 mm
+A-PUERTA        Color 2   0.20 mm
+A-VENTANA       Color 4   0.20 mm
+A-MOBILIARIO    Color 8   0.10 mm
+A-COTA          Color 1   0.10 mm
+A-TEXTO         Color 7   0.10 mm
+A-EJES          Color 3   0.10 mm
+A-VEGETACION    Color 92  0.10 mm
+A-HATCH         Color 9   0.05 mm
+A-SIMBOLOS      Color 6   0.10 mm
+
+Configuración del lote
+TERRENO
+
+Frente: 12.00 m
+Fondo: 30.00 m
+
+Área:
+360.00 m²
+
+Ejes estructurales
+A     B     C     D
+
+1
+2
+3
+4
+5
+
+
+Separación según modulación estructural.
+
+Elementos que deben dibujarse como bloques
+Puertas
+P-01 0.90x2.10
+P-02 0.80x2.10
+P-03 1.20x2.10
+
+Ventanas
+V-01 1.50x1.20
+V-02 2.00x1.20
+V-03 3.00x1.20
+
+Inodoros
+
+Bloque sanitario.
+
+Lavabos
+
+Bloque sanitario.
+
+Cocina
+
+Bloque modular.
+
+Árboles
+
+Bloques paisajísticos.
+
+Acotación ISO 129
+
+Debe tener:
+
+Primera línea
+
+Muros y particiones.
+
+1.20
+3.50
+2.80
+4.50
+
+Segunda línea
+
+Ambientes.
+
+5.50
+6.00
+4.00
+
+Tercera línea
+
+Total.
+
+12.00
+30.00
+
+Ambientes
+
+Deben quedar así:
+
+SALA - COMEDOR
+22.50 m²
+
+COCINA
+9.80 m²
+
+DORMITORIO PRINCIPAL
+18.50 m²
+
+BAÑO SOCIAL
+4.20 m²
+
+QUINCHO
+20.00 m²
+
+COCHERA
+33.00 m²
+
+Lo que mejoraría arquitectónicamente
+Patio Biofílico
+
+Actualmente es pequeño.
+
+Propuesta:
+
+4.00 x 6.00 m
+
+
+con árbol central.
+
+Piscina
+
+Actualmente parece independiente.
+
+Para un diseño contemporáneo:
+
+3.00 x 8.00 m
+
+
+alineada con:
+
+sala
+quincho
+dormitorio
+
+creando un eje visual.
+
+Sala
+
+Abrir completamente hacia piscina mediante:
+
+Carpintería corrediza
+3.60 a 4.80 m
+
+Dormitorio Principal
+
+Agregar:
+
+Walk-in closet
++
+Baño privado
+
+
+con visual al patio vegetal.
+
+Formato de entrega internacional
+Plano A-01
+PLANTA ARQUITECTÓNICA
+
+ESCALA 1:100
+
+Plano A-02
+CORTE A-A
+
+ESCALA 1:50
+
+Plano A-03
+CORTE B-B
+
+ESCALA 1:50
+
+Plano A-04
+FACHADAS
+
+NORTE
+SUR
+ESTE
+OESTE
+
+Plano A-05
+IMPLANTACIÓN
+
+ESCALA 1:200
+
+Plano A-06
+CUADRO DE SUPERFICIES
+CUADRO DE ABERTURAS
+
+Para una conversión CAD de nivel profesional
+
+El plano debería terminar con:
+
+✅ Ejes estructurales
+ ✅ Muros vectoriales reales
+ ✅ Acotado ISO 129
+ ✅ Escala 1:100
+ ✅ Norte
+ ✅ Cuadro de áreas
+ ✅ Cuadro de puertas y ventanas
+ ✅ Cortes referenciados A-A y B-B
+ ✅ Capas CAD normalizadas
+ ✅ Cajetín A1 o A0 profesional
+
+Con eso quedaría listo para AutoCAD, impresión, presentación municipal y desarrollo posterior en Revit o BIM.
+
+
+Para que una vivienda sea considerada un proyecto arquitectónico completo y profesional, no basta con la planta. Debe contener información de arquitectura, estructura, instalaciones, urbanismo, clima y construcción.
+
+1. Datos del terreno
+Obligatorios
+Dimensiones del terreno.
+Superficie total.
+Norte geográfico.
+Nivel de calle.
+Línea municipal.
+Retiros obligatorios.
+Servidumbres.
+Calles y orientación.
+
+Ejemplo:
+
+Terreno: 12,00 x 30,00 m
+Superficie: 360,00 m²
+Frente: Norte
+Pendiente natural: 1,5 %
+
+2. Programa arquitectónico
+
+Cada ambiente debe indicar:
+
+Nombre.
+Superficie.
+Nivel.
+
+Ejemplo:
+
+Dormitorio Principal
+18,50 m²
+NPT +0,15
+
+3. Cuadro de áreas
+Muy importante
+Concepto	m²Terreno	360.00
+Área cubierta	115.00
+Área semicubierta	25.00
+Piscina	21.00
+Área verde	140.00
+Área permeable	120.00
+4. Indicadores urbanísticos
+
+Fundamental para Paraguay.
+
+Indicador	ValorCOS	XX %
+CUS	XX
+Ocupación del suelo	XX %
+Área libre	XX %
+Área verde	XX %
+5. Niveles altimétricos
+
+Debe aparecer:
+
+NPT ±0.00
+
+Vereda -0.15
+
+Patio -0.10
+
+Piscina -1.40
+
+Cubierta +3.20
+
+6. Estructura
+
+Plano estructural independiente.
+
+Debe mostrar
+Columnas.
+Vigas.
+Zapatas.
+Encadenados.
+Losa.
+Cubierta.
+7. Instalación sanitaria
+
+Plano específico.
+
+Debe contener
+Agua fría.
+Agua caliente.
+Desagüe cloacal.
+Ventilaciones.
+Cámara séptica.
+Registro.
+8. Instalación pluvial
+
+Muy importante en Paraguay.
+
+Mostrar
+Pendientes.
+Canaletas.
+Bajadas.
+Sumideros.
+Drenajes.
+Pozos absorbentes.
+9. Instalación eléctrica
+
+Plano independiente.
+
+Incluir
+Tomacorrientes.
+Iluminación.
+Interruptores.
+TV.
+Datos.
+Tablero.
+10. Climatización
+
+Actualmente muy valorado.
+
+Mostrar
+Ventilación cruzada.
+Asolamiento.
+Protección solar.
+Estrategias pasivas.
+Para una vivienda moderna en Paraguay
+
+Yo agregaría:
+
+Estrategia hídrica
+
+Mostrar:
+
+Captación de lluvia
+
+Reservorio
+
+Riego
+
+Infiltración
+
+Estrategia bioclimática
+
+Mostrar:
+
+Sol
+Verano.
+Invierno.
+Vientos predominantes
+Norte.
+Sur.
+Áreas de sombra.
+Biofilia
+
+Cuantificar:
+
+Vegetación integrada:
+45 m²
+
+Área verde:
+120 m²
+
+Superficie permeable:
+58 %
+
+Para una lámina tipo Bienal
+
+Además de los planos técnicos:
+
+✅ Implantación general.
+
+✅ Axonometría explotada.
+
+✅ Diagrama climático.
+
+✅ Diagrama de ventilación.
+
+✅ Diagrama hídrico.
+
+✅ Diagrama de soleamiento.
+
+✅ Paleta de materiales.
+
+✅ Render principal.
+
+✅ Render interior.
+
+✅ Detalles constructivos.
+
+✅ Concepto arquitectónico.
+
+Con tu plano actual faltan principalmente
+Arquitectura
+Ejes estructurales.
+Cuadro de superficies.
+Cuadro de aberturas.
+Cortes A-A y B-B.
+Fachadas.
+Ingeniería
+Fundaciones.
+Estructura.
+Eléctrica.
+Sanitaria.
+Pluvial.
+Bienal
+Implantación.
+Estrategia climática.
+Estrategia hídrica.
+Biofilia cuantificada.
+Axonometría explotada.
+Render hero.
+
+Si completas esos elementos tendrás un expediente profesional cercano al 90-95 % de lo requerido para una vivienda unifamiliar moderna de nivel internacional en Paraguay, listo para desarrollo ejecutivo, presentación municipal y exposición arquitectónica.
